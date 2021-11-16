@@ -1,0 +1,36 @@
+
+# ZC95
+
+## Introduction
+The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
+Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
+
+Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing the audio input, bluetooth and, _so far_, most of the patterns of the 312.
+Additionaly, if a 433MHz transmitter is fitted in can be used to control certain types of shock collars from some patterns.
+
+It's mostly built using through hole parts, with one PCB being mostly SMD - but using parts available through the JLCPCB SMT assembly service. The only exception to this is the ADC for the front panel which is a SOIC-16 footprint so should still be easy enough for most to solder.
+
+
+## Overview
+The ZC95 consists of 4 PCBs:
+
+* Front panel - no traces, just text / mounting holes
+* Front panel control - 4x POTs and associated ADC, 1x rotary encoder and 6 serial RGB LEDs
+* Main board - power supply / charging, MCU for display / pattern generation, button input etc
+* Output board ("ZC624 Output module") - 4 channel output generation controlled via SPI from the main board. Designed for production using the SMT assembly service at JLCPCB, with a handful of extra through hole parts also requiring hand soldering.
+
+The primary reason for having separate PCBs for the main and output board is for future flexibility - most of the time & expense is the firmware, case, display, controls, etc., so being able to test new output designs whilst being able to keep all of that should be an advantage. I'm well aware the output design currently used is known to have flaws, mostly stemming from its lack of feedback (which applies equally to the 312b it was taken from). A challenge for another day.
+
+## [Build guide](docs/Build.md)
+
+## [Schematics](schematics/)
+
+## [Gerbers](pcb/)
+
+## [Compiled firmware](firmware/)
+
+## [Operation notes](docs/Operation.md)
+
+## [Pattern guide](docs/Patterns.md)
+
+

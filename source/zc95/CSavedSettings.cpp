@@ -1,0 +1,197 @@
+/*
+ * ZC95
+ * Copyright (C) 2021  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#include "CSavedSettings.h"
+#include "string.h"
+#include "config.h"
+#include "core1/output/collar/CCollarComms.h"
+
+/*
+ * Manage access and updating of settings saved to EEPROM.
+ * Assumes 512byte EEPROM, and loads its contents into memory.
+ * A blank EEPROM should be automatically initialized with default values on first 
+ * run; a blank EEPROM is detected by the absense of EEPROM_MAGIC_VAL in location 0.
+ */
+
+CSavedSettings::CSavedSettings(CEeprom *eeprom)
+{
+    _eeprom = eeprom;
+    memset(_eeprom_contents, 0, sizeof(_eeprom_contents));
+
+    if (!eeprom_initialised())
+    {
+        eeprom_initialise();
+    }
+
+    printf("Read eeprom...");
+    for (int n=0; n < EEPROM_SIZE; n++)
+        _eeprom_contents[n] = _eeprom->read(n);
+    printf("done\n");
+}
+
+CSavedSettings::~CSavedSettings()
+{
+
+}
+
+void CSavedSettings::save()
+{
+    printf("Save changed settings to EEPROM...");
+    for (int n=0; n < EEPROM_SIZE; n++)
+    {
+        if (_eeprom->read(n) != _eeprom_contents[n])
+        {
+            _eeprom->write(n, _eeprom_contents[n], true);
+        }
+    }
+    printf("done\n");
+}
+
+CSavedSettings::channel_selection CSavedSettings::get_channel(uint8_t channel_id)
+{
+    channel_selection ret;
+    
+    if (channel_id < EEPROM_CHANNEL_COUNT)
+    {
+        ret.type  = (CChannel_types::channel_type)_eeprom_contents[(uint8_t)(setting::ChannelType) + (channel_id*2)];
+        ret.index = _eeprom_contents[(uint8_t)(setting::ChannelIndex) + (channel_id*2)];
+    }
+
+    return ret;
+}
+
+void CSavedSettings::set_channel(channel_selection chan, uint8_t channel_id)
+{
+    if (channel_id < EEPROM_CHANNEL_COUNT)
+    {
+        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)chan.type;
+        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = chan.index;
+    }
+}
+
+uint8_t CSavedSettings::get_led_brightness()
+{
+    return _eeprom_contents[(uint8_t)setting::LEDBrightness];
+}
+
+void CSavedSettings::set_led_brightness(uint8_t led_brightness_percent)
+{
+    _eeprom_contents[(uint8_t)setting::LEDBrightness] = led_brightness_percent;
+}
+
+uint8_t CSavedSettings::get_power_step_interval()
+{
+    return _eeprom_contents[(uint8_t)setting::PowerStep];
+}
+
+void CSavedSettings::set_power_step_interval(uint8_t power_step)
+{
+    _eeprom_contents[(uint8_t)setting::PowerStep] = power_step;
+}
+
+uint8_t CSavedSettings::get_ramp_up_time_seconds()
+{
+    return _eeprom_contents[(uint8_t)setting::RampUpTimeSecs];
+}
+
+void CSavedSettings::set_ramp_up_time_seconds(uint8_t time_secs)
+{
+    _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = time_secs;
+}
+
+bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
+{
+    if (collar_id > 9)
+        return false;
+
+    collar_conf.channel = _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)];
+    collar_conf.mode    = _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)];
+
+    collar_conf.id = _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] |
+                    (_eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] << 8);
+    return true;
+}
+
+bool CSavedSettings::set_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
+{
+    if (collar_id > 9)
+        return false;
+
+    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)] = collar_conf.channel;
+    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)] = collar_conf.mode;
+
+    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] = collar_conf.id & 0xFF;
+    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] = collar_conf.id >> 8;
+
+    return true;
+}
+
+bool CSavedSettings::eeprom_initialised()
+{
+    return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);
+}
+
+// Wipe the EEPROM and put it into a default state
+void CSavedSettings::eeprom_initialise()
+{
+    printf("Initialise EEPROM...\n");
+    memset(_eeprom_contents, 0, sizeof(_eeprom_contents));
+    _eeprom_contents[(uint16_t)setting::EepromInit] = 0; // write this seperatly & last, in case something goes wrong mid way
+
+    // Set channels 0->internal Chan1, 1->internal chan2, etc..., and the rest to none
+    for (int channel_id=0; channel_id < 4; channel_id++)
+    {
+        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_INTERNAL;
+        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = channel_id;
+    }
+
+    // Set any remaing channels to nothing
+    for (int channel_id=4; channel_id < EEPROM_CHANNEL_COUNT; channel_id++)
+    {
+        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_NONE;
+        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = 0;
+    }
+
+    // Default LED brightness to 10
+    _eeprom_contents[(uint8_t)setting::LEDBrightness] = 10;
+
+    // Default power level step to 10, giving 100 power levels
+    _eeprom_contents[(uint8_t)setting::PowerStep] = 10;
+
+    // Ramp up time - 5 secs seems like a reasonable default
+    _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = 5;
+
+    for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
+        initialise_collar(collar_id);
+
+    // Save changes
+    save();
+
+    // Now set a flag in the EEPROM so we know it's been initialised
+    _eeprom_contents[(uint16_t)setting::EepromInit] = EEPROM_MAGIC_VAL;
+    save();
+}
+
+void CSavedSettings::initialise_collar(uint8_t collar_id)
+{
+    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)] = (uint8_t)CCollarComms::collar_channel::CH1;
+    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)] = (uint8_t)CCollarComms::collar_mode::VIBE;
+
+    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] = rand() & 0xFF;
+    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] = rand() & 0xFF;
+}

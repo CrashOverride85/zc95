@@ -1,0 +1,51 @@
+
+.program collar433
+.side_set 1
+
+; assuming each clock cycle is 100us, so a 1 would be transmitted as high/800us, low/200us, and 0 as high/400, low/600
+
+.wrap_target
+
+out y, 8    side 0; number of bits to transmit is in the first byte (expected to be 41)
+
+; transmit start state
+nop         side 1 [15]
+nop         side 0 [5]
+
+; Transmit message, which is expected to 41 bits (40 bits of data and a final 0/stop bit)
+bitloop:
+    out x, 1            side 1 
+    jmp !x do_zero     side 1 [2]
+do_one:
+    nop                 side 1 [3]
+    jmp y-- bitloop    side 0 [1] 
+do_zero:
+    jmp y-- bitloop    side 0 [5]
+
+
+out null, 32            side 0 ; discard the rest of the OSR (already transmitted the bits we care about)
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void collar433_program_init(PIO pio, uint sm, uint offset, uint pin) {
+
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    pio_sm_config c = collar433_program_get_default_config(offset);
+    sm_config_set_sideset_pins(&c, pin);
+    sm_config_set_out_shift(&c, false, true, 32);
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+    
+    float cycle_length_us = 100;
+    float freq = 1 / (cycle_length_us/1000000);
+    
+    float div = clock_get_hz(clk_sys) / freq;
+    sm_config_set_clkdiv(&c, div);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}

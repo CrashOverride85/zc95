@@ -1,0 +1,47 @@
+
+.program pulse_gen
+
+; assuming each clock cycle is 1us
+
+.wrap_target
+
+pull block
+out x, 8
+; mov y, x
+out y, 8
+
+a_pulse:
+    set PINS, 1
+    jmp y-- a_pulse
+
+; set PINS, 0 [2] ; 2us between switching off gate A and switching on gate B
+
+b_pulse:
+    set PINS, 2
+    jmp x-- b_pulse
+
+set PINS, 0 [5]
+
+out null, 32 ; discard the rest of the OSR
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void pulse_gen_program_init(PIO pio, uint sm, uint offset, uint pin_gate_a) {
+    pio_gpio_init(pio, pin_gate_a);
+    pio_gpio_init(pio, pin_gate_a+1);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_gate_a, 2, true);
+    pio_sm_config c = pulse_gen_program_get_default_config(offset);
+    sm_config_set_set_pins(&c, pin_gate_a, 2);
+    
+    float cycle_length_us = 1;
+    float freq = 1 / (cycle_length_us/1000000);
+    
+    float div = clock_get_hz(clk_sys) / freq;
+    sm_config_set_clkdiv(&c, div);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}

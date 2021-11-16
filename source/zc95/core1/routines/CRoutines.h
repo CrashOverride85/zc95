@@ -1,0 +1,27 @@
+#include "CRoutineMaker.h"
+#include "CToggle.h"
+#include "CRoundRobin.h"
+#include "CTens.h"
+#include "CClimb.h"
+#include "CTriggeredClimb.h"
+#include "CFire.h"
+#include "CClimbPulse.h"
+#include "CCamTrigger.h"
+
+
+class CRoutines
+{
+    public:
+        static void get_routines(std::vector<CRoutineMaker*> *routines)
+        {
+            routines->push_back(make<CToggle>);
+            routines->push_back(make<CRoundRobin>);
+            routines->push_back(make<CTens>);
+            routines->push_back(make<CClimb>);
+            routines->push_back(make<CTriggeredClimb>);
+            routines->push_back(make<CFire>);
+            routines->push_back(make<CClimbPulse>);
+            routines->push_back(make<CCamTrigger>);
+        }
+};
+
