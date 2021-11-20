@@ -15,7 +15,7 @@ Buttons 1 - 4 are soft buttons and the purpose changes dependant on the screen.
 | 5      | Power. Left is off, right is on. Probably should have labelled that.
 | 6      | Power in. Should be centre positive 15v DC
 | 7      | Serial port. Currently only debugging output (RS232 level). Tip is TX / output from box, Sleeve is ground.
-| 8      | Accessory port. Include power, serial and 3x GPIO pins. See "Accessory port" in misc section. Currently not really used by much.
+| 8      | Accessory port. Includes power, serial and 3x GPIO pins. See "Accessory port" in misc section. Currently not really used by much.
 | 9      | Trigger input 1. Shorting either Sleeve or Ring to Tip registers trigger. The box can differentiate between S-T and R-T triggers (i.e. each trigger socket can react to two different inputs), however this capability is unused.
 | 10     | Trigger input 2. As above, except currently unused.
 | 11     | 2.5mm socket for channel 1 output
@@ -58,7 +58,7 @@ Configuration options so far:
 
 * LED brightness - Pretty much what is says. If you value your eyesight, single digit values are good.
 
-* Ramp up time - When starting a patten, how long it takes to ramp up to the power level set for the channel on the front panel
+* Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 
 ## Shock collars
 If the box is fitted with a 433Mhz AM transmitter in J11 on the main board, it can be used to control one specific type of shock collar:
