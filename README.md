@@ -6,9 +6,12 @@ The ZC95 is a DIY four channel EStim box with similar form factor & output desig
 Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
 
 Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing the audio input, bluetooth and, _so far_, most of the patterns of the 312.
-Additionaly, if a 433MHz transmitter is fitted in can be used to control certain types of shock collars from some patterns.
+Additionally, if a 433MHz transmitter is fitted in can be used to control certain types of shock collars from some patterns.
 
 It's mostly built using through hole parts, with one PCB being mostly SMD - but using parts available through the JLCPCB SMT assembly service. The only exception to this is the ADC for the front panel which is a SOIC-16 footprint so should still be easy enough for most to solder.
+
+### Assembled ZC95
+![zc95]
 
 
 ## Overview
@@ -33,4 +36,21 @@ The primary reason for having separate PCBs for the main and output board is for
 
 ## [Pattern guide](docs/Patterns.md)
 
+# TODO
+## Firmware
+   - Add an approximation of the "Waves" pattern
+   - Pattern to make use of trigger inputs to shock either when triggered, or when not (make configurable)
+   - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
+   - Report battery state at power up, and maybe via menu
+   - Show firmware version somewhere
+   - Two way comms with the the ZC628 output board - e.g. if the ZC628 fails to initialise correctly (or is missing), report this
+   - Save pattern settings on exit?
+
+# Hardware
+   - Possible audio input - the main board has been designed with an audio input expansion board getting audio via the port labelled serial in mind
+   - Maybe a better power switch? although still being able to get all the parts for the main board from LCSC is good
+   - Low battery shutoff
+
+
+[zc95]: docs/images/zc95.jpg "Assembled ZC95"
 
