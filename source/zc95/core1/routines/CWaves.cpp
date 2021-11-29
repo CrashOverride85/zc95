@@ -24,7 +24,6 @@ static const int pulse_gap_min_us = 2700;
 static const int pulse_gap_max_us = (32 * 1000);
 static const int initial_speed = 200;
 
-
 enum menu_ids
 {
     WAVES_SPEED = 1
@@ -55,7 +54,7 @@ void CWaves::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
 
-    // menu entry 1: "Speed" - a min/max entry in seconds 
+    // menu entry 1: "Speed"
     struct menu_entry speed;
     speed.id = menu_ids::WAVES_SPEED;
     speed.title = "Speed";
@@ -103,11 +102,6 @@ void CWaves::start()
     }
 
     menu_min_max_change(menu_ids::WAVES_SPEED, initial_speed);
-}
-
-void CWaves::set_pulse_step_from_duration_seconds(uint16_t duration_sec)
-{
-    _pulse_step_us = 1800 / duration_sec;
 }
 
 void CWaves::loop(uint64_t time_us)
