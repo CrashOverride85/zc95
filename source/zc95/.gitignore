@@ -38,4 +38,5 @@ zc95.elf
 zc95.elf.map
 zc95.hex
 zc95.uf2
-
+build/
+.vscode/

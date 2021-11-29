@@ -38,12 +38,11 @@ The primary reason for having separate PCBs for the main and output board is for
 
 # TODO
 ## Firmware
-   - Add an approximation of the "Waves" pattern
    - Pattern to make use of trigger inputs to shock either when triggered, or when not (make configurable)
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
    - Report battery state at power up, and maybe via menu
    - Show firmware version somewhere
-   - Two way comms with the the ZC628 output board - e.g. if the ZC628 fails to initialise correctly (or is missing), report this
+   - Two way comms with the the ZC624 output board - e.g. if the ZC624 fails to initialise correctly (or is missing), report this
    - Save pattern settings on exit?
    - Maybe text to show the currently active pattern on screen?
 

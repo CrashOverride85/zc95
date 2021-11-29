@@ -59,6 +59,7 @@ add_executable(zc95
 
   core1/routines/CAccPort.cpp
 
+  core1/routines/CWaves.cpp
   core1/routines/CToggle.cpp
   core1/routines/CRoundRobin.cpp
   core1/routines/CTens.cpp

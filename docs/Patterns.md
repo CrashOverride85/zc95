@@ -1,4 +1,17 @@
 # Patterns
+
+## Waves
+Gradually increasing and decreasing intensity on all channels at different rates, with channel 1 being the slowest and 4 being the fastest. Varying intensity is achieved by altering the gap between pulses rather than changing the power level.
+Can NOT be used with shock collars.
+
+### Menu options
+* Speed - controls how fast the intensity increases/decreases. 10-1000, higher is faster.
+
+### Extra hardware required?:
+No.
+
+------------------------------------------------------------
+
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
 Can be used with shock collars.

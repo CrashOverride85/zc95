@@ -1,4 +1,5 @@
 #include "CRoutineMaker.h"
+#include "CWaves.h"
 #include "CToggle.h"
 #include "CRoundRobin.h"
 #include "CTens.h"
@@ -14,6 +15,7 @@ class CRoutines
     public:
         static void get_routines(std::vector<CRoutineMaker*> *routines)
         {
+            routines->push_back(make<CWaves>);
             routines->push_back(make<CToggle>);
             routines->push_back(make<CRoundRobin>);
             routines->push_back(make<CTens>);
