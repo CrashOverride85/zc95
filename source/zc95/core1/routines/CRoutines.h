@@ -7,8 +7,8 @@
 #include "CTriggeredClimb.h"
 #include "CFire.h"
 #include "CClimbPulse.h"
+#include "CShockChoice.h"
 #include "CCamTrigger.h"
-
 
 class CRoutines
 {
@@ -23,6 +23,7 @@ class CRoutines
             routines->push_back(make<CTriggeredClimb>);
             routines->push_back(make<CFire>);
             routines->push_back(make<CClimbPulse>);
+            routines->push_back(make<CShockChoice>);
             routines->push_back(make<CCamTrigger>);
         }
 };

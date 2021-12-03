@@ -67,6 +67,7 @@ add_executable(zc95
   core1/routines/CTriggeredClimb.cpp
   core1/routines/CFire.cpp
   core1/routines/CClimbPulse.cpp
+  core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
   
   FpKnobs/CFpRotEnc.cpp

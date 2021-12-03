@@ -121,6 +121,24 @@ No.
 
 ------------------------------------------------------------
 
+## Shock choice
+Gives the subject a choice of where to receive a shock, with no decision resulting in both (and for longer).
+
+Requires a remote button connected to each of the two trigger inputs.
+
+Every _Choice frequency_ seconds, channel 4 is briefly pulsed as an indication that a choice needs to be made (channel 4 being configured as a shock collar in "beep" mode works well). If button A is pressed, a 0.5s shock is delivered on channel 1. If button B is pressed a 0.5s shock is delivered on channels 2+3 (think a pair of bipolar nipple clamps). If no choice is made within 3 seconds, a 1s shock is delivered on channels 1, 2 & 3.
+Each time a shock is delivered, the power level for that channel(s) is increased.
+
+### Menu options
+* Choice frequency - How often, in seconds, does a shock need to be delivered
+* Shock increment by - How many percentage points to increase the power level on channels 3+4 by every time the remote button is pressed (e.g. if the current power was 20%, a setting of "10" would mean increase from 20% -> 30%). Can be set to zero.
+* Soft button "Reset" - Reset power levels back to zero
+
+### Extra hardware required?:
+Yes: Remote buttons wired to trigger inputs 1 & 2.
+
+------------------------------------------------------------
+
 ## Camera Trigger
 When the "Trigger" soft button is pressed, a shock is delivered on all channels, then a preset amount of time later ACC_IO_1 (pin 9 on the DB9 socket) is pulsed low. The intention is for this to be connected to a remote camera trigger.
 At present, there is a hard-coded assumption that the camera will take 300ms to react to the pulse (this was the case for me using a cheap wireless camera trigger).
