@@ -4,11 +4,12 @@
 
 #define CHANNEL_COUNT 4
 
-COutput::COutput(PIO pio)
+COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
 {
     printf("COutput()\n");
     _pio = pio;
     _pio_program_offset = pio_add_program(_pio, &pulse_gen_program);
+    _i2c_slave = i2c_slave;
 
     setup_gpio(PIN_9V_ENABLE);
     setup_gpio(PIN_CHAN1_GATE_A);
@@ -33,17 +34,31 @@ COutput::COutput(PIO pio)
 
     bool all_ready = true;
     for (int chan=0; chan < 4; chan++)
-        all_ready &= (_channel[chan]->get_status() == COutputChannel::status::READY);
+    {
+        COutputChannel::status chan_status = _channel[chan]->get_status();
+        if (chan_status == COutputChannel::status::READY)
+        {
+            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, CI2cSlave::status::Ready);
+        }
+        else
+        {
+            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, CI2cSlave::status::Fault);
+            all_ready = false;
+        }
+    }
 
     if (all_ready)
     {
         printf("Calibration success\n");
+        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Ready);
         gpio_put(PIN_9V_ENABLE, 1);
     }
     else
     {
         printf("One or more chanel failed calibration, not enabling power.\n");
+        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Fault);
         gpio_put(PIN_9V_ENABLE, 0);
+        
     }
 }
 

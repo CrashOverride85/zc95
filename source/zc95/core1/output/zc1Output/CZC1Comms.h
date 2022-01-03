@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "hardware/i2c.h"
 
 class CZC1Comms
 {
@@ -24,13 +25,14 @@ class CZC1Comms
             PowerDown = 3
         };
 
-        CZC1Comms(spi_inst_t *spi);
+        CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c);
         ~CZC1Comms();
 
         void send_message(message msg);
 
     private:
         spi_inst_t *_spi;
+        i2c_inst_t *_i2c;
 
 
 };

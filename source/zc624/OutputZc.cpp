@@ -14,6 +14,7 @@
 #include "COutput.h"
 #include "CMessageProcess.h"
 #include "messages.h"
+#include "CI2cSlave.h"
 
 /*
  * Core0 handles incoming SPI messages, and output/generation (via pio) of signals to drive the FETs. Any 
@@ -24,14 +25,17 @@
 void i2c_scan();
 void core1_entry();
 
+CI2cSlave *i2c_slave;
+
 int main()
 {
     stdio_init_all();
     adc_init();
     
     printf("startup\n");
+    i2c_slave = new CI2cSlave();
 
-    // I2C Initialisation. Using it at 400Khz.
+    // I2C Initialisation as master (connected to DAC). Using it at 400Khz.
     i2c_init(I2C_PORT_PER, 400*1000);
     
     gpio_set_function(I2C_SDA_PER, GPIO_FUNC_I2C);
@@ -44,7 +48,7 @@ int main()
     multicore_launch_core1(core1_entry);
 
     // Control of 4x output channels
-    COutput output = COutput(pio0);
+    COutput output = COutput(pio0, i2c_slave);
 
     // Comms to main board
     CMessageProcess spi_message_process = CMessageProcess(&output);

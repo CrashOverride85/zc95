@@ -152,12 +152,12 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
+    // switch off backlight until init done
+    controls.set_lcd_backlight(false);
+
     CHwCheck hw_check;
     hw_check.check(); // If a fault is found, this never returns
 
-    // switch off backlight until init done
-    controls.set_lcd_backlight(false);
-    
     // Make sure there is some semi-random-ish data available
     seed_random_from_rosc();
 

@@ -23,6 +23,7 @@
 #include "i2c_scan.h"
 #include "config.h"
 #include "CLedControl.h"
+#include "CHwCheckZc624.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -36,7 +37,8 @@ CHwCheck::CHwCheck()
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
     _devices.push_front(device(EEPROM_ADDR, "EEPROM (read)", "EEPROM"));
     _devices.push_front(device(EEPROM_ADDR+1, "EEPROM (write)", "EEPROM"));
-
+    _devices.push_front(device(ZC624_ADDR, "ZC624 output board", "ZC624"));
+    
     // these two ICs are on the front panel
     _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
     _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
@@ -82,6 +84,16 @@ void CHwCheck::check()
         }
     }
 
+    // If all ok so far, check ZC624 is reporting a good status
+    if (ok)
+    {
+        if (!check_zc624())
+        {
+            casue = Cause::ZC628;
+            ok = false;
+        }
+    }
+
     if (ok)
     {
         printf("Status: Ok\n\n");
@@ -91,6 +103,65 @@ void CHwCheck::check()
         printf("Status: FAILED\n\n");
         hw_check_failed(casue);
     }
+}
+
+bool CHwCheck::check_zc624()
+{
+    uint8_t status = 0;
+    if (!get_i2c_register(ZC624_ADDR, (uint8_t)CHwCheckZc624::reg::OverallStatus, &status))
+    {
+        printf("Failed to read OverallStatus register from ZC624\n");
+        return false;
+    }
+
+    // Wait for upto 2 seconds for ZC624 to become ready
+    uint8_t count = 0;
+    do
+    {
+        if (!get_i2c_register(ZC624_ADDR, (uint8_t)CHwCheckZc624::reg::OverallStatus, &status))
+        {
+            printf("Failed to read OverallStatus register from ZC624\n");
+            return false;
+        }
+        count++;
+
+        if (status != CHwCheckZc624::status::Startup)
+            break;
+
+        sleep_ms(100);
+
+    } while (count < 20);
+
+    if (status != CHwCheckZc624::status::Ready)
+    {
+        printf("ZC624 is not ready (status = %d)\n", status);
+        return false;
+    }
+
+    return true;
+}
+
+bool CHwCheck::get_i2c_register(uint8_t address, uint8_t reg, uint8_t *value)
+{
+    uint8_t buf[1];
+    buf[0] = reg;
+
+    int count = i2c_write_blocking(i2c0, address, buf, 1, true);
+    if (count < 0)
+    {
+        printf("get_i2c_register for addr=%d, reg=%d failed (write)\n", address, reg);
+        return false;
+    }
+
+    count = i2c_read_blocking(i2c0, address, buf, 1, true);
+    if (count != 1)
+    {
+        printf("get_i2c_register for addr=%d, reg=%d failed (read)\n", address, reg);
+        return false;
+    }
+
+    *value = buf[0];
+    return true;
 }
 
 void CHwCheck::show_error_text_message(int y, std::string message)
@@ -134,6 +205,10 @@ void CHwCheck::hw_check_failed(enum Cause casue)
 
         case Cause::BATTERY:
             show_error_text_message(y, "Battery is flat!");
+            break;
+
+        case Cause::ZC628:
+            show_error_text_message(y, "ZC628 error");
             break;
         
         default:

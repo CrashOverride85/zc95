@@ -20,7 +20,7 @@ class CHwCheck
         uint8_t get_battery_percentage();
 
     private:
-        enum Cause {UNKNOWN, MISSING, BATTERY};
+        enum Cause {UNKNOWN, MISSING, BATTERY, ZC628};
         void show_error_text_missing(int y);
         void show_error_text_message(int y, std::string message);
         void hw_check_failed(enum Cause casue);
@@ -28,6 +28,8 @@ class CHwCheck
         static int cmpfunc (const void *a, const void *b);
         float get_adc_voltage();
         float get_battery_voltage(float adc_voltage);
+        bool get_i2c_register(uint8_t address, uint8_t reg, uint8_t *value);
+        bool check_zc624();
 
         class device
         {
