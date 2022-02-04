@@ -1,6 +1,9 @@
 
 # ZC95
 
+*IMPORTANT*: If you downloaded the GERBER files before 2022/02/04, the files for the back/front panel (the one with the POTs on) was wrong... sincere apologies if anyone has ordered this. The "Bad" board would be labeled "ZC95-FrontPanel(back) v0.2", the good one "ZC95-FrontPanel-Analog(back) v0.1".
+
+
 ## Introduction
 The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
 Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
