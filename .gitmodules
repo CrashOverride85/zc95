@@ -1,6 +1,6 @@
 [submodule "source/zc95/external/hagl_hal"]
 	path = source/zc95/external/hagl_hal
-	url = git@github.com:CrashOverride85/hagl_pico_mipi.git
+	url = https://github.com/CrashOverride85/hagl_pico_mipi.git
 [submodule "source/zc95/external/hagl"]
 	path = source/zc95/external/hagl
-	url = git@github.com:CrashOverride85/hagl.git
+	url = https://github.com/CrashOverride85/hagl.git
