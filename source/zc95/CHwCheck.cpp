@@ -40,6 +40,8 @@ CHwCheck::CHwCheck()
     // these two ICs are on the front panel
     _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
     _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
+
+    _last_update = 0;
 }
 
 void CHwCheck::check()
@@ -54,7 +56,7 @@ void CHwCheck::check()
     printf("==============\n\n");
     
     // Check battery isn't flat
-    if (get_battery_percentage() == 0)
+    if (get_battery_voltage() < 10.5)
     {
         printf("Battery is flat!\n");
         ok = false;
@@ -170,6 +172,11 @@ int CHwCheck::cmpfunc (const void *a, const void *b)
    return ( *(uint32_t*)a - *(uint32_t*)b );
 }
 
+int CHwCheck::cmpfunc_uint8_t (const void *a, const void *b)
+{
+   return ( *(uint8_t*)a - *(uint8_t*)b );
+}
+
 float CHwCheck::get_adc_voltage()
 {
     uint32_t readings[10];
@@ -200,13 +207,13 @@ float CHwCheck::get_adc_voltage()
     return batt_voltage;
 }
 
-float CHwCheck::get_battery_voltage(float adc_voltage)
+float CHwCheck::get_battery_voltage()
 {
     // TODO: Not sure why this is off? Is this fiddle factor going to be different per unit, and so should be in EEPROM?
     return get_adc_voltage() + 1.22;
 }
 
-uint8_t CHwCheck::get_battery_percentage()
+uint8_t CHwCheck::get_real_time_battery_percentage()
 {
     /* Full  = 12.50v
        Empty = 10.50v (shutdown at this - still need to add h/w low voltage shutoff just below this)
@@ -214,7 +221,7 @@ uint8_t CHwCheck::get_battery_percentage()
        Limitations: When on charge, this will be >= 13v when almost full, but there's no definite way
                     to tell when a charger is plugged in
      */
-    float batt_voltage = get_battery_voltage(get_adc_voltage());
+    float batt_voltage = get_battery_voltage();
     float pc = ((batt_voltage - 10.5)/2) * 100;
     
     if (pc < 0)
@@ -223,4 +230,35 @@ uint8_t CHwCheck::get_battery_percentage()
         pc = 100;
 
     return (uint8_t)pc;
+}
+
+uint8_t CHwCheck::get_battery_percentage()
+{
+    // ignore 10 lowest values. get the average of the rest
+    qsort(_batt_percentage, 10, sizeof(uint8_t), CHwCheck::cmpfunc_uint8_t);
+    uint32_t total=0;
+    for (uint8_t reading=10; reading < BAT_AVG_COUNT; reading++)
+        total += _batt_percentage[reading];
+    
+    uint32_t avg = total/(BAT_AVG_COUNT-10);
+    return avg;
+}
+
+void CHwCheck::process()
+{
+    // On initial startup all the readings will be 0, so try and set them to something better
+    // as quick as possible.
+    if (_inital_startup || (time_us_64() - _last_update > 1000000)) // 1sec
+    {
+        _batt_reading_idx++;
+        if (_batt_reading_idx >= BAT_AVG_COUNT)
+        {
+            _batt_reading_idx = 0;
+            _inital_startup = false;
+        }
+
+        _batt_percentage[_batt_reading_idx] = get_real_time_battery_percentage();
+
+        _last_update = time_us_64();
+    }
 }

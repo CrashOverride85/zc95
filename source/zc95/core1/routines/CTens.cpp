@@ -71,9 +71,9 @@ void CTens::config(struct routine_conf *conf)
     menu_frequency.title = "Frequency";
     menu_frequency.menu_type = menu_entry_type::MIN_MAX;
     menu_frequency.minmax.UoM = "Hz";
-    menu_frequency.minmax.increment_step = 20;
+    menu_frequency.minmax.increment_step = 5;
     menu_frequency.minmax.min = 1;
-    menu_frequency.minmax.max = 2000;
+    menu_frequency.minmax.max = 200;
     menu_frequency.minmax.current_value = InitalFrequency;
     conf->menu.push_back(menu_frequency);
 }

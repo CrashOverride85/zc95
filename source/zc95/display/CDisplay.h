@@ -39,10 +39,12 @@ class CDisplay
         void put_text(std::string text, int16_t x, int16_t y, color_t color);
         uint8_t get_font_width();
         uint8_t get_font_height();
+        void set_battery_percentage(uint8_t bat);
+        void set_active_pattern(std::string pattern);
 
     private:
         void draw_soft_buttons();
-        
+        void draw_status_bar();
         void draw_bar_graphs();
         void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, color_t bar_colour);
         
@@ -75,6 +77,9 @@ class CDisplay
 
         uint8_t _font_width;
         uint8_t _font_height;
+
+        uint8_t _battery_percentage;
+        std::string _active_pattern;
 };
 
 #endif
