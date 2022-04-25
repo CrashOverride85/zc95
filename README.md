@@ -43,7 +43,6 @@ The primary reason for having separate PCBs for the main and output board is for
 ## Firmware
    - Pattern to make use of trigger inputs to shock either when triggered, or when not (make configurable)
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
-   - Show firmware version somewhere
    - Two way comms with the the ZC624 output board - e.g. if the ZC624 fails to initialise correctly (or is missing), report this
    - Save pattern settings on exit?
 
