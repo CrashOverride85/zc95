@@ -39,7 +39,8 @@ class CMenuSettings : public CMenu
             COLLAR_CONFIG  = 1,
             LED_BRIGHTNESS = 2,
             POWER_STEP     = 3,
-            RAMP_UP_TIME   = 4
+            RAMP_UP_TIME   = 4,
+            ABOUT          = 5
         };
 
         std::vector<setting> _settings;
