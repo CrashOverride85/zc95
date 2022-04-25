@@ -22,6 +22,7 @@
 #include "CMenuSettingLedBrightnes.h"
 #include "CMenuSettingPowerStep.h"
 #include "CMenuSettingRampUpTime.h"
+#include "CMenuSettingAbout.h"
 
 #include "../core1/routines/CRoutine.h"
 
@@ -105,6 +106,10 @@ void CMenuSettings::show_selected_setting()
         case setting_id::RAMP_UP_TIME:
             set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_settings));
             break;
+
+        case setting_id::ABOUT:
+            set_active_menu(new CMenuSettingAbout(_display, _buttons));
+            break;
     }
 }
 
@@ -131,6 +136,7 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
     _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
+    _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"));
     
     // This is/was for a verion of the front panel that used rotary encoders instead of POTs for 
     // setting the power level. Pretty sure it'll never be wanted now... 

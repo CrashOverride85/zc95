@@ -22,6 +22,7 @@
 #include <inttypes.h>
 
 #include "config.h"
+#include "git_version.h"
 
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
@@ -143,7 +144,7 @@ int main()
     // 3.5mm serial socket
     gpio_set_function(PIN_UART_TX, GPIO_FUNC_UART);
     gpio_set_function(PIN_UART_RX, GPIO_FUNC_UART);
-    printf("Startup, firmware version: %s\n", zc95_version);
+    printf("Startup, firmware version: %s\n", kGitHash);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
