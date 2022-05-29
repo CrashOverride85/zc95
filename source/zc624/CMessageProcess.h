@@ -21,7 +21,12 @@ class CMessageProcess
             Pulse = 0,
             SetPower = 1,
             Poll = 2,
-            PowerDown = 3
+            PowerDown = 3,
+
+            SetFreq = 4,
+            SetPulseWitdh = 5,
+            SwitchOn = 6,
+            SwitchOff = 7
         };
 
         CMessageProcess(COutput *output);
@@ -34,7 +39,10 @@ class CMessageProcess
         COutput *_output;
         void pulse(message msg);
         void set_power(message msg);
-
+        void set_freq(message msg);
+        void set_pulse_width(message msg);
+        void on(message msg);
+        void off(message msg);
 };
 
 #endif

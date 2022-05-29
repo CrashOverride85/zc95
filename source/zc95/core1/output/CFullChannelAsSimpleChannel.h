@@ -19,7 +19,6 @@ class CFullChannelAsSimpleChannel : public CSimpleOutputChannel
         bool is_internal();
         void send_message_test();
 
-
         void on();
         void off();
         void set_absolute_power(uint16_t power);
@@ -30,11 +29,8 @@ class CFullChannelAsSimpleChannel : public CSimpleOutputChannel
         CFullOutputChannel *_full_channel;
         void send_pulse_message(uint8_t pulse_width);
 
-        uint16_t _interval_ms;
-        uint64_t _next_pulse_time;
         uint64_t _off_time;
-        bool _on;
-        
+        bool _on;        
 };
 
 #endif

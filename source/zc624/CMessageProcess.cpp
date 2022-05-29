@@ -47,14 +47,30 @@ void CMessageProcess::loop()
             set_power(msg);
             break;
 
+        case command::SetFreq:
+            set_freq(msg);
+            break;
+
+        case command::SetPulseWitdh:
+            set_pulse_width(msg);
+            break;
+
+        case command::SwitchOn:
+            on(msg);
+            break;
+
+        case command::SwitchOff:
+            off(msg);
+            break;
+
         default:
             printf("ERR: command = %d, arg 0=%d, 1=%d, 2=%d\n", msg.command, msg.arg0, msg.arg1, msg.arg2);
             break;
     }
-
 }
 
-// Pulse args:
+// Pulse - generate a single pulse. Shouldn't be used with SwitchOn/SwitchOff
+// Args:
 // 0 = channel (0-3)
 // 1 = +ve pulse len, us (0-255)
 // 2 = -ve pulse len, us (0-255)
@@ -63,13 +79,49 @@ void CMessageProcess::pulse(message msg)
     _output->pulse(msg.arg0, msg.arg1, msg.arg2);
 }
 
-// SetPower args:
+// SetPower - set output power
+// Args:
 // 0 = channel (0-3)
 // 1+2 = power level (0-1000)
 void CMessageProcess::set_power(message msg)
 {
     uint16_t power = msg.arg1 << 8 | msg.arg2;
-
-    // printf("PWR C=%d -> %d\n", msg.arg0, power);
     _output->set_power(msg.arg0, power);
+}
+
+// SetFreq - set output frequency generated if SwitchOn used
+// Args:
+// 0 = channel (0-3)
+// 1+2 = frequency (MHz)
+void CMessageProcess::set_freq(message msg)
+{
+    uint16_t freq = msg.arg1 << 8 | msg.arg2;
+    
+    if (freq != 0)
+        _output->set_freq(msg.arg0, freq);
+}
+
+// SetPulseWitdh - set pulse width generated if SwitchOn used
+// Args:
+// 0 = channel (0-3)
+// 1 = pos pulse width (us)
+// 2 = neg pulse width (us)
+void CMessageProcess::set_pulse_width(message msg)
+{
+    _output->set_pulse_width(msg.arg0, msg.arg1, msg.arg2);
+}
+
+// SwitchOn - switch output on, using previously set frequence / pulse width. Shouldn't be used with pulse
+// Args:
+// 0 = channel (0-3)
+void CMessageProcess::on(message msg)
+{
+    _output->on(msg.arg0);
+}
+
+// SwitchOff - switch output off. Shouldn't be used with pulse
+// 0 = channel (0-3)
+void CMessageProcess::off(message msg)
+{
+    _output->off(msg.arg0);
 }

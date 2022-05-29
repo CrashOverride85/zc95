@@ -63,10 +63,7 @@ COutput::~COutput()
 
 void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
 {
-    if (channel >= CHANNEL_COUNT)
-        return;
-
-    if (_channel[channel] == NULL)        
+    if (!is_channel_valid(channel))
         return;
 
     _channel[channel]->pulse(pos_us, neg_us);
@@ -74,13 +71,42 @@ void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
 
 void COutput::set_power(uint8_t channel, uint16_t power)
 {
-    if (channel >= CHANNEL_COUNT)
-        return;
-
-    if (_channel[channel] == NULL)
+    if (!is_channel_valid(channel))
         return;
 
     _channel[channel]->set_power(power);
+}
+
+void COutput::set_freq(uint8_t channel, uint16_t freq)
+{
+    if (!is_channel_valid(channel))
+        return;
+
+    _channel[channel]->set_freq(freq);
+}
+
+void COutput::set_pulse_width(uint8_t channel, uint8_t pos, uint8_t neg)
+{
+    if (!is_channel_valid(channel))
+        return;
+
+    _channel[channel]->set_pulse_width(pos, neg);
+}
+
+void COutput::on(uint8_t channel)
+{
+    if (!is_channel_valid(channel))
+        return;
+
+    _channel[channel]->on();
+}
+
+void COutput::off(uint8_t channel)
+{
+    if (!is_channel_valid(channel))
+        return;
+
+    _channel[channel]->off();
 }
 
 void COutput::setup_gpio(uint8_t pin)
@@ -88,4 +114,15 @@ void COutput::setup_gpio(uint8_t pin)
     gpio_init(pin);
     gpio_set_dir(pin, GPIO_OUT);
     gpio_put(pin, 0);
+}
+
+bool COutput::is_channel_valid(uint8_t channel)
+{
+    if (channel >= CHANNEL_COUNT)
+        return false;
+
+    if (_channel[channel] == NULL)
+        return false;
+
+    return true;
 }

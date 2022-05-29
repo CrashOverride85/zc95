@@ -30,11 +30,11 @@ CFullChannelAsSimpleChannel::CFullChannelAsSimpleChannel(CSavedSettings *saved_s
 {
     printf("CFullChannelAsSimpleChannel()\n");
     _inital_led_colour = LedColour::Green;
-    _on = false;
-    _interval_ms = (((float)1 / (float)DEFAULT_FREQ_HZ) * (float)1000);
-    _next_pulse_time = 0;
     _off_time = 0;
     _full_channel = full_channel;
+
+    _full_channel->set_freq(DEFAULT_FREQ_HZ);
+    _full_channel->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
 }
 
 CFullChannelAsSimpleChannel::~CFullChannelAsSimpleChannel()
@@ -48,16 +48,13 @@ CFullChannelAsSimpleChannel::~CFullChannelAsSimpleChannel()
 void CFullChannelAsSimpleChannel::on()
 {
     _full_channel->set_led_colour(LedColour::Red);
-    _next_pulse_time = 0;
-    _on = true;
-    _off_time = 0;
+    _full_channel->on();
 }
 
 void CFullChannelAsSimpleChannel::off()
 {
     _full_channel->set_led_colour(LedColour::Green);
-    _on = false;
-    _off_time = 0;
+    _full_channel->off();
 }
 
 void CFullChannelAsSimpleChannel::pulse(uint16_t minimum_duration_ms)
@@ -75,20 +72,10 @@ void CFullChannelAsSimpleChannel::set_absolute_power(uint16_t power)
 
 void CFullChannelAsSimpleChannel::loop(uint64_t time_us)
 {
-    if (_on)
+    if (_off_time && (time_us > _off_time))
     {
-        if (_off_time && (time_us > _off_time))
-        {
-            off();
-        }
-        else
-        {
-            if (time_us > _next_pulse_time)
-            {
-                _next_pulse_time = time_us + ((uint64_t)_interval_ms * (uint64_t)1000);
-                send_pulse_message(DEFAULT_PULSE_WIDTH);
-            }
-        }
+        off();
+        _off_time = 0;
     }
 }
 

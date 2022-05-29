@@ -21,6 +21,10 @@ class COutputChannel
         ~COutputChannel();
         bool calibrate();
         void set_power(uint16_t power);
+        void set_freq(uint16_t freq);
+        void set_pulse_width(uint8_t pos, uint8_t neg);
+        void on();
+        void off();
         void pulse(uint8_t pos_us, uint8_t neg_us);
         status get_status();
         void diag_run_dac_sweep();
@@ -28,6 +32,9 @@ class COutputChannel
     private:
         static int cmpfunc (const void * a, const void * b);
         float get_adc_voltage();
+        static bool s_timer_callback(repeating_timer_t *rt);
+        bool timer_callback(repeating_timer_t *rt);
+
         status _status;
         uint8_t _pin_gate_a;
         PIO _pio;
@@ -38,6 +45,12 @@ class COutputChannel
         uint16_t _cal_value;
         uint _pio_program_offset;
 
+        repeating_timer_t _timer;
+        uint16_t _freq;
+        bool _freq_changed;
+        uint8_t _pulse_width_neg_us;
+        uint8_t _pulse_width_pos_us;
+        bool _on;
 };
 
 #endif

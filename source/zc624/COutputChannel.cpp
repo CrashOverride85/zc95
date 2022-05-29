@@ -19,11 +19,17 @@ COutputChannel::COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_pr
 
     _dac->set_channel_value(_dac_channel, 4000); // fully switch off pfet
     pio_sm_claim(_pio, _sm);
+    
+    _on = false;
+    _freq = 150;
+    _pulse_width_pos_us = 150;
+    _pulse_width_neg_us = 150;
 }
 
 COutputChannel::~COutputChannel()
 {
     printf("~COutputChannel() (sm=%d)\n", _sm);
+    off();
     pio_sm_set_enabled(_pio, _sm, false);
     pio_sm_unclaim(_pio, _sm);
 }
@@ -140,6 +146,67 @@ void COutputChannel::set_power(uint16_t power)
     if (_status == status::READY)       
     {
         _dac->set_channel_value(_dac_channel, dac_value);
+    }
+}
+
+void COutputChannel::set_freq(uint16_t freq)
+{
+    if (freq > 1000)
+        freq = 1000;
+
+    _freq = freq;
+    _freq_changed = true;
+}
+
+void COutputChannel::set_pulse_width(uint8_t pos, uint8_t neg)
+{
+    _pulse_width_pos_us = pos;
+    _pulse_width_neg_us = neg;
+}
+
+void COutputChannel::on()
+{
+    if (_on)
+        return;
+
+    add_repeating_timer_us(-1000000 / _freq, s_timer_callback, this, &_timer);
+    _freq_changed = false;
+    _on = true;
+}
+
+void COutputChannel::off()
+{
+    if (!_on)
+        return;
+    
+    _on = false;
+    cancel_repeating_timer(&_timer);
+}
+
+bool COutputChannel::s_timer_callback(repeating_timer_t *rt)
+{
+    COutputChannel *chan = (COutputChannel*)rt->user_data;
+    return chan->timer_callback(rt);
+}
+
+bool COutputChannel::timer_callback(repeating_timer_t *rt)
+{
+    pulse(_pulse_width_pos_us, _pulse_width_neg_us);
+
+    if (_on)
+    {
+        if (_freq_changed)
+        {
+            //add_repeating_timer_us(-1000000 / _freq, s_timer_callback, this, &_timer);
+            rt->delay_us = -1000000 / _freq;
+            _freq_changed = false;
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 

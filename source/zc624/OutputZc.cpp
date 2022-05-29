@@ -66,7 +66,7 @@ int main()
         
         if (time_us_64() - loop_start > 1000000)
         {
-            printf("running... (readable=%" PRIu64 ", unreadable=%" PRIu64 "\n", readable, unreadable);
+            // printf("running... (readable=%" PRIu64 ", unreadable=%" PRIu64 "\n", readable, unreadable);
             loop_start = time_us_64();
             readable=0;
             unreadable=0;
