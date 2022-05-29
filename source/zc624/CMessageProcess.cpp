@@ -92,7 +92,7 @@ void CMessageProcess::set_power(message msg)
 // SetFreq - set output frequency generated if SwitchOn used
 // Args:
 // 0 = channel (0-3)
-// 1+2 = frequency (MHz)
+// 1+2 = frequency (Hz)
 void CMessageProcess::set_freq(message msg)
 {
     uint16_t freq = msg.arg1 << 8 | msg.arg2;

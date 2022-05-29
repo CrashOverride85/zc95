@@ -5,7 +5,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "CDac.h"
-
+#include "CPulseQueue.h"
 
 class COutputChannel
 {
@@ -17,7 +17,7 @@ class COutputChannel
             FAULT
         };
 
-        COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_program_offset, uint8_t adc, CDac *dac, CDac::dac_channel dac_channel);
+        COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_program_offset, uint8_t adc, CDac *dac, CDac::dac_channel dac_channel, CPulseQueue *pulse_queue);
         ~COutputChannel();
         bool calibrate();
         void set_power(uint16_t power);
@@ -25,7 +25,8 @@ class COutputChannel
         void set_pulse_width(uint8_t pos, uint8_t neg);
         void on();
         void off();
-        void pulse(uint8_t pos_us, uint8_t neg_us);
+        void queue_pulse(uint8_t pos_us, uint8_t neg_us);
+        void do_pulse(uint8_t pos_us, uint8_t neg_us);
         status get_status();
         void diag_run_dac_sweep();
 
@@ -34,7 +35,7 @@ class COutputChannel
         float get_adc_voltage();
         static bool s_timer_callback(repeating_timer_t *rt);
         bool timer_callback(repeating_timer_t *rt);
-
+        
         status _status;
         uint8_t _pin_gate_a;
         PIO _pio;
@@ -51,6 +52,7 @@ class COutputChannel
         uint8_t _pulse_width_neg_us;
         uint8_t _pulse_width_pos_us;
         bool _on;
+        CPulseQueue *_pulse_queue;
 };
 
 #endif

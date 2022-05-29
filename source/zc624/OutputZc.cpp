@@ -71,6 +71,8 @@ int main()
             readable=0;
             unreadable=0;
         }
+
+        output.loop();
     }
 
     return 0;

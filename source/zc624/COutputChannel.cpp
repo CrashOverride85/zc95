@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-COutputChannel::COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_program_offset, uint8_t adc, CDac *dac, CDac::dac_channel dac_channel)
+COutputChannel::COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_program_offset, uint8_t adc, CDac *dac, CDac::dac_channel dac_channel, CPulseQueue *pulse_queue)
 {
     printf("COutputChannel(%d,%d)\n", pin_gate_a, sm);
     _pin_gate_a = pin_gate_a;
@@ -16,6 +16,7 @@ COutputChannel::COutputChannel(uint8_t pin_gate_a, PIO pio, uint sm, uint pio_pr
     _dac_channel = dac_channel;
     _cal_value = 0;
     _pio_program_offset = pio_program_offset;
+    _pulse_queue = pulse_queue;
 
     _dac->set_channel_value(_dac_channel, 4000); // fully switch off pfet
     pio_sm_claim(_pio, _sm);
@@ -191,13 +192,12 @@ bool COutputChannel::s_timer_callback(repeating_timer_t *rt)
 
 bool COutputChannel::timer_callback(repeating_timer_t *rt)
 {
-    pulse(_pulse_width_pos_us, _pulse_width_neg_us);
+    queue_pulse(_pulse_width_pos_us, _pulse_width_neg_us);
 
     if (_on)
     {
         if (_freq_changed)
         {
-            //add_repeating_timer_us(-1000000 / _freq, s_timer_callback, this, &_timer);
             rt->delay_us = -1000000 / _freq;
             _freq_changed = false;
         }
@@ -210,7 +210,12 @@ bool COutputChannel::timer_callback(repeating_timer_t *rt)
     }
 }
 
-void COutputChannel::pulse(uint8_t pos_us, uint8_t neg_us)
+void COutputChannel::queue_pulse(uint8_t pos_us, uint8_t neg_us)
+{
+    _pulse_queue->queue_pulse(_sm, pos_us, neg_us);
+}
+
+void COutputChannel::do_pulse(uint8_t pos_us, uint8_t neg_us)
 {
     if (_status != status::READY)
     {

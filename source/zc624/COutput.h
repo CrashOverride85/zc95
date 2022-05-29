@@ -23,6 +23,7 @@ class COutput
         void set_pulse_width(uint8_t channel, uint8_t pos, uint8_t neg);
         void on(uint8_t channel);
         void off(uint8_t channel);
+        void loop();
 
     private:
         bool is_channel_valid(uint8_t channel);
@@ -31,6 +32,7 @@ class COutput
         PIO _pio;
         uint _pio_program_offset;
         CMsgDac _dac = CMsgDac();
+        CPulseQueue _pulse_queue;
 };
 
 #endif
