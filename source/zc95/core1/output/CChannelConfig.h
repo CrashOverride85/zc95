@@ -14,7 +14,6 @@
 #include "collar/CCollarComms.h"
 #include "collar/CCollarChannel.h"
 
-#include "zc1Output/CZC1Channel.h"
 #include "zc1Output/CZC1ChannelFull.h"
 #include "zc1Output/CZC1Comms.h"
 

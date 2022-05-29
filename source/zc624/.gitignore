@@ -38,4 +38,5 @@ pioasm/Makefile
 pioasm/cmake_install.cmake
 pioasm/pioasm
 pioasm/tmp/
-
+.vscode/
+build/

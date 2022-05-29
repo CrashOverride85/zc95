@@ -31,6 +31,7 @@
 #define PIN_OUTPUT_BOARD_SPI_CSN  13
 
 // For routines that don't care about pulse width and/or frequency, what to use
+// TODO: maybe move these two to config options and save in EEPROM
 #define DEFAULT_FREQ_HZ 150
 #define DEFAULT_PULSE_WIDTH 150
 

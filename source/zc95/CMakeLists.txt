@@ -57,7 +57,6 @@ add_executable(zc95
   core1/output/mk312/C312bTxBuffer.cpp
 
   core1/output/zc1Output/CZC1ChannelFull.cpp
-  core1/output/zc1Output/CZC1Channel.cpp
   core1/output/zc1Output/CZC1Comms.cpp
 
   core1/routines/CAccPort.cpp

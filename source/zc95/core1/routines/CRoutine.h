@@ -89,7 +89,10 @@ class CRoutine
         virtual ~CRoutine() 
         {
             if (_started)
+            {
                 acc_port.reset();
+                set_all_channels_off();
+            }
         };
 
         virtual void get_config(struct routine_conf *conf) = 0;
@@ -184,6 +187,38 @@ class CRoutine
             }
         }
 
+        void full_channel_set_freq(uint8_t channel, uint16_t freq)
+        {
+            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            {
+                _full_channel[channel]->set_freq(freq);
+            }
+        }
+
+        void full_channel_set_pulse_width(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
+        {
+            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            {
+                _full_channel[channel]->set_pulse_width(pos_us, neg_us);
+            }
+        }
+
+        void full_channel_on(uint8_t channel)
+        {
+            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            {
+                _full_channel[channel]->on();
+            }
+        }
+
+        void full_channel_off(uint8_t channel)
+        {
+            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            {
+                _full_channel[channel]->off();
+            }
+        }
+
         void set_all_channels_power(uint16_t power)
         {
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
@@ -200,8 +235,11 @@ class CRoutine
         {
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
             {
-                if (_full_channel[channel] != NULL)
+                if (_simple_channel[channel] != NULL)
                     _simple_channel[channel]->channel_off();
+
+                if (_full_channel[channel] != NULL)
+                    _full_channel[channel]->off();
             }
         }
 

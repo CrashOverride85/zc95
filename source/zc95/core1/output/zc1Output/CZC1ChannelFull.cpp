@@ -15,6 +15,7 @@ CFullOutputChannel(saved_settings, power_level_control, channel_id)
 CZC1ChannelFull::~CZC1ChannelFull()
 {
     printf("~CZC1ChannelFull(%d)\n", _channel_id);
+    off();
     set_led_colour(LedColour::Black);
 }
 
@@ -30,6 +31,56 @@ void CZC1ChannelFull::channel_pulse(uint8_t pos_us, uint8_t neg_us)
     set_led_colour(LedColour::Red);
     _led_off_time = get_time_us() + 10000;
     _comms->send_message(msg);
+}
+
+void CZC1ChannelFull::set_freq(uint16_t freq_hz)
+{
+    CZC1Comms::message msg;
+
+    msg.command = (uint8_t)CZC1Comms::command::SetFreq;
+    msg.arg0 = _channel_id;
+    msg.arg1 = (freq_hz >> 8) & 0xFF;
+    msg.arg2 = freq_hz & 0xFF;
+
+    _comms->send_message(msg);
+}
+
+void CZC1ChannelFull::set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_width_neg_us)
+{
+    CZC1Comms::message msg;
+
+    msg.command = (uint8_t)CZC1Comms::command::SetPulseWitdh;
+    msg.arg0 = _channel_id;
+    msg.arg1 = pulse_width_pos_us;
+    msg.arg2 = pulse_width_neg_us;
+
+    _comms->send_message(msg);
+}
+
+void CZC1ChannelFull::on()
+{
+    CZC1Comms::message msg;
+
+    msg.command = (uint8_t)CZC1Comms::command::SwitchOn;
+    msg.arg0 = _channel_id;
+    msg.arg1 = 0;
+    msg.arg2 = 0;
+
+    _comms->send_message(msg);
+    set_led_colour(LedColour::Red);
+}
+
+void CZC1ChannelFull::off()
+{
+    CZC1Comms::message msg;
+
+    msg.command = (uint8_t)CZC1Comms::command::SwitchOff;
+    msg.arg0 = _channel_id;
+    msg.arg1 = 0;
+    msg.arg2 = 0;
+
+    _comms->send_message(msg);
+    set_led_colour(LedColour::Green);
 }
 
 void CZC1ChannelFull::set_absolute_power(uint16_t power)

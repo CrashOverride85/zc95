@@ -19,6 +19,11 @@ class CZC1ChannelFull : public CFullOutputChannel
         void set_absolute_power(uint16_t power);
         void channel_pulse(uint8_t pos_us, uint8_t neg_us);
 
+        void set_freq(uint16_t freq_hz);
+        void set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_width_neg_us);
+        void on();
+        void off();
+
 
     private:
         CZC1Comms *_comms;

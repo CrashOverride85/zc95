@@ -26,6 +26,7 @@ add_executable(OutputZc
         COutput.cpp
         CMessageProcess.cpp
         CMsgDac.cpp
+        CPulseQueue.cpp
 )
 
 pico_generate_pio_header(OutputZc ${CMAKE_CURRENT_LIST_DIR}/pulse_gen.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)

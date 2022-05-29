@@ -15,12 +15,6 @@ class CTens: public CRoutine
         static const uint8_t InitalFrequency = 50;
 
     private:
-        uint64_t hz_to_us_delay(int16_t hz);
-     
-        uint16_t _pulse_width_us;
-        uint16_t  _freq_hz;
-
-        int16_t _speed_setting;
-        uint64_t _next_pulse_time;
-        uint8_t _current_active_channel;       
+        void set_pulse_width_all(uint8_t pulse_width);
+        void set_freq_all(uint16_t freq);
 };

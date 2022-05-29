@@ -28,9 +28,6 @@ enum menu_ids
 CTens::CTens()
 {
     printf("CTens()\n");
-    _pulse_width_us = 130;
-    _freq_hz = InitalFrequency;
-    _next_pulse_time = 0;
 }
 
 CTens::~CTens()
@@ -53,16 +50,16 @@ void CTens::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
 
-    // menu entry 1: "pulse width" - a min/max entry between 30-260
+    // menu entry 1: "pulse width" - a min/max entry between 10-250
     struct menu_entry pulse_width;
     pulse_width.id = menu_ids::PULSE_WIDTH;
     pulse_width.title = "Pulse width";
     pulse_width.menu_type = menu_entry_type::MIN_MAX;
     pulse_width.minmax.UoM = "us";
     pulse_width.minmax.increment_step = 10;
-    pulse_width.minmax.min = 30;
+    pulse_width.minmax.min = 10;
     pulse_width.minmax.max = 250;
-    pulse_width.minmax.current_value = 130;
+    pulse_width.minmax.current_value = DEFAULT_PULSE_WIDTH;
     conf->menu.push_back(pulse_width);
 
     // menu entry 2: "frequency"
@@ -72,9 +69,9 @@ void CTens::config(struct routine_conf *conf)
     menu_frequency.menu_type = menu_entry_type::MIN_MAX;
     menu_frequency.minmax.UoM = "Hz";
     menu_frequency.minmax.increment_step = 5;
-    menu_frequency.minmax.min = 1;
-    menu_frequency.minmax.max = 200;
-    menu_frequency.minmax.current_value = InitalFrequency;
+    menu_frequency.minmax.min = 5;
+    menu_frequency.minmax.max = 250;
+    menu_frequency.minmax.current_value = DEFAULT_FREQ_HZ;
     conf->menu.push_back(menu_frequency);
 }
 
@@ -83,32 +80,29 @@ void CTens::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     switch (menu_id)
     {
         case menu_ids::FREQUENCY:
-            _freq_hz = new_value;
+            set_freq_all(new_value);
             break;
 
         case menu_ids::PULSE_WIDTH:
-            _pulse_width_us = new_value;
+            set_pulse_width_all(new_value);
             break;
     }
 }
 
 void CTens::start()
 {
+    set_pulse_width_all(DEFAULT_PULSE_WIDTH);
+    set_freq_all(DEFAULT_FREQ_HZ);
     set_all_channels_power(POWER_FULL);
-    _next_pulse_time = 0;
+    full_channel_on(0);
+    full_channel_on(1);
+    full_channel_on(2);
+    full_channel_on(3);
 }
 
 void CTens::loop(uint64_t time_us)
 {
-    if (time_us > _next_pulse_time)
-    {
-        for (int x=0; x < 4; x++)
-        {
-            full_channel_pulse(x, _pulse_width_us, _pulse_width_us);
-        }
 
-        _next_pulse_time = time_us + hz_to_us_delay(_freq_hz);
-    }
 }
 
 void CTens::stop()
@@ -116,7 +110,14 @@ void CTens::stop()
  
 }
 
-uint64_t CTens::hz_to_us_delay(int16_t hz)
+void CTens::set_pulse_width_all(uint8_t pulse_width)
 {
-    return (uint64_t)1000000/hz;
+    for (uint8_t chan = 0; chan < 4; chan++)
+        full_channel_set_pulse_width(chan, pulse_width, pulse_width);
+}
+
+void CTens::set_freq_all(uint16_t freq)
+{
+    for (uint8_t chan = 0; chan < 4; chan++)
+        full_channel_set_freq(chan, freq);
 }
