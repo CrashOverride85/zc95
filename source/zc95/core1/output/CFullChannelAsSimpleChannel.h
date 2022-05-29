@@ -7,11 +7,8 @@
 #include "CInternalOutputChannel.h"
 #include "../CSavedSettings.h"
 
-
 class CFullChannelAsSimpleChannel : public CSimpleOutputChannel
 {
-
-
     public:
         CFullChannelAsSimpleChannel(CSavedSettings *saved_settings, CFullOutputChannel *full_channel, uint8_t channel_number, CPowerLevelControl *power_level_control);
         ~CFullChannelAsSimpleChannel();
@@ -27,7 +24,6 @@ class CFullChannelAsSimpleChannel : public CSimpleOutputChannel
 
     private:
         CFullOutputChannel *_full_channel;
-        void send_pulse_message(uint8_t pulse_width);
 
         uint64_t _off_time;
         bool _on;        

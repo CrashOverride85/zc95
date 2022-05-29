@@ -79,11 +79,6 @@ void CFullChannelAsSimpleChannel::loop(uint64_t time_us)
     }
 }
 
-void CFullChannelAsSimpleChannel::send_pulse_message(uint8_t pulse_width)
-{
-    _full_channel->channel_pulse(pulse_width, pulse_width);
-}
-
 bool CFullChannelAsSimpleChannel::is_internal()
 {
     return _full_channel->is_internal();

@@ -72,7 +72,6 @@ void CZC1ChannelFull::on()
 
 void CZC1ChannelFull::off()
 {
-    printf("OFF\n");
     CZC1Comms::message msg;
 
     msg.command = (uint8_t)CZC1Comms::command::SwitchOff;

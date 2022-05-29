@@ -50,7 +50,7 @@ void CTens::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
 
-    // menu entry 1: "pulse width" - a min/max entry between 30-260
+    // menu entry 1: "pulse width" - a min/max entry between 10-250
     struct menu_entry pulse_width;
     pulse_width.id = menu_ids::PULSE_WIDTH;
     pulse_width.title = "Pulse width";

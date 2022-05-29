@@ -89,7 +89,10 @@ class CRoutine
         virtual ~CRoutine() 
         {
             if (_started)
+            {
                 acc_port.reset();
+                set_all_channels_off();
+            }
         };
 
         virtual void get_config(struct routine_conf *conf) = 0;
@@ -232,8 +235,11 @@ class CRoutine
         {
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
             {
-                if (_full_channel[channel] != NULL)
+                if (_simple_channel[channel] != NULL)
                     _simple_channel[channel]->channel_off();
+
+                if (_full_channel[channel] != NULL)
+                    _full_channel[channel]->off();
             }
         }
 
