@@ -34,6 +34,7 @@ CShockChoice::CShockChoice()
 {
     printf("CShockChoice()\n");
     _choice_freq_sec = default_choice_freq_sec;
+    _shock_inc_by = default_shock_inc_pp * 10;
     reset();
 }
 

@@ -71,6 +71,7 @@ add_executable(zc95
   core1/routines/CClimbPulse.cpp
   core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
+  core1/routines/CBuzz.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
