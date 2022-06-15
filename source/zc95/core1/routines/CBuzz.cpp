@@ -166,10 +166,21 @@ void CBuzz::trigger(trigger_socket socket, trigger_part part, bool active)
     if (socket != trigger_socket::Trigger1)
         return;
 
-    // Part A = Handle touching end
+    // Part A = Handle touching end. Make sure the signal is present for at least x milliseconds to avoid false triggering
     if (part == trigger_part::A)
     {
-        stop_game();
+        if (active)
+        {
+            if (!_end_game_at_us)
+            {
+                const int delay_ms = 25;
+                _end_game_at_us = time_us_64() + (1000 * delay_ms);
+            }
+        }
+        else
+        {
+            _end_game_at_us = 0;
+        }
     }
 
     // Part B = Handle touching wire
@@ -198,6 +209,12 @@ void CBuzz::loop(uint64_t time_us)
 {
     if (!_game_running)
         return;
+
+    if (_end_game_at_us && time_us > _end_game_at_us)
+    {
+        stop_game();
+        return;
+    }
 
     // Deal with the shock on chan 2+3
     if (_shock_start_time_us)
@@ -266,6 +283,7 @@ void CBuzz::stop_game()
     _shock_power_level = _inital_shock_power_level;
     _shock_start_time_us = 0;
     _shock_trigger_active = false;
+    _end_game_at_us = 0;
 
     simple_channel_set_power(0, _current_power_level);
     simple_channel_set_power(1, _current_power_level);
@@ -282,6 +300,7 @@ void CBuzz::start_game()
     _shock_power_level = _inital_shock_power_level;
     _shock_start_time_us = 0;
     _shock_trigger_active = false;
+    _end_game_at_us = 0;
 
     simple_channel_set_power(0, _current_power_level);
     simple_channel_set_power(1, _current_power_level);

@@ -28,8 +28,9 @@ class CBuzz: public CRoutine
         uint16_t _shock_power_level;
         uint64_t _shock_start_time_us;
         uint64_t _shock_trigger_active;
-
+        
         bool _game_running;
+        uint64_t _end_game_at_us;
 
         void set_power_increment_ms_from_game_length(uint16_t game_len_sec);
         void stop_game();
