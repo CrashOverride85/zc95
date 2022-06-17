@@ -173,7 +173,7 @@ void CBuzz::trigger(trigger_socket socket, trigger_part part, bool active)
         {
             if (!_end_game_at_us)
             {
-                const int delay_ms = 25;
+                const int delay_ms = 100;
                 _end_game_at_us = time_us_64() + (1000 * delay_ms);
             }
         }
