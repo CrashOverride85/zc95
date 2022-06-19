@@ -238,6 +238,21 @@ void CMenuRoutineAdjust::set_options_on_multi_choice_list()
             _routine_multi_choice_list->add_option(it->choice_name);
         }
 
-        _routine_multi_choice_list->set_selected(selected.multichoice.current_selection);
+        _routine_multi_choice_list->set_selected(choice_id_to_menu_index(selected, selected.multichoice.current_selection));
     }
+}
+
+// convert a choice id (whatever id is associated with an option) to a menu option (0 indexed menu item)
+uint8_t CMenuRoutineAdjust::choice_id_to_menu_index(struct menu_entry selected_menu, uint8_t choice_id)
+{    
+    for (size_t selected_choice_index = 0; selected_choice_index < selected_menu.multichoice.choices.size(); selected_choice_index++)
+    {
+        if (selected_menu.multichoice.choices[selected_choice_index].choice_id == choice_id)
+        {
+            return selected_choice_index;
+        }
+    }
+
+    printf("CMenuRoutineAdjust::choice_id_to_menu_index(): Invalid config for menu [%s]\n", selected_menu.title.c_str());
+    return 0;
 }

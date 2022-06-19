@@ -72,7 +72,8 @@ add_executable(zc95
   core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
   core1/routines/CBuzz.cpp
-  
+  core1/routines/CLogic1.cpp
+
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
   FpKnobs/CFpAnalog.cpp
