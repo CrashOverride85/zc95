@@ -155,12 +155,16 @@ Yes: Something connected to the accessory port that triggers a photo on pin 9 be
 ------------------------------------------------------------
 
 ## Buzz
-Intended to be used with a buzz wire game (TODO: add photo example, but googling "buzz wire game" should give the general idea).
+Intended to be used with a buzz wire game, probably better explained with a photo:
 
-Whenever the wand touches the wire, a shock is delivered on channels 3+4. The shock level increases as the wire is touched.
-To make things more interesting, channels 1+2 also include a slowly increasing power level, to hurry things along a bit.
+![Buzz wire game]
+
+Whenever the wand touches the wire, a shock is delivered on channels **3+4**. The shock level increases as the wire is touched.
+As an option to make things more interesting, channels 1+2 generates a slowly increasing power level, to hurry things along a bit - although probably not worth the effort of connecting.
 
 The game finishes (all outputs go to zero) when the wand is used touch a contact at the end.
+
+Note: This mode works well enough when just channel 3 (or 4) is used with a pair of pads.
 
 ### Menu options
 * Game length - how long, in seconds, it takes channels 1+2 to reach full power
@@ -174,3 +178,6 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 * Tip = wand (common ground)
 * Ring = contact at end of wire (green)
 * Sleeve = wire (red)
+
+
+[Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
