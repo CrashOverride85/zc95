@@ -64,7 +64,10 @@ void CExtInputPortExp::interrupt()
 void CExtInputPortExp::process(bool force_update)
 {
     if (_debounce_recheck_time_us > 0 && time_us_64() > _debounce_recheck_time_us)
+    {
         force_update = true;
+        _debounce_recheck_time_us = 0;
+    }
 
     if (_interrupt || force_update)
     {
