@@ -31,7 +31,7 @@ CFire::CFire()
 {
     printf("CFire()\n");
     _pulse_len_ms = DefaultPulseLengthMs;
-    _pulse_mode = true;
+    _pulse_mode = false;
 }
 
 CFire::~CFire()
@@ -55,7 +55,7 @@ void CFire::config(struct routine_conf *conf)
     menu_mode.id = menu_ids::MODE;
     menu_mode.title = "Mode";
     menu_mode.menu_type = menu_entry_type::MULTI_CHOICE;
-    menu_mode.multichoice.current_selection = 1;
+    menu_mode.multichoice.current_selection = 0;
     menu_mode.multichoice.choices.push_back(get_choice("Continuous", 0));
     menu_mode.multichoice.choices.push_back(get_choice("Pulse", 1));
     conf->menu.push_back(menu_mode);
@@ -122,8 +122,8 @@ void CFire::soft_button_pushed (soft_button button, bool pushed)
 
 void CFire::trigger(trigger_socket socket, trigger_part part, bool active)
 {
-    // External tigger input is the same as pressing the "Fire" soft-button
-    soft_button_pushed(soft_button::BUTTON_A, !active);
+    // External trigger input is the same as pressing the "Fire" soft-button
+    soft_button_pushed(soft_button::BUTTON_A, active);
 }
 
 void CFire::start()

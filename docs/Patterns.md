@@ -152,3 +152,32 @@ This is only really practical if the camera is in manual focus mode.
 ### Extra hardware required?:
 Yes: Something connected to the accessory port that triggers a photo on pin 9 being pulsed low.
 
+------------------------------------------------------------
+
+## Buzz
+Intended to be used with a buzz wire game, probably better explained with a photo:
+
+![Buzz wire game]
+
+Whenever the wand touches the wire, a shock is delivered on channels **3+4**. The shock level increases as the wire is touched.
+As an option to make things more interesting, channels 1+2 generates a slowly increasing power level, to hurry things along a bit - although probably not worth the effort of connecting.
+
+The game finishes (all outputs go to zero) when the wand is used touch a contact at the end.
+
+Note: This mode works well enough when just channel 3 (or 4) is used with a pair of pads.
+
+### Menu options
+* Game length - how long, in seconds, it takes channels 1+2 to reach full power
+* Shock increment - How many percentage points to increase the power level on channels 3+4 by when the wand touches the wire. Can be set to zero.
+* Initial shock power - percentage power level shock delivered on channels 3+4 starts at
+* Min shock length - the minimum length, in milliseconds, of the shock delivered on channels 3+4. The shock will continue to be delivered for as long as the wand touches the wire, this only sets the minimum duration that applies to brief touches
+* Soft button "Start" - starts the game: channels 1+2 are switched on and start increasing, and touching the wand against the wire results in a shock from channel 3+4
+
+### Extra hardware required?:
+Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as follows:
+* Tip = wand (common ground)
+* Ring = contact at end of wire (green)
+* Sleeve = wire (red)
+
+
+[Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"

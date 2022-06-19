@@ -22,15 +22,15 @@ class CExtInputPortExp
         bool input_state(enum ExtInputPort input);
 
         void clear_input();
-        bool get_trigger_state(Trigger trigger);
+        
         void interrupt();
         void reset_acc_port();
         void set_acc_io_port_state(enum ExtInputPort output, bool high);
 
     
     private:
+        void update_led_for_trigger_port(Trigger trigger);
         bool has_input_state_changed(enum ExtInputPort input, bool *new_state);
-        bool has_input_been_triggered(enum ExtInputPort input);
         void update_trigger_leds();
         void update_active_routine();
         void update_active_routine_trigger(enum ExtInputPort input, trigger_socket socket, trigger_part part);
@@ -45,6 +45,7 @@ class CExtInputPortExp
         volatile bool _interrupt;
         uint64_t _input_last_change_time_us[8];
         uint8_t _output_mask = 0xFF;
+        uint64_t _debounce_recheck_time_us;
 };
 
 #endif
