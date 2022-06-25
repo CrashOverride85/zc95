@@ -28,7 +28,7 @@ endfunction()
 function(CheckGitVersion)
     # Get the latest abbreviated commit hash of the working branch
     execute_process(
-        COMMAND git describe --always --dirty
+        COMMAND git describe --always --dirty=-x
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         OUTPUT_VARIABLE GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
