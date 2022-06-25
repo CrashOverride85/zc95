@@ -33,7 +33,7 @@ The primary reason for having separate PCBs for the main and output board is for
 
 ## [Gerbers](pcb/)
 
-## [Compiled firmware](firmware/)
+## [Compiled firmware](https://github.com/CrashOverride85/zc95/releases/)
 
 ## [Operation notes](docs/Operation.md)
 

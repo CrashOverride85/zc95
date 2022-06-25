@@ -156,12 +156,14 @@ Assembled ZC95 should look like:
 ![zc95 assembled]
 
 ### Loading firmware
+Download firmware from [Releases](https://github.com/CrashOverride85/zc95/releases).
+
 To load firmware onto a Pico:
 * Hold down the BOOTSEL button
 * Connect to PC via USB
 * The Pico should appear as a USB mass storage device. Drag the appropriate uf2 firmware binary onto the drive:
-  - [zc95.uf2](../firmware/zc95.uf2) - Main board firmware
-  - [OutputZc.uf2](../firmware/OutputZc.uf2) - ZC624 firmware
+  - zc95.uf2 - Main board firmware
+  - OutputZc.uf2 - ZC624 firmware
 
 And don't mix the two up!
 
