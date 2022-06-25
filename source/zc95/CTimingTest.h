@@ -1,3 +1,4 @@
+#define __int64_t_defined 1
 #include <inttypes.h>
 #include <string>
 

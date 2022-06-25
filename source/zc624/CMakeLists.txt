@@ -26,6 +26,7 @@ add_executable(OutputZc
         COutput.cpp
         CMessageProcess.cpp
         CMsgDac.cpp
+        CPulseQueue.cpp
         CI2cSlave.cpp
 )
 
@@ -48,10 +49,7 @@ target_link_libraries(OutputZc
         hardware_pio
         hardware_adc
         pico_multicore
-        i2c_slave
         )
 
 pico_add_extra_outputs(OutputZc)
-
-add_subdirectory(external/pico_i2c_slave)
 

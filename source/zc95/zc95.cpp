@@ -22,6 +22,7 @@
 #include <inttypes.h>
 
 #include "config.h"
+#include "git_version.h"
 
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
@@ -143,7 +144,7 @@ int main()
     // 3.5mm serial socket
     gpio_set_function(PIN_UART_TX, GPIO_FUNC_UART);
     gpio_set_function(PIN_UART_RX, GPIO_FUNC_UART);
-    printf("Startup, firmware version: %s\n", zc95_version);
+    printf("Startup, firmware version: %s\n", kGitHash);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -243,7 +244,7 @@ int main()
         }
     
         update_power_levels_from_front_pannel(routine_output);
-        if (time_us_64() - start > 1000000)
+        if (time_us_64() - start > 1000000) // every second
         {
             start = time_us_64();
             controls.process(true);   // ~215us
@@ -252,12 +253,14 @@ int main()
 
             uint64_t timenow = time_us_64();
             printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, hw_check.get_battery_percentage());
+            display.set_battery_percentage(hw_check.get_battery_percentage());
         }
         else
         {
             ext_input->process(false);
             controls.process(false);
-            _front_pannel->process(false);            
+            _front_pannel->process(false);     
+            hw_check.process();
         }
 
         routine_output->loop();

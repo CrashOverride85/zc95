@@ -45,6 +45,9 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
     area.y0 = area.y1/2;
     area.x0 += 1;
     _routine_multi_choice_list = new COptionsList(_display, area);
+
+    // Set the text used on the status bar
+    _title = _active_routine_conf.name;
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()

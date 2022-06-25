@@ -29,8 +29,9 @@
  * Calls update() for the currently active menu for it to fill in the centre of the display.
  */
 
-const uint8_t menu_bar_height = 18; // should be even
-const uint8_t bar_width = 10;
+const uint8_t menu_bar_height = 18;   // should be even (soft button text)
+const uint8_t status_bar_height = 9;  // battery level + mode at bottom
+const uint8_t bar_width = 10;         // individual power level bar width 
 
 CDisplay::CDisplay()
 {
@@ -47,6 +48,8 @@ CDisplay::CDisplay()
 
     _font_width = glyph.width;
     _font_height = glyph.height;
+    _battery_percentage = 0;
+    _active_pattern = "";
 }
 
 uint8_t CDisplay::get_font_width()
@@ -82,6 +85,8 @@ uint8_t CDisplay::get_font_height()
         draw_soft_buttons(); // 846us
 
         draw_bar_graphs(); // 489us
+
+        draw_status_bar();
   
         hagl_flush(); // 8us
 
@@ -169,10 +174,19 @@ struct display_area CDisplay::get_display_area()
     area.x0 = 0;
     area.y0 = menu_bar_height + 1;
     area.x1 = (DISPLAY_WIDTH-1) - (4*bar_width) - 1;
-    area.y1 = (DISPLAY_HEIGHT-1) - menu_bar_height - 1; 
+    area.y1 = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 1; 
     return area;
 }
 
+void CDisplay::set_battery_percentage(uint8_t bat)
+{
+    _battery_percentage = bat;
+}
+
+void CDisplay::set_active_pattern(std::string pattern)
+{
+    _active_pattern = pattern;
+}
 
 void CDisplay::draw_soft_buttons()
 {
@@ -184,16 +198,16 @@ void CDisplay::draw_soft_buttons()
     hagl_draw_rectangle(0, 0, (DISPLAY_WIDTH-1)/2, menu_bar_height, line_colour);
     
     // B
-    put_text(_option_b, 3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6, text_colour);
-    hagl_draw_rectangle(0, (DISPLAY_HEIGHT-1)-menu_bar_height, (DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1), line_colour);
+    put_text(_option_b, 3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    hagl_draw_rectangle(0, (DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 
     // C
     put_text(_option_c, (DISPLAY_WIDTH/2)+3, (menu_bar_height/2)-6, text_colour);
     hagl_draw_rectangle((DISPLAY_WIDTH-1)/2, 0, (DISPLAY_WIDTH-1), menu_bar_height, line_colour);
 
     // D
-    put_text(_option_d, (DISPLAY_WIDTH/2)+3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6, text_colour);
-    hagl_draw_rectangle((DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1)-menu_bar_height, (DISPLAY_WIDTH-1), (DISPLAY_HEIGHT-1), line_colour);
+    put_text(_option_d, (DISPLAY_WIDTH/2)+3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    hagl_draw_rectangle((DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (DISPLAY_WIDTH-1), (DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 }
 
 void CDisplay::draw_bar_graphs()
@@ -204,21 +218,19 @@ void CDisplay::draw_bar_graphs()
     draw_bar(3, "2", _channel_2_max_power, _channel_2_fp_power, _channel_2_actual_power, normal_colour);
     draw_bar(2, "3", _channel_3_max_power, _channel_3_fp_power, _channel_3_actual_power, normal_colour);
     draw_bar(1, "4", _channel_4_max_power, _channel_4_fp_power, _channel_4_actual_power, normal_colour);
-    
-    hagl_draw_hline((DISPLAY_WIDTH-1)-(4*bar_width), (DISPLAY_HEIGHT-1) - menu_bar_height - 10, (bar_width*4), hagl_color(0xFF, 0x00, 0));
 }
 
 void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, color_t bar_colour)
 {
-    put_text(label, (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (DISPLAY_HEIGHT-1) - menu_bar_height - 10, hagl_color(0, 0xFF, 0));
-    hagl_draw_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width), (DISPLAY_HEIGHT-1) - menu_bar_height - 1, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(0xFF, 0, 0));
+    put_text(label, (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 10, hagl_color(0, 0xFF, 0));
+    hagl_draw_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width), (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(0xFF, 0, 0));
 
-    uint8_t upper_limit = (DISPLAY_HEIGHT-1) - menu_bar_height - 2 - 10;
-    uint8_t bottom = menu_bar_height+2;
+    uint8_t upper_limit = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
+    uint8_t bottom = menu_bar_height + 2;
 
     // Max power outline
     float max_power_top = (((1000-max_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
-    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, (DISPLAY_HEIGHT-1) - menu_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, max_power_top, bar_colour);
+    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, max_power_top, bar_colour);
 
     // Front pannel power setting
     float fp_power_top = (((1000-front_pannel_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
@@ -236,7 +248,21 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
     // current power
     color_t current_power_colour   =  hagl_color(0xFF, 0xFF, 0x00);
     float current_power_top = (((1000-current_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
-    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (DISPLAY_HEIGHT-1) - menu_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
+    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
+}
+
+void CDisplay::draw_status_bar()
+{
+    char buffer[100] = {0};
+
+    std::string current_mode = "N/A";
+    if (_current_menu)
+    {
+        current_mode = _current_menu->get_title();
+    }
+
+    snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
+    put_text(buffer, 0, (DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(0xAA, 0xAA, 0xAA));
 }
 
 void CDisplay::put_text(std::string text, int16_t x, int16_t y, color_t color)

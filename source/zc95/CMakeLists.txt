@@ -16,9 +16,12 @@ include(pico_sdk_import.cmake)
 
 project(zc95 C CXX ASM)
 
+include(CheckGit.cmake)
+CheckGitSetup()
+
+
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
-
 
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
@@ -54,7 +57,6 @@ add_executable(zc95
   core1/output/mk312/C312bTxBuffer.cpp
 
   core1/output/zc1Output/CZC1ChannelFull.cpp
-  core1/output/zc1Output/CZC1Channel.cpp
   core1/output/zc1Output/CZC1Comms.cpp
 
   core1/routines/CAccPort.cpp
@@ -69,6 +71,7 @@ add_executable(zc95
   core1/routines/CClimbPulse.cpp
   core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
+  core1/routines/CBuzz.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
@@ -86,6 +89,7 @@ add_executable(zc95
   display/CMenuSettingLedBrightnes
   display/CMenuSettingPowerStep
   display/CMenuSettingRampUpTime
+  display/CMenuSettingAbout
   display/COptionsList
   display/CHorzBarGraph
   )
@@ -118,6 +122,7 @@ target_link_libraries(zc95
         pico_multicore
         hagl
         hagl_hal
+        git_version
         )
 
 pico_add_extra_outputs(zc95)

@@ -22,7 +22,12 @@ class CZC1Comms
             Pulse = 0,
             SetPower = 1,
             Poll = 2,
-            PowerDown = 3
+            PowerDown = 3,
+            
+            SetFreq = 4,
+            SetPulseWitdh = 5,
+            SwitchOn = 6,
+            SwitchOff = 7
         };
 
         CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c);

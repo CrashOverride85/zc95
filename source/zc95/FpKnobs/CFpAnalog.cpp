@@ -25,9 +25,11 @@ void CFpAnalog::process(bool always_update)
 {
     if (_interrupt || always_update)
     {
-        _interrupt = false;
-        read_adc();
-
+        if (_interrupt)
+            _interrupt = false;
+        else
+            read_adc();
+       
         uint8_t buffer;
         buffer = read_port_expander();
 
@@ -69,7 +71,6 @@ void CFpAnalog::read_adc()
         printf("CFpAnalog::read_adc() write failed! i2c bytes_written = %d\n", bytes_written);
         return;
     }
-
 
     uint8_t buffer[5];
     int retval = i2c_read_timeout_us(i2c_default, ADC_ADDR, buffer, sizeof(buffer), false, 1000);
