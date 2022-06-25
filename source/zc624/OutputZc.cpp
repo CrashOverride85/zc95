@@ -15,6 +15,7 @@
 #include "CMessageProcess.h"
 #include "messages.h"
 #include "CI2cSlave.h"
+#include "git_version.h"
 
 /*
  * Core0 handles incoming SPI messages, and output/generation (via pio) of signals to drive the FETs. Any 
@@ -32,7 +33,7 @@ int main()
     stdio_init_all();
     adc_init();
     
-    printf("startup\n");
+    printf("ZC624 startup, firmware version: %s\n", kGitHash);
     i2c_slave = new CI2cSlave();
 
     // I2C Initialisation as master (connected to DAC). Using it at 400Khz.
@@ -110,7 +111,6 @@ void core1_entry()
         }
     }
 }
-
 
 // I2C reserves some addresses for special purposes. We exclude these from the scan.
 // These are any addresses of the form 000 0xxx or 111 1xxx

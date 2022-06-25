@@ -1,6 +1,7 @@
 #include "CMenu.h"
 #include "CDisplay.h"
 #include "COptionsList.h"
+#include "../CHwCheck.h"
 #include "../CSavedSettings.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/output/COutputChannel.h"
@@ -10,7 +11,7 @@
 class CMenuSettings : public CMenu
 {
     public:
-        CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
+        CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck);
         ~CMenuSettings();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -53,6 +54,7 @@ class CMenuSettings : public CMenu
         CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
+        CHwCheck *_hwCheck;
 };
 
 

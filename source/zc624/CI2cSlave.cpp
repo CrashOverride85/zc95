@@ -1,11 +1,15 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
+#include <string.h>
 
 #include "CI2cSlave.h"
 #include "config.h"
+#include "git_version.h"
 
 static struct
 {
+    // Note: size of 256 & uint8_t for address is using wrap around to avoid out of bounds reads, so
+    //       increasing mem size and changing mem_address size without adding protection would be bad
     uint8_t mem[256];
     uint8_t mem_address;
     bool mem_address_written;
@@ -27,12 +31,12 @@ static struct
 
     i2c_init(I2C_PORT_SLAVE, 400*1000);
     i2c_slave_init(I2C_PORT_SLAVE, ZC624_ADDR, &CI2cSlave::i2c_slave_handler);
- }
+}
 
- void CI2cSlave::set_value(uint8_t reg, uint8_t value)
- {
-    i2c_slave_context.mem[(uint8_t)reg] = value;
- }
+void CI2cSlave::set_value(uint8_t reg, uint8_t value)
+{
+   i2c_slave_context.mem[(uint8_t)reg] = value;
+}
 
 void CI2cSlave::init_with_default_values()
 {
@@ -53,6 +57,13 @@ void CI2cSlave::init_with_default_values()
     i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan2Status]    = CI2cSlave::status::Startup;
     i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan3Status]    = CI2cSlave::status::Startup;
 
+    // Copy version into i2c_slave_context.mem
+    uint version_len = strlen(kGitHash);
+    uint version_space = (uint8_t)CI2cSlave::reg::VerStrEnd - (uint8_t)CI2cSlave::reg::VerStrStart;
+    if (version_len > version_space)
+        version_len = version_space;
+    for (uint8_t x=0; x < version_len; x++)
+        i2c_slave_context.mem[((uint8_t)CI2cSlave::reg::VerStrStart) + x] = kGitHash[x];
 }
 
 void CI2cSlave::i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event)
@@ -79,6 +90,7 @@ void CI2cSlave::i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event)
         case I2C_SLAVE_REQUEST: // master is requesting data
             // load from memory
             i2c_write_byte(i2c, i2c_slave_context.mem[i2c_slave_context.mem_address]);
+            i2c_slave_context.mem_address++;
             break;
 
         case I2C_SLAVE_FINISH: // master has signalled Stop / Restart

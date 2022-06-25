@@ -26,7 +26,7 @@
 
 #include "../core1/routines/CRoutine.h"
 
-CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
+CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -35,6 +35,7 @@ CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSaved
     _exit_menu = false;
     _routine_output = routine_output;
     _settings_list = new COptionsList(display, display->get_display_area());
+    _hwCheck = hwCheck;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -108,7 +109,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::ABOUT:
-            set_active_menu(new CMenuSettingAbout(_display, _buttons));
+            set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
             break;
     }
 }

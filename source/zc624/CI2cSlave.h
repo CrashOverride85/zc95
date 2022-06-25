@@ -15,6 +15,7 @@ class CI2cSlave
     public:       
         enum class reg
         {
+            // Read only
             TypeLow        = 0x00,
             TypeHigh       = 0x01,
             VersionMajor   = 0x02,
@@ -24,7 +25,13 @@ class CI2cSlave
             Chan0Status    = 0x10,
             Chan1Status    = 0x11,
             Chan2Status    = 0x12,
-            Chan3Status    = 0x13
+            Chan3Status    = 0x13,
+
+            VerStrStart    = 0x20,
+            VerStrEnd      = 0x34 //  20 character string
+
+            // Read/write
+            // starting at 0x80
         };
 
         enum status

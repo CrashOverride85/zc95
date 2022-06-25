@@ -10,6 +10,7 @@
 #include "../CSavedSettings.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
+#include "../CHwCheck.h"
 #include <string>
 #include <vector>
 
@@ -18,7 +19,7 @@
 class CMainMenu : public CMenu
 {
     public:
-        CMainMenu(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output);
+        CMainMenu(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck);
         ~CMainMenu();
         void button_pressed(Button button);
         void button_released(Button button);
