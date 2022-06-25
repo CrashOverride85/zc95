@@ -7,6 +7,7 @@
 #define CONTROLS_PORT_EXP_ADDR 0x22     // 4x front pannel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
 #define EEPROM_ADDR 0x50
 #define ADC_ADDR    0x48
+#define ZC624_ADDR  0x10
 
 #define FP_ANALOG_PORT_EXP_2_ADDR 0x26 // U2 on the analog verion of the front pannel
 

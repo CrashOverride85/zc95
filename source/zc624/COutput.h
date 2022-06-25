@@ -9,14 +9,14 @@
 #include "pulse_gen.pio.h"
 #include "COutputChannel.h"
 #include "CMsgDac.h"
+#include "CI2cSlave.h"
 
 
 class COutput
 {
     public:
-        COutput(PIO pio);
+        COutput(PIO pio, CI2cSlave *i2c_slave);
         ~COutput();
-        
         void pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us);
         void set_power(uint8_t channel, uint16_t power);
         void set_freq(uint8_t channel, uint16_t freq);
@@ -32,6 +32,7 @@ class COutput
         PIO _pio;
         uint _pio_program_offset;
         CMsgDac _dac = CMsgDac();
+        CI2cSlave *_i2c_slave;
         CPulseQueue _pulse_queue;
 };
 

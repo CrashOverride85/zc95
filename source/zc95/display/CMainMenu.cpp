@@ -25,7 +25,8 @@ CMainMenu::CMainMenu(
     std::vector<CRoutineMaker*> *routines,
     CGetButtonState *buttons,
     CSavedSettings *settings, 
-    CRoutineOutput *routine_output
+    CRoutineOutput *routine_output,
+    CHwCheck *hwCheck
 )
 {
     printf("CMainMenu() \n");
@@ -34,9 +35,8 @@ CMainMenu::CMainMenu(
     _buttons = buttons;
     _settings = settings;
 
-    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output);
+    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck);
     _submenu_active->show();
-   
 }
 
 CMainMenu::~CMainMenu()

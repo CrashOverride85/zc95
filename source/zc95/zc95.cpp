@@ -144,7 +144,7 @@ int main()
     // 3.5mm serial socket
     gpio_set_function(PIN_UART_TX, GPIO_FUNC_UART);
     gpio_set_function(PIN_UART_RX, GPIO_FUNC_UART);
-    printf("Startup, firmware version: %s\n", kGitHash);
+    printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -154,11 +154,11 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
     CHwCheck hw_check;
-    hw_check.check(); // If a fault is found, this never returns
-
+    hw_check.check_part1(); // If a fault is found, this never returns
+    
     // switch off backlight until init done
     controls.set_lcd_backlight(false);
-    
+
     // Make sure there is some semi-random-ish data available
     seed_random_from_rosc();
 
@@ -189,13 +189,15 @@ int main()
     CDisplay display = CDisplay();
     display.init(); // This takes some time - not far off a second
 
-    led.set_all_led_colour(LedColour::Black);
-
     // Get list of available patterns / routines
     std::vector<CRoutineMaker*> routines;
     CRoutines::get_routines(&routines);
    
-    sleep_ms(100);
+   hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
+
+   led.set_all_led_colour(LedColour::Black);
+
+   sleep_ms(100);
    
     #ifdef SINGLE_CORE
         Core1 *core1 = new Core1(&routines, &settings);
@@ -215,7 +217,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);

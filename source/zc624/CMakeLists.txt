@@ -14,6 +14,9 @@ include(pico_sdk_import.cmake)
 
 project(OutputZc C CXX ASM)
 
+include(CheckGit.cmake)
+CheckGitSetup()
+
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
@@ -27,6 +30,7 @@ add_executable(OutputZc
         CMessageProcess.cpp
         CMsgDac.cpp
         CPulseQueue.cpp
+        CI2cSlave.cpp
 )
 
 pico_generate_pio_header(OutputZc ${CMAKE_CURRENT_LIST_DIR}/pulse_gen.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
@@ -48,7 +52,9 @@ target_link_libraries(OutputZc
         hardware_pio
         hardware_adc
         pico_multicore
+        i2c_slave
+        git_version
         )
 
 pico_add_extra_outputs(OutputZc)
-
+add_subdirectory(external/pico_i2c_slave)

@@ -31,7 +31,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     std::vector<CRoutineMaker*> *routines, 
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
-    CRoutineOutput *routine_output)
+    CRoutineOutput *routine_output,
+    CHwCheck *hwCheck)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -41,7 +42,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _buttons = buttons;
     _submenu_active = NULL;
     _settings = settings;
-
+    _hwCheck = hwCheck;
     _routine_output = routine_output;
 }
 
@@ -90,7 +91,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck));
         }
         
         if (button == Button::C) // "Up"
