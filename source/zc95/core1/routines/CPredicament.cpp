@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CLogic1.h"
+#include "CPredicament.h"
 
 enum menu_ids
 {
@@ -28,9 +28,9 @@ enum menu_ids
 
 #define CHANNEL_COUNT 4
 
-CLogic1::CLogic1()
+CPredicament::CPredicament()
 {
-    printf("CLogic1()\n");
+    printf("CPredicament()\n");
     _output_on = false;
     _trigger1_active = false;
     _trigger2_active = false;
@@ -42,14 +42,14 @@ CLogic1::CLogic1()
     _output_invert = false;
 }
 
-CLogic1::~CLogic1()
+CPredicament::~CPredicament()
 {
-    printf("~CLogic1()\n");
+    printf("~CPredicament()\n");
 }
 
-void CLogic1::config(struct routine_conf *conf)
+void CPredicament::config(struct routine_conf *conf)
 {
-    conf->name = "Logic1";
+    conf->name = "Predicament";
 
     // Want 4x simple channels
     conf->outputs.push_back(output_type::SIMPLE);
@@ -98,17 +98,17 @@ void CLogic1::config(struct routine_conf *conf)
     conf->menu.push_back(menu_output_inv);
 }
 
-void CLogic1::get_config(struct routine_conf *conf)
+void CPredicament::get_config(struct routine_conf *conf)
 {
-   CLogic1::config(conf);
+   CPredicament::config(conf);
 }
 
-void CLogic1::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
+void CPredicament::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
 
 }
 
-void CLogic1::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
+void CPredicament::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 {    
     switch (menu_id)
     {
@@ -130,12 +130,12 @@ void CLogic1::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
     }
 }
 
-void CLogic1::soft_button_pushed (soft_button button, bool pushed)
+void CPredicament::soft_button_pushed (soft_button button, bool pushed)
 {
 
 }
 
-void CLogic1::trigger(trigger_socket socket, trigger_part part, bool active)
+void CPredicament::trigger(trigger_socket socket, trigger_part part, bool active)
 {
     if (socket == trigger_socket::Trigger1 && part == trigger_part::A)
         _trigger1_active = active;
@@ -144,12 +144,12 @@ void CLogic1::trigger(trigger_socket socket, trigger_part part, bool active)
         _trigger2_active = active; 
 }
 
-void CLogic1::start()
+void CPredicament::start()
 {
     set_all_channels_power(POWER_FULL);
 }
 
-void CLogic1::loop(uint64_t time_us)
+void CPredicament::loop(uint64_t time_us)
 {
     bool new_output_state = get_required_output_state();
 
@@ -160,7 +160,7 @@ void CLogic1::loop(uint64_t time_us)
     }
 }
 
-bool CLogic1::get_required_output_state()
+bool CPredicament::get_required_output_state()
 {
     bool trigger1 = _trigger1_active;
     bool trigger2 = _trigger2_active;
@@ -179,14 +179,14 @@ bool CLogic1::get_required_output_state()
     return output;
 }
 
-void CLogic1::stop()
+void CPredicament::stop()
 {
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
         simple_channel_off(x);
 }
 
-void CLogic1::all_channels(bool on)
+void CPredicament::all_channels(bool on)
 {
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {

@@ -1,10 +1,10 @@
 #include "CRoutine.h"
 
-class CLogic1: public CRoutine
+class CPredicament: public CRoutine
 {
     public:
-        CLogic1();
-        ~CLogic1();
+        CPredicament();
+        ~CPredicament();
         void get_config(struct routine_conf *conf);
         static void config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
