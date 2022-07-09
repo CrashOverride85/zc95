@@ -3,8 +3,6 @@
 
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-
 /*
 
     SPIx_SCK = SCK
@@ -21,11 +19,26 @@
 
 
 // I2C defines
+
+// For connection to on board DAC (so we are i2c master)
 #define I2C_PORT_PER i2c1
 #define I2C_SDA_PER 2
 #define I2C_SCL_PER 3
 
 #define DAC_ADDRESS 0x60
+
+// For connection to main board (so we are i2c slave)
+#define I2C_PORT_SLAVE i2c0
+#define I2C_SDA_SLAVE 4
+#define I2C_SCL_SLAVE 5
+#define ZC624_ADDR  0x10 // our address
+
+
+#define DEVICE_TYPE   624
+#define VERSION_MAJOR   0
+#define VERSION_MINOR   2
+
+
 
 
 #define PIN_9V_ENABLE   14

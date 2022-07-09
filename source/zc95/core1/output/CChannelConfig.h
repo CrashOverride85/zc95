@@ -34,7 +34,7 @@ class CChannelConfig
         CPowerLevelControl *_power_level_control;
         CCollarComms _collar_comms = CCollarComms(PIN_433TX); // 433MHz transmitter for collars
     
-        CZC1Comms _zc1_comms = CZC1Comms(spi1);    
+        CZC1Comms _zc1_comms = CZC1Comms(spi1, I2C_PORT);
 };
 
 

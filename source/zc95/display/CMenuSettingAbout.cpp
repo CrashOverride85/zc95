@@ -19,11 +19,12 @@
 #include "CMenuSettingAbout.h"
 #include "../git_version.h"
 
-CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, CGetButtonState *buttons)
+CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, CGetButtonState *buttons, CHwCheck *hwCheck)
 {
     printf("CMenuSettingAbout() \n");
     _display = display;
     _buttons = buttons;
+    _hwCheck = hwCheck;
 }
 
 CMenuSettingAbout::~CMenuSettingAbout()
@@ -58,9 +59,23 @@ void CMenuSettingAbout::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuSettingAbout::draw()
 {
+    uint8_t line = 1;
     display_area disp_area = _display->get_display_area();
-    _display->put_text("Firmware version: ", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
-    _display->put_text(kGitHash            , disp_area.x0+5, disp_area.y0 + 20, hagl_color(0x99, 0x99, 0x99));    
+    std::string zc624_ver = _hwCheck->get_zc624_version();
+
+    put_text_line("Firmware versions:", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
+
+    put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
+    put_text_line(kGitHash            , disp_area.x0+5, disp_area.y0, line++, hagl_color(0x99, 0x99, 0x99));
+    
+    line++;
+    put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
+    put_text_line(zc624_ver           , disp_area.x0+5, disp_area.y0, line++, hagl_color(0x99, 0x99, 0x99));    
+}
+
+void CMenuSettingAbout::put_text_line(std::string text, int16_t x, int16_t y, uint8_t line, color_t colour)
+{
+    _display->put_text(text, x, y + (line * 10), colour);
 }
 
 void CMenuSettingAbout::show()

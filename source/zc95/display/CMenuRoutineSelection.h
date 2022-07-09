@@ -14,6 +14,7 @@
 #include "../CSavedSettings.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
+#include "../CHwCheck.h"
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@
 class CMenuRoutineSelection : public CMenu
 {
     public:
-        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output);
+        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck);
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -38,6 +39,7 @@ class CMenuRoutineSelection : public CMenu
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CRoutineOutput *_routine_output;
+        CHwCheck *_hwCheck;
         int _last_selection = -1;
 
 };

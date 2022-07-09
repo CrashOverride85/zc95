@@ -22,7 +22,7 @@
 #include "CHwCheck.h"
 #include "i2c_scan.h"
 #include "config.h"
-#include "CLedControl.h"
+#include "CHwCheckZc624.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -36,7 +36,8 @@ CHwCheck::CHwCheck()
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
     _devices.push_front(device(EEPROM_ADDR, "EEPROM (read)", "EEPROM"));
     _devices.push_front(device(EEPROM_ADDR+1, "EEPROM (write)", "EEPROM"));
-
+    _devices.push_front(device(ZC624_ADDR, "ZC624 output board", "ZC624"));
+    
     // these two ICs are on the front panel
     _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
     _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
@@ -44,23 +45,23 @@ CHwCheck::CHwCheck()
     _last_update = 0;
 }
 
-void CHwCheck::check()
+void CHwCheck::check_part1()
 {
     bool ok = true;
     int ret;
     uint8_t rxdata;
 
-    enum Cause casue = Cause::UNKNOWN;
+    enum Cause cause = Cause::UNKNOWN;
 
-    printf("\n\nHardware check\n");
-    printf("==============\n\n");
+    printf("\n\nHardware check (part1)\n");
+    printf("======================\n");
     
     // Check battery isn't flat
     if (get_battery_voltage() < 10.5)
     {
         printf("Battery is flat!\n");
         ok = false;
-        casue = Cause::BATTERY;
+        cause = Cause::BATTERY;
     }
 
     printf("I2C scan:\n");
@@ -79,11 +80,10 @@ void CHwCheck::check()
         else
         {
             printf("NOT FOUND! (expected on address %d)\n", it->address);
-            casue = Cause::MISSING;
+            cause = Cause::MISSING;
             ok = false;
         }
     }
-
     if (ok)
     {
         printf("Status: Ok\n\n");
@@ -91,8 +91,27 @@ void CHwCheck::check()
     else
     {
         printf("Status: FAILED\n\n");
-        hw_check_failed(casue);
+        CLedControl led = CLedControl(PIN_LED, NULL);
+        led.init();
+        hw_check_failed(cause, &led, NULL); // this never returns
     }
+}
+
+// The ZC624 output board takes a while to initialize from power on, so check its status much later when it should be ready.
+// By the time this is called, the display and LEDs should be initialized, so need these passed in (CControlsPortExp controls display backlight)
+void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
+{
+    printf("\n\nHardware check (part2)\n");
+    printf("======================\n");
+
+    printf("    ZC624 Version = [%s]\n", _checkZc624.get_version().c_str());
+    printf("    ZC624 status...");
+    if (!_checkZc624.check_zc624())
+    {
+        printf("FAULT\n");
+        hw_check_failed(Cause::ZC628, ledControl, controls); // this never returns
+    }
+    printf("Ok\n\n");
 }
 
 void CHwCheck::show_error_text_message(int y, std::string message)
@@ -115,15 +134,21 @@ void CHwCheck::show_error_text_missing(int y)
     }    
 }
 
-void CHwCheck::hw_check_failed(enum Cause casue)
+void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls)
 {
     int y = 0;
-    CLedControl led = CLedControl(PIN_LED, NULL);
-    led.init();
-    led.set_all_led_colour(LedColour::Red);
-    led.loop();
+    ledControl->set_all_led_colour(LedColour::Red);
+    ledControl->loop();
 
-    hagl_init();
+    if (controls == NULL)
+    {  
+        hagl_init();
+    }
+    else
+    {
+        controls->set_lcd_backlight(true);
+    }
+
     hagl_clear_screen();
 
     put_text("Hardware check failed", (y++ * 10), 10, hagl_color(0xFF, 0xFF, 0xFF));
@@ -137,6 +162,10 @@ void CHwCheck::hw_check_failed(enum Cause casue)
         case Cause::BATTERY:
             show_error_text_message(y, "Battery is flat!");
             break;
+
+        case Cause::ZC628:
+            show_error_text_message(y, "ZC628 (output) fault");
+            break;
         
         default:
             show_error_text_message(y, "Unknown error");
@@ -145,16 +174,22 @@ void CHwCheck::hw_check_failed(enum Cause casue)
 
     hagl_flush();
 
+    printf("HALT\n");
     while(1)
     {
         sleep_ms(1000);
-        led.set_all_led_colour(LedColour::Black);
-        led.loop();
+        ledControl->set_all_led_colour(LedColour::Black);
+        ledControl->loop();
         
         sleep_ms(1000);
-        led.set_all_led_colour(LedColour::Red);
-        led.loop();
+        ledControl->set_all_led_colour(LedColour::Red);
+        ledControl->loop();
     };
+}
+
+std::string CHwCheck::get_zc624_version()
+{
+    return _checkZc624.get_version();
 }
 
 void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)

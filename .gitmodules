@@ -4,3 +4,6 @@
 [submodule "source/zc95/external/hagl"]
 	path = source/zc95/external/hagl
 	url = https://github.com/CrashOverride85/hagl.git
+[submodule "source/zc624/external/pico_i2c_slave"]
+	path = source/zc624/external/pico_i2c_slave
+	url = https://github.com/CrashOverride85/pico_i2c_slave.git

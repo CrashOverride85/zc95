@@ -36,6 +36,7 @@ add_executable(zc95
   i2c_scan.cpp
   CTimingTest.cpp
   CHwCheck.cpp
+  CHwCheckZc624.cpp
   version.cpp
 
   core1/Core1.cpp

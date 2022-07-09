@@ -11,10 +11,11 @@
  * Communicate with ZC624 output board
  */
 
-CZC1Comms::CZC1Comms(spi_inst_t *spi)
+CZC1Comms::CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c)
 {
     printf("CZC1Comms()\n");
     _spi = spi;
+    _i2c = i2c;
 
     gpio_set_function(PIN_OUTPUT_BOARD_SPI_RX , GPIO_FUNC_SPI);
     gpio_set_function(PIN_OUTPUT_BOARD_SPI_SCK, GPIO_FUNC_SPI);
