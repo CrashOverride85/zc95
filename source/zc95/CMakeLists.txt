@@ -93,6 +93,10 @@ add_executable(zc95
   display/CMenuSettingAbout
   display/COptionsList
   display/CHorzBarGraph
+
+  AudioInput/CMCP4651.cpp
+  CAnalogueCapture.cpp
+  CBatteryGauge.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -161,4 +165,7 @@ target_compile_definitions(zc95 PRIVATE
   MIPI_DISPLAY_OFFSET_X=0
   MIPI_DISPLAY_OFFSET_Y=0
   MIPI_DISPLAY_INVERT=0
+
+  PICO_DEFAULT_UART_TX_PIN=8
+  PICO_DEFAULT_UART_RX_PIN=9
 )

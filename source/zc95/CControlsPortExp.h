@@ -15,8 +15,13 @@ class CControlsPortExp : public CGetButtonState
         void interrupt();
         void clear_input();
         void set_lcd_backlight(bool on);
+        void audio_input_enable(bool enable);
+        void mic_preamp_enable(bool enable);
+        void mic_power_enable(bool enable);
+
     
     private:
+        int set_pin_state(uint8_t pin, bool state);
         uint8_t _last_read;
         uint8_t _button_states_at_last_check;
         uint8_t _address;

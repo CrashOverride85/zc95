@@ -24,9 +24,14 @@
 /*
  * Deal with port expander U7, which:
  *   - reads input from front pannel buttons A, B, C & D
- *   - is connected to IO1/2/3 on expansion header J17 (currently unused)
+ *   - is connected to IO1/2/3 on expansion header J17 (for optional audio input board)
  *   - controls the LCD backlight
- */ 
+ * 
+ *  P4 - EXPAN_I03 - Mic pre-amp
+ *  P5 - EXPAN_I02 - Mic power disable
+ *  P6 - EXPAN_I01 - Audio enable (relay)
+ *  P7 - LCD back light
+ */
 
 CControlsPortExp::CControlsPortExp(uint8_t address)
 {
@@ -102,19 +107,54 @@ bool CControlsPortExp::has_button_state_changed(enum Button button, bool *new_st
   return button_state_changed;
 }
 
+/*
+ * Enable microphone pre-amp on audio input board. Massively increases gain. 
+ * Also results in mono input only as there is only one mic preamp
+ */
+void CControlsPortExp::mic_preamp_enable(bool enable)
+{
+    const int MicPreampEnablePin = 4;
+    set_pin_state(MicPreampEnablePin, enable);
+}
+
+/*
+ * When enabled and audio_input (below) is also enabled, ~3v is supplied via a current 
+ * limiting resistor to the ring of the 3.5mm socket to power electret microphones
+ */
+void CControlsPortExp::mic_power_enable(bool enable)
+{
+    const int MicPowerDisablePin = 5;
+    set_pin_state(MicPowerDisablePin, !enable);
+}
+
+/* 
+ * Enabled  = 3.5mm socket used for Audio input
+ * Disabled = 3.5mm socket used for RS232 serial
+ */
+void CControlsPortExp::audio_input_enable(bool enable)
+{
+    const int AudioInputEnablePin = 6;
+    set_pin_state(AudioInputEnablePin, enable);
+}
+
 void CControlsPortExp::set_lcd_backlight(bool on)
 {
     const int BackLightPin = 7;
+    set_pin_state(BackLightPin, on);
+}
 
-    if (on)
-        _data_out |= (1 << BackLightPin);
+int CControlsPortExp::set_pin_state(uint8_t pin, bool state)
+{
+    if (state)
+        _data_out |= (1 << pin);
     else
-        _data_out &= ~(1 << BackLightPin);
+        _data_out &= ~(1 << pin);
 
     int retval = i2c_write_timeout_us(i2c_default, _address, &_data_out, 1, false, 1000);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CControlsPortExp::set_lcd_backlight i2c write error! (%d)\n", retval);
-      return;
+      printf("CControlsPortExp::set_pin_state i2c write error! (%d)\n", retval);
     }
+
+    return retval;
 }

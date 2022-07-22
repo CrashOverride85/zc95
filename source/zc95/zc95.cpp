@@ -42,6 +42,8 @@
 #include "CSavedSettings.h"
 #include "CTimingTest.h"
 #include "CHwCheck.h"
+#include "CAnalogueCapture.h"
+#include "CBatteryGauge.h"
 
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
@@ -62,6 +64,9 @@ CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
 CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
 CFpKnobs *_front_pannel = NULL;
+CAnalogueCapture analogueCapture;
+CBatteryGauge batteryGauge;
+
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
@@ -137,7 +142,7 @@ void seed_random_from_rosc()
 
 int main()
 {
-    stdio_init_all();
+    stdio_uart_init_full(uart1, PICO_DEFAULT_UART_BAUD_RATE, PICO_DEFAULT_UART_TX_PIN, PICO_DEFAULT_UART_RX_PIN);
     adc_init();
     messages_init();
 
@@ -153,7 +158,7 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    CHwCheck hw_check;
+    CHwCheck hw_check(&batteryGauge);
     hw_check.check_part1(); // If a fault is found, this never returns
     
     // switch off backlight until init done
@@ -193,7 +198,10 @@ int main()
     std::vector<CRoutineMaker*> routines;
     CRoutines::get_routines(&routines);
    
-   hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
+    hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
+
+    analogueCapture.init();
+    analogueCapture.start();
 
    led.set_all_led_colour(LedColour::Black);
 
@@ -254,19 +262,29 @@ int main()
             led.loop(true); // ~55us    
 
             uint64_t timenow = time_us_64();
-            printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, hw_check.get_battery_percentage());
-            display.set_battery_percentage(hw_check.get_battery_percentage());
+            uint8_t batt_percentage = batteryGauge.get_battery_percentage();
+            printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, batt_percentage);
+            display.set_battery_percentage(batt_percentage);
         }
         else
         {
             ext_input->process(false);
             controls.process(false);
             _front_pannel->process(false);     
-            hw_check.process();
+         //   hw_check.process();
         }
 
         routine_output->loop();
         led.loop();
+        analogueCapture.process();
+
+        if (analogueCapture.new_battery_readings_available())
+        {
+            uint8_t readings_count = 0;
+            uint8_t *readings = analogueCapture.get_battery_readings(&readings_count);
+            batteryGauge.add_raw_adc_readings(readings, readings_count);
+        }
+
     }
 
     return 0;
