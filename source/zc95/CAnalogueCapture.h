@@ -9,29 +9,46 @@
 #define ADC_CHANNEL_0 0
 #define ADC_CHANNEL_1 1
 #define ADC_CHANNEL_2 2
+
 #define CAPTURE_DEPTH 1024
 #define CAPTURE_RING_BITS 10
+
+#define SAMPLES_PER_SECOND 20000 // Note this is the number of ADC samples per second. 3 ADC channels are being sampled, so the 
+                                 // audio sample rate is this divided by 3 per channel (the 3rd channel is the battery voltage)
+
 
 #define BATTERY_ADC_READINGS 10
 
 class CAnalogueCapture
 {
     public:
+        CAnalogueCapture();
+
+        enum class channel
+        {
+            LEFT,
+            RIGHT
+        };
+
         void init();
         void start();
         void stop();
         void process();
         bool new_battery_readings_available();
         uint8_t *get_battery_readings(uint8_t *readings_count);
+        void get_audio_buffer(channel chan, uint16_t *samples, uint8_t **buffer);
 
     private:
-        void process_buffer(uint8_t *capture_buf);
+        void process_buffer(const uint8_t *capture_buf);
 
         static void s_dma_handler1();
         static void s_dma_handler2();
 
         uint8_t capture_buf1[CAPTURE_DEPTH] __attribute__((aligned(2048)));
         uint8_t capture_buf2[CAPTURE_DEPTH] __attribute__((aligned(2048)));
+
+        uint8_t _audio_buffer_l[CAPTURE_DEPTH/3] = {0};
+        uint8_t _audio_buffer_r[CAPTURE_DEPTH/3] = {0};
         
         static uint _s_dma_chan1;
         static uint _s_dma_chan2;
@@ -46,6 +63,7 @@ class CAnalogueCapture
         int lastc2 = 0;
         uint64_t time_last_print=0;
         bool _new_battery_readings = false;
+        uint32_t _capture_time_us;
 };
 
 #endif

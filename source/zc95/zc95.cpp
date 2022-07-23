@@ -45,6 +45,9 @@
 #include "CAnalogueCapture.h"
 #include "CBatteryGauge.h"
 
+#include "AudioInput/CMCP4651.h"
+#include "AudioInput/CAudio.h"
+
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
 
@@ -66,6 +69,8 @@ CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
 CFpKnobs *_front_pannel = NULL;
 CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
+CMCP4651 audio_gain;
+CAudio audio(&analogueCapture, &audio_gain, &controls);
 
 
 void gpio_callback(uint gpio, uint32_t events) 
@@ -225,7 +230,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -234,6 +239,15 @@ int main()
     led.loop();
     controls.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
+    display.set_battery_percentage(batteryGauge.get_battery_percentage());
+
+    controls.audio_input_enable(true);
+    controls.mic_power_enable(false);
+    controls.mic_preamp_enable(true);
+    //_audio_gain.set_val(0, 0);
+    //_audio_gain.set_val(1, 0);
+    
+
     while (1) 
     {
         uint64_t loop_start = time_us_64();

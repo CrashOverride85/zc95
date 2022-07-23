@@ -17,6 +17,10 @@ uint CAnalogueCapture::_s_dma_chan2;
 volatile bool CAnalogueCapture::_s_buf1_ready;
 volatile bool CAnalogueCapture::_s_buf2_ready;
 
+CAnalogueCapture::CAnalogueCapture()
+{
+    _capture_time_us = ((double)CAPTURE_DEPTH * ((double)1/(double)SAMPLES_PER_SECOND)) * 1000 * 1000;
+}
 
 // Called when capture_buf1 is full.
 void CAnalogueCapture::s_dma_handler1()
@@ -25,6 +29,7 @@ void CAnalogueCapture::s_dma_handler1()
   _s_irq_counter1++;
   _s_buf1_ready = true;
   _s_buf2_ready = false;
+
   // Clear the interrupt request.
   dma_hw->ints0 = 1u << _s_dma_chan1;
 }
@@ -34,14 +39,16 @@ void CAnalogueCapture::s_dma_handler2()
 {
   adc_select_input(ADC_CHANNEL_0);
   _s_irq_counter2++;
-  _s_buf2_ready = true;
   _s_buf1_ready = false;
+  _s_buf2_ready = true;
+
   // Clear the interrupt request.
   dma_hw->ints0 = 1u << _s_dma_chan2;
 }
 
 void CAnalogueCapture::init()
 {
+    printf("Capture time = %luus\n", _capture_time_us);
     _s_irq_counter1 = 0;
     _s_irq_counter2 = 0;
     adc_gpio_init(26 + ADC_CHANNEL_0);
@@ -59,13 +66,13 @@ void CAnalogueCapture::init()
     );
 
     // Determines the ADC sampling rate as a divisor of the basic
-    // 48Mhz clock. Set to have 100k sps on each of the two ADC
-    // channels.
-    adc_set_clkdiv(2400 - 1);  // Total rate 20k sps.
+    // 48Mhz clock. 
+
+    uint32_t divider = 48000000 / SAMPLES_PER_SECOND;
+    adc_set_clkdiv(divider - 1);
 
     _s_dma_chan1 = dma_claim_unused_channel(true);
     _s_dma_chan2 = dma_claim_unused_channel(true);
-
 
     // Chan 1
     dma_channel_config dma_config1 = dma_channel_get_default_config(_s_dma_chan1);
@@ -137,31 +144,46 @@ void CAnalogueCapture::process()
         capture_buf1[1], capture_buf2[1],
         capture_buf1[2], capture_buf2[2],
         time,
-        time/1000); */
-
+        time/1000); 
+*/
         lastc1 = _s_irq_counter1;
         lastc2 = _s_irq_counter2;
 
         if (_s_buf1_ready)
         {
             process_buffer(capture_buf1);
-            _s_buf1_ready = false;
         }
 
         if (_s_buf2_ready)
         {
             process_buffer(capture_buf2);
-            _s_buf2_ready = false;
         }
     }
 }
 
-void CAnalogueCapture::process_buffer(uint8_t *capture_buf)
+void CAnalogueCapture::process_buffer(const uint8_t *capture_buf)
 {
     for (uint x=0; x < BATTERY_ADC_READINGS; x++)
         _battery_adc_readings[x] = capture_buf[(x*3)];
 
     _new_battery_readings = true;
+
+    for (uint x=0; x < sizeof(_audio_buffer_l); x++)
+        _audio_buffer_l[x] = capture_buf[(x*3)+1];
+
+    for (uint x=0; x < sizeof(_audio_buffer_r); x++)
+        _audio_buffer_r[x] = capture_buf[(x*3)+2];
+/*
+    printf("%d, %d\tcapture_buf1, 4=(%d, %d)\tcapture_buf2, 5=(%d, %d)\n", 
+    _s_irq_counter1, _s_irq_counter2,  
+    capture_buf[1], capture_buf[4], 
+    capture_buf[2], capture_buf[5]);
+
+    printf("%d, %d\t_audio_buffer_l=(%d, %d)\t_audio_buffer_r=(%d, %d)\n", 
+        _s_irq_counter1, _s_irq_counter2,  
+        _audio_buffer_l[0], _audio_buffer_l[1], 
+        _audio_buffer_r[0], _audio_buffer_r[1]);  
+        */
 }
 
 bool CAnalogueCapture::new_battery_readings_available()
@@ -175,4 +197,32 @@ uint8_t *CAnalogueCapture::get_battery_readings(uint8_t *readings_count)
     _new_battery_readings = false;
 
     return _battery_adc_readings;
+}
+
+void CAnalogueCapture::get_audio_buffer(channel chan, uint16_t *samples, uint8_t **buffer)
+{
+  /*  if (samples > CAPTURE_DEPTH/3)
+    {
+        printf("CAnalogueCapture::get_audio_buffer: request for more samples than available!\n");
+        return;
+    } 
+
+        printf("%d, %d\t_audio_buffer_l=(%d, %d)\t_audio_buffer_r=(%d, %d) \t\t _audio_buffer_l addr = %d\n", 
+        _s_irq_counter1, _s_irq_counter2,  
+        _audio_buffer_l[0], _audio_buffer_l[1], 
+        _audio_buffer_r[0], _audio_buffer_r[1],
+        _audio_buffer_l); 
+*/
+    switch(chan)
+    {
+        case channel::LEFT:
+            *buffer = _audio_buffer_l;
+            *samples = sizeof(_audio_buffer_l);
+            break;
+
+        case channel::RIGHT:
+            *buffer = _audio_buffer_r;
+            *samples = sizeof(_audio_buffer_r);
+            break;
+    }
 }

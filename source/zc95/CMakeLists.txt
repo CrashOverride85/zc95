@@ -91,10 +91,13 @@ add_executable(zc95
   display/CMenuSettingPowerStep
   display/CMenuSettingRampUpTime
   display/CMenuSettingAbout
+  display/CMenuSettingAudio
   display/COptionsList
   display/CHorzBarGraph
 
+
   AudioInput/CMCP4651.cpp
+  AudioInput/CAudio.cpp
   CAnalogueCapture.cpp
   CBatteryGauge.cpp
   )

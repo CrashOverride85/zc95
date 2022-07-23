@@ -32,7 +32,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
-    CHwCheck *hwCheck)
+    CHwCheck *hwCheck,
+    CAudio *audio)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -44,6 +45,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _settings = settings;
     _hwCheck = hwCheck;
     _routine_output = routine_output;
+    _audio = audio;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -91,7 +93,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio));
         }
         
         if (button == Button::C) // "Up"

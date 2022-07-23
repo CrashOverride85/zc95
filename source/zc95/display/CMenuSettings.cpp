@@ -23,10 +23,11 @@
 #include "CMenuSettingPowerStep.h"
 #include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
+#include "CMenuSettingAudio.h"
 
 #include "../core1/routines/CRoutine.h"
 
-CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck)
+CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -36,6 +37,7 @@ CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSaved
     _routine_output = routine_output;
     _settings_list = new COptionsList(display, display->get_display_area());
     _hwCheck = hwCheck;
+    _audio = audio;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -108,6 +110,10 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_settings));
             break;
 
+        case setting_id::AUDIO:
+            set_active_menu(new CMenuSettingAudio(_display, _buttons, _audio, _saved_settings));
+            break;
+
         case setting_id::ABOUT:
             set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
             break;
@@ -137,6 +143,7 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
     _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
+    _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"));
     
     // This is/was for a verion of the front panel that used rotary encoders instead of POTs for 

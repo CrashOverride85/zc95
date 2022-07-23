@@ -26,7 +26,8 @@ CMainMenu::CMainMenu(
     CGetButtonState *buttons,
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
-    CHwCheck *hwCheck
+    CHwCheck *hwCheck,
+    CAudio *audio
 )
 {
     printf("CMainMenu() \n");
@@ -35,7 +36,7 @@ CMainMenu::CMainMenu(
     _buttons = buttons;
     _settings = settings;
 
-    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck);
+    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck, audio);
     _submenu_active->show();
 }
 

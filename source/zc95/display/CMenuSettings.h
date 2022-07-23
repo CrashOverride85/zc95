@@ -1,6 +1,7 @@
 #include "CMenu.h"
 #include "CDisplay.h"
 #include "COptionsList.h"
+#include "../AudioInput/CAudio.h"
 #include "../CHwCheck.h"
 #include "../CSavedSettings.h"
 #include "../core1/CRoutineOutput.h"
@@ -11,7 +12,7 @@
 class CMenuSettings : public CMenu
 {
     public:
-        CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck);
+        CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
         ~CMenuSettings();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -41,7 +42,8 @@ class CMenuSettings : public CMenu
             LED_BRIGHTNESS = 2,
             POWER_STEP     = 3,
             RAMP_UP_TIME   = 4,
-            ABOUT          = 5
+            AUDIO          = 5,
+            ABOUT          = 6
         };
 
         std::vector<setting> _settings;
@@ -55,6 +57,7 @@ class CMenuSettings : public CMenu
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CHwCheck *_hwCheck;
+        CAudio *_audio;
 };
 
 

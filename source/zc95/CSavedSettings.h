@@ -22,6 +22,10 @@ class CSavedSettings
         LEDBrightness  = 21, // default LED brightness
         PowerStep      = 22, // When using rot encoder for power, how many steps to increase power by for each click (e.g. as power level is 0-1000, 10 would give 100 possible power levels)
         RampUpTimeSecs = 23, // When selecting a routine, how long (in seconds) does the power take to reach the power level set on the front pannel
+        AudioGainL     = 24, // Gain for left  channel
+        AudioGainR     = 25, // Gain for right channel
+        MicPreAmp      = 26, // Mic pre-amp enabled
+        MicPower       = 27, // Mic power enabled
         // To Fill
 
         // Collar config
@@ -69,6 +73,20 @@ class CSavedSettings
         // Power ramp up time, seconds
         uint8_t get_ramp_up_time_seconds();
         void set_ramp_up_time_seconds(uint8_t time_secs);
+
+        // Gain for audio input
+        uint8_t get_audio_gain_left();
+        uint8_t get_audio_gain_right();
+        void set_audio_gain_left(uint8_t gain);
+        void set_audio_gain_right(uint8_t gain);
+
+        // Mic pre amp. Needs to be turned on to use a microphone on the audio input (line level with it off)
+        bool get_mic_preamp_enabled();
+        void set_mic_preamp_enabled(bool enabled);
+
+        // Enable mic power. Needs to be on (along with the mic preamp) to use electret microphones
+        bool get_mic_power_enabled();
+        void set_mic_power_enabled(bool enabled);
 
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
