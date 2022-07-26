@@ -22,6 +22,7 @@ class CMenuSettingAudio : public CMenu
         bool mic_power_enabled();
         bool mic_preamp_enabled();
         void set_menu_labels();
+        bool show_stereo();
         CDisplay* _display;
         CGetButtonState *_buttons;
         CAudio *_audio;

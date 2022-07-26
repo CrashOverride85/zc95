@@ -147,22 +147,58 @@ void CMenuSettingAudio::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuSettingAudio::draw()
 {
-    uint8_t *audio_samples;
+    uint8_t *audio_samples_l;
+    uint8_t *audio_samples_r;
     display_area disp_area = _display->get_display_area();
 
+    // Scale factor to scale 0-255 samples to whatever screen space is available (~55 pixels?)
     float scale_factor = (float)255 / (float)((float)_bar_graph_area.y0-(float)disp_area.y0);
 
     uint16_t samples_count = 0;
-    _audio->get_audio_buffer(CAnalogueCapture::channel::LEFT, &samples_count, &audio_samples);
+    _audio->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &samples_count, &audio_samples_l);
+    _audio->get_audio_buffer(CAnalogueCapture::channel::LEFT, &samples_count, &audio_samples_r); // TODO/FIXME: use RIGHT chanel once hw fixed
 
     uint8_t y_middle = disp_area.y0+(_bar_graph_area.y0-disp_area.y0)/2;
 
-    for (int x = 0; x+1 < disp_area.x1; x++)
+    if (show_stereo())
     {
-        float y0 = (float)disp_area.y0+((float)audio_samples[x]/scale_factor);
-        float y1 = (float)disp_area.y0+((float)audio_samples[x+1]/scale_factor);
+        // left
+        for (int x = 0; x+1 < (disp_area.x1/2)-2; x++)
+        {
+            float y0 = (float)disp_area.y0+((float)audio_samples_l[x]/scale_factor);
+            float y1 = (float)disp_area.y0+((float)audio_samples_l[x+1]/scale_factor);
 
-        hagl_draw_line(x, y0, x+1, y1, 0xFF);
+            hagl_draw_line(x, y0, x+1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+        }
+
+        // right
+        uint8_t sample=0;
+        for (int x = (disp_area.x1/2)+2; x+1 < disp_area.x1; x++)
+        {
+            float y0 = (float)disp_area.y0+((float)audio_samples_r[sample]   / scale_factor);
+            float y1 = (float)disp_area.y0+((float)audio_samples_r[sample+1] / scale_factor);
+            sample++;
+
+            hagl_draw_line(x, y0, x+1, y1, hagl_color(0xFF, 0x00, 0x00));
+        }
+    }
+    else
+    {
+        // If the mic power isn't on when it should be, the mic won't work.
+        // Hopefully a different colour wave will make this much easier to spot.
+        color_t colour;
+        if (mic_power_enabled())
+            colour = hagl_color(0xFF, 0x14, 0x93); // Pink, to match pc microphone socket, for electret microphones
+        else
+            colour = hagl_color(0xFF, 0xFF, 0x00); // Yellow, for dynamic mics (although not really enough gain for them to work well), or externally powered electret mics
+
+        for (int x = 0; x+1 < disp_area.x1; x++)
+        {
+            float y0 = (float)disp_area.y0+((float)audio_samples_l[x]   / scale_factor);
+            float y1 = (float)disp_area.y0+((float)audio_samples_l[x+1] / scale_factor);
+
+            hagl_draw_line(x, y0, x+1, y1, colour);
+        }
     }
 
     // Line in centre of waveform
@@ -224,4 +260,9 @@ bool CMenuSettingAudio::mic_power_enabled()
 bool CMenuSettingAudio::mic_preamp_enabled()
 {
     return _saved_settings->get_mic_preamp_enabled();
+}
+
+bool CMenuSettingAudio::show_stereo()
+{
+    return !_saved_settings->get_mic_preamp_enabled();
 }
