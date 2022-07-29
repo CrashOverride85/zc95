@@ -29,6 +29,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);
         void reinit_channels();
+        void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
 
         void reset_acc_port();
         void set_acc_io_port_state(enum ExtInputPort output, bool high);

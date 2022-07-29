@@ -11,13 +11,15 @@
 #include "../config.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
+#include "../AudioInput/CAudio.h"
+
 #include <string>
 #include <vector>
 
 class CMenuRoutineAdjust : public CMenu
 {
     public:
-        CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output);
+        CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio);
         ~CMenuRoutineAdjust();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -36,6 +38,7 @@ class CMenuRoutineAdjust : public CMenu
         struct routine_conf _active_routine_conf;
         CGetButtonState *_buttons;
         CRoutineOutput *_routine_output;
+        CAudio *_audio;
 };
 
 #endif

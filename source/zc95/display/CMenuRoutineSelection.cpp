@@ -88,7 +88,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
             _routine_output->activate_routine(_routine_disply_list->get_current_selection());
             _last_selection = _routine_disply_list->get_current_selection();
 
-            set_active_menu(new CMenuRoutineAdjust(_display, routine_maker, _buttons, _routine_output));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine_maker, _buttons, _routine_output, _audio));
         }
 
         if (button == Button::B) // "Config"

@@ -221,6 +221,8 @@ int main()
         CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
     #endif
 
+    audio.set_routine_output(routine_output);
+
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
     gpio_init(PIN_EXT_INPUT_INT);
@@ -242,8 +244,10 @@ int main()
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 
     controls.audio_input_enable(true);
-    controls.mic_power_enable(false);
-    controls.mic_preamp_enable(true);
+    //controls.mic_power_enable(false);
+    //controls.mic_preamp_enable(true);
+    audio.init(&settings);
+
     //_audio_gain.set_val(0, 0);
     //_audio_gain.set_val(1, 0);
     

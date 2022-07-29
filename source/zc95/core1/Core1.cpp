@@ -138,6 +138,7 @@ void Core1::loop()
     update_power_levels();
     process_messages();
 #endif
+
 }
 
 void Core1::update_power_levels()
@@ -266,6 +267,16 @@ void Core1::process_message(message msg)
         case MESSAGE_REINIT_CHANNELS:
             stop_routine();
             init();
+            break;
+
+        case MESSAGE_AUDIO_THRES_REACHED:
+            if (_active_routine != NULL)
+            {
+                uint16_t fundamental_freq = msg.msg8[1];
+                fundamental_freq |= msg.msg8[2] << 8;
+                uint8_t cross_count = msg.msg8[3];
+                _active_routine->audio_threshold_reached(fundamental_freq, cross_count);
+            }
             break;
     }
 }

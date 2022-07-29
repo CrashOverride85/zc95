@@ -19,7 +19,7 @@
 #include "CMenuRoutineAdjust.h"
 
 
-CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output)
+CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -27,6 +27,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
     _buttons = buttons;
     _exit_menu = false;
     _area = display->get_display_area();
+    _audio = audio;
 
     _routine_output = routine_output;
 
@@ -139,6 +140,18 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
 
             _routine_output->menu_multi_choice_change(menu_item->id, menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id);
             break;
+
+        case menu_entry_type::AUDIO_VIEW:
+            if (change >= 1)
+            {
+                _audio->increment_trigger_point();
+            }
+            else if (change <= -1)
+            {
+                _audio->decrement_trigger_point();
+            }
+
+            break;
     }
 }
 
@@ -171,6 +184,18 @@ void CMenuRoutineAdjust::draw()
                                     rect_colour);
 
             _routine_multi_choice_list->draw();
+            break;
+        }
+
+        case menu_entry_type::AUDIO_VIEW:
+        {
+            uint8_t x0 = _area.x0+1;
+            uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
+            uint8_t x1 = _area.x1-3;
+            uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
+
+            _audio->draw_mic_audio_wave(x0, y0, x1, y1);
+
             break;
         }
     }

@@ -73,6 +73,7 @@ add_executable(zc95
   core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
   core1/routines/CBuzz.cpp
+  core1/routines/CAudio1.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
@@ -98,6 +99,7 @@ add_executable(zc95
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
+  AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
   CBatteryGauge.cpp
   )
@@ -147,6 +149,8 @@ target_compile_definitions(zc95 PRIVATE
   HAGL_HAL_USE_DMA
   HAGL_HAL_DEBUG
   MIPI_DISPLAY_ST7735
+  PICO_STACK_SIZE=3072
+  PICO_USE_STACK_GUARDS # would rather die instantly on stack overflow, than get weird, hard to debug, errors
 )
 
 
