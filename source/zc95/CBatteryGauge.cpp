@@ -96,9 +96,6 @@ float CBatteryGauge::get_battery_voltage_from_adc_reading(uint32_t adc_reading)
     float r2 = 4700;       // R15 on mainboard
     float i = adc_voltage / r2;
     float batt_voltage = i * (r1 + r2);
-    
-    // TODO: Not sure why this is off? Is this fiddle factor going to be different per unit, and so should be in EEPROM?
-    // batt_voltage += 1.22;
 
     //printf("adc_reading=%lu, adc_voltage=%fv, batt_voltage=%fv\n", adc_reading, adc_voltage, batt_voltage);
 

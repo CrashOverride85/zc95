@@ -246,15 +246,16 @@ void CAudio::draw_mic_audio_wave_v3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t 
     uint8_t height = y1 - y0;
 
     color_t colour = hagl_color(0x00, 0xFF, 0x00);
-    float scale_factor = (float)2000 / (float)height;
+    float scale_factor = (float)3500 / (float)height;
 
     uint16_t bar_height = 0;
     float   max_value=0;
     uint8_t max_index=0;
     uint8_t thres_cross_count=0;
-    for (uint8_t x=x0; x < x0+width; x++)
+    uint8_t fft_sample = 0;
+    for (uint8_t x=x0; x <= x0+width+2; x+=2)
     {
-        bar_height = fft_output[x];
+        bar_height = fft_output[fft_sample];
         bar_height = (float)bar_height/scale_factor;
         if (bar_height > height)
             bar_height = height;
@@ -267,19 +268,24 @@ void CAudio::draw_mic_audio_wave_v3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t 
         else
             colour = hagl_color(0x00, 0xFF, 0x00);
 
-        hagl_draw_line(x0+x, y1, x0+x, y1 - bar_height, colour);
 
-        if (fft_output[x] > max_value)
+        hagl_draw_line(x0+x  , y1, x0+x  , y1 - bar_height, colour);
+
+     //   hagl_draw_line(x0+x-1, y1, x0+x-1, y1 - bar_height, colour);
+
+        if (fft_output[fft_sample] > max_value)
         {
-            max_value = fft_output[x];
+            max_value = fft_output[fft_sample];
             max_index = x;
         }
+
+        fft_sample++;
     }
 
     if (thres_cross_count && _routine_output != NULL)
     {
         uint16_t freq = FFT.majorPeakFreq();
-        printf("** FREQ = %d **\n", freq);
+       // printf("** FREQ = %d **\n", freq);
         _routine_output->audio_threshold_reached(FFT.majorPeakFreq(), thres_cross_count);
     }
 
