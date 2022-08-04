@@ -62,7 +62,7 @@ void CPredicament::config(struct routine_conf *conf)
     menu_trg1_inv.id = menu_ids::TRG1_INV;
     menu_trg1_inv.title = "Trigger1 invert";
     menu_trg1_inv.menu_type = menu_entry_type::MULTI_CHOICE;
-    menu_trg1_inv.multichoice.current_selection = 1;
+    menu_trg1_inv.multichoice.current_selection = 0;
     menu_trg1_inv.multichoice.choices.push_back(get_choice("Yes", 1));
     menu_trg1_inv.multichoice.choices.push_back(get_choice("No", 0));
     conf->menu.push_back(menu_trg1_inv);
@@ -72,7 +72,7 @@ void CPredicament::config(struct routine_conf *conf)
     menu_trg2_inv.id = menu_ids::TRG2_INV;
     menu_trg2_inv.title = "Trigger2 invert";
     menu_trg2_inv.menu_type = menu_entry_type::MULTI_CHOICE;
-    menu_trg2_inv.multichoice.current_selection = 1;
+    menu_trg2_inv.multichoice.current_selection = 0;
     menu_trg2_inv.multichoice.choices.push_back(get_choice("Yes", 1));
     menu_trg2_inv.multichoice.choices.push_back(get_choice("No", 0));
     conf->menu.push_back(menu_trg2_inv);
@@ -82,7 +82,7 @@ void CPredicament::config(struct routine_conf *conf)
     menu_logic.id = menu_ids::LOGIC_MODE;
     menu_logic.title = "Logic";
     menu_logic.menu_type = menu_entry_type::MULTI_CHOICE;
-    menu_logic.multichoice.current_selection = 0;
+    menu_logic.multichoice.current_selection = 1;
     menu_logic.multichoice.choices.push_back(get_choice("Or", 0));
     menu_logic.multichoice.choices.push_back(get_choice("And", 1));
     conf->menu.push_back(menu_logic);
@@ -92,7 +92,7 @@ void CPredicament::config(struct routine_conf *conf)
     menu_output_inv.id = menu_ids::OUTPUT_INV;
     menu_output_inv.title = "Output invert";
     menu_output_inv.menu_type = menu_entry_type::MULTI_CHOICE;
-    menu_output_inv.multichoice.current_selection = 0;
+    menu_output_inv.multichoice.current_selection = 1;
     menu_output_inv.multichoice.choices.push_back(get_choice("Yes", 1));
     menu_output_inv.multichoice.choices.push_back(get_choice("No", 0));
     conf->menu.push_back(menu_output_inv);

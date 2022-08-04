@@ -121,6 +121,34 @@ No.
 
 ------------------------------------------------------------
 
+## Predicament
+Designed for predicament bondage scenarios. I'm finding this difficult to explain, so hopefully some examples will help.
+Requires at least one input, ideally two, connected to the Trigger1 & Trigger2 ports. Based on the settings, delivers a shock
+based on which inputs have been trigged.
+For example, if two foot pedals are used, it can deliver a shock unless both are kept pressed (this is the default settings).
+
+### Menu options
+(assumes a Normally Open switch connected to both trigger inputs)
+* Trigger1 invert - If "yes", the rest of the logic assumes that trigger1 is high if *not* pressed
+* Trigger2 invert - As above, but for trigger 1
+* Logic - "Or" or "And". If "Or", then either trigger being high will result in shock. If "And", both need to be high for a shock
+* Output invert - Inverts the result of the above. I.e. if set to yes and "And" is set for Logic, then with both triggers high no shock is delivered
+
+### Examples
+| Trigger1 inv | Trigger2 inv | Logic | Output inv | Description  
+| ------------ | ------------ | ----- | ---------- | ------------- 
+| No           | No           | And   | Yes        | Default. Shock if either button not pressed
+| No           | No           | And   | No         | Shock if both both buttons pressed
+| No           | No           | Or    | No         | Shock if either button pressed
+| Yes          | Yes          | Or    | No         | Shock if either button not pressed (different way achieving the default behaviour)
+| No           | No           | Or    | Yes        | If only one button connected to trigger1, shock when it is not pressed
+
+
+### Extra hardware required?:
+Yes - Sensors (e.g. foot pedals) connected to trigger inputs 1 & 2
+
+------------------------------------------------------------
+
 ## Shock choice
 Gives the subject a choice of where to receive a shock, with no decision resulting in both (and for longer).
 
