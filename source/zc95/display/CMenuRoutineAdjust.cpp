@@ -49,6 +49,8 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
 
     // Set the text used on the status bar
     _title = _active_routine_conf.name;
+
+    enable_audio_if_required_by_routine();
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
@@ -67,6 +69,7 @@ CMenuRoutineAdjust::~CMenuRoutineAdjust()
     }
 
     _routine_output->stop_routine();
+    _audio->set_audio_mode(CAudio::audio_mode_t::OFF);
 }
 
 void CMenuRoutineAdjust::button_released(Button button)
@@ -194,7 +197,7 @@ void CMenuRoutineAdjust::draw()
             uint8_t x1 = _area.x1-3;
             uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
 
-            _audio->draw_mic_audio_wave(x0, y0, x1, y1);
+            _audio->draw_audio_view(x0, y0, x1, y1);
 
             break;
         }
@@ -264,5 +267,17 @@ void CMenuRoutineAdjust::set_options_on_multi_choice_list()
         }
 
         _routine_multi_choice_list->set_selected(selected.multichoice.current_selection);
+    }
+}
+
+void CMenuRoutineAdjust::enable_audio_if_required_by_routine()
+{
+    for (std::vector<menu_entry>::iterator it = _active_routine_conf.menu.begin(); it != _active_routine_conf.menu.end(); it++)
+    {
+        if (it->menu_type == menu_entry_type::AUDIO_VIEW)
+        {
+            _audio->set_audio_mode(CAudio::audio_mode_t::THRESHOLD_CROSS_FFT);
+            return;
+        }
     }
 }

@@ -19,7 +19,8 @@ volatile bool CAnalogueCapture::_s_buf2_ready;
 
 CAnalogueCapture::CAnalogueCapture()
 {
-    _capture_time_us = ((double)CAPTURE_DEPTH * ((double)1/(double)SAMPLES_PER_SECOND)) * 1000 * 1000;
+    _capture_duration_us = ((double)CAPTURE_DEPTH * ((double)1/(double)SAMPLES_PER_SECOND)) * 1000 * 1000;
+    _last_buffer_update_time_us = 0;
 }
 
 // Called when capture_buf1 is full.
@@ -48,7 +49,7 @@ void CAnalogueCapture::s_dma_handler2()
 
 void CAnalogueCapture::init()
 {
-    printf("Capture time = %luus\n", _capture_time_us);
+    printf("Capture time = %luus\n", _capture_duration_us);
     _s_irq_counter1 = 0;
     _s_irq_counter2 = 0;
     adc_gpio_init(26 + ADC_CHANNEL_0);
@@ -173,6 +174,8 @@ void CAnalogueCapture::process_buffer(const uint8_t *capture_buf)
 
     for (uint x=0; x < sizeof(_audio_buffer_r); x++)
         _audio_buffer_r[x] = capture_buf[(x*3)+2];
+
+    _last_buffer_update_time_us = time_us_64();
 /*
     printf("%d, %d\tcapture_buf1, 4=(%d, %d)\tcapture_buf2, 5=(%d, %d)\n", 
     _s_irq_counter1, _s_irq_counter2,  
@@ -225,4 +228,9 @@ void CAnalogueCapture::get_audio_buffer(channel chan, uint16_t *samples, uint8_t
             *samples = sizeof(_audio_buffer_r);
             break;
     }
+}
+
+uint64_t CAnalogueCapture::get_last_buffer_update_time_us()
+{
+    return _last_buffer_update_time_us;
 }

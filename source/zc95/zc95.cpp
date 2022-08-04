@@ -21,6 +21,7 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "globals.h"
 #include "config.h"
 #include "git_version.h"
 
@@ -295,6 +296,7 @@ int main()
         routine_output->loop();
         led.loop();
         analogueCapture.process();
+        audio.process();
 
         if (analogueCapture.new_battery_readings_available())
         {

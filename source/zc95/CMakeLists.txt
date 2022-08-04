@@ -38,6 +38,7 @@ add_executable(zc95
   CHwCheck.cpp
   CHwCheckZc624.cpp
   version.cpp
+  globals.c
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
@@ -73,7 +74,7 @@ add_executable(zc95
   core1/routines/CShockChoice.cpp
   core1/routines/CCamTrigger.cpp
   core1/routines/CBuzz.cpp
-  core1/routines/CAudio1.cpp
+  core1/routines/CAudioThreshold.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp

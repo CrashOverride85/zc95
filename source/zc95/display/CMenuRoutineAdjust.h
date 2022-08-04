@@ -30,6 +30,7 @@ class CMenuRoutineAdjust : public CMenu
     private:
         void set_options_on_multi_choice_list();
         void draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, color_t bar_colour);
+        void enable_audio_if_required_by_routine();
 
         COptionsList *_routine_adjust_display_list = NULL;
         COptionsList *_routine_multi_choice_list = NULL;

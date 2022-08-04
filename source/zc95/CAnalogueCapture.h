@@ -39,6 +39,7 @@ class CAnalogueCapture
         bool new_battery_readings_available();
         uint8_t *get_battery_readings(uint8_t *readings_count);
         void get_audio_buffer(channel chan, uint16_t *samples, uint8_t **buffer);
+        uint64_t get_last_buffer_update_time_us();
 
     private:
         void process_buffer(const uint8_t *capture_buf);
@@ -65,7 +66,8 @@ class CAnalogueCapture
         int lastc2 = 0;
         uint64_t time_last_print=0;
         bool _new_battery_readings = false;
-        uint32_t _capture_time_us;
+        uint32_t _capture_duration_us;
+        uint64_t _last_buffer_update_time_us;
 };
 
 #endif

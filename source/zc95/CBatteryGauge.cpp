@@ -121,7 +121,7 @@ uint8_t CBatteryGauge::get_battery_percentage_from_voltage(float battery_voltage
                     tell when a charger is plugged in (i.e. < 13v doesn't mean the charger *isn't* plugged in)
      */
     float pc = ((battery_voltage - 10.5)/2) * 100;
-    printf("voltage = %f\n", battery_voltage);
+    // printf("voltage = %f\n", battery_voltage);
     
     if (pc < 0)
         pc = 0;
