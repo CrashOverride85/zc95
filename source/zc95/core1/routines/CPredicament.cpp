@@ -36,10 +36,10 @@ CPredicament::CPredicament()
     _trigger2_active = false;
 
     // menu options. init value here should match current_selection set below
-    _trigger1_invert = true;
-    _trigger2_invert = true;
-    _logic_and = false;
-    _output_invert = false;
+    _trigger1_invert = false;
+    _trigger2_invert = false;
+    _logic_and = true;
+    _output_invert = true;
 }
 
 CPredicament::~CPredicament()
