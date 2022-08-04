@@ -43,6 +43,10 @@ void COptionsList::set_selected(uint8_t selection)
     {
         _current_selection = selection;
     }
+    else
+    {
+        printf("COptionsList::set_selected: Error - passed invalid selection %d (max %d)\n", selection, _options.size());
+    }
 }
 
 void COptionsList::draw()
