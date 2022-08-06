@@ -48,12 +48,11 @@ class CMenuSettings : public CMenu
         };
 
         std::vector<setting> _settings;
-
-
+        int _last_selection = -1;
         COptionsList *_settings_list = NULL;
         struct display_area _area;
+        
         CDisplay* _display;
-
         CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;

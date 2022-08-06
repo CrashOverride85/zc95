@@ -67,6 +67,7 @@ void CMenuSettings::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+                _last_selection = _settings_list->get_current_selection();
                 show_selected_setting();
                 break;
 
@@ -155,6 +156,13 @@ void CMenuSettings::show()
     for (std::vector<CMenuSettings::setting>::iterator it = _settings.begin(); it != _settings.end(); it++)
     {
         _settings_list->add_option((*it).text);
+    }
+
+    // If we've already been in a setting menu and come back to this menu, pre-select that setting, instead
+    // of going back to the top of the list
+    if (_last_selection > 0)
+    {
+        _settings_list->set_selected(_last_selection);
     }
 
     _exit_menu = false;
