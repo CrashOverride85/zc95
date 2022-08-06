@@ -138,15 +138,6 @@ void CAnalogueCapture::process()
         uint64_t time = time_us_64() - time_last_print;
         time_last_print = time_us_64();
 
-/*
-        printf("%d, %d\tadc0=(%d, %d)\tadc1=(%d, %d)\tadc2=(%d, %d) \t%" PRId64 "us (%d ms)\n", 
-        _s_irq_counter1, _s_irq_counter2,  
-        capture_buf1[0], capture_buf2[0], 
-        capture_buf1[1], capture_buf2[1],
-        capture_buf1[2], capture_buf2[2],
-        time,
-        time/1000); 
-*/
         lastc1 = _s_irq_counter1;
         lastc2 = _s_irq_counter2;
 
@@ -176,17 +167,6 @@ void CAnalogueCapture::process_buffer(const uint8_t *capture_buf)
         _audio_buffer_r[x] = capture_buf[(x*3)+2];
 
     _last_buffer_update_time_us = time_us_64();
-/*
-    printf("%d, %d\tcapture_buf1, 4=(%d, %d)\tcapture_buf2, 5=(%d, %d)\n", 
-    _s_irq_counter1, _s_irq_counter2,  
-    capture_buf[1], capture_buf[4], 
-    capture_buf[2], capture_buf[5]);
-
-    printf("%d, %d\t_audio_buffer_l=(%d, %d)\t_audio_buffer_r=(%d, %d)\n", 
-        _s_irq_counter1, _s_irq_counter2,  
-        _audio_buffer_l[0], _audio_buffer_l[1], 
-        _audio_buffer_r[0], _audio_buffer_r[1]);  
-        */
 }
 
 bool CAnalogueCapture::new_battery_readings_available()
@@ -204,18 +184,6 @@ uint8_t *CAnalogueCapture::get_battery_readings(uint8_t *readings_count)
 
 void CAnalogueCapture::get_audio_buffer(channel chan, uint16_t *samples, uint8_t **buffer)
 {
-  /*  if (samples > CAPTURE_DEPTH/3)
-    {
-        printf("CAnalogueCapture::get_audio_buffer: request for more samples than available!\n");
-        return;
-    } 
-
-        printf("%d, %d\t_audio_buffer_l=(%d, %d)\t_audio_buffer_r=(%d, %d) \t\t _audio_buffer_l addr = %d\n", 
-        _s_irq_counter1, _s_irq_counter2,  
-        _audio_buffer_l[0], _audio_buffer_l[1], 
-        _audio_buffer_r[0], _audio_buffer_r[1],
-        _audio_buffer_l); 
-*/
     switch(chan)
     {
         case channel::LEFT:

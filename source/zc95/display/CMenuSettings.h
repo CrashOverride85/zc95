@@ -43,7 +43,8 @@ class CMenuSettings : public CMenu
             POWER_STEP     = 3,
             RAMP_UP_TIME   = 4,
             AUDIO          = 5,
-            ABOUT          = 6
+            HARDWARE       = 6,
+            ABOUT          = 7
         };
 
         std::vector<setting> _settings;

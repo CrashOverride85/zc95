@@ -194,7 +194,7 @@ void Core1::process_messages()
 
 void Core1::process_message(message msg)
 {
-    printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
+    // printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
     switch(msg.msg8[0])
     {
         case MESSAGE_ROUTINE_LOAD:

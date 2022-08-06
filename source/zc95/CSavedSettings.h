@@ -11,7 +11,6 @@
 
 class CSavedSettings
 {
-
     enum class setting
     {
         EepromInit     =  0, // Contains magic value if eeprom as been initialised
@@ -26,8 +25,9 @@ class CSavedSettings
         AudioGainR     = 25, // Gain for right channel
         MicPreAmp      = 26, // Mic pre-amp enabled
         MicPower       = 27, // Mic power enabled
-        // To Fill
-
+        Audio          = 28, // Audio setting: Auto/no gain/off
+        Debug          = 29, // Debugging output destination
+    
         // Collar config
         Collar0IdLow   = 30,
         Collar0IdHigh  = 31,
@@ -53,6 +53,20 @@ class CSavedSettings
             uint8_t mode;
         };
 
+        // Possible options for various saved settings 
+        enum class setting_audio
+        {
+            AUTO     = 0,   // Enable audio logic if digipot found, disable otherwise
+            NO_GAIN  = 1,   // Enable audio logic even if digipot not found, but disable setting of gain which requires digipot
+            OFF      = 2    // Disable audio logic even if digipot is found
+        };
+
+        enum class setting_debug
+        {
+            ACC_PORT = 0,  // Output debugging info on accessory port
+            AUX_POT  = 1,  // Output debugging info on aux port
+            OFF      = 2   // Disable debugging output
+        };
 
         CSavedSettings(CEeprom *eeprom);
         ~CSavedSettings();
@@ -88,6 +102,12 @@ class CSavedSettings
         bool get_mic_power_enabled();
         void set_mic_power_enabled(bool enabled);
 
+        setting_audio get_audio_setting();
+        void set_audio_setting(setting_audio setting);
+
+        setting_debug get_debug_dest();
+        void set_debug_dest(setting_debug setting);
+        
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);

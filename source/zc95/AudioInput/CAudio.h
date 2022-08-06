@@ -42,6 +42,7 @@ class CAudio
 
         void process();
         void set_audio_mode(audio_mode_t audio_mode);
+        bool is_audio_update_available(bool reset);
 
     private:
         uint16_t get_bar_height(float sample);
@@ -56,6 +57,7 @@ class CAudio
         float _fundamental_freq;
         uint64_t _last_audio_capture_time_us;
         audio_mode_t _audio_mode = audio_mode_t::OFF;        
+        bool _audio_update_available;
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain

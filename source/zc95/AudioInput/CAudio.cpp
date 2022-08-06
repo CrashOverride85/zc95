@@ -18,6 +18,7 @@ CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPo
     _routine_output = NULL;
     _last_audio_capture_time_us = 0;
     _fundamental_freq = 0;
+    _audio_update_available = false;
 }
 
 void CAudio::get_audio_buffer(CAnalogueCapture::channel chan, uint16_t *samples, uint8_t **buffer)
@@ -82,11 +83,26 @@ void CAudio::process()
     uint8_t *sample_buffer;
    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT, &sample_count, &sample_buffer);
 
+    if (_audio_mode == audio_mode_t::OFF)
+        return;
+
     if (_audio_mode == audio_mode_t::THRESHOLD_CROSS_FFT)
     {
         do_fft(sample_count, sample_buffer);
         threshold_cross_process_and_send();
     }
+
+    _audio_update_available = true;
+}
+
+bool CAudio::is_audio_update_available(bool reset)
+{
+    bool state = _audio_update_available;
+    
+    if (reset)
+        _audio_update_available = false;
+
+    return state;
 }
 
 void CAudio::set_audio_mode(audio_mode_t audio_mode)
@@ -164,6 +180,8 @@ void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
 
 void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
+    gInteruptable = true;
+
     _max_trigger_point = y1 - y0;
     if (_trigger_point > _max_trigger_point)
         _trigger_point = _max_trigger_point;
@@ -174,6 +192,8 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 
     color_t colour = hagl_color(0xFF, 0x00, 0x00);
     hagl_draw_line(x0, y1-_trigger_point, x1, y1-_trigger_point, colour);
+
+    gInteruptable = false;
 }
       
 

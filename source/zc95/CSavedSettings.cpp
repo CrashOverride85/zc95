@@ -154,6 +154,26 @@ void CSavedSettings::set_mic_power_enabled(bool enabled)
     _eeprom_contents[(uint8_t)setting::MicPower] = enabled ? 1 : 0;
 }
 
+CSavedSettings::setting_audio CSavedSettings::get_audio_setting()
+{
+    return (CSavedSettings::setting_audio)_eeprom_contents[(uint8_t)setting::Audio];
+}
+
+void CSavedSettings::set_audio_setting(setting_audio setting)
+{
+    _eeprom_contents[(uint8_t)setting::Audio] = (uint8_t)setting;
+}
+
+CSavedSettings::setting_debug CSavedSettings::get_debug_dest()
+{
+return (CSavedSettings::setting_debug)_eeprom_contents[(uint8_t)setting::Debug];
+}
+
+void CSavedSettings::set_debug_dest(setting_debug setting)
+{
+    _eeprom_contents[(uint8_t)setting::Debug] = (uint8_t)setting;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)
@@ -224,6 +244,9 @@ void CSavedSettings::eeprom_initialise()
     // Default microphone power and preamp to off - i.e. default is line level input
     _eeprom_contents[(uint8_t)setting::MicPower]  = 0;
     _eeprom_contents[(uint8_t)setting::MicPreAmp] = 0;
+
+    _eeprom_contents[(uint8_t)setting::Audio]  = (uint8_t)setting_audio::AUTO;
+    _eeprom_contents[(uint8_t)setting::Debug]  = (uint8_t)setting_debug::ACC_PORT;
 
     for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
         initialise_collar(collar_id);

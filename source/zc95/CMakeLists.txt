@@ -95,6 +95,7 @@ add_executable(zc95
   display/CMenuSettingRampUpTime
   display/CMenuSettingAbout
   display/CMenuSettingAudio
+  display/CMenuSettingHardware
   display/COptionsList
   display/CHorzBarGraph
 

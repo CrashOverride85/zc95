@@ -41,6 +41,7 @@ class CDisplay
         uint8_t get_font_height();
         void set_battery_percentage(uint8_t bat);
         void set_active_pattern(std::string pattern);
+        void set_update_required();
 
     private:
         void draw_soft_buttons();
@@ -80,6 +81,7 @@ class CDisplay
 
         uint8_t _battery_percentage;
         std::string _active_pattern;
+        bool _update_required;
 };
 
 #endif

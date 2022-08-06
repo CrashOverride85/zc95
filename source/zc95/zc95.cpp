@@ -298,6 +298,11 @@ int main()
         analogueCapture.process();
         audio.process();
 
+        if (audio.is_audio_update_available(true))
+        {
+            display.set_update_required();
+        }
+
         if (analogueCapture.new_battery_readings_available())
         {
             uint8_t readings_count = 0;
