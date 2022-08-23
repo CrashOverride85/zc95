@@ -26,6 +26,11 @@ CAccPort::CAccPort()
     printf("CAccPort()\n");
 }
 
+CAccPort::~CAccPort()
+{
+    printf("~CAccPort()\n");
+}
+
 void CAccPort::reset()
 {
     message msg = {0};

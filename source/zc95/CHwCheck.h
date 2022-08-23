@@ -25,6 +25,7 @@ class CHwCheck
         void check_part2(CLedControl *ledControl, CControlsPortExp *controls);
         void process();
         std::string get_zc624_version();
+        bool audio_digipot_found();
 
     private:
         enum Cause {UNKNOWN, MISSING, BATTERY, ZC628};
@@ -40,14 +41,16 @@ class CHwCheck
                 uint8_t address;
                 std::string description;
                 std::string display;
+                bool optional;
                 bool present;
-
-                device(uint8_t addr, std::string desc, std::string disp)
+                
+                device(uint8_t addr, std::string desc, std::string disp, bool opt=false)
                 {
                     address = addr;
                     description = desc;
                     present = false;
                     display = disp;
+                    optional = opt;
                 }
         };
 

@@ -33,6 +33,7 @@ class CMenuRoutineSelection : public CMenu
         void show();
 
     private:
+        bool is_audio_routine(routine_conf conf);
         COptionsList *_routine_disply_list = NULL;
         struct display_area _area;
         CDisplay* _display;

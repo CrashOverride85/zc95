@@ -18,6 +18,7 @@
 
 #include "CMenuSettingAudio.h"
 #include "../git_version.h"
+#include "../globals.h"
 
 CMenuSettingAudio::CMenuSettingAudio(CDisplay* display, CGetButtonState *buttons, CAudio *audio, CSavedSettings *saved_settings)
 {
@@ -156,7 +157,7 @@ void CMenuSettingAudio::draw()
 
     uint16_t samples_count = 0;
     _audio->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &samples_count, &audio_samples_l);
-    _audio->get_audio_buffer(CAnalogueCapture::channel::LEFT, &samples_count, &audio_samples_r); // TODO/FIXME: use RIGHT chanel once hw fixed
+    _audio->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &samples_count, &audio_samples_r);
 
     uint8_t y_middle = disp_area.y0+(_bar_graph_area.y0-disp_area.y0)/2;
 
@@ -204,8 +205,12 @@ void CMenuSettingAudio::draw()
     // Line in centre of waveform
     hagl_draw_line(disp_area.x0, y_middle, disp_area.x1, y_middle, 0xAA);
 
-    color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
-   _bar_graph->draw_horz_bar_graph(_bar_graph_area, 0, 255, _gain, "vol", bar_colour);
+    // Only show gain control if audio mode set to AUTO and digipot was found
+    if (_audio->get_audio_hardware_state() == CAudio::audio_hardware_state_t::PRESENT)
+    {
+        color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
+        _bar_graph->draw_horz_bar_graph(_bar_graph_area, 0, 255, _gain, "vol", bar_colour);
+    }
 }
 
 void CMenuSettingAudio::show()
@@ -220,13 +225,16 @@ void CMenuSettingAudio::show()
 
 void CMenuSettingAudio::set_gain(uint8_t gain, bool save)
 {
-    _audio->set_gain(CAnalogueCapture::channel::LEFT,  gain);
-    _audio->set_gain(CAnalogueCapture::channel::RIGHT, gain);
-
-    if (save)
+    if (_audio->get_audio_hardware_state() == CAudio::audio_hardware_state_t::PRESENT)
     {
-        _saved_settings->set_audio_gain_left (gain);
-        _saved_settings->set_audio_gain_right(gain);
+        _audio->set_gain(CAnalogueCapture::channel::LEFT,  gain);
+        _audio->set_gain(CAnalogueCapture::channel::RIGHT, gain);
+
+        if (save)
+        {
+            _saved_settings->set_audio_gain_left (gain);
+            _saved_settings->set_audio_gain_right(gain);
+        }
     }
 }
 

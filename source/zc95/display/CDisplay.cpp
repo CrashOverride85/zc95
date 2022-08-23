@@ -89,10 +89,11 @@ uint8_t CDisplay::get_font_height()
         {
             _current_menu->update();
         }
+
         draw_soft_buttons(); // 846us
 
         draw_bar_graphs(); // 489us
-
+        
         draw_status_bar();
   
         hagl_flush(); // 8us

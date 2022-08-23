@@ -166,6 +166,7 @@ int main()
 
     CHwCheck hw_check(&batteryGauge);
     hw_check.check_part1(); // If a fault is found, this never returns
+    audio.set_audio_digipot_found(hw_check.audio_digipot_found());
     
     // switch off backlight until init done
     controls.set_lcd_backlight(false);
@@ -205,6 +206,9 @@ int main()
     CRoutines::get_routines(&routines);
    
     hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
+
+    // Load/set gain, mic preamp, etc., from eeprom
+    audio.init(&settings);
 
     analogueCapture.init();
     analogueCapture.start();
@@ -247,7 +251,6 @@ int main()
     controls.audio_input_enable(true);
     //controls.mic_power_enable(false);
     //controls.mic_preamp_enable(true);
-    audio.init(&settings);
 
     //_audio_gain.set_val(0, 0);
     //_audio_gain.set_val(1, 0);

@@ -22,7 +22,19 @@ class CAudio
             THRESHOLD_CROSS_FFT
         };
 
+        enum class audio_hardware_state_t
+        {
+            NOT_PRESENT,
+            PRESENT_NO_GAIN,
+            PRESENT
+        };
+
         CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls);
+        void set_audio_digipot_found(bool found);
+        void init(CSavedSettings *saved_settings);
+        void set_routine_output(CRoutineOutput *routine_output);
+        audio_hardware_state_t get_audio_hardware_state();
+
         void get_audio_buffer(CAnalogueCapture::channel chan, uint16_t *samples, uint8_t **buffer);
         void set_gain(CAnalogueCapture::channel chan, uint8_t value); // 0-255, higher=more gain
         void mic_preamp_enable(bool enable);
@@ -31,13 +43,8 @@ class CAudio
         void increment_trigger_point();
         void decrement_trigger_point();
 
-        void init(CSavedSettings *saved_settings);
-        void set_routine_output(CRoutineOutput *routine_output);
-
         void do_fft(uint16_t sample_count, uint8_t *buffer);
-
         void draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-
         void draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
         void process();
@@ -50,20 +57,20 @@ class CAudio
         void threshold_cross_process_and_send();
         const uint8_t AudioDisplayWidth = 114;
 
+        bool _digipot_found;
         float _fft_output[FFT_N];
         uint16_t _trigger_point = 20;
         uint16_t _max_trigger_point = 20;
         CRoutineOutput *_routine_output;
         float _fundamental_freq;
         uint64_t _last_audio_capture_time_us;
-        audio_mode_t _audio_mode = audio_mode_t::OFF;        
+        audio_mode_t _audio_mode = audio_mode_t::OFF;
         bool _audio_update_available;
+        CSavedSettings *_saved_settings;
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain
         CControlsPortExp *_controlsPortExp; // Port expander used to (amongst other things) enable/disable microphone power and preamp
-
-        
 };
 
 #endif

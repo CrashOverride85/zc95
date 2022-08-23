@@ -41,6 +41,9 @@ CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
     _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
     _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
 
+    // optional parts
+    _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
+
     _batteryGauge = batteryGauge;
 }
 
@@ -83,11 +86,19 @@ void CHwCheck::check_part1()
         }
         else
         {
-            printf("NOT FOUND! (expected on address %d)\n", it->address);
-            cause = Cause::MISSING;
-            ok = false;
+            if (it->optional)
+            {
+                printf("Not found\n");
+            }
+            else
+            {
+                printf("NOT FOUND! (expected on address %d)\n", it->address);
+                cause = Cause::MISSING;
+                ok = false;
+            }
         }
     }
+
     if (ok)
     {
         printf("Status: Ok\n\n");
@@ -118,6 +129,16 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
     printf("Ok\n\n");
 }
 
+bool CHwCheck::audio_digipot_found()
+{
+    for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
+        if (it->address == AUDIO_DIGIPOT_ADDR)
+            return it->present;
+
+    printf("CHwCheck::audio_digipot_found(): Unable to determine if digipot present\n");
+    return false;
+}
+
 void CHwCheck::show_error_text_message(int y, std::string message)
 {
     y += 2;
@@ -131,7 +152,7 @@ void CHwCheck::show_error_text_missing(int y)
     
     for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
     {
-        if (!it->present)
+        if (!it->present && !it->optional)
         {
             put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
         }

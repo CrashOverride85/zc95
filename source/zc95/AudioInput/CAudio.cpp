@@ -8,8 +8,6 @@
 
 #include "ESP32_fft.h"
 
-
-
 CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls)
 {
     _analogueCapture = analogueCapture;
@@ -19,6 +17,13 @@ CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPo
     _last_audio_capture_time_us = 0;
     _fundamental_freq = 0;
     _audio_update_available = false;
+    _saved_settings = NULL;
+    _digipot_found = false;
+}
+
+void CAudio::set_audio_digipot_found(bool found)
+{
+    _digipot_found = found;
 }
 
 void CAudio::get_audio_buffer(CAnalogueCapture::channel chan, uint16_t *samples, uint8_t **buffer)
@@ -28,10 +33,13 @@ void CAudio::get_audio_buffer(CAnalogueCapture::channel chan, uint16_t *samples,
 
 void CAudio::set_gain(CAnalogueCapture::channel chan, uint8_t value)
 {
-    if (chan == CAnalogueCapture::channel::LEFT)
-        _mcp4651->set_val(0, 255-value);
-    else
-        _mcp4651->set_val(1, 255-value);
+    if (_digipot_found)
+    {
+        if (chan == CAnalogueCapture::channel::LEFT)
+            _mcp4651->set_val(0, 255-value);
+        else
+            _mcp4651->set_val(1, 255-value);
+    }
 }
 
 void CAudio::mic_preamp_enable(bool enable)
@@ -50,11 +58,49 @@ void CAudio::init(CSavedSettings *saved_settings)
     set_gain(CAnalogueCapture::channel::RIGHT, saved_settings->get_audio_gain_right());
     mic_power_enable (saved_settings->get_mic_power_enabled ());
     mic_preamp_enable(saved_settings->get_mic_preamp_enabled());
+    _saved_settings = saved_settings;
 }
 
 void CAudio::set_routine_output(CRoutineOutput *routine_output)
 {
     _routine_output = routine_output;
+}
+
+// Taking into account the audio setting in the menu (Auto/present no gain/off) and if the digipot on the audio 
+// board was found, return state: NOT_PRESENT, PRESENT_NO_GAIN (basically forced on by menu) or PRESENT
+CAudio::audio_hardware_state_t CAudio::get_audio_hardware_state()
+{
+    if (_saved_settings == NULL)
+    {
+        printf("CAudio::audio_hardware_state_t CAudio::get_audio_hardware_state(): ERROR - NULL _saved_settings\n");
+        return CAudio::audio_hardware_state_t::NOT_PRESENT;
+    }
+
+    CAudio::audio_hardware_state_t state;
+    switch (_saved_settings->get_audio_setting())
+    {
+        case CSavedSettings::setting_audio::AUTO:
+            if (_digipot_found)
+            {
+                state = CAudio::audio_hardware_state_t::PRESENT;
+            }
+            else
+            {
+                state = CAudio::audio_hardware_state_t::NOT_PRESENT;
+            }
+            break;
+
+        case CSavedSettings::setting_audio::NO_GAIN:
+            state = CAudio::audio_hardware_state_t::PRESENT_NO_GAIN;
+            break;
+
+        case CSavedSettings::setting_audio::OFF:
+        default:
+            state = CAudio::audio_hardware_state_t::NOT_PRESENT;
+            break;
+    }
+    
+    return state;
 }
 
 void CAudio::increment_trigger_point()

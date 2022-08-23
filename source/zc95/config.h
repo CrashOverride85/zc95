@@ -7,6 +7,7 @@
 #define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
 #define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front pannel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
 #define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front pannel
+#define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
 #define ADC_ADDR                    0x48
 #define EEPROM_ADDR                 0x50
 

@@ -83,9 +83,8 @@ void CMenuRoutineSelection::button_pressed(Button button)
         {
         if (button == Button::A) // Select
         {
-            CRoutineMaker* routine_maker = (*_routines)[_routine_disply_list->get_current_selection()];
-            //_routine_output->activate_routine(routine_maker);
-            _routine_output->activate_routine(_routine_disply_list->get_current_selection());
+            CRoutineMaker* routine_maker = (*_routines)[_routine_disply_list->get_current_selection_id()];
+            _routine_output->activate_routine(_routine_disply_list->get_current_selection_id());
             _last_selection = _routine_disply_list->get_current_selection();
 
             set_active_menu(new CMenuRoutineAdjust(_display, routine_maker, _buttons, _routine_output, _audio));
@@ -128,14 +127,28 @@ void CMenuRoutineSelection::show()
 
     // Get a list of routines to show
     _routine_disply_list->clear_options();
+    int index=0;
     for (std::vector<CRoutineMaker*>::iterator it = _routines->begin(); it != _routines->end(); it++)
     {
         struct routine_conf conf;
         CRoutine* routine = (*it)();
         routine->get_config(&conf);
+
+        // Hide audio routies from menu if audio hardware not present. Show everything else.        
+        if (!is_audio_routine(conf))
+        {
+            _routine_disply_list->add_option(conf.name, index);
+        }
+        else
+        {
+            if (_audio->get_audio_hardware_state() != CAudio::audio_hardware_state_t::NOT_PRESENT)
+            {
+                _routine_disply_list->add_option(conf.name, index);
+            }
+        }
+
+        index++;
         delete routine;
-        
-        _routine_disply_list->add_option(conf.name);
     }
 
     // If we've already been in a routine and come back to this menu, pre-select that routine, instead
@@ -144,4 +157,16 @@ void CMenuRoutineSelection::show()
     {
         _routine_disply_list->set_selected(_last_selection);
     }
+}
+
+// If a routine has any menu item that uses audio, return true
+bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
+{
+    for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
+    {
+        if (it->menu_type == menu_entry_type::AUDIO_VIEW)
+            return true;
+    }
+
+    return false;
 }
