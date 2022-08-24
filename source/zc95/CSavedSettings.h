@@ -38,6 +38,8 @@ class CSavedSettings
        // ...
        // Collar9Mode  = 78
        // not used     = 79
+
+       AuxPort         = 80 // Aux port usage - Audio or Serial
     };
     public:
         struct channel_selection
@@ -64,8 +66,14 @@ class CSavedSettings
         enum class setting_debug
         {
             ACC_PORT = 0,  // Output debugging info on accessory port
-            AUX_POT  = 1,  // Output debugging info on aux port
+            AUX_PORT = 1,  // Output debugging info on aux port
             OFF      = 2   // Disable debugging output
+        };
+
+        enum class setting_aux_port_use
+        {
+            AUDIO  = 0, // Aux port is routed to ADC if audio board present (same as SERIAL if not present)
+            SERIAL = 1  // Aux port is routed to uart0
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -107,6 +115,10 @@ class CSavedSettings
 
         setting_debug get_debug_dest();
         void set_debug_dest(setting_debug setting);
+
+        // Aux port use
+        setting_aux_port_use get_aux_port_use();
+        void set_aux_port_use(setting_aux_port_use setting);
         
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);

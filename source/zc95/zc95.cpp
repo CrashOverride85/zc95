@@ -45,6 +45,7 @@
 #include "CHwCheck.h"
 #include "CAnalogueCapture.h"
 #include "CBatteryGauge.h"
+#include "CDebugOutput.h"
 
 #include "AudioInput/CMCP4651.h"
 #include "AudioInput/CAudio.h"
@@ -72,7 +73,6 @@ CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &controls);
-
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
@@ -148,13 +148,20 @@ void seed_random_from_rosc()
 
 int main()
 {
-    stdio_uart_init_full(uart1, PICO_DEFAULT_UART_BAUD_RATE, PICO_DEFAULT_UART_TX_PIN, PICO_DEFAULT_UART_RX_PIN);
+    // Serial going to 3.5mm aux socket
+    gpio_set_function(PIN_AUX_UART_TX, GPIO_FUNC_UART);
+    gpio_set_function(PIN_AUX_UART_RX, GPIO_FUNC_UART);
+    
+    // Serial on acc port
+    gpio_set_function(PIN_ACC_UART_TX, GPIO_FUNC_UART);
+    gpio_set_function(PIN_ACC_UART_RX, GPIO_FUNC_UART);    
+    
+    // For now, until settings loaded from eeprom, send debugging info to accessory port
+    CDebugOutput::set_debug_destination(CDebugOutput::debug_dest_t::ACC);
+    
     adc_init();
     messages_init();
 
-    // 3.5mm serial socket
-    gpio_set_function(PIN_UART_TX, GPIO_FUNC_UART);
-    gpio_set_function(PIN_UART_RX, GPIO_FUNC_UART);
     printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
 
     // I2C Initialisation
@@ -177,6 +184,19 @@ int main()
     // Note eeprom ic is on i2c bus
     sleep_ms(100); // wait for eeprom to be ready
     CSavedSettings settings = CSavedSettings(&eeprom);
+
+    // Configure AUX port for serial or audio use
+    if (settings.get_aux_port_use() == CSavedSettings::setting_aux_port_use::AUDIO)
+    {
+        //sleep_ms(100); // wait for eeprom to be ready
+        controls.audio_input_enable(true);
+    }
+    else
+    {
+        controls.audio_input_enable(false);
+    }
+
+    CDebugOutput::set_debug_destination_from_settings(&settings);
 
     _front_pannel = new CFpAnalog(&settings); // new CFpRotEnc(&settings);
 
@@ -247,14 +267,6 @@ int main()
     controls.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
-
-    controls.audio_input_enable(true);
-    //controls.mic_power_enable(false);
-    //controls.mic_preamp_enable(true);
-
-    //_audio_gain.set_val(0, 0);
-    //_audio_gain.set_val(1, 0);
-    
 
     while (1) 
     {

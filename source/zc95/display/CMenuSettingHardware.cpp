@@ -18,10 +18,11 @@
 
 #include "CMenuSettingHardware.h"
 #include "CMenuSettings.h"
+#include "../CDebugOutput.h"
 #include "../config.h"
 
 
-CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
+CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio)
 {
     printf("CMenuSettingHardware()\n");
     _display = display;
@@ -37,6 +38,7 @@ CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CGetButtonState *b
     _setting_choice_area = display->get_display_area();
     _setting_choice_area.y0 = _setting_choice_area.y1 - ((_setting_choice_area.y1-_setting_choice_area.y0)/2);
     _settings_choice_list = new COptionsList(display, _setting_choice_area);
+    _audio = audio;
 }
 
 CMenuSettingHardware::~CMenuSettingHardware()
@@ -123,6 +125,15 @@ void CMenuSettingHardware::save_setting(uint8_t setting_menu_index, uint8_t choi
 
         case setting_id::DEBUG:
             _saved_settings->set_debug_dest((CSavedSettings::setting_debug)choice_id.id);
+            CDebugOutput::set_debug_destination_from_settings(_saved_settings);
+            break;
+
+        case setting_id::AUX_USE:
+            _saved_settings->set_aux_port_use((CSavedSettings::setting_aux_port_use)choice_id.id);
+            if (choice_id.id == (uint8_t)CSavedSettings::setting_aux_port_use::AUDIO)
+                _audio->audio_input_enable(true);
+            else
+                _audio->audio_input_enable(false);
             break;
     }
 }
@@ -148,8 +159,9 @@ void CMenuSettingHardware::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUDIO, "Audio"));
-    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::DEBUG, "Debug output"));
+    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUDIO  , "Audio"));
+    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::DEBUG  , "Debug output"));
+    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUX_USE, "Aux port use"));
 
     _settings_list->clear_options();
     for (std::vector<CMenuSettingHardware::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
@@ -177,9 +189,15 @@ void CMenuSettingHardware::set_options_on_multi_choice_list(uint8_t setting_id)
 
         case setting_id::DEBUG:
             _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::ACC_PORT, "Accessory port"));
-            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::AUX_POT , "Aux port"      ));
+            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::AUX_PORT, "Aux port"      ));
             _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::OFF     , "Off"           ));
             current_choice_id = (uint8_t)_saved_settings->get_debug_dest();
+            break;
+
+        case setting_id::AUX_USE:
+            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_aux_port_use::AUDIO,  "Audio input"));
+            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_aux_port_use::SERIAL, "Serial I/O" ));
+            current_choice_id = (uint8_t)_saved_settings->get_aux_port_use();
             break;
     }
 
@@ -196,15 +214,3 @@ void CMenuSettingHardware::set_options_on_multi_choice_list(uint8_t setting_id)
     }
     _settings_choice_list->set_selected(current_setting);
 }
-
-/*
-CMenuSettingHardware::channel_choice CMenuSettingHardware::get_channel_choice(CChannel_types::channel_type type, uint8_t index)
-{
-    CMenuSettingHardware::channel_choice cc;
-    cc.channel_index = index;
-    cc.type = type;
-    cc.text = CChannel_types::get_channel_name(type, index);
-    return cc;
-}
-*/
-

@@ -116,7 +116,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::HARDWARE:
-            set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output));
+            set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output, _audio));
             break;
 
         case setting_id::ABOUT:

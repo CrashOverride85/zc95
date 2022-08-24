@@ -52,6 +52,11 @@ void CAudio::mic_power_enable(bool enable)
     _controlsPortExp->mic_power_enable(enable);
 }
 
+void CAudio::audio_input_enable(bool enable)
+{
+    _controlsPortExp->audio_input_enable(enable);
+}
+
 void CAudio::init(CSavedSettings *saved_settings)
 {
     set_gain(CAnalogueCapture::channel::LEFT,  saved_settings->get_audio_gain_left ());

@@ -174,6 +174,16 @@ void CSavedSettings::set_debug_dest(setting_debug setting)
     _eeprom_contents[(uint8_t)setting::Debug] = (uint8_t)setting;
 }
 
+CSavedSettings::setting_aux_port_use CSavedSettings::get_aux_port_use()
+{
+    return (CSavedSettings::setting_aux_port_use)_eeprom_contents[(uint8_t)setting::AuxPort];
+}
+
+void CSavedSettings::set_aux_port_use(setting_aux_port_use setting)
+{
+    _eeprom_contents[(uint8_t)setting::AuxPort] = (uint8_t)setting;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)

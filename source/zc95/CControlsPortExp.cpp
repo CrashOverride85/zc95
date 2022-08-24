@@ -133,6 +133,11 @@ void CControlsPortExp::mic_power_enable(bool enable)
  */
 void CControlsPortExp::audio_input_enable(bool enable)
 {
+    if (enable)
+      printf("Enabling audio input\n");
+    else
+      printf("Disabling audio input\n");
+
     const int AudioInputEnablePin = 6;
     set_pin_state(AudioInputEnablePin, enable);
 }

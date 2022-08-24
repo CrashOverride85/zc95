@@ -3,6 +3,7 @@
 #include "COptionsList.h"
 #include "../CSavedSettings.h"
 #include "../CChannel_types.h"
+#include "../AudioInput/CAudio.h"
 #include "../core1/output/COutputChannel.h"
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
@@ -10,7 +11,7 @@
 class CMenuSettingHardware : public CMenu
 {
     public:
-        CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
+        CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio);
         ~CMenuSettingHardware();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -36,7 +37,8 @@ class CMenuSettingHardware : public CMenu
         enum setting_id
         {
             AUDIO          = 0,
-            DEBUG          = 1
+            DEBUG          = 1,
+            AUX_USE        = 2
         };
 
         std::vector<setting_t> _settings;
@@ -48,13 +50,11 @@ class CMenuSettingHardware : public CMenu
         void set_options_on_multi_choice_list(uint8_t setting_id);
         void save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index);
 
-
-        
         struct display_area _area;
         CDisplay* _display;
         CGetButtonState *_buttons;
         display_area _setting_choice_area;
         CSavedSettings *_saved_settings;
-    //    channel_choice get_channel_choice(CChannel_types::channel_type, uint8_t index);
         CRoutineOutput *_routine_output;
+        CAudio *_audio;
 };

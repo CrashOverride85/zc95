@@ -59,5 +59,9 @@
 #define I2C_SDA 8
 #define I2C_SCL 9
 
-#define PIN_UART_TX 0
-#define PIN_UART_RX 1
+#define PIN_AUX_UART_TX 0
+#define PIN_AUX_UART_RX 1
+
+#define PIN_ACC_UART_TX 8
+#define PIN_ACC_UART_RX 9
+

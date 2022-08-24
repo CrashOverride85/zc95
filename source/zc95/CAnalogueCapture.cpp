@@ -135,7 +135,6 @@ void CAnalogueCapture::process()
 {
     if (lastc1 != _s_irq_counter1 || lastc2 != _s_irq_counter2)
     {
-        uint64_t time = time_us_64() - time_last_print;
         time_last_print = time_us_64();
 
         lastc1 = _s_irq_counter1;

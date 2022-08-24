@@ -37,6 +37,8 @@ add_executable(zc95
   CTimingTest.cpp
   CHwCheck.cpp
   CHwCheckZc624.cpp
+  CBatteryGauge.cpp
+  CDebugOutput.cpp
   version.cpp
   globals.c
 
@@ -104,7 +106,6 @@ add_executable(zc95
   AudioInput/CAudio.cpp
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
-  CBatteryGauge.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)

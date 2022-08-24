@@ -39,6 +39,7 @@ class CAudio
         void set_gain(CAnalogueCapture::channel chan, uint8_t value); // 0-255, higher=more gain
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
+        void audio_input_enable(bool enable);
 
         void increment_trigger_point();
         void decrement_trigger_point();
