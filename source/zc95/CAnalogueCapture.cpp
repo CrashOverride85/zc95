@@ -142,11 +142,13 @@ void CAnalogueCapture::process()
 
         if (_s_buf1_ready)
         {
+            _s_buf1_ready = false;
             process_buffer(capture_buf1);
         }
 
         if (_s_buf2_ready)
         {
+            _s_buf2_ready = false;
             process_buffer(capture_buf2);
         }
     }

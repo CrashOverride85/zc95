@@ -13,11 +13,8 @@
 #define CAPTURE_DEPTH 1024
 #define CAPTURE_RING_BITS 10
 
-//#define SAMPLES_PER_SECOND 20000 // Note this is the number of ADC samples per second. 3 ADC channels are being sampled, so the 
-                                   // audio sample rate is this divided by 3 per channel (the 3rd channel is the battery voltage)
-
-
-#define SAMPLES_PER_SECOND 60000 
+#define SAMPLES_PER_SECOND 60000 // Note this is the number of ADC samples per second. 3 ADC channels are being sampled, so the 
+                                 // audio sample rate is this divided by 3 per channel (the 3rd channel is the battery voltage)
 
 #define BATTERY_ADC_READINGS 10
 
