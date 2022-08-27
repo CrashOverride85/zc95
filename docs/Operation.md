@@ -60,6 +60,26 @@ Configuration options so far:
 
 * Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 
+* Audio input - Displayed if audio board present by default, depends on "Hardware config > Audio" setting. See [Audio Input](./AudioInput-Operation.md)
+
+* Hardware config - configure various hardware settings. Shouldn't need changing. Options:
+  - Audio - control display of audio options. See [Audio Input](./AudioInput-Operation.md) 
+  - Debug output - where debugging information is sent:
+    - Accessory port
+    - Aux port
+    - Off
+
+    Note that if the Aux port is configured to be used for audio, picking Aux port here is essentially the same as "Off". Also worth noting that when the box is first powered up, debug info is always sent to the accessory port until the configuration is read, before potentially switching to aux or off.
+
+  - Aux port use - what the Aux port on the front is used for. Options:
+    - Audio input
+    - Serial I/O
+
+    If the audio board isn't present, this menu has no effect, i.e. Aux is always in Serial I/O mode.
+
+* About - shows firmware version of main board, and zc624 output board
+
+
 ## Shock collars
 If the box is fitted with a 433Mhz AM transmitter in J11 on the main board, it can be used to control one specific type of shock collar:
 
@@ -74,5 +94,3 @@ These will only function in certain patterns which have simpler output demands, 
 [device layout]: images/layout.png "Device layout"
 [screen layout]: images/screen.png "screen layout"
 [shock collar]: images/shock_collar.jpg "Supported shock collar"
-
-

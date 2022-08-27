@@ -4,6 +4,8 @@
 
 *Disclaimer*: These instructions are complete to the best of my knowledge, however I've only built the one so far, and that was over quite some time, so there may be omissions.
 
+There is now an optional audio [input board](./AudioInput-Build.md) too.
+
 ## Prerequisites 
 These notes assume a reasonable amount of experience assembling electronic kits. Other than through hole soldering, it also requires:
 * Soldering 1 SMD part on the front panel control board. This is a SOIC-16 package, so fairly large / easy to solder
@@ -55,8 +57,7 @@ Photo of board as it arrived from JLCPCB:
 * Solder short (~12cm or so) wires on to J13, and fit spade connectors on the other end for the battery
 * R14 & D4 (top middle) don't need to be populated. It's for a power LED that has no place on the front panel.
 * J20 (I2C header, bottom left) is for future expansion and doesn't need to be populated
-* J17 (just below battery, to the right) is also for future expansion and doesn't need to be populated
-
+* J17 (just below battery, to the right) is for the optional audio input board; if building that, fit a 2.54mm pin header, otherwise leave unpopulated
 
 Then (optionally) plug a 433MHz transmitter into J11
 
