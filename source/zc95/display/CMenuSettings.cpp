@@ -23,10 +23,11 @@
 #include "CMenuSettingPowerStep.h"
 #include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
-
+#include "CMenuSettingAudio.h"
+#include "CMenuSettingHardware.h"
 #include "../core1/routines/CRoutine.h"
 
-CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck)
+CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -36,6 +37,7 @@ CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSaved
     _routine_output = routine_output;
     _settings_list = new COptionsList(display, display->get_display_area());
     _hwCheck = hwCheck;
+    _audio = audio;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -65,6 +67,7 @@ void CMenuSettings::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+                _last_selection = _settings_list->get_current_selection();
                 show_selected_setting();
                 break;
 
@@ -108,6 +111,14 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_settings));
             break;
 
+        case setting_id::AUDIO:
+            set_active_menu(new CMenuSettingAudio(_display, _buttons, _audio, _saved_settings));
+            break;
+
+        case setting_id::HARDWARE:
+            set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output, _audio));
+            break;
+
         case setting_id::ABOUT:
             set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
             break;
@@ -137,17 +148,24 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
     _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
-    _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"));
     
-    // This is/was for a verion of the front panel that used rotary encoders instead of POTs for 
-    // setting the power level. Pretty sure it'll never be wanted now... 
-    // _settings.push_back(CMenuSettings::setting(setting_id::POWER_STEP,     "Power levels"));
+    if (_audio->get_audio_hardware_state() != CAudio::audio_hardware_state_t::NOT_PRESENT)
+        _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     
+    _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));
+    _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"));  
     
    _settings_list->clear_options();
     for (std::vector<CMenuSettings::setting>::iterator it = _settings.begin(); it != _settings.end(); it++)
     {
         _settings_list->add_option((*it).text);
+    }
+
+    // If we've already been in a setting menu and come back to this menu, pre-select that setting, instead
+    // of going back to the top of the list
+    if (_last_selection > 0)
+    {
+        _settings_list->set_selected(_last_selection);
     }
 
     _exit_menu = false;

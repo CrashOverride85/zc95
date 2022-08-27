@@ -114,6 +114,76 @@ void CSavedSettings::set_ramp_up_time_seconds(uint8_t time_secs)
     _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = time_secs;
 }
 
+uint8_t CSavedSettings::get_audio_gain_left()
+{
+    return _eeprom_contents[(uint8_t)setting::AudioGainL];
+}
+
+uint8_t CSavedSettings::get_audio_gain_right()
+{
+    return _eeprom_contents[(uint8_t)setting::AudioGainR];
+}
+
+void CSavedSettings::set_audio_gain_left(uint8_t gain)
+{
+    _eeprom_contents[(uint8_t)setting::AudioGainL] = gain;
+}
+
+void CSavedSettings::set_audio_gain_right(uint8_t gain)
+{
+    _eeprom_contents[(uint8_t)setting::AudioGainR] = gain;
+}
+
+bool CSavedSettings::get_mic_preamp_enabled()
+{
+    return _eeprom_contents[(uint8_t)setting::MicPreAmp] > 0;
+}
+
+void CSavedSettings::set_mic_preamp_enabled(bool enabled)
+{
+    _eeprom_contents[(uint8_t)setting::MicPreAmp] = enabled ? 1 : 0;
+}
+
+bool CSavedSettings::get_mic_power_enabled()
+{
+    return _eeprom_contents[(uint8_t)setting::MicPower] > 0;
+}
+
+void CSavedSettings::set_mic_power_enabled(bool enabled)
+{
+    _eeprom_contents[(uint8_t)setting::MicPower] = enabled ? 1 : 0;
+}
+
+CSavedSettings::setting_audio CSavedSettings::get_audio_setting()
+{
+    return (CSavedSettings::setting_audio)_eeprom_contents[(uint8_t)setting::Audio];
+}
+
+void CSavedSettings::set_audio_setting(setting_audio setting)
+{
+    _eeprom_contents[(uint8_t)setting::Audio] = (uint8_t)setting;
+}
+
+CSavedSettings::setting_debug CSavedSettings::get_debug_dest()
+{
+return (CSavedSettings::setting_debug)_eeprom_contents[(uint8_t)setting::Debug];
+}
+
+void CSavedSettings::set_debug_dest(setting_debug setting)
+{
+    _eeprom_contents[(uint8_t)setting::Debug] = (uint8_t)setting;
+}
+
+CSavedSettings::setting_aux_port_use CSavedSettings::get_aux_port_use()
+{
+    return (CSavedSettings::setting_aux_port_use)_eeprom_contents[(uint8_t)setting::AuxPort];
+}
+
+void CSavedSettings::set_aux_port_use(setting_aux_port_use setting)
+{
+    _eeprom_contents[(uint8_t)setting::AuxPort] = (uint8_t)setting;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)
@@ -170,11 +240,23 @@ void CSavedSettings::eeprom_initialise()
     // Default LED brightness to 10
     _eeprom_contents[(uint8_t)setting::LEDBrightness] = 10;
 
-    // Default power level step to 10, giving 100 power levels
+    // Default power level step to 10, giving 100 power levels. TODO: Remove. no longer applicable with POTs for power adjustment, not rotary encoders.
     _eeprom_contents[(uint8_t)setting::PowerStep] = 10;
 
     // Ramp up time - 5 secs seems like a reasonable default
     _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = 5;
+
+    // Gain - put it somewhere near the middle. Note that the config screen changes
+    // it in 5 step increments, so it's best if the default is a multiple of 5
+    _eeprom_contents[(uint8_t)setting::AudioGainL] = 130;
+    _eeprom_contents[(uint8_t)setting::AudioGainR] = 130;
+
+    // Default microphone power and preamp to off - i.e. default is line level input
+    _eeprom_contents[(uint8_t)setting::MicPower]  = 0;
+    _eeprom_contents[(uint8_t)setting::MicPreAmp] = 0;
+
+    _eeprom_contents[(uint8_t)setting::Audio]  = (uint8_t)setting_audio::AUTO;
+    _eeprom_contents[(uint8_t)setting::Debug]  = (uint8_t)setting_debug::ACC_PORT;
 
     for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
         initialise_collar(collar_id);

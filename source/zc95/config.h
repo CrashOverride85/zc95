@@ -3,13 +3,13 @@
 // #define SINGLE_CORE
 
 
-#define EXT_INPUT_PORT_EXP_ADDR 0x21    // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
-#define CONTROLS_PORT_EXP_ADDR 0x22     // 4x front pannel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
-#define EEPROM_ADDR 0x50
-#define ADC_ADDR    0x48
-#define ZC624_ADDR  0x10
-
-#define FP_ANALOG_PORT_EXP_2_ADDR 0x26 // U2 on the analog verion of the front pannel
+#define ZC624_ADDR                  0x10
+#define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
+#define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front pannel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
+#define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front pannel
+#define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
+#define ADC_ADDR                    0x48
+#define EEPROM_ADDR                 0x50
 
 
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
@@ -59,5 +59,9 @@
 #define I2C_SDA 8
 #define I2C_SCL 9
 
-#define PIN_UART_TX 0
-#define PIN_UART_RX 1
+#define PIN_AUX_UART_TX 0
+#define PIN_AUX_UART_RX 1
+
+#define PIN_ACC_UART_TX 8
+#define PIN_ACC_UART_RX 9
+

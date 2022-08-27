@@ -22,6 +22,7 @@
 #include <fontx.h>
 #include <string>
 
+#include "../globals.h"
 #include "../CTimingTest.h"
 
 /*
@@ -73,8 +74,14 @@ uint8_t CDisplay::get_font_height()
  void CDisplay::update()
  {
     // Don't try to update the screen more than once every 100ms
-    if (time_us_64() - _last_update > (100*1000))
+    if (
+        _update_required || 
+        (time_us_64() - _last_update > (100*1000))
+        )
     {
+        gInteruptable = true;
+        
+        _update_required = false;
         CTimingTest timing;
         hagl_clear_screen();
 
@@ -82,15 +89,17 @@ uint8_t CDisplay::get_font_height()
         {
             _current_menu->update();
         }
+
         draw_soft_buttons(); // 846us
 
         draw_bar_graphs(); // 489us
-
+        
         draw_status_bar();
   
         hagl_flush(); // 8us
 
         _last_update = time_us_64();
+        gInteruptable = false;
     }
  }
 
@@ -272,4 +281,9 @@ void CDisplay::put_text(std::string text, int16_t x, int16_t y, color_t color)
 
     std::wstring widestr = std::wstring(text.begin(), text.end());
     hagl_put_text(widestr.c_str(), x, y, color, font6x9);
+}
+
+void CDisplay::set_update_required()
+{
+    _update_required = true;
 }

@@ -13,6 +13,7 @@
 #define MESSAGE_ROUTINE_STOP                  7
 #define MESSAGE_ROUTINE_SOFT_BUTTON_PUSHED    8
 #define MESSAGE_REINIT_CHANNELS               9
+#define MESSAGE_AUDIO_THRES_REACHED          10
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100

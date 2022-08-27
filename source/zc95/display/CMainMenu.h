@@ -11,6 +11,8 @@
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
 #include "../CHwCheck.h"
+#include "../AudioInput/CAudio.h"
+
 #include <string>
 #include <vector>
 
@@ -19,7 +21,7 @@
 class CMainMenu : public CMenu
 {
     public:
-        CMainMenu(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck);
+        CMainMenu(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
         ~CMainMenu();
         void button_pressed(Button button);
         void button_released(Button button);

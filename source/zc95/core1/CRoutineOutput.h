@@ -25,6 +25,7 @@ class CRoutineOutput
 
         virtual void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power) = 0;
         virtual void reinit_channels();
+        virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
 };
 
 #endif

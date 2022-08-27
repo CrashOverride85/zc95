@@ -11,12 +11,13 @@
 #include "CShockChoice.h"
 #include "CCamTrigger.h"
 #include "CBuzz.h"
+#include "CAudioThreshold.h"
 
 class CRoutines
 {
     public:
         static void get_routines(std::vector<CRoutineMaker*> *routines)
-        {           
+        {   
             routines->push_back(make<CWaves>);
             routines->push_back(make<CToggle>);
             routines->push_back(make<CRoundRobin>);
@@ -24,6 +25,7 @@ class CRoutines
             routines->push_back(make<CClimb>);
             routines->push_back(make<CTriggeredClimb>);
             routines->push_back(make<CFire>);
+            routines->push_back(make<CAudioThreshold>);
             routines->push_back(make<CClimbPulse>);
             routines->push_back(make<CPredicament>);
             routines->push_back(make<CShockChoice>);

@@ -37,7 +37,10 @@ add_executable(zc95
   CTimingTest.cpp
   CHwCheck.cpp
   CHwCheckZc624.cpp
+  CBatteryGauge.cpp
+  CDebugOutput.cpp
   version.cpp
+  globals.c
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
@@ -74,7 +77,8 @@ add_executable(zc95
   core1/routines/CCamTrigger.cpp
   core1/routines/CBuzz.cpp
   core1/routines/CPredicament.cpp
-
+  core1/routines/CAudioThreshold.cpp
+  
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
   FpKnobs/CFpAnalog.cpp
@@ -92,8 +96,16 @@ add_executable(zc95
   display/CMenuSettingPowerStep
   display/CMenuSettingRampUpTime
   display/CMenuSettingAbout
+  display/CMenuSettingAudio
+  display/CMenuSettingHardware
   display/COptionsList
   display/CHorzBarGraph
+
+
+  AudioInput/CMCP4651.cpp
+  AudioInput/CAudio.cpp
+  AudioInput/ESP32_fft.cpp
+  CAnalogueCapture.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -141,6 +153,8 @@ target_compile_definitions(zc95 PRIVATE
   HAGL_HAL_USE_DMA
   HAGL_HAL_DEBUG
   MIPI_DISPLAY_ST7735
+  PICO_STACK_SIZE=3072
+  PICO_USE_STACK_GUARDS # would rather die instantly on stack overflow, than get weird, hard to debug, errors
 )
 
 
@@ -162,4 +176,7 @@ target_compile_definitions(zc95 PRIVATE
   MIPI_DISPLAY_OFFSET_X=0
   MIPI_DISPLAY_OFFSET_Y=0
   MIPI_DISPLAY_INVERT=0
+
+  PICO_DEFAULT_UART_TX_PIN=8
+  PICO_DEFAULT_UART_RX_PIN=9
 )

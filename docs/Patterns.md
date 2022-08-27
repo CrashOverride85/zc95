@@ -104,6 +104,20 @@ Optional: A remote button wired to trigger input 1 can be used as an alternative
 
 ------------------------------------------------------------
 
+## Audio Threshold
+Only available if audio enabled. 
+If the volume goes above the level set, triggers the output on all 4 channels. Intended to be used with a microphone.
+
+### Menu options
+* Audio trigger - Shows mini spectrum analyser, with a horizontal red line that can be moved up/down using the adjust dial. Whenever the volume is loud enough to cross the line, the output is triggered.
+
+![Audio Threshold]
+
+### Extra hardware required?:
+Audio output board fitted and audio source
+
+------------------------------------------------------------
+
 ## Climb with pulse
 Channels 1+2 behave the same as Climb, but when full intensity is reached, channels 3+4 are enabled/pulsed (depending on mode).
 Channels 3+4 can be shock collars.
@@ -209,3 +223,4 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 
 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
+[Audio Threshold]: images/screen_pattern_audioThreshold.jpg "Audio Threshold"

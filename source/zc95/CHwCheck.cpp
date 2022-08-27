@@ -29,8 +29,7 @@
  * error on screen indicating what's missing. The backlight pin of the display is connected to the U7 port
  * expander, so if that's not working, the display might not be visible. 
  */
-
-CHwCheck::CHwCheck()
+CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
 {
     _devices.push_front(device(EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
@@ -42,7 +41,10 @@ CHwCheck::CHwCheck()
     _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
     _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
 
-    _last_update = 0;
+    // optional parts
+    _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
+
+    _batteryGauge = batteryGauge;
 }
 
 void CHwCheck::check_part1()
@@ -56,8 +58,13 @@ void CHwCheck::check_part1()
     printf("\n\nHardware check (part1)\n");
     printf("======================\n");
     
+    for (uint x=0; x < 10; x++)
+        get_battery_readings();
+
     // Check battery isn't flat
-    if (get_battery_voltage() < 10.5)
+    uint8_t batt_percentage = _batteryGauge->get_battery_percentage();
+    printf("Battery: %d%%\n", batt_percentage);
+    if (batt_percentage == 0)
     {
         printf("Battery is flat!\n");
         ok = false;
@@ -79,11 +86,19 @@ void CHwCheck::check_part1()
         }
         else
         {
-            printf("NOT FOUND! (expected on address %d)\n", it->address);
-            cause = Cause::MISSING;
-            ok = false;
+            if (it->optional)
+            {
+                printf("Not found\n");
+            }
+            else
+            {
+                printf("NOT FOUND! (expected on address %d)\n", it->address);
+                cause = Cause::MISSING;
+                ok = false;
+            }
         }
     }
+
     if (ok)
     {
         printf("Status: Ok\n\n");
@@ -114,6 +129,16 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
     printf("Ok\n\n");
 }
 
+bool CHwCheck::audio_digipot_found()
+{
+    for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
+        if (it->address == AUDIO_DIGIPOT_ADDR)
+            return it->present;
+
+    printf("CHwCheck::audio_digipot_found(): Unable to determine if digipot present\n");
+    return false;
+}
+
 void CHwCheck::show_error_text_message(int y, std::string message)
 {
     y += 2;
@@ -127,7 +152,7 @@ void CHwCheck::show_error_text_missing(int y)
     
     for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
     {
-        if (!it->present)
+        if (!it->present && !it->optional)
         {
             put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
         }
@@ -201,99 +226,25 @@ void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)
     hagl_put_text(widestr.c_str(), x, y, color, font6x9);
 }
 
-
-int CHwCheck::cmpfunc (const void *a, const void *b)
+void CHwCheck::get_battery_readings()
 {
-   return ( *(uint32_t*)a - *(uint32_t*)b );
-}
+    uint8_t readings[10];
 
-int CHwCheck::cmpfunc_uint8_t (const void *a, const void *b)
-{
-   return ( *(uint8_t*)a - *(uint8_t*)b );
-}
-
-float CHwCheck::get_adc_voltage()
-{
-    uint32_t readings[10];
-    const float conversion_factor = 3.3f / (1 << 12);
-
+    adc_init();
+    adc_gpio_init(26);
     adc_select_input(0);
 
     // get 10 readings
-    for (uint8_t reading=0; reading < 10; reading++)
-        readings[reading] = adc_read();
+    for (uint8_t reading_count=0; reading_count < sizeof(readings); reading_count++)
+    {
+        uint16_t reading = adc_read();
+        readings[reading_count] = reading >> 4; // Convert 12bit ADC reading to 8bit (later reads via DMA are 8bit, so need to be consistant)
+    }
 
-    // ignore 2 highest and 2 lowest values. get the average of the rest
-    qsort(readings, 10, sizeof(uint32_t), CHwCheck::cmpfunc);
-    uint32_t total=0;
-    for (uint8_t reading=2; reading < 8; reading++)
-        total += readings[reading];
-    
-    uint32_t avg = total/6;
-    
-    // Convert to voltage and return
-    float adc_voltage = avg * conversion_factor;
-
-    float r1 = 27000;
-    float r2 = 4700;
-    float i = adc_voltage / r2;
-    float batt_voltage = i * (r1 + r2);
-
-    return batt_voltage;
-}
-
-float CHwCheck::get_battery_voltage()
-{
-    // TODO: Not sure why this is off? Is this fiddle factor going to be different per unit, and so should be in EEPROM?
-    return get_adc_voltage() + 1.22;
-}
-
-uint8_t CHwCheck::get_real_time_battery_percentage()
-{
-    /* Full  = 12.50v
-       Empty = 10.50v (shutdown at this - still need to add h/w low voltage shutoff just below this)
-     
-       Limitations: When on charge, this will be >= 13v when almost full, but there's no definite way
-                    to tell when a charger is plugged in
-     */
-    float batt_voltage = get_battery_voltage();
-    float pc = ((batt_voltage - 10.5)/2) * 100;
-    
-    if (pc < 0)
-        pc = 0;
-    if (pc > 100)
-        pc = 100;
-
-    return (uint8_t)pc;
-}
-
-uint8_t CHwCheck::get_battery_percentage()
-{
-    // ignore 10 lowest values. get the average of the rest
-    qsort(_batt_percentage, 10, sizeof(uint8_t), CHwCheck::cmpfunc_uint8_t);
-    uint32_t total=0;
-    for (uint8_t reading=10; reading < BAT_AVG_COUNT; reading++)
-        total += _batt_percentage[reading];
-    
-    uint32_t avg = total/(BAT_AVG_COUNT-10);
-    return avg;
+    _batteryGauge->add_raw_adc_readings(readings, sizeof(readings));
 }
 
 void CHwCheck::process()
 {
-    // On initial startup all the readings will be 0, so try and set them to something better
-    // as quick as possible.
-    if (_inital_startup || (time_us_64() - _last_update > 1000000)) // 1sec
-    {
-        _batt_reading_idx++;
-        if (_batt_reading_idx >= BAT_AVG_COUNT)
-        {
-            _batt_reading_idx = 0;
-            _inital_startup = false;
-        }
 
-        _batt_percentage[_batt_reading_idx] = get_real_time_battery_percentage();
-
-        _last_update = time_us_64();
-    }
 }

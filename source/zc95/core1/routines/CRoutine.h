@@ -20,7 +20,8 @@ enum class output_type
 enum class menu_entry_type
 {
     MULTI_CHOICE,
-    MIN_MAX
+    MIN_MAX,
+    AUDIO_VIEW
 };
 
 enum class trigger_socket
@@ -65,6 +66,11 @@ struct multi_choice
     uint8_t current_selection;
 };
 
+struct audio_view
+{
+    uint8_t default_trigger_position; // percent
+};
+
 struct menu_entry
 {
     uint8_t id;
@@ -72,6 +78,7 @@ struct menu_entry
     std::string title;
     struct min_max minmax;
     struct multi_choice multichoice;
+    struct audio_view audioview;
 };
 
 struct routine_conf
@@ -101,6 +108,8 @@ class CRoutine
         virtual void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id) {};
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) {};
         virtual void soft_button_pushed (soft_button button, bool pushed) {}; // pushed: true=pushed, false=released
+
+        virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
 
         virtual void loop(uint64_t time_us) = 0;
         virtual void stop() = 0;

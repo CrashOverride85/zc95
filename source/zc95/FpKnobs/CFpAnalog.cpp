@@ -1,5 +1,6 @@
 #include "CFpAnalog.h"
 #include <string.h>
+#include "../globals.h"
 
 #define ROT_A   6
 #define ROT_B   7
@@ -19,6 +20,9 @@ CFpAnalog::CFpAnalog(CSavedSettings *saved_settings)
 void CFpAnalog::interupt (port_exp exp)
 {
     _interrupt = true;
+
+    if (gInteruptable)
+        process(false);
 }
 
 void CFpAnalog::process(bool always_update)

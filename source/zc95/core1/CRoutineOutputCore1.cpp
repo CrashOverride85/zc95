@@ -275,6 +275,17 @@ void CRoutineOutputCore1::reinit_channels()
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_AUDIO_THRES_REACHED;
+    msg.msg8[1] = fundamental_freq & 0xFF;
+    msg.msg8[2] = (fundamental_freq >> 8) & 0xFF;
+    msg.msg8[3] = cross_count;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::reset_acc_port()
 {
     if (*_ext_port_exp)
