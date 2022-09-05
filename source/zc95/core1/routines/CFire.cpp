@@ -122,8 +122,59 @@ void CFire::soft_button_pushed (soft_button button, bool pushed)
 
 void CFire::trigger(trigger_socket socket, trigger_part part, bool active)
 {
-    // External trigger input is the same as pressing the "Fire" soft-button
-    soft_button_pushed(soft_button::BUTTON_A, active);
+    if (socket == trigger_socket::Trigger1)
+    {
+        if (_pulse_mode)
+        {
+            // Pulse mode (pulse for preset length when button pushed)
+            if (active)
+            {
+                simple_channel_pulse(0, _pulse_len_ms);
+                simple_channel_pulse(1, _pulse_len_ms);
+            }
+        }
+        else
+        {
+            // Continous mode (on whilst button held down)
+            if (active)
+            {
+                simple_channel_on(0);
+                simple_channel_on(1);
+            }
+            else
+            {
+                simple_channel_off(0);
+                simple_channel_off(1);
+            }
+        }
+    }
+
+    if (socket == trigger_socket::Trigger2)
+    {
+        if (_pulse_mode)
+        {
+            // Pulse mode (pulse for preset length when button pushed)
+            if (active)
+            {
+                simple_channel_pulse(2, _pulse_len_ms);
+                simple_channel_pulse(3, _pulse_len_ms);
+            }
+        }
+        else
+        {
+            // Continous mode (on whilst button held down)
+            if (active)
+            {
+                simple_channel_on(2);
+                simple_channel_on(3);
+            }
+            else
+            {
+                simple_channel_off(2);
+                simple_channel_off(3);
+            }
+        }
+    }
 }
 
 void CFire::start()
