@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "CMCP4651.h"
+#include "CAudio3Process.h"
 #include "../CControlsPortExp.h"
 #include "../CAnalogueCapture.h"
 #include "../CSavedSettings.h"
@@ -19,7 +20,8 @@ class CAudio
         enum class audio_mode_t
         {
             OFF,
-            THRESHOLD_CROSS_FFT
+            THRESHOLD_CROSS_FFT,
+            AUDIO3
         };
 
         enum class audio_hardware_state_t
@@ -29,7 +31,14 @@ class CAudio
             PRESENT
         };
 
+        enum audio_channel_t
+        {
+            AUDIO_LEFT  = 0,
+            AUDIO_RIGHT = 1
+        };
+
         CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls);
+        ~CAudio();
         void set_audio_digipot_found(bool found);
         void init(CSavedSettings *saved_settings);
         void set_routine_output(CRoutineOutput *routine_output);
@@ -47,6 +56,11 @@ class CAudio
         void do_fft(uint16_t sample_count, uint8_t *buffer);
         void draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
         void draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+
+        void audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
+
+        void draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain);
+        void draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour);
 
         void process();
         void set_audio_mode(audio_mode_t audio_mode);
@@ -68,6 +82,7 @@ class CAudio
         audio_mode_t _audio_mode = audio_mode_t::OFF;
         bool _audio_update_available;
         CSavedSettings *_saved_settings;
+        CAudio3Process *_audio3_process[2]; // Left & right
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain

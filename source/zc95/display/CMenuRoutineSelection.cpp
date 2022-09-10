@@ -164,7 +164,8 @@ bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
 {
     for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
     {
-        if (it->menu_type == menu_entry_type::AUDIO_VIEW)
+        if (it->menu_type == menu_entry_type::AUDIO_VIEW_SPECT ||
+            it->menu_type == menu_entry_type::AUDIO_VIEW_WAVE)
             return true;
     }
 

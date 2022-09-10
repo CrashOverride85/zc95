@@ -2,6 +2,7 @@
 #include "CAudio.h"
 
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <hagl_hal.h>
 #include <hagl.h>
@@ -10,6 +11,7 @@
 
 CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls)
 {
+    printf("CAudio()\n");
     _analogueCapture = analogueCapture;
     _mcp4651 = mcp4651;
     _controlsPortExp = controls;
@@ -19,6 +21,22 @@ CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPo
     _audio_update_available = false;
     _saved_settings = NULL;
     _digipot_found = false;
+
+    _audio3_process[AUDIO_LEFT ] = new CAudio3Process(0, analogueCapture);
+    _audio3_process[AUDIO_RIGHT] = new CAudio3Process(1, analogueCapture);
+}
+
+CAudio::~CAudio()
+{
+    printf("~CAudio()\n");
+    for (uint8_t channel = 0; channel <= 1; channel++)
+    {
+        if (_audio3_process[channel])
+        {
+            delete _audio3_process[channel];
+            _audio3_process[channel] = NULL;
+        }
+    }
 }
 
 void CAudio::set_audio_digipot_found(bool found)
@@ -131,16 +149,23 @@ void CAudio::process()
     // There is audio available to process!
     _last_audio_capture_time_us = buffer_updated_us;
     uint16_t sample_count;
-    uint8_t *sample_buffer;
-   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT, &sample_count, &sample_buffer);
+    uint8_t *sample_buffer_left;
+    uint8_t *sample_buffer_right;
+   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
+   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
 
     if (_audio_mode == audio_mode_t::OFF)
         return;
 
     if (_audio_mode == audio_mode_t::THRESHOLD_CROSS_FFT)
     {
-        do_fft(sample_count, sample_buffer);
+        do_fft(sample_count, sample_buffer_left);
         threshold_cross_process_and_send();
+    }
+
+    if (_audio_mode == audio_mode_t::AUDIO3)
+    {
+        audio3(sample_count, sample_buffer_left, sample_buffer_right);
     }
 
     _audio_update_available = true;
@@ -246,7 +271,62 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 
     gInteruptable = false;
 }
-      
+
+void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain)
+{
+    uint16_t sample_count;
+    uint8_t *sample_buffer_left;
+    uint8_t *sample_buffer_right;
+    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
+    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
+
+    draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+    draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(0xFF, 0x00, 0x00));
+
+    hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+}
+
+// Draw an audio waveform from the supplied samples in the designated position. 
+// Waveform drawing starts when it crosses zero, which should give a stable waveform display for a periodic signal
+void CAudio::draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour)
+{
+    // Scale factor to scale 0-255 samples to whatever screen space is available
+    float scale_factor = (float)255 / (float)((float)y0-(float)y1);
+
+    // Get average value, so signal can be changed from 0-255 to (about) +/- 128. In theory 127 could be 
+    // used, but hardware realities mean it's likely not going to be exactly 127. Basically DC bias removal.
+    uint32_t total = 0;
+    for (uint16_t x = 0; x < sample_count; x++)
+    {
+        total += sample_buffer[x];
+    }
+    uint8_t avg = total / sample_count;
+
+    int16_t prev_value = avg-sample_buffer[0];
+    int start_sample_idx;
+    for (start_sample_idx = 0; start_sample_idx < sample_count - (x1-x0); start_sample_idx++)
+    {
+        int16_t current_val = avg-sample_buffer[start_sample_idx];
+        // trigger - look for zero cross
+        if (prev_value < 0 && current_val >= 0)
+        {
+            break;
+        }
+        
+        prev_value = current_val;
+    }
+    
+    // Finally draw the waveform, starting at the zero cross point
+    uint16_t sample_idx = 0;
+    for (int x = x0; x+1 < x1; x++)
+    {
+        float line_y0 = (float)y1+((float)sample_buffer[start_sample_idx+sample_idx]  / scale_factor);
+        float line_y1 = (float)y1+((float)sample_buffer[start_sample_idx+sample_idx+1]/ scale_factor);
+
+        hagl_draw_line(x, line_y0, x+1, line_y1, colour);
+        sample_idx++;
+    }
+}
 
 void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
@@ -268,5 +348,37 @@ void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_
         hagl_draw_line(x0+x  , y1, x0+x  , y1 - bar_height, colour);
 
         fft_sample++;
+    }
+}
+
+void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
+{
+    static uint8_t last_intensity_left  = 0;
+    static uint8_t last_intensity_right = 0;
+    uint8_t intensity_left  = 0;
+    uint8_t intensity_right = 0;
+
+    _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
+    _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
+
+    // Change power level based on audio level. Power level changes are slow, so do this at most once every 20ms
+    static uint64_t last_level_change_time_us = 0;
+    if (time_us_64() - last_level_change_time_us > (1000 * 20))
+    {
+        if 
+        (
+            last_intensity_left  != intensity_left || 
+            last_intensity_right != intensity_right
+        )
+        {
+            last_intensity_left  = intensity_left;
+            last_intensity_right = intensity_right;
+            last_level_change_time_us = time_us_64();
+
+            if (_routine_output)
+            {
+                _routine_output->audio_intensity_change (intensity_left, intensity_right);
+            }  
+        }
     }
 }

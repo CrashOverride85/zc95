@@ -19,8 +19,10 @@
 #include "routines/CRoutineMaker.h"
 
 #include "Core1.h"
+#include "../globals.h"
 #include <string.h>
 #include "pico/multicore.h"
+#include "pico/util/queue.h"
 
 /* 
  * For code that runs on core1
@@ -184,12 +186,16 @@ void Core1::update_power_levels()
 
 void Core1::process_messages()
 {
+    // main FIFO queue - insturctions to start routines, change settings, etc.
     while (multicore_fifo_rvalid())
     {
         message msg;
         msg.msg32 = multicore_fifo_pop_blocking();
         process_message(msg);
     }
+
+    // Pulses from audio processing that doesn't fit in the usual FIFO queue
+    process_audio_pulse_queue();
 }
 
 void Core1::process_message(message msg)
@@ -278,6 +284,60 @@ void Core1::process_message(message msg)
                 _active_routine->audio_threshold_reached(fundamental_freq, cross_count);
             }
             break;
+
+        case MESSAGE_AUDIO_INTENSITY:
+            if (_active_routine != NULL)
+            {
+                uint8_t left_chan = msg.msg8[1];
+                uint8_t right_chan = msg.msg8[2];
+                _active_routine->audio_intensity(left_chan, right_chan);
+            }
+            break;
+    }
+}
+
+void Core1::process_audio_pulse_queue()
+{   
+    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    {
+        if (_pulse_messages[channel].abs_time_us)
+        {
+            if (time_us_64() >= _pulse_messages[channel].abs_time_us)
+            {
+                uint32_t msg_age = time_us_64() - _pulse_messages[channel].abs_time_us;
+                if (msg_age > 1000)
+                {
+                    // The pulse is too old for some reason - discard
+                    //printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
+                }
+                else
+                {
+                    if (_active_routine)
+                    {
+                        _active_routine->pulse_message(channel, _pulse_messages[channel].pos_pulse_us, _pulse_messages[channel].neg_pulse_us);
+                    }
+                }
+                _pulse_messages[channel].abs_time_us = 0;
+            }
+        }
+        else
+        {
+            while (queue_try_remove(&gPulseQueue[channel], &_pulse_messages[channel]) && _pulse_messages[channel].abs_time_us == 0)
+            {
+                if (_pulse_messages[channel].abs_time_us < time_us_64())
+                {
+                    // pulse time is in the past... discard
+                    _pulse_messages[channel].abs_time_us = 0;
+                    printf("DISCARD msg with time in past (chan %d)\n", channel);
+                }
+                else if (_pulse_messages[channel].abs_time_us > (time_us_64() + (1000 * 1000)))
+                { 
+                    // if the pulse is more than a second in the future, something's probably gone wrong... discard
+                    _pulse_messages[channel].abs_time_us = 0;
+                    printf("DISCARD msg with time too far in future (chan %d)\n", channel);
+                }
+            }
+        }
     }
 }
 

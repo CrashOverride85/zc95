@@ -144,7 +144,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
             _routine_output->menu_multi_choice_change(menu_item->id, menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id);
             break;
 
-        case menu_entry_type::AUDIO_VIEW:
+        case menu_entry_type::AUDIO_VIEW_SPECT:
             if (change >= 1)
             {
                 _audio->increment_trigger_point();
@@ -190,7 +190,7 @@ void CMenuRoutineAdjust::draw()
             break;
         }
 
-        case menu_entry_type::AUDIO_VIEW:
+        case menu_entry_type::AUDIO_VIEW_SPECT:
         {
             uint8_t x0 = _area.x0+1;
             uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
@@ -198,6 +198,18 @@ void CMenuRoutineAdjust::draw()
             uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
 
             _audio->draw_audio_view(x0, y0, x1, y1);
+
+            break;
+        }
+
+        case menu_entry_type::AUDIO_VIEW_WAVE:
+        {
+            uint8_t x0 = _area.x0+1;
+            uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
+            uint8_t x1 = _area.x1-3;
+            uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
+
+            _audio->draw_audio_wave(x0, y0, x1, y1, true);
 
             break;
         }
@@ -289,9 +301,15 @@ void CMenuRoutineAdjust::enable_audio_if_required_by_routine()
 {
     for (std::vector<menu_entry>::iterator it = _active_routine_conf.menu.begin(); it != _active_routine_conf.menu.end(); it++)
     {
-        if (it->menu_type == menu_entry_type::AUDIO_VIEW)
+        if (it->menu_type == menu_entry_type::AUDIO_VIEW_SPECT)
         {
             _audio->set_audio_mode(CAudio::audio_mode_t::THRESHOLD_CROSS_FFT);
+            return;
+        }
+
+        if (it->menu_type == menu_entry_type::AUDIO_VIEW_WAVE)
+        {
+            _audio->set_audio_mode(CAudio::audio_mode_t::AUDIO3);
             return;
         }
     }

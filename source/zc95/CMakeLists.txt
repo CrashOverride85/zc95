@@ -78,6 +78,7 @@ add_executable(zc95
   core1/routines/CBuzz.cpp
   core1/routines/CPredicament.cpp
   core1/routines/CAudioThreshold.cpp
+  core1/routines/CAudioWave.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
@@ -104,6 +105,7 @@ add_executable(zc95
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
+  AudioInput/CAudio3Process.cpp
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
   )

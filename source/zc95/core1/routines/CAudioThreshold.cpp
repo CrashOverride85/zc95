@@ -51,7 +51,7 @@ void CAudioThreshold::config(struct routine_conf *conf)
     struct menu_entry menu_audio;
     menu_audio.id = menu_ids::AUDIO_VIEW;
     menu_audio.title = "Audio trigger";
-    menu_audio.menu_type = menu_entry_type::AUDIO_VIEW;
+    menu_audio.menu_type = menu_entry_type::AUDIO_VIEW_SPECT;
     menu_audio.audioview.default_trigger_position = 0;
     conf->menu.push_back(menu_audio);
 }

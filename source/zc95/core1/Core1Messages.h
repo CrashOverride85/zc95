@@ -2,6 +2,7 @@
 #define _CCORE1MESSAGES_H
 
 #include "pico/mutex.h"
+#include <inttypes.h>
 
 // Messages from core0 to core1
 #define MESSAGE_ROUTINE_LOAD                  1
@@ -14,6 +15,7 @@
 #define MESSAGE_ROUTINE_SOFT_BUTTON_PUSHED    8
 #define MESSAGE_REINIT_CHANNELS               9
 #define MESSAGE_AUDIO_THRES_REACHED          10
+#define MESSAGE_AUDIO_INTENSITY              11
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100
@@ -38,5 +40,12 @@ union __attribute__((packed)) message
 
 
 void messages_init();
+
+struct pulse_message_t 
+{
+    uint64_t abs_time_us;
+    uint8_t  pos_pulse_us;
+    uint8_t  neg_pulse_us;
+};
 
 #endif

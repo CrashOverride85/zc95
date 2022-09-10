@@ -43,6 +43,7 @@ class Core1
         void process_message(message msg);
         void update_power_levels();
         void set_output_chanels_to_off();
+        void process_audio_pulse_queue();
 
         CChannelConfig *_channel_config;
         CRoutine *_active_routine = NULL;
@@ -53,6 +54,7 @@ class Core1
         std::vector<CRoutineMaker*> *_routines;
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    
+        pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
 };
 
 Core1* core1_start(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings);
