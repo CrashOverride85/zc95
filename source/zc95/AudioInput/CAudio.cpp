@@ -54,9 +54,15 @@ void CAudio::set_gain(CAnalogueCapture::channel chan, uint8_t value)
     if (_digipot_found)
     {
         if (chan == CAnalogueCapture::channel::LEFT)
+        {
             _mcp4651->set_val(0, 255-value);
+            _gain_l = value;
+        }
         else
+        {
             _mcp4651->set_val(1, 255-value);
+            _gain_r = value;
+        }
     }
 }
 
@@ -75,13 +81,16 @@ void CAudio::audio_input_enable(bool enable)
     _controlsPortExp->audio_input_enable(enable);
 }
 
-void CAudio::init(CSavedSettings *saved_settings)
+void CAudio::init(CSavedSettings *saved_settings, CDisplay *display)
 {
+    _display = display;
     set_gain(CAnalogueCapture::channel::LEFT,  saved_settings->get_audio_gain_left ());
     set_gain(CAnalogueCapture::channel::RIGHT, saved_settings->get_audio_gain_right());
     mic_power_enable (saved_settings->get_mic_power_enabled ());
     mic_preamp_enable(saved_settings->get_mic_preamp_enabled());
     _saved_settings = saved_settings;
+    _gain_l = _saved_settings->get_audio_gain_left();
+    _gain_r = _saved_settings->get_audio_gain_right();
 }
 
 void CAudio::set_routine_output(CRoutineOutput *routine_output)
@@ -137,6 +146,12 @@ void CAudio::decrement_trigger_point()
 {
     if (_trigger_point > 0)
         _trigger_point--;
+}
+
+void CAudio::get_current_gain(uint8_t *out_left, uint8_t *out_right)
+{
+    *out_left  = _gain_l;
+    *out_right = _gain_r;
 }
 
 void CAudio::process()
@@ -230,7 +245,7 @@ uint16_t CAudio::get_bar_height(float sample)
 void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
 {
     // The FFT logic is slow, and as it's essentially just number crunching (no I/O), it's safe to interupt
-    gInteruptable = true;
+    _interuptable_section.start();
    
     // These are too big to put on the stack, especially with the recursion used by ESP_fft
     //float fft_input[FFT_N];
@@ -251,12 +266,12 @@ void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
     _fundamental_freq = FFT.majorPeakFreq();
 
     free(fft_input);
-    gInteruptable = false;
+    _interuptable_section.end();
 }
 
 void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
-    gInteruptable = true;
+    _interuptable_section.start();
 
     _max_trigger_point = y1 - y0;
     if (_trigger_point > _max_trigger_point)
@@ -269,7 +284,7 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
     color_t colour = hagl_color(0xFF, 0x00, 0x00);
     hagl_draw_line(x0, y1-_trigger_point, x1, y1-_trigger_point, colour);
 
-    gInteruptable = false;
+    _interuptable_section.end();
 }
 
 void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain)
@@ -277,13 +292,34 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
     uint16_t sample_count;
     uint8_t *sample_buffer_left;
     uint8_t *sample_buffer_right;
+    uint8_t bar_height = 2;
+    CHorzBarGraph bar_graph = CHorzBarGraph(_display);
+    struct display_area bar_graph_area = 
+    {
+        .x0 = x0,
+        .y0 = (int16_t)(y1 - bar_height),
+        .x1 = x1,
+        .y1 = y1
+    };
+
+    _interuptable_section.start();
+
     _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
     _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
 
     draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(0xFF, 0xFF, 0xFF));
     draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(0xFF, 0x00, 0x00));
-
+    
     hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+
+    // Draw gain setting if digipot found
+    if (get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
+    {
+        color_t yellow  = hagl_color(0xFF, 0xFF, 0x00);
+        bar_graph.draw_horz_bar_graph(bar_graph_area, 0, 255, _gain_l, "", yellow, true);
+    }
+
+    _interuptable_section.end();
 }
 
 // Draw an audio waveform from the supplied samples in the designated position. 
@@ -358,6 +394,8 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     uint8_t intensity_left  = 0;
     uint8_t intensity_right = 0;
 
+    _interuptable_section.start();
+
     _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
     _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
 
@@ -381,4 +419,6 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
             }  
         }
     }
+
+    _interuptable_section.end();
 }

@@ -20,6 +20,7 @@ CFpAnalog::CFpAnalog(CSavedSettings *saved_settings)
 void CFpAnalog::interupt (port_exp exp)
 {
     _interrupt = true;
+    _interrupt_time = time_us_32();
 
     if (gInteruptable)
         process(false);
@@ -30,7 +31,10 @@ void CFpAnalog::process(bool always_update)
     if (_interrupt || always_update)
     {
         if (_interrupt)
+        {
+            //printf("delay=%lu us\n", time_us_32() - _interrupt_time);
             _interrupt = false;
+        }
         else
             read_adc();
        

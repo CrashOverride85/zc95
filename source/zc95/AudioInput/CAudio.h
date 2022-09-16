@@ -9,7 +9,9 @@
 #include "../CControlsPortExp.h"
 #include "../CAnalogueCapture.h"
 #include "../CSavedSettings.h"
+#include "../CUtil.h"
 #include "../core1/CRoutineOutput.h"
+#include "../display/CHorzBarGraph.h"
 
 #define FFT_N       256  // Must be a power of 2. Also needs to be <= (CAPTURE_DEPTH/3), i.e. the number of audio samples available (/3 for L, R & battery monitoring)
 #define SAMPLEFREQ  (SAMPLES_PER_SECOND/6)
@@ -40,12 +42,13 @@ class CAudio
         CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls);
         ~CAudio();
         void set_audio_digipot_found(bool found);
-        void init(CSavedSettings *saved_settings);
+        void init(CSavedSettings *saved_settings, CDisplay *display);
         void set_routine_output(CRoutineOutput *routine_output);
         audio_hardware_state_t get_audio_hardware_state();
 
         void get_audio_buffer(CAnalogueCapture::channel chan, uint16_t *samples, uint8_t **buffer);
         void set_gain(CAnalogueCapture::channel chan, uint8_t value); // 0-255, higher=more gain
+        void get_current_gain(uint8_t *out_left, uint8_t *out_right);
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
         void audio_input_enable(bool enable);
@@ -83,10 +86,15 @@ class CAudio
         bool _audio_update_available;
         CSavedSettings *_saved_settings;
         CAudio3Process *_audio3_process[2]; // Left & right
+        uint8_t _gain_l = 0;
+        uint8_t _gain_r = 0;
+        CInteruptableSection _interuptable_section;
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain
         CControlsPortExp *_controlsPortExp; // Port expander used to (amongst other things) enable/disable microphone power and preamp
+        CDisplay *_display;
+
 };
 
 #endif

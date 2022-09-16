@@ -11,6 +11,7 @@
 #include <aps.h>
 
 #include "CMenu.h"
+#include "../CUtil.h"
 
 struct display_area
 {
@@ -82,6 +83,7 @@ class CDisplay
         uint8_t _battery_percentage;
         std::string _active_pattern;
         bool _update_required;
+        CInteruptableSection _interuptable_section;
 };
 
 #endif

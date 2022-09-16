@@ -232,7 +232,7 @@ int main()
         queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
 
     // Load/set gain, mic preamp, etc., from eeprom
-    audio.init(&settings);
+    audio.init(&settings, &display);
 
     analogueCapture.init();
     analogueCapture.start();

@@ -41,6 +41,7 @@ add_executable(zc95
   CDebugOutput.cpp
   version.cpp
   globals.c
+  CUtil.cpp
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
@@ -82,6 +83,7 @@ add_executable(zc95
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
+  FpKnobs/CRotEnc2.cpp
   FpKnobs/CFpAnalog.cpp
 
   display/CMenu.cpp

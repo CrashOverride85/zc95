@@ -154,6 +154,16 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
                 _audio->decrement_trigger_point();
             }
 
+        case menu_entry_type::AUDIO_VIEW_WAVE:
+            if (change >= 1)
+            {
+                increment_gain();
+            }
+            else if (change <= -1)
+            {
+                decrement_gain();
+            }
+
             break;
     }
 }
@@ -313,4 +323,37 @@ void CMenuRoutineAdjust::enable_audio_if_required_by_routine()
             return;
         }
     }
+}
+
+void CMenuRoutineAdjust::increment_gain()
+{
+    uint8_t left  = 0;
+    uint8_t right = 0;
+    _audio->get_current_gain(&left, &right);
+
+    if (left < 255)
+        left++;
+
+    if (right < 255)
+        right++;
+
+
+    _audio->set_gain(CAnalogueCapture::channel::LEFT , left );
+    _audio->set_gain(CAnalogueCapture::channel::RIGHT, right);
+}
+
+void CMenuRoutineAdjust::decrement_gain()
+{
+    uint8_t left  = 0;
+    uint8_t right = 0;
+    _audio->get_current_gain(&left, &right);
+
+    if (left > 0)
+        left--;
+
+    if (right > 0)
+        right--;
+
+    _audio->set_gain(CAnalogueCapture::channel::LEFT , left );
+    _audio->set_gain(CAnalogueCapture::channel::RIGHT, right);
 }

@@ -4,6 +4,8 @@
 
 /*
  * Process input from a rotary encoder. Pretty sure this can be significantly improved.
+ *
+ * 2022/09/11 - no longer used, replaced by CRotEnc2. Delete me soon unless CRotEnc2.cpp causes issues
  */
 
 CRotEnc::CRotEnc()
