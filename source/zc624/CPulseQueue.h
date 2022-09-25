@@ -6,6 +6,8 @@
 #include "pico/stdlib.h"
 #include "pico/util/queue.h"
 
+#include "CI2cSlave.h"
+
 class CPulseQueue
 {
     public:
@@ -17,7 +19,7 @@ class CPulseQueue
             uint8_t neg_us;
         } element_t;
 
-        CPulseQueue();
+        CPulseQueue(CI2cSlave *i2c_slave);
         ~CPulseQueue();
         void queue_pulse(uint sm, uint8_t pos, uint8_t neg);
         bool get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg);
@@ -25,6 +27,8 @@ class CPulseQueue
     private:
         queue_t _pulse_queue;
         uint64_t _next_pulse;
+        CI2cSlave *_i2c_slave;
+        bool _channel_isolation_last_value;
 };
 
 #endif

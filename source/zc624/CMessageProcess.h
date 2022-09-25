@@ -43,6 +43,7 @@ class CMessageProcess
         void set_pulse_width(message msg);
         void on(message msg);
         void off(message msg);
+        void power_down(message msg);
 };
 
 #endif

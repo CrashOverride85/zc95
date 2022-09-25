@@ -38,6 +38,11 @@ void CI2cSlave::set_value(uint8_t reg, uint8_t value)
    i2c_slave_context.mem[(uint8_t)reg] = value;
 }
 
+uint8_t CI2cSlave::get_value(CI2cSlave::reg reg)
+{
+   return i2c_slave_context.mem[(uint8_t)reg];
+}
+
 void CI2cSlave::init_with_default_values()
 {
     // wipe i2c registers
@@ -46,16 +51,19 @@ void CI2cSlave::init_with_default_values()
         i2c_slave_context.mem[x] = 0;
     }
 
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::TypeLow]        = DEVICE_TYPE &  0xFF;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::TypeHigh]       = (DEVICE_TYPE >> 8) & 0xFF;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMajor]   = VERSION_MAJOR;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMinor]   = VERSION_MINOR;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::TypeLow]          = DEVICE_TYPE &  0xFF;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::TypeHigh]         = (DEVICE_TYPE >> 8) & 0xFF;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMajor]     = VERSION_MAJOR;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMinor]     = VERSION_MINOR;
 
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::OverallStatus]  = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan0Status]    = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan1Status]    = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan2Status]    = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan3Status]    = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::OverallStatus]    = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan0Status]      = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan1Status]      = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan2Status]      = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan3Status]      = CI2cSlave::status::Startup;
+    
+    // Read/Write registers
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::ChannelIsolation] = true;
 
     // Copy version into i2c_slave_context.mem
     uint version_len = strlen(kGitHash);
@@ -101,4 +109,3 @@ void CI2cSlave::i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event)
             break;
     }
 }
-

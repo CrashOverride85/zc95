@@ -42,7 +42,7 @@ class Core1
         void process_messages();
         void process_message(message msg);
         void update_power_levels();
-        void set_output_chanels_to_off();
+        void set_output_chanels_to_off(bool enable_channel_isolation);
         void process_audio_pulse_queue();
 
         CChannelConfig *_channel_config;

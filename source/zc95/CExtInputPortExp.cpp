@@ -17,9 +17,8 @@
  */
 
 #include "CExtInputPortExp.h"
-
-#include "hardware/i2c.h"
 #include "hardware/gpio.h"
+#include "globals.h"
 
 #include <string.h>
 
@@ -46,7 +45,7 @@ CExtInputPortExp::CExtInputPortExp(uint8_t address, CLedControl *led, CRoutineOu
 // Can't do this in the constructor as i2c won't have been initialised 
 void CExtInputPortExp::clear_input()
 {
-    int retval = i2c_read_timeout_us(i2c_default, _address, &_last_read, 1, false, 1000);
+    int retval = i2c_read(__func__, _address, &_last_read, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CExtInputPortExp::clear_intput i2c read error!\n");
@@ -73,8 +72,8 @@ void CExtInputPortExp::process(bool force_update)
     {
         _interrupt = false;
         uint8_t buffer[1];
-        
-        int retval = i2c_read_timeout_us(i2c_default, _address, buffer, 1, false, 1000);
+             
+        int retval = i2c_read(__func__, _address, buffer, 1, false);
         if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
         {
             printf("CExtInputPortExp::process i2c read error!\n");
@@ -187,7 +186,7 @@ void CExtInputPortExp::update_active_routine_trigger(enum ExtInputPort input, tr
     bool state;
     if (has_input_state_changed(input, &state))
     {
-        // At this point, becasue there are pull ups on the input lines and trigging one gounds it, a 1/high read from the 
+        // At this point, because there are pull ups on the input lines and trigging one gounds it, a 1/high read from the 
         // the port expander means a trigger isn't active (or just isn't plugged in).
         // A low means it's been triggered (button pushed, or whatever)
         // But for routines, it makes far more sense for that to be flipped, i.e. active=true means pressed/triggered
@@ -199,10 +198,10 @@ void CExtInputPortExp::reset_acc_port()
 {
     _output_mask = 0xFF;
 
-    int retval = i2c_write_timeout_us(i2c_default, _address, &_output_mask, 1, false, 1000);
+    int retval = i2c_write(__func__, _address, &_output_mask, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CExtInputPortExp::set_acc_io_port_state i2c write error!\n");
+        printf("CExtInputPortExp::set_acc_io_port_state i2c write error!\n");
     }
 }
 
@@ -223,8 +222,8 @@ void CExtInputPortExp::set_acc_io_port_state(enum ExtInputPort output, bool high
         default:
             return;
     }
-
-    int retval = i2c_write_timeout_us(i2c_default, _address, &_output_mask, 1, false, 1000);
+    
+    int retval = i2c_write(__func__, _address, &_output_mask, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CExtInputPortExp::set_acc_io_port_state i2c write error!\n");

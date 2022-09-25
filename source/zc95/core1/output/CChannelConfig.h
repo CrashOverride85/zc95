@@ -28,6 +28,7 @@ class CChannelConfig
         void loop();
 
         CCollarComms *get_collar_comms();
+        void shutdown_zc624();
 
     private:
         CSavedSettings *_saved_settings;
@@ -37,7 +38,4 @@ class CChannelConfig
         CZC1Comms _zc1_comms = CZC1Comms(spi1, I2C_PORT);
 };
 
-
-
 #endif  
-

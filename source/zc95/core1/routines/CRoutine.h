@@ -88,6 +88,7 @@ struct routine_conf
     std::vector<output_type> outputs;
     std::vector<menu_entry> menu;
     std::string button_text[(int)soft_button::BUTTON_MAX];
+    bool enable_channel_isolation = true;
 };
 
 

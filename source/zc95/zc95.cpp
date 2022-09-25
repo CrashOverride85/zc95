@@ -164,6 +164,8 @@ int main()
 
     printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
 
+    mutex_init(&gI2cMutex);
+
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
     gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
@@ -329,6 +331,11 @@ int main()
             batteryGauge.add_raw_adc_readings(readings, readings_count);
         }
 
+        if (gFatalError)
+        {
+            routine_output->stop_routine();
+            hw_check.die(&led, gErrorString); // never returns
+        }
     }
 
     return 0;

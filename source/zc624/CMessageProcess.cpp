@@ -47,6 +47,10 @@ void CMessageProcess::loop()
             set_power(msg);
             break;
 
+        case command::PowerDown:
+            power_down(msg);
+            break;
+
         case command::SetFreq:
             set_freq(msg);
             break;
@@ -88,6 +92,15 @@ void CMessageProcess::set_power(message msg)
     uint16_t power = msg.arg1 << 8 | msg.arg2;
     _output->set_power(msg.arg0, power);
 }
+
+// PowerDown - Power down the zc624 output module: Stop any output and switch off 9v supply
+// Args: 
+// None
+void CMessageProcess::power_down(message msg)
+{
+    _output->power_down();
+}
+
 
 // SetFreq - set output frequency generated if SwitchOn used
 // Args:

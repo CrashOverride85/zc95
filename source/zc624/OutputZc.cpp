@@ -57,6 +57,7 @@ int main()
     uint64_t loop_start = time_us_64();
     uint64_t readable=0;
     uint64_t unreadable=0;
+
     while(1)
     {
         if (spi_is_readable(spi0))
@@ -78,6 +79,12 @@ int main()
         }
 
         output.loop();
+
+        if (i2c_slave->get_value(CI2cSlave::reg::OverallStatus) == CI2cSlave::status::Fault)
+        {
+            printf("HALT.\n");
+            while(1);
+        } 
     }
 
     return 0;

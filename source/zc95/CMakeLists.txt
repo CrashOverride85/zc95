@@ -35,12 +35,11 @@ add_executable(zc95
   CChannel_types.cpp
   i2c_scan.cpp
   CTimingTest.cpp
-  CHwCheck.cpp
-  CHwCheckZc624.cpp
+  CHwCheck.cpp 
   CBatteryGauge.cpp
   CDebugOutput.cpp
   version.cpp
-  globals.c
+  globals.cpp
   CUtil.cpp
 
   core1/Core1.cpp
@@ -63,7 +62,7 @@ add_executable(zc95
 
   core1/output/zc1Output/CZC1ChannelFull.cpp
   core1/output/zc1Output/CZC1Comms.cpp
-
+ 
   core1/routines/CAccPort.cpp
 
   core1/routines/CWaves.cpp

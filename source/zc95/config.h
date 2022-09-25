@@ -17,6 +17,9 @@
 
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
+// Set expected version for zc624 output module
+#define ZC624_REQUIRED_MAJOR_VERION 0
+#define ZC624_MIN_MINOR_VERION      3
 
 // Other pins
 #define PIN_LED           10 // ws2812 LED chain

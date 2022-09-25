@@ -141,6 +141,22 @@ void Core1::loop()
     process_messages();
 #endif
 
+    if (gFatalError)
+    {
+        for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
+        {
+            if (_active_channels[channel_number] != NULL)
+            {
+                _active_channels[channel_number]->channel_set_power(0);
+                _active_channels[channel_number]->loop(time_us_64());
+                _active_channels[channel_number]->update_power();
+            }
+        }
+
+        _channel_config->shutdown_zc624();
+        printf("Core1: HALT.\n");
+        while(1);
+    }
 }
 
 void Core1::update_power_levels()
@@ -393,6 +409,7 @@ void Core1::activate_routine(uint8_t routine_id)
                     if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
                     {
                         _active_routine->set_full_output_channel(channel, (CFullOutputChannel*)_active_channels[channel]);
+                        ((CFullOutputChannel*)_active_channels[channel])->set_channel_isolation(conf.enable_channel_isolation);
                     }
                     else
                     {
@@ -423,14 +440,14 @@ void Core1::stop_routine()
         _active_routine = NULL;
     }
 
-    set_output_chanels_to_off();
+    set_output_chanels_to_off(true);
 
     // Get rid of any FullChannelAsSimpleChannel wrappers that may have been used
     delete_fullChannelAsSimpleChannels_and_restore_channels();
-    set_output_chanels_to_off();
+    set_output_chanels_to_off(false);
 }
 
-void Core1::set_output_chanels_to_off()
+void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
 {
     // set power levels to min/off
     for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
@@ -438,6 +455,12 @@ void Core1::set_output_chanels_to_off()
         if (_active_channels[channel_number] != NULL)
         {
             _active_channels[channel_number]->channel_set_power(0);
+
+            // Make sure ChannelIsolation is on ready for the next routine. This should happen anyway, but just to make sure.
+            if (enable_channel_isolation && _active_channels[channel_number]->get_channel_type() == COutputChannel::channel_type::FULL)
+            {
+                ((CFullOutputChannel*)_active_channels[channel_number])->set_channel_isolation(true);
+            }
         }
     }
 

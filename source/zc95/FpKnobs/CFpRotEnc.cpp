@@ -1,6 +1,7 @@
 #include "CFpRotEnc.h"
+#include "../globals.h"
+#include "../CUtil.h"
 
-#include "hardware/i2c.h"
 #include "hardware/gpio.h"
 #include <string.h>
 #include <stdio.h>
@@ -195,7 +196,7 @@ uint8_t CFpRotEnc::read_port_expander(port_exp exp)
 
     uint8_t buffer[1];
     
-    int retval = i2c_read_timeout_us(i2c_default, address, buffer, 1, false, 1000);
+    int retval = i2c_read(__func__, address, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFpRotEnc::read_port_expander i2c read error!\n");
@@ -224,7 +225,7 @@ void CFpRotEnc::write_port_expander(port_exp exp, uint8_t val)
     }
 
     uint8_t buffer[1];
-    int retval = i2c_write_timeout_us(i2c_default, address, buffer, 1, false, 1000);
+    int retval = i2c_write(__func__, address, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
         printf("CFpRotEnc::write_port_expander i2c write error!\n");

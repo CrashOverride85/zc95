@@ -134,16 +134,23 @@ void CMenuRoutineSelection::show()
         CRoutine* routine = (*it)();
         routine->get_config(&conf);
 
+        // Add a warning for routines that disable channel isolation
+        std::string name;
+        if (conf.enable_channel_isolation)
+            name = conf.name;
+        else
+            name = "(!)" + conf.name;
+
         // Hide audio routies from menu if audio hardware not present. Show everything else.        
         if (!is_audio_routine(conf))
         {
-            _routine_disply_list->add_option(conf.name, index);
+            _routine_disply_list->add_option(name, index);
         }
         else
         {
             if (_audio->get_audio_hardware_state() != CAudio::audio_hardware_state_t::NOT_PRESENT)
             {
-                _routine_disply_list->add_option(conf.name, index);
+                _routine_disply_list->add_option(name, index);
             }
         }
 

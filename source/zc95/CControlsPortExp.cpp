@@ -17,7 +17,8 @@
  */
 
 #include "CControlsPortExp.h"
-#include "hardware/i2c.h"
+#include "globals.h"
+#include "CUtil.h"
 #include "hardware/gpio.h"
 #include <string.h>
 
@@ -46,7 +47,7 @@ CControlsPortExp::CControlsPortExp(uint8_t address)
 // Can't do this in the constructor as i2c won't have been initialised 
 void CControlsPortExp::clear_input()
 {
-    int retval = i2c_read_timeout_us(i2c_default, _address, &_last_read, 1, false, 1000);
+    int retval = i2c_read("__func__", _address, &_last_read, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CControlsPortExp::clear_intput i2c read error!\n");
@@ -66,8 +67,8 @@ void CControlsPortExp::process(bool always_update)
   {
     _interrupt = false;
     uint8_t buffer[1];
-    
-    int retval = i2c_read_timeout_us(i2c_default, _address, buffer, 1, false, 1000);
+
+    int retval = i2c_read("__func__", _address, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CControlsPortExp::process i2c read error!\n");
@@ -155,10 +156,10 @@ int CControlsPortExp::set_pin_state(uint8_t pin, bool state)
     else
         _data_out &= ~(1 << pin);
 
-    int retval = i2c_write_timeout_us(i2c_default, _address, &_data_out, 1, false, 1000);
+    int retval = i2c_write(__func__, _address, &_data_out, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CControlsPortExp::set_pin_state i2c write error! (%d)\n", retval);
+        printf("CControlsPortExp::set_pin_state i2c write error! (%d)\n", retval);
     }
 
     return retval;

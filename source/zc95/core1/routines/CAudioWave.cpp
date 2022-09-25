@@ -54,6 +54,7 @@ void CAudioWave::config(struct routine_conf *conf)
     menu_audio.title = "Audio view";
     menu_audio.menu_type = menu_entry_type::AUDIO_VIEW_WAVE;
     conf->menu.push_back(menu_audio);
+    conf->enable_channel_isolation = false;
 }
 
 void CAudioWave::get_config(struct routine_conf *conf)

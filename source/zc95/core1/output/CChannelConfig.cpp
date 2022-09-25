@@ -70,3 +70,11 @@ void CChannelConfig::configure_channels_from_saved_config(COutputChannel** activ
         }
     }
 }
+
+void CChannelConfig::shutdown_zc624()
+{
+    printf("shutting down zc624 output module\n");
+    CZC1Comms::message message = {0};
+    message.command = (uint8_t)CZC1Comms::spi_command_t::PowerDown;
+    _zc1_comms.send_message(message);
+}
