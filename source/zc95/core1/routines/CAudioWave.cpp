@@ -48,7 +48,6 @@ void CAudioWave::config(struct routine_conf *conf)
 
     // menu entry 1: "Audio view". Not sure what to call this "menu" item. Which isn't really 
     //               like the other menu items, as it doesn't let you change anything
-    // TODO: adjust gain/volume
     struct menu_entry menu_audio;
     menu_audio.id = menu_ids::AUDIO_WAVE;
     menu_audio.title = "Audio view";

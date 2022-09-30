@@ -1,5 +1,7 @@
 # Patterns
 
+**Note**: Any pattern in the list/menu prefixed with `(!)` should not be used above the waist, as channel isolation - where only one channel pulese at the exact same moment - is disabled.
+
 ## Waves
 Gradually increasing and decreasing intensity on all channels at different rates, with channel 1 being the slowest and 4 being the fastest. Varying intensity is achieved by altering the gap between pulses rather than changing the power level.
 Can NOT be used with shock collars.
@@ -118,6 +120,25 @@ Audio output board fitted and audio source
 
 ------------------------------------------------------------
 
+## Audio Wave
+Only available if audio enabled. 
+
+Well suited to estim audio tracks, with the audio [configured](./AudioInput-Operation.md) for line level input. It works with a triphase setup, where two channels are connected with a common electrode. Both frequency and volume of audio input affects the output.
+
+The left audio channel is output on channels 1+2, the right on 3+4. It probably makes most sense to only use channel 1+3 (or 2+4) with this mode. 
+
+*Warning*: Enables triphase mode / disables channel isolation, so should not be used above the waist. 
+
+### Menu options
+* Audio view - Shows two wave forms - for left and right channels. The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom.
+
+![Audio Wave]
+
+### Extra hardware required?:
+Audio output board fitted and audio source
+
+------------------------------------------------------------
+
 ## Climb with pulse
 Channels 1+2 behave the same as Climb, but when full intensity is reached, channels 3+4 are enabled/pulsed (depending on mode).
 Channels 3+4 can be shock collars.
@@ -224,3 +245,4 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
 [Audio Threshold]: images/screen_pattern_audioThreshold.jpg "Audio Threshold"
+[Audio Wave]: images/screen_pattern_audioWave.jpg "Audio Wave"

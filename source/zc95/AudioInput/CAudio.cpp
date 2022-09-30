@@ -163,11 +163,18 @@ void CAudio::process()
 
     // There is audio available to process!
     _last_audio_capture_time_us = buffer_updated_us;
+    uint16_t sample_count_l;
+    uint16_t sample_count_r;
     uint16_t sample_count;
     uint8_t *sample_buffer_left;
     uint8_t *sample_buffer_right;
-   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
-   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
+   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count_l, &sample_buffer_left );
+   _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count_r, &sample_buffer_right);
+
+    if (sample_count_l < sample_count_r)
+        sample_count = sample_count_l;
+    else
+        sample_count = sample_count_r;
 
     if (_audio_mode == audio_mode_t::OFF)
         return;

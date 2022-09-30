@@ -35,7 +35,7 @@ static inline void pulse_gen_program_init(PIO pio, uint sm, uint offset, uint pi
     pio_sm_config c = pulse_gen_program_get_default_config(offset);
     sm_config_set_set_pins(&c, pin_gate_a, 2);
     
-    float cycle_length_us = 1;
+    float cycle_length_us = 0.5;
     float freq = 1 / (cycle_length_us/1000000);
     
     float div = clock_get_hz(clk_sys) / freq;

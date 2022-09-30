@@ -157,11 +157,11 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
         case menu_entry_type::AUDIO_VIEW_WAVE:
             if (change >= 1)
             {
-                increment_gain();
+                increment_gain(10);
             }
             else if (change <= -1)
             {
-                decrement_gain();
+                decrement_gain(10);
             }
 
             break;
@@ -325,34 +325,53 @@ void CMenuRoutineAdjust::enable_audio_if_required_by_routine()
     }
 }
 
-void CMenuRoutineAdjust::increment_gain()
+void CMenuRoutineAdjust::increment_gain(uint8_t by)
 {
     uint8_t left  = 0;
     uint8_t right = 0;
     _audio->get_current_gain(&left, &right);
 
-    if (left < 255)
-        left++;
+    int16_t new_left  = left;
+    int16_t new_right = right;
 
-    if (right < 255)
-        right++;
+    new_left  += by;
+    new_right += by;
 
+    if (new_left > 255)
+        left = 255;
+    else
+        left += by;
+
+    if (new_right > 255)
+        right = 255;
+    else
+        right += by;
 
     _audio->set_gain(CAnalogueCapture::channel::LEFT , left );
     _audio->set_gain(CAnalogueCapture::channel::RIGHT, right);
 }
 
-void CMenuRoutineAdjust::decrement_gain()
+void CMenuRoutineAdjust::decrement_gain(uint8_t by)
 {
     uint8_t left  = 0;
     uint8_t right = 0;
     _audio->get_current_gain(&left, &right);
 
-    if (left > 0)
-        left--;
+    int16_t new_left  = left;
+    int16_t new_right = right;
 
-    if (right > 0)
-        right--;
+    new_left  -= by;
+    new_right -= by;
+
+   if (new_left < 0)
+        left = 0;
+    else
+        left -= by;
+
+    if (new_right < 0)
+        right = 0;
+    else
+        right -= by;
 
     _audio->set_gain(CAnalogueCapture::channel::LEFT , left );
     _audio->set_gain(CAnalogueCapture::channel::RIGHT, right);

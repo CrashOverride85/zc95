@@ -81,8 +81,8 @@ void CAudio3Process::process_sample(uint64_t time_us, int16_t value)
     // Look for crossing zero
     if (value > 0 && _last_sample_value <= 0)
     {
-        // At most one pulse every 4ms
-        if (time_us - _last_pulse_us > 4000)
+        // At most one pulse every 3ms
+        if (time_us - _last_pulse_us > 3000)
         {
             // do pulse
             pulse_msg.abs_time_us = time_us + (1000 * 20); // 20ms in future

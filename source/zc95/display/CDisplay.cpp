@@ -75,9 +75,12 @@ uint8_t CDisplay::get_font_height()
  {
     // Don't try to update the screen more than once every 100ms
     if (
-        _update_required || 
-        (time_us_64() - _last_update > (100*1000))
-        )
+        (_update_required || (time_us_64() - _last_update > (100*1000))) &&
+
+        // It takes ~18ms for the display to finish refreshing (via DMA from hagl_flush()), so don't
+        // start altering the back buffer if it's less than that, even if _update_required is set
+        (time_us_64() - _last_update > (18*1000)) 
+       )
     {
         _interuptable_section.start();
         
@@ -96,7 +99,7 @@ uint8_t CDisplay::get_font_height()
         
         draw_status_bar();
   
-        hagl_flush(); // 8us
+        hagl_flush(); // 8us, starts/uses DMA for update
 
         _last_update = time_us_64();
         _interuptable_section.end();
