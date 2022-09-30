@@ -17,6 +17,8 @@
  */
 
 #include "CEeprom.h"
+#include "globals.h"
+#include "CUtil.h"
 #include <stdio.h>
 
 /*
@@ -33,14 +35,17 @@ uint8_t CEeprom::read(uint16_t address)
 {
     uint8_t data[1];
     data[0] = address & 0xFF;
-    int bytes_written = i2c_write_timeout_us(_i2c, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false, 2000);
+
+
+    int bytes_written = i2c_write(__func__, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false);
     if (bytes_written != sizeof(data))
     {
         printf("CEeprom::read failed! i2c bytes_written = %d\n", bytes_written);
         return 0;
     }
 
-    int ret = i2c_read_timeout_us(_i2c, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false, 2000);
+    int ret = i2c_read(__func__, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false);
+
     if (ret != sizeof(data))
     {
         printf("CEeprom::read failed! i2c read returned %d\n", ret);
@@ -55,6 +60,7 @@ bool CEeprom::write(uint16_t address, uint8_t value, bool block_until_complete)
     uint8_t data[2];
     data[0] = address & 0xFF;
     data[1] = value;
+
     uint8_t bytes_written = i2c_write_timeout_us(_i2c, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false, 2000);
     
     // The eeprom chip will ignore all commands until the write is complete. So if block_until_complete is set, don't
@@ -66,7 +72,7 @@ bool CEeprom::write(uint16_t address, uint8_t value, bool block_until_complete)
         int retry_count=0;
         do
         {
-            ret = i2c_read_timeout_us(_i2c, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false, 200);
+            ret = i2c_read(__func__, (uint8_t)(_i2c_address | ((address >> 8) & 0x07)), data, sizeof(data), false);
         } while ((ret < 0) && (retry_count++ < 100));
         if (ret < 0)
         {

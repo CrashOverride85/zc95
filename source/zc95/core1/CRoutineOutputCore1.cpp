@@ -286,6 +286,16 @@ void CRoutineOutputCore1::audio_threshold_reached(uint16_t fundamental_freq, uin
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::audio_intensity_change(uint8_t left_chan, uint8_t right_chan)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_AUDIO_INTENSITY;
+    msg.msg8[1] = left_chan;
+    msg.msg8[2] = right_chan;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::reset_acc_port()
 {
     if (*_ext_port_exp)

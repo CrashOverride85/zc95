@@ -1,6 +1,7 @@
 #include "CFpAnalog.h"
 #include <string.h>
 #include "../globals.h"
+#include "../CUtil.h"
 
 #define ROT_A   6
 #define ROT_B   7
@@ -20,6 +21,7 @@ CFpAnalog::CFpAnalog(CSavedSettings *saved_settings)
 void CFpAnalog::interupt (port_exp exp)
 {
     _interrupt = true;
+    _interrupt_time = time_us_32();
 
     if (gInteruptable)
         process(false);
@@ -30,7 +32,10 @@ void CFpAnalog::process(bool always_update)
     if (_interrupt || always_update)
     {
         if (_interrupt)
+        {
+            //printf("delay=%lu us\n", time_us_32() - _interrupt_time);
             _interrupt = false;
+        }
         else
             read_adc();
        
@@ -69,7 +74,8 @@ int8_t CFpAnalog::get_adjust_control_change()
 void CFpAnalog::read_adc()
 {
     uint8_t command = 0x04;
-    int bytes_written = i2c_write_timeout_us(i2c_default, ADC_ADDR, &command, 1, false, 2000);
+
+    int bytes_written = i2c_write(__func__, ADC_ADDR, &command, 1, false);
     if (bytes_written != 1)
     {
         printf("CFpAnalog::read_adc() write failed! i2c bytes_written = %d\n", bytes_written);
@@ -77,7 +83,7 @@ void CFpAnalog::read_adc()
     }
 
     uint8_t buffer[5];
-    int retval = i2c_read_timeout_us(i2c_default, ADC_ADDR, buffer, sizeof(buffer), false, 1000);
+    int retval = i2c_read(__func__, ADC_ADDR, buffer, sizeof(buffer), false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFpAnalog::read_adc() i2c read error!\n");
@@ -109,7 +115,7 @@ uint8_t CFpAnalog::read_port_expander()
 {
     uint8_t buffer[1];
     
-    int retval = i2c_read_timeout_us(i2c_default, FP_ANALOG_PORT_EXP_2_ADDR, buffer, 1, false, 1000);
+    int retval = i2c_read(__func__, FP_ANALOG_PORT_EXP_2_ADDR, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFpAnalog::read_port_expander i2c read error!\n");

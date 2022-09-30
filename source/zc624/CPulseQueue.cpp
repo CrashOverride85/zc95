@@ -7,10 +7,13 @@
  * For the time being, this rules out any kind of tri-phase effects.
  */
 
-CPulseQueue::CPulseQueue()
+CPulseQueue::CPulseQueue(CI2cSlave *i2c_slave)
 {
+    _i2c_slave = _i2c_slave;
     queue_init(&_pulse_queue, sizeof(element_t), 10);
     _next_pulse = 0;
+    _channel_isolation_last_value = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
+    printf("CPulseQueue::CPulseQueue(): ChannelIsolation: %d\n", _channel_isolation_last_value);
 }
 
 CPulseQueue::~CPulseQueue()
@@ -35,11 +38,22 @@ void CPulseQueue::queue_pulse(uint sm, uint8_t pos, uint8_t neg)
 
 bool CPulseQueue::get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg)
 {
-    if (queue_is_empty(&_pulse_queue))
-        return false;
+    bool channel_isolation = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
+    if (channel_isolation != _channel_isolation_last_value)
+    {
+        printf("CPulseQueue - ChannelIsolation: %s\n", channel_isolation ? "ENABLED" : "DISABLED");
+        _channel_isolation_last_value = channel_isolation;
+    }
 
-    if (time_us_64() < _next_pulse)
-        return false;
+    if (queue_is_empty(&_pulse_queue))
+        return false;  
+   
+    if (channel_isolation)
+    {
+        // If channel isolation is on, we need to seperate pulses time-wise (the whole point of this class)
+        if (time_us_64() < _next_pulse)
+            return false;
+    }
 
     element_t element;
     queue_remove_blocking(&_pulse_queue, &element);

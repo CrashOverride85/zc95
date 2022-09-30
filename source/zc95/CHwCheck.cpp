@@ -22,7 +22,6 @@
 #include "CHwCheck.h"
 #include "i2c_scan.h"
 #include "config.h"
-#include "CHwCheckZc624.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -31,6 +30,8 @@
  */
 CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
 {
+    _zc1_comms = new CZC1Comms(NULL, I2C_PORT);
+
     _devices.push_front(device(EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
     _devices.push_front(device(EEPROM_ADDR, "EEPROM (read)", "EEPROM"));
@@ -45,6 +46,15 @@ CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
     _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
 
     _batteryGauge = batteryGauge;
+}
+
+CHwCheck::~CHwCheck()
+{
+    if (_zc1_comms)
+    {
+        delete _zc1_comms;
+        _zc1_comms = NULL;
+    }
 }
 
 void CHwCheck::check_part1()
@@ -116,16 +126,52 @@ void CHwCheck::check_part1()
 // By the time this is called, the display and LEDs should be initialized, so need these passed in (CControlsPortExp controls display backlight)
 void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
 {
+    uint8_t ver_minor = 0;
+    uint8_t ver_major = 0;
+    bool ver_check_ok = _zc1_comms->get_major_minor_version(&ver_major, &ver_minor);
+    CHwCheck::Cause cause = Cause::ZC624_UNKNOWN;
+    bool error = false;
+
     printf("\n\nHardware check (part2)\n");
     printf("======================\n");
 
-    printf("    ZC624 Version = [%s]\n", _checkZc624.get_version().c_str());
-    printf("    ZC624 status...");
-    if (!_checkZc624.check_zc624())
+    printf("    ZC624 Version...");
+    if (ver_check_ok)
     {
-        printf("FAULT\n");
-        hw_check_failed(Cause::ZC628, ledControl, controls); // this never returns
+        printf("API maj=[%d], min=[%d], FW=[%s]\n", ver_major, ver_minor, _zc1_comms->get_version().c_str());
+
+        // check version is compatable
+        if (ZC624_REQUIRED_MAJOR_VERION != ver_major || ver_minor < ZC624_MIN_MINOR_VERION)
+        {
+            printf("ZC624 API version mismatch. Expected:\n");
+            printf("  major version  = %d (found %d)\n", ZC624_REQUIRED_MAJOR_VERION, ver_major);
+            printf("  minor version >= %d (found %d)\n", ZC624_MIN_MINOR_VERION     , ver_minor);
+            error = true;
+            cause = Cause::ZC624_VERSION;
+        }
     }
+    else
+    {
+        printf("ERROR\n");
+        error = true;
+    }
+
+    if (!error)
+    {
+        printf("    ZC624 status...");
+        if (!(_zc1_comms->check_zc624()))
+        {
+            printf("FAULT\n");
+            error = true;
+            cause = Cause::ZC624_STATUS;
+        }
+    }
+
+    if (error)
+    {
+        hw_check_failed(cause, ledControl, controls); // this never returns
+    }
+
     printf("Ok\n\n");
 }
 
@@ -159,6 +205,21 @@ void CHwCheck::show_error_text_missing(int y)
     }    
 }
 
+void CHwCheck::die(CLedControl *led_control, std::string error_message)
+{
+    int y = 0;
+    hagl_clear_screen();
+
+    put_text("Fatal error", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("===========", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    y++;
+    put_text(error_message, 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+
+    hagl_flush();
+
+    halt(led_control);
+}
+
 void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls)
 {
     int y = 0;
@@ -188,8 +249,16 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
             show_error_text_message(y, "Battery is flat!");
             break;
 
-        case Cause::ZC628:
-            show_error_text_message(y, "ZC628 (output) fault");
+        case Cause::ZC624_STATUS:
+            show_error_text_message(y, "ZC624 (output) fault");
+            break;
+
+        case Cause::ZC624_VERSION:
+            show_error_text_message(y, "ZC624 version mismatch");
+            break;
+
+        case Cause::ZC624_UNKNOWN:
+            show_error_text_message(y, "Unknown ZC624 error");
             break;
         
         default:
@@ -199,22 +268,27 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
 
     hagl_flush();
 
-    printf("HALT\n");
+    halt(ledControl);
+}
+
+void CHwCheck::halt(CLedControl *led_control)
+{
+    printf("Core0: HALT.\n");
     while(1)
     {
         sleep_ms(1000);
-        ledControl->set_all_led_colour(LedColour::Black);
-        ledControl->loop();
+        led_control->set_all_led_colour(LedColour::Black);
+        led_control->loop();
         
         sleep_ms(1000);
-        ledControl->set_all_led_colour(LedColour::Red);
-        ledControl->loop();
+        led_control->set_all_led_colour(LedColour::Red);
+        led_control->loop();
     };
 }
 
 std::string CHwCheck::get_zc624_version()
 {
-    return _checkZc624.get_version();
+    return _zc1_comms->get_version();
 }
 
 void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)

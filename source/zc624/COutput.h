@@ -24,6 +24,7 @@ class COutput
         void on(uint8_t channel);
         void off(uint8_t channel);
         void loop();
+        void power_down();
 
     private:
         bool is_channel_valid(uint8_t channel);
@@ -33,7 +34,7 @@ class COutput
         uint _pio_program_offset;
         CMsgDac _dac = CMsgDac();
         CI2cSlave *_i2c_slave;
-        CPulseQueue _pulse_queue;
+        CPulseQueue *_pulse_queue = NULL;
 };
 
 #endif

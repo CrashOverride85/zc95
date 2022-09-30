@@ -57,5 +57,7 @@ May do some of this, all of this, or none of this!
    - Use a USB charger
    - Maybe a smaller, 3D printed case. Probably keeping the same width/weight though
 
+## Known issues
+   - Battery gauge is pretty hopeless
 
 [zc95]: docs/images/zc95.jpg "Assembled ZC95"

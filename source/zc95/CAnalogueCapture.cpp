@@ -16,7 +16,9 @@ uint CAnalogueCapture::_s_dma_chan2;
 
 volatile bool CAnalogueCapture::_s_buf1_ready;
 volatile bool CAnalogueCapture::_s_buf2_ready;
-
+volatile uint64_t CAnalogueCapture::_capture_buf1_end_time_us;
+volatile uint64_t CAnalogueCapture::_capture_buf2_end_time_us;
+ 
 CAnalogueCapture::CAnalogueCapture()
 {
     _capture_duration_us = ((double)CAPTURE_DEPTH * ((double)1/(double)SAMPLES_PER_SECOND)) * 1000 * 1000;
@@ -30,6 +32,7 @@ void CAnalogueCapture::s_dma_handler1()
   _s_irq_counter1++;
   _s_buf1_ready = true;
   _s_buf2_ready = false;
+  _capture_buf1_end_time_us = time_us_64();
 
   // Clear the interrupt request.
   dma_hw->ints0 = 1u << _s_dma_chan1;
@@ -42,6 +45,7 @@ void CAnalogueCapture::s_dma_handler2()
   _s_irq_counter2++;
   _s_buf1_ready = false;
   _s_buf2_ready = true;
+  _capture_buf2_end_time_us = time_us_64();
 
   // Clear the interrupt request.
   dma_hw->ints0 = 1u << _s_dma_chan2;
@@ -68,7 +72,6 @@ void CAnalogueCapture::init()
 
     // Determines the ADC sampling rate as a divisor of the basic
     // 48Mhz clock. 
-
     uint32_t divider = 48000000 / SAMPLES_PER_SECOND;
     adc_set_clkdiv(divider - 1);
 
@@ -144,12 +147,14 @@ void CAnalogueCapture::process()
         {
             _s_buf1_ready = false;
             process_buffer(capture_buf1);
+            _capture_end_time_time_us = _capture_buf1_end_time_us;
         }
 
         if (_s_buf2_ready)
         {
             _s_buf2_ready = false;
             process_buffer(capture_buf2);
+            _capture_end_time_time_us = _capture_buf2_end_time_us;
         }
     }
 }
@@ -202,4 +207,14 @@ void CAnalogueCapture::get_audio_buffer(channel chan, uint16_t *samples, uint8_t
 uint64_t CAnalogueCapture::get_last_buffer_update_time_us()
 {
     return _last_buffer_update_time_us;
+}
+
+uint32_t CAnalogueCapture::get_capture_duration()
+{
+    return _capture_duration_us;
+}
+
+uint64_t CAnalogueCapture::get_capture_end_time_us()
+{
+    return _capture_end_time_time_us;
 }

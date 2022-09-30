@@ -28,6 +28,7 @@ class CFullOutputChannel : public COutputChannel
         virtual void loop(uint64_t time_us) {};
         virtual void init() {};
         virtual void deinit() {};
+        virtual bool set_channel_isolation(bool on);
 
         COutputChannel::channel_type get_channel_type()
         {

@@ -164,6 +164,8 @@ int main()
 
     printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
 
+    mutex_init(&gI2cMutex);
+
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
     gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
@@ -227,15 +229,19 @@ int main()
    
     hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
 
+    // Queue used for pulses from audio processing on core0 being sent to core1 for output
+    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+        queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
+
     // Load/set gain, mic preamp, etc., from eeprom
-    audio.init(&settings);
+    audio.init(&settings, &display);
 
     analogueCapture.init();
     analogueCapture.start();
 
-   led.set_all_led_colour(LedColour::Black);
+    led.set_all_led_colour(LedColour::Black);
 
-   sleep_ms(100);
+    sleep_ms(100);
    
     #ifdef SINGLE_CORE
         Core1 *core1 = new Core1(&routines, &settings);
@@ -325,6 +331,11 @@ int main()
             batteryGauge.add_raw_adc_readings(readings, readings_count);
         }
 
+        if (gFatalError)
+        {
+            routine_output->stop_routine();
+            hw_check.die(&led, gErrorString); // never returns
+        }
     }
 
     return 0;

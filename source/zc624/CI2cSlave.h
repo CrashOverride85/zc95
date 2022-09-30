@@ -28,10 +28,11 @@ class CI2cSlave
             Chan3Status    = 0x13,
 
             VerStrStart    = 0x20,
-            VerStrEnd      = 0x34 //  20 character string
+            VerStrEnd      = 0x34, //  20 character string
 
             // Read/write
             // starting at 0x80
+            ChannelIsolation = 0x80 // Default = true. If false, multiple channels can pulse at the same time (triphase effects)
         };
 
         enum status
@@ -43,6 +44,7 @@ class CI2cSlave
 
         CI2cSlave();
         void set_value(uint8_t reg, uint8_t value);
+        uint8_t get_value(CI2cSlave::reg reg);
 
 
     private:

@@ -35,12 +35,12 @@ add_executable(zc95
   CChannel_types.cpp
   i2c_scan.cpp
   CTimingTest.cpp
-  CHwCheck.cpp
-  CHwCheckZc624.cpp
+  CHwCheck.cpp 
   CBatteryGauge.cpp
   CDebugOutput.cpp
   version.cpp
-  globals.c
+  globals.cpp
+  CUtil.cpp
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
@@ -62,7 +62,7 @@ add_executable(zc95
 
   core1/output/zc1Output/CZC1ChannelFull.cpp
   core1/output/zc1Output/CZC1Comms.cpp
-
+ 
   core1/routines/CAccPort.cpp
 
   core1/routines/CWaves.cpp
@@ -78,9 +78,11 @@ add_executable(zc95
   core1/routines/CBuzz.cpp
   core1/routines/CPredicament.cpp
   core1/routines/CAudioThreshold.cpp
+  core1/routines/CAudioWave.cpp
   
   FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
+  FpKnobs/CRotEnc2.cpp
   FpKnobs/CFpAnalog.cpp
 
   display/CMenu.cpp
@@ -104,6 +106,7 @@ add_executable(zc95
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
+  AudioInput/CAudio3Process.cpp
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
   )
