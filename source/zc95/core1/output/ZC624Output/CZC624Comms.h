@@ -1,5 +1,5 @@
-#ifndef _CZC1COMMS_H
-#define _CZC1COMMS_H
+#ifndef _CZC624COMMS_H
+#define _CZC624COMMS_H
 
 #include <stdint.h>
 #include <string>
@@ -7,7 +7,7 @@
 #include "hardware/spi.h"
 #include "hardware/i2c.h"
 
-class CZC1Comms
+class CZC624Comms
 {
     public:
         struct message
@@ -64,8 +64,8 @@ class CZC1Comms
         std::string get_version();
         bool get_major_minor_version(uint8_t *major, uint8_t *minor);
         
-        CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c);
-        ~CZC1Comms();
+        CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c);
+        ~CZC624Comms();
 
         void send_message(message msg);
         bool write_i2c_register(i2c_reg_t reg, uint8_t value);

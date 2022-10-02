@@ -52,8 +52,8 @@ add_executable(zc95
   core1/output/collar/CCollarComms.cpp
   core1/output/collar/CCollarChannel.cpp
 
-  core1/output/zc1Output/CZC1ChannelFull.cpp
-  core1/output/zc1Output/CZC1Comms.cpp
+  core1/output/ZC624Output/CZC624ChannelFull.cpp
+  core1/output/ZC624Output/CZC624Comms.cpp
  
   core1/routines/CAccPort.cpp
 

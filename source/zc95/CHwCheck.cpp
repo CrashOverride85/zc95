@@ -30,7 +30,7 @@
  */
 CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
 {
-    _zc1_comms = new CZC1Comms(NULL, I2C_PORT);
+    _zc624_comms = new CZC624Comms(NULL, I2C_PORT);
 
     _devices.push_front(device(EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
@@ -50,10 +50,10 @@ CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
 
 CHwCheck::~CHwCheck()
 {
-    if (_zc1_comms)
+    if (_zc624_comms)
     {
-        delete _zc1_comms;
-        _zc1_comms = NULL;
+        delete _zc624_comms;
+        _zc624_comms = NULL;
     }
 }
 
@@ -128,7 +128,7 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
 {
     uint8_t ver_minor = 0;
     uint8_t ver_major = 0;
-    bool ver_check_ok = _zc1_comms->get_major_minor_version(&ver_major, &ver_minor);
+    bool ver_check_ok = _zc624_comms->get_major_minor_version(&ver_major, &ver_minor);
     CHwCheck::Cause cause = Cause::ZC624_UNKNOWN;
     bool error = false;
 
@@ -138,7 +138,7 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
     printf("    ZC624 Version...");
     if (ver_check_ok)
     {
-        printf("API maj=[%d], min=[%d], FW=[%s]\n", ver_major, ver_minor, _zc1_comms->get_version().c_str());
+        printf("API maj=[%d], min=[%d], FW=[%s]\n", ver_major, ver_minor, _zc624_comms->get_version().c_str());
 
         // check version is compatable
         if (ZC624_REQUIRED_MAJOR_VERION != ver_major || ver_minor < ZC624_MIN_MINOR_VERION)
@@ -159,7 +159,7 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
     if (!error)
     {
         printf("    ZC624 status...");
-        if (!(_zc1_comms->check_zc624()))
+        if (!(_zc624_comms->check_zc624()))
         {
             printf("FAULT\n");
             error = true;
@@ -288,7 +288,7 @@ void CHwCheck::halt(CLedControl *led_control)
 
 std::string CHwCheck::get_zc624_version()
 {
-    return _zc1_comms->get_version();
+    return _zc624_comms->get_version();
 }
 
 void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)
