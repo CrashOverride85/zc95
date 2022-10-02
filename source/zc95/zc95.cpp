@@ -60,14 +60,13 @@
 #include "core1/CRoutineOutput.h"
 #include "core1/CRoutineOutputCore1.h"
 
-#include "FpKnobs/CFpRotEnc.h"
-#include "FpKnobs/CFpAnalog.h"
+#include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
 
 CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
 CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
-CFpKnobs *_front_pannel = NULL;
+CFrontPanel *_front_pannel = NULL;
 CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
@@ -87,12 +86,12 @@ void gpio_callback(uint gpio, uint32_t events)
     else if (gpio == PIN_FP_INT1)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFpKnobs::port_exp::U1);
+            _front_pannel->interupt(CFrontPanel::port_exp::U1);
     }
     else if (gpio == PIN_FP_INT2)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFpKnobs::port_exp::U2);
+            _front_pannel->interupt(CFrontPanel::port_exp::U2);
     }
 }
 
@@ -199,7 +198,7 @@ int main()
 
     CDebugOutput::set_debug_destination_from_settings(&settings);
 
-    _front_pannel = new CFpAnalog(&settings); // new CFpRotEnc(&settings);
+    _front_pannel = new CFrontPanel(&settings);
 
     // Front pannel LEDs - give some feedback we're powering up (display takes almost second to appear)
     CLedControl led = CLedControl(PIN_LED, &settings);

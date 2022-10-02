@@ -1,46 +1,170 @@
+// -----
+// CRotEnc.cpp - Library for using rotary encoders.
+// This class is implemented for use with the Arduino environment.
+//
+// Copyright (c) by Matthias Hertel, http://www.mathertel.de
+//
+// This work is licensed under a BSD 3-Clause style license,
+// https://www.mathertel.de/License.aspx.
+//
+// More information on: http://www.mathertel.de/Arduino
+// -----
+// Changelog: see CRotEnc.h
+// -----
+
 #include "CRotEnc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include "pico/stdlib.h"
 
-/*
- * Process input from a rotary encoder. Pretty sure this can be significantly improved.
- *
- * 2022/09/11 - no longer used, replaced by CRotEnc2. Delete me soon unless CRotEnc2.cpp causes issues
- */
+#define LATCH0 0 // input state at position 0
+#define LATCH3 3 // input state at position 3
 
-CRotEnc::CRotEnc()
+
+// The array holds the values �1 for the entries where a position was decremented,
+// a 1 for the entries where the position was incremented
+// and 0 in all the other (no change or not valid) cases.
+
+const int8_t KNOBDIR[] = {
+    0, -1, 1, 0,
+    1, 0, 0, -1,
+    -1, 0, 0, 1,
+    0, 1, -1, 0};
+
+
+// positions: [3] 1 0 2 [3] 1 0 2 [3]
+// [3] is the positions where my rotary switch detends
+// ==> right, count up
+// <== left,  count down
+
+
+// ----- Initialization and Default Values -----
+
+CRotEnc::CRotEnc(LatchMode mode)
 {
-    _last_a = 0;
-    _last_b = 0;
+  // Remember Hardware Setup
+  _mode = mode;
+
+  // when not started in motion, the current state of the encoder should be 3
+  int sig1 = 0; //digitalRead(_pin1);
+  int sig2 = 0; //digitalRead(_pin2);
+  _oldState = sig1 | (sig2 << 1);
+
+  // start with position 0;
+  _position = 0;
+  _positionExt = 0;
+  _positionExtPrev = 0;
+  _postion_at_last_check = 0;
+} // CRotEnc()
+
+long CRotEnc::getPosition()
+{
+  return _positionExt;
+} // getPosition()
+
+CRotEnc::Direction CRotEnc::getDirection()
+{
+  CRotEnc::Direction ret = Direction::NOROTATION;
+
+  if (_positionExtPrev > _positionExt) {
+    ret = Direction::COUNTERCLOCKWISE;
+    _positionExtPrev = _positionExt;
+  } else if (_positionExtPrev < _positionExt) {
+    ret = Direction::CLOCKWISE;
+    _positionExtPrev = _positionExt;
+  } else {
+    ret = Direction::NOROTATION;
+    _positionExtPrev = _positionExt;
+  }
+
+  return ret;
 }
+
+void CRotEnc::setPosition(long newPosition)
+{
+  switch (_mode) {
+  case LatchMode::FOUR3:
+  case LatchMode::FOUR0:
+    // only adjust the external part of the position.
+    _position = ((newPosition << 2) | (_position & 0x03L));
+    _positionExt = newPosition;
+    _positionExtPrev = newPosition;
+    break;
+
+  case LatchMode::TWO03:
+    // only adjust the external part of the position.
+    _position = ((newPosition << 1) | (_position & 0x01L));
+    _positionExt = newPosition;
+    _positionExtPrev = newPosition;
+    break;
+  } // switch
+
+} // setPosition()
+
 
 void CRotEnc::process(uint8_t a, uint8_t b)
 {
-    if (a == _last_a && b == _last_b)
-        return;
+  int sig1 = a;
+  int sig2 = b;
+  int8_t thisState = sig1 | (sig2 << 1);
 
-    if (abs(_change_since_last_check) < 100)
-    {
-        if (a && b)
-        {
-            if (_last_a && !_last_b)
-            {
-                _change_since_last_check++;
-            }
-            else if (!_last_a && _last_b)
-            {
-                _change_since_last_check--; // ok
-            }
-        }
-    }        
+  if (_oldState != thisState) {
+    _position += KNOBDIR[thisState | (_oldState << 2)];
+    _oldState = thisState;
 
-    _last_a = a;
-    _last_b = b;
+    switch (_mode) {
+    case LatchMode::FOUR3:
+      if (thisState == LATCH3) {
+        // The hardware has 4 steps with a latch on the input state 3
+        _positionExt = _position >> 2;
+        _positionExtTimePrev = _positionExtTime;
+        _positionExtTime = time_us_64();
+      }
+      break;
+
+    case LatchMode::FOUR0:
+      if (thisState == LATCH0) {
+        // The hardware has 4 steps with a latch on the input state 0
+        _positionExt = _position >> 2;
+        _positionExtTimePrev = _positionExtTime;
+        _positionExtTime = time_us_64();
+      }
+      break;
+
+    case LatchMode::TWO03:
+      if ((thisState == LATCH0) || (thisState == LATCH3)) {
+        // The hardware has 2 steps with a latch on the input state 0 and 3
+        _positionExt = _position >> 1;
+        _positionExtTimePrev = _positionExtTime;
+        _positionExtTime = time_us_64();
+      }
+      break;
+    } // switch
+  } // if
+} // tick()
+
+
+uint64_t CRotEnc::getUsBetweenRotations() const
+{
+  return (_positionExtTime - _positionExtTimePrev);
+}
+
+unsigned long CRotEnc::getRPM()
+{
+  // calculate max of difference in time between last position changes or last change and now.
+  uint64_t timeBetweenLastPositions = _positionExtTime - _positionExtTimePrev;
+  uint64_t timeToLastPosition = time_us_64() - _positionExtTime;
+  uint64_t t = MAX(timeBetweenLastPositions, timeToLastPosition);
+  return 60000.0 / ((float)(t * 20));
 }
 
 int8_t CRotEnc::get_rotary_encoder_change()
 {
-    int8_t retval = _change_since_last_check;
-    _change_since_last_check = 0;
+    int8_t retval = _postion_at_last_check - _positionExt;
+
+    _postion_at_last_check = _positionExt;
     return retval;
 }
+
+// End
