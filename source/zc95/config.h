@@ -1,8 +1,4 @@
 
-
-// #define SINGLE_CORE
-
-
 #define PULSE_QUEUE_LENGTH 5  // queue size for pules sent from core0 to core1. Only used for audio pattern
                               // (maybe serial input in the future), where processing happens on core0
 

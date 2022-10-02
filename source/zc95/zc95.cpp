@@ -58,7 +58,6 @@
 #include "core1/output/CChannelConfig.h"
 #include "core1/routines/CRoutines.h"
 #include "core1/CRoutineOutput.h"
-#include "core1/CRoutineOutputDebug.h"
 #include "core1/CRoutineOutputCore1.h"
 
 #include "FpKnobs/CFpRotEnc.h"
@@ -243,14 +242,8 @@ int main()
 
     sleep_ms(100);
    
-    #ifdef SINGLE_CORE
-        Core1 *core1 = new Core1(&routines, &settings);
-        core1->init();
-        CRoutineOutput *routine_output = new CRoutineOutputDebug(core1, &display);
-    #else
-        core1_start(&routines, &settings);
-        CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
-    #endif
+    core1_start(&routines, &settings);
+    CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
 
