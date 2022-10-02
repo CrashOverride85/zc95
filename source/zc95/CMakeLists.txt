@@ -38,7 +38,6 @@ add_executable(zc95
   CHwCheck.cpp 
   CBatteryGauge.cpp
   CDebugOutput.cpp
-  version.cpp
   globals.cpp
   CUtil.cpp
 

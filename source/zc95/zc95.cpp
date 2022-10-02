@@ -34,7 +34,6 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/adc.h"
 
-#include "version.h"
 #include "i2c_scan.h"
 #include "CLedControl.h"
 #include "CControlsPortExp.h"
