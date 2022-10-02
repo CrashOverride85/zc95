@@ -9,8 +9,6 @@
 #include "COutputChannel.h"
 #include "../CPowerLevelControl.h"
 
-#include "mk312/COutput312b.h"
-
 #include "collar/CCollarComms.h"
 #include "collar/CCollarChannel.h"
 

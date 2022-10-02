@@ -52,12 +52,6 @@ add_executable(zc95
   core1/output/collar/CCollarComms.cpp
   core1/output/collar/CCollarChannel.cpp
 
-  core1/output/mk312/C312bComms.cpp
-  core1/output/mk312/C312bComms.h
-  core1/output/mk312/COutput312b.cpp
-  core1/output/mk312/COutput312b.h
-  core1/output/mk312/C312bTxBuffer.cpp
-
   core1/output/zc1Output/CZC1ChannelFull.cpp
   core1/output/zc1Output/CZC1Comms.cpp
  
