@@ -32,12 +32,12 @@ The next page should show a list of all parts found / matched. Deselect the SS21
 ### PCB Parts
 All parts required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:
 
-[BoM (openoffice format)](BoM.ods)
+[BoM (openoffice format)](BoM.fods)
 
 As with the MK312-BT, the PFETs (IRF9Z24NPBF) in particular should not be substituted with anything similar, the exact part should be used.
 
 ### Misc parts
-[The BoM spreadsheet](BoM.ods) includes a Misc tab with the rest of the parts required to complete the build (case, display, etc.).
+[The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (case, display, etc.).
 
 
 ## Assembly
