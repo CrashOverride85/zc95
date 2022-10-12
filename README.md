@@ -53,6 +53,7 @@ May do some of this, all of this, or none of this!
    - LUA scripting. Proof of concept completed. The pico's definitely powerful enough. Not sure if there's enough free RAM for scripts of a useful length
    - Switch to Pico W, and allow some kind of remote access. Maybe just to upload LUA scripts
    - Combine main, output and audio boards into one, and probably switch to almost all SMD so it can be assembled by JLCPCB
+   - Probably remove "Aux" socket and swap for seperate "Serial" and "Audio" sockets
    - Use a lithium battery pack instead of a 12v SLA
    - Use a USB charger
    - Maybe a smaller, 3D printed case. Probably keeping the same width/weight though

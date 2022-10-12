@@ -2,9 +2,9 @@
 
 /*
  * Queue up pulses to be generated. This is to ensure that only one chanel is ever 
- * generating a pulse at the exact same moment.
- * This for (largely theoretical) safety reasons, rather than power use, etc.
- * For the time being, this rules out any kind of tri-phase effects.
+ * generating a pulse at the exact same moment when channel_isolation is enabled.
+ * This is for (largely theoretical) safety reasons, rather than power use, etc.
+ * Channel isolation needs to be disabled for any tri-phase effects.
  */
 
 CPulseQueue::CPulseQueue(CI2cSlave *i2c_slave)
