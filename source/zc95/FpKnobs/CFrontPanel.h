@@ -1,12 +1,17 @@
-#include "CFpKnobs.h"
-#include "CRotEnc2.h"
+#include "CRotEnc.h"
 #include "../CSavedSettings.h"
 #include "../config.h"
 
-class CFpAnalog : public CFpKnobs
+class CFrontPanel
 {
     public:
-        CFpAnalog(CSavedSettings *saved_settings);
+        enum port_exp
+        {
+            U1 = 0,
+            U2 = 1
+        };
+
+        CFrontPanel(CSavedSettings *saved_settings);
         void process(bool always_update);
         uint16_t get_channel_power_level(uint8_t channel);
         int8_t get_adjust_control_change();
@@ -18,7 +23,7 @@ class CFpAnalog : public CFpKnobs
         uint8_t read_port_expander();
         uint8_t _last_port_exp_read;
         int16_t _power_level[MAX_CHANNELS];
-        CRotEnc2 _rot_encoder;
+        CRotEnc _rot_encoder;
         int16_t _adjust_value;
         volatile bool _interrupt;
 

@@ -14,8 +14,7 @@ class CChannel_types
         {
             CHANNEL_NONE     = 0,
             CHANNEL_INTERNAL = 1,
-            CHANNEL_COLLAR   = 2,
-            CHANNEL_312      = 3
+            CHANNEL_COLLAR   = 2
         };
 
         static std::string get_channel_name(channel_type type, uint8_t index);

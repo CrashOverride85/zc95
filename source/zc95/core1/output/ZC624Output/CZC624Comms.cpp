@@ -1,7 +1,7 @@
 #include "../../../config.h"
 #include "../../../globals.h"
 #include "../../../CUtil.h"
-#include "CZC1Comms.h"
+#include "CZC624Comms.h"
 
 #include "hardware/spi.h"
 #include <stdio.h>
@@ -12,9 +12,9 @@
  * Communicate with ZC624 output board
  */
 
-CZC1Comms::CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c)
+CZC624Comms::CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c)
 {
-    printf("CZC1Comms()\n");
+    printf("CZC624Comms()\n");
     _spi = spi;
     _i2c = i2c;
 
@@ -30,12 +30,12 @@ CZC1Comms::CZC1Comms(spi_inst_t *spi, i2c_inst_t *i2c)
     }
 }
 
-CZC1Comms::~CZC1Comms()
+CZC624Comms::~CZC624Comms()
 {
-    printf("~CZC1Comms()\n");
+    printf("~CZC624Comms()\n");
 }
 
-void CZC1Comms::send_message(message msg)
+void CZC624Comms::send_message(message msg)
 {
     if (_spi)
     {
@@ -44,7 +44,7 @@ void CZC1Comms::send_message(message msg)
     }
 }
 
-bool CZC1Comms::get_i2c_register(i2c_reg_t reg, uint8_t *value)
+bool CZC624Comms::get_i2c_register(i2c_reg_t reg, uint8_t *value)
 {
     uint8_t buf[1] = {0};
     bool retval = get_i2c_register_range(reg, buf, 1);
@@ -52,7 +52,7 @@ bool CZC1Comms::get_i2c_register(i2c_reg_t reg, uint8_t *value)
     return retval;
 }
 
-bool CZC1Comms::get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t size)
+bool CZC624Comms::get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t size)
 {
     uint8_t buf[1];
     buf[0] = (uint8_t)reg;
@@ -74,7 +74,7 @@ bool CZC1Comms::get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t s
     return true;
 }
 
-bool CZC1Comms::write_i2c_register(i2c_reg_t reg, uint8_t value)
+bool CZC624Comms::write_i2c_register(i2c_reg_t reg, uint8_t value)
 {
     uint8_t buf[2];
     buf[0] = (uint8_t)reg;
@@ -91,10 +91,10 @@ bool CZC1Comms::write_i2c_register(i2c_reg_t reg, uint8_t value)
     return true;
 }
 
-bool CZC1Comms::check_zc624()
+bool CZC624Comms::check_zc624()
 {
     uint8_t status = 0;
-    if (!get_i2c_register(CZC1Comms::i2c_reg_t::OverallStatus, &status))
+    if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
     {
         printf("Failed to read OverallStatus register from ZC624\n");
         return false;
@@ -104,21 +104,21 @@ bool CZC1Comms::check_zc624()
     uint8_t count = 0;
     do
     {
-        if (!get_i2c_register(CZC1Comms::i2c_reg_t::OverallStatus, &status))
+        if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
         {
             printf("Failed to read OverallStatus register from ZC624\n");
             return false;
         }
         count++;
 
-        if (status != CZC1Comms::status::Startup)
+        if (status != CZC624Comms::status::Startup)
             break;
 
         sleep_ms(100);
 
     } while (count < 20);
 
-    if (status != CZC1Comms::status::Ready)
+    if (status != CZC624Comms::status::Ready)
     {
         printf("ZC624 is not ready (status = %d)\n", status);
         return false;
@@ -127,7 +127,7 @@ bool CZC1Comms::check_zc624()
     return true;
 }
 
-std::string CZC1Comms::get_version()
+std::string CZC624Comms::get_version()
 {
     std::string version_str = "ERROR";
     uint8_t ver_str_len = ((uint8_t)i2c_reg_t::VerStrEnd - (uint8_t)i2c_reg_t::VerStrStart);
@@ -142,11 +142,11 @@ std::string CZC1Comms::get_version()
     return version_str;
 }
 
-bool CZC1Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
+bool CZC624Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
 {
     bool retval = true;
-    retval &= get_i2c_register(CZC1Comms::i2c_reg_t::VersionMajor, major);
-    retval &= get_i2c_register(CZC1Comms::i2c_reg_t::VersionMinor, minor);
+    retval &= get_i2c_register(CZC624Comms::i2c_reg_t::VersionMajor, major);
+    retval &= get_i2c_register(CZC624Comms::i2c_reg_t::VersionMinor, minor);
 
     return retval;
 }

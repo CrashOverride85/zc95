@@ -1,4 +1,4 @@
-#include "CFpAnalog.h"
+#include "CFrontPanel.h"
 #include <string.h>
 #include "../globals.h"
 #include "../CUtil.h"
@@ -11,14 +11,14 @@
  * and 1x rotary encoder connected to an I2C port expander
  */
 
-CFpAnalog::CFpAnalog(CSavedSettings *saved_settings)
+CFrontPanel::CFrontPanel(CSavedSettings *saved_settings)
 {
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0;
     _adjust_value = 0;
 }
 
-void CFpAnalog::interupt (port_exp exp)
+void CFrontPanel::interupt (port_exp exp)
 {
     _interrupt = true;
     _interrupt_time = time_us_32();
@@ -27,7 +27,7 @@ void CFpAnalog::interupt (port_exp exp)
         process(false);
 }
 
-void CFpAnalog::process(bool always_update)
+void CFrontPanel::process(bool always_update)
 {
     if (_interrupt || always_update)
     {
@@ -54,7 +54,7 @@ void CFpAnalog::process(bool always_update)
     }
 }
 
-uint16_t CFpAnalog::get_channel_power_level(uint8_t channel)
+uint16_t CFrontPanel::get_channel_power_level(uint8_t channel)
 {
     if (channel >= MAX_CHANNELS)
         return 0;
@@ -63,7 +63,7 @@ uint16_t CFpAnalog::get_channel_power_level(uint8_t channel)
 }
 
 
-int8_t CFpAnalog::get_adjust_control_change()
+int8_t CFrontPanel::get_adjust_control_change()
 {
     int8_t retval = _adjust_value;
     _adjust_value = 0;
@@ -71,14 +71,14 @@ int8_t CFpAnalog::get_adjust_control_change()
 }
 
  
-void CFpAnalog::read_adc()
+void CFrontPanel::read_adc()
 {
     uint8_t command = 0x04;
 
     int bytes_written = i2c_write(__func__, ADC_ADDR, &command, 1, false);
     if (bytes_written != 1)
     {
-        printf("CFpAnalog::read_adc() write failed! i2c bytes_written = %d\n", bytes_written);
+        printf("CFrontPanel::read_adc() write failed! i2c bytes_written = %d\n", bytes_written);
         return;
     }
 
@@ -86,7 +86,7 @@ void CFpAnalog::read_adc()
     int retval = i2c_read(__func__, ADC_ADDR, buffer, sizeof(buffer), false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CFpAnalog::read_adc() i2c read error!\n");
+      printf("CFrontPanel::read_adc() i2c read error!\n");
       return;
     }
 
@@ -103,7 +103,7 @@ void CFpAnalog::read_adc()
     _power_level[3] = (float)1000 - (float)buffer[2] * 3.91;
 }
 
-void CFpAnalog::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint8_t b_pos)
+void CFrontPanel::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint8_t b_pos)
 {
     uint8_t a = (port_exp_read & (1 << a_pos) ? 1 : 0);
     uint8_t b = (port_exp_read & (1 << b_pos ) ? 1 : 0);
@@ -111,14 +111,14 @@ void CFpAnalog::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint8_
     _rot_encoder.process(a, b);
 }
 
-uint8_t CFpAnalog::read_port_expander()
+uint8_t CFrontPanel::read_port_expander()
 {
     uint8_t buffer[1];
     
     int retval = i2c_read(__func__, FP_ANALOG_PORT_EXP_2_ADDR, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CFpAnalog::read_port_expander i2c read error!\n");
+      printf("CFrontPanel::read_port_expander i2c read error!\n");
       return 0;
     }
 

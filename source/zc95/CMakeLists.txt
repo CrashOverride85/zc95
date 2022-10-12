@@ -38,14 +38,12 @@ add_executable(zc95
   CHwCheck.cpp 
   CBatteryGauge.cpp
   CDebugOutput.cpp
-  version.cpp
   globals.cpp
   CUtil.cpp
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
-  core1/CRoutineOutputDebug.cpp
   core1/CRoutineOutputCore1.cpp
 
   core1/output/CChannelConfig.cpp
@@ -54,14 +52,8 @@ add_executable(zc95
   core1/output/collar/CCollarComms.cpp
   core1/output/collar/CCollarChannel.cpp
 
-  core1/output/mk312/C312bComms.cpp
-  core1/output/mk312/C312bComms.h
-  core1/output/mk312/COutput312b.cpp
-  core1/output/mk312/COutput312b.h
-  core1/output/mk312/C312bTxBuffer.cpp
-
-  core1/output/zc1Output/CZC1ChannelFull.cpp
-  core1/output/zc1Output/CZC1Comms.cpp
+  core1/output/ZC624Output/CZC624ChannelFull.cpp
+  core1/output/ZC624Output/CZC624Comms.cpp
  
   core1/routines/CAccPort.cpp
 
@@ -80,10 +72,8 @@ add_executable(zc95
   core1/routines/CAudioThreshold.cpp
   core1/routines/CAudioWave.cpp
   
-  FpKnobs/CFpRotEnc.cpp
   FpKnobs/CRotEnc.cpp
-  FpKnobs/CRotEnc2.cpp
-  FpKnobs/CFpAnalog.cpp
+  FpKnobs/CFrontPanel.cpp
 
   display/CMenu.cpp
   display/CDisplay.cpp

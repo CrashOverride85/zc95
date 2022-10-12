@@ -6,7 +6,7 @@ Two changes are required:
   2. Fit a 10 way 2.54mm pin header on J17
 
 ## Ordering
-Parts required for this board are on the "Audio input" tab of the [BoM (openoffice format)](BoM.ods) spreadsheet. 
+Parts required for this board are on the "Audio input" tab of the [BoM (openoffice format)](BoM.fods) spreadsheet. 
 When building the board, there are two choices for gain control:
 
 1. Internal adjustment only - fit RV1 and RV2

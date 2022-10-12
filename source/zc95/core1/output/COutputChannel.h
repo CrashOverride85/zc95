@@ -85,31 +85,26 @@ class COutputChannel
             else
                 _led_colour = colour;
 
-            #ifdef SINGLE_CORE
-                // TODO
-            #else
-                uint8_t blue  =  colour        & 0xFF;
-                uint8_t green = (colour >>  8) & 0xFF;
-                uint8_t red   = (colour >> 16) & 0xFF;
 
-                message msg = {0};
-                msg.msg8[0] = MESSAGE_SET_LED_CHAN0 + _channel_id;
-                msg.msg8[1] = red;
-                msg.msg8[2] = green;
-                msg.msg8[3] = blue;
- 
-                if (multicore_fifo_wready())
-                {
-                   // printf("core1: LED %d push %d\n", msg.msg8[0], colour );
-                    multicore_fifo_push_blocking(msg.msg32);
-                }
-                else
-                {
-                    printf("COutputChannel::set_led_colour(): FIFO full\n");
-                }
+            uint8_t blue  =  colour        & 0xFF;
+            uint8_t green = (colour >>  8) & 0xFF;
+            uint8_t red   = (colour >> 16) & 0xFF;
 
-            #endif
+            message msg = {0};
+            msg.msg8[0] = MESSAGE_SET_LED_CHAN0 + _channel_id;
+            msg.msg8[1] = red;
+            msg.msg8[2] = green;
+            msg.msg8[3] = blue;
 
+            if (multicore_fifo_wready())
+            {
+                // printf("core1: LED %d push %d\n", msg.msg8[0], colour );
+                multicore_fifo_push_blocking(msg.msg32);
+            }
+            else
+            {
+                printf("COutputChannel::set_led_colour(): FIFO full\n");
+            }
         }
 };
 

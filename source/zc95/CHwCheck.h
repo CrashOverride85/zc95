@@ -13,7 +13,7 @@
 #include "CLedControl.h"
 #include "CControlsPortExp.h"
 #include "CBatteryGauge.h"
-#include "core1/output/zc1Output/CZC1Comms.h"
+#include "core1/output/ZC624Output/CZC624Comms.h"
 
 #define BAT_AVG_COUNT 50
 
@@ -57,7 +57,7 @@ class CHwCheck
                 }
         };
 
-        CZC1Comms *_zc1_comms;
+        CZC624Comms *_zc624_comms;
         std::list<device> _devices;
         CBatteryGauge *_batteryGauge;
 };

@@ -32,14 +32,6 @@ std::string CChannel_types::get_channel_name(channel_type type, uint8_t index)
         case channel_type::CHANNEL_COLLAR:
             return "Collar " + std::to_string(index+1);
 
-        case channel_type::CHANNEL_312:
-            if (index == 0)
-                return "312B Output A";
-            else if (index == 1)
-                return "312B Output B";
-            else
-                return "";
-
         default:
             return "";
     }

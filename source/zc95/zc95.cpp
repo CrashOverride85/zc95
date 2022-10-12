@@ -34,7 +34,6 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/adc.h"
 
-#include "version.h"
 #include "i2c_scan.h"
 #include "CLedControl.h"
 #include "CControlsPortExp.h"
@@ -58,17 +57,15 @@
 #include "core1/output/CChannelConfig.h"
 #include "core1/routines/CRoutines.h"
 #include "core1/CRoutineOutput.h"
-#include "core1/CRoutineOutputDebug.h"
 #include "core1/CRoutineOutputCore1.h"
 
-#include "FpKnobs/CFpRotEnc.h"
-#include "FpKnobs/CFpAnalog.h"
+#include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
 
 CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
 CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
-CFpKnobs *_front_pannel = NULL;
+CFrontPanel *_front_pannel = NULL;
 CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
@@ -88,12 +85,12 @@ void gpio_callback(uint gpio, uint32_t events)
     else if (gpio == PIN_FP_INT1)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFpKnobs::port_exp::U1);
+            _front_pannel->interupt(CFrontPanel::port_exp::U1);
     }
     else if (gpio == PIN_FP_INT2)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFpKnobs::port_exp::U2);
+            _front_pannel->interupt(CFrontPanel::port_exp::U2);
     }
 }
 
@@ -200,7 +197,7 @@ int main()
 
     CDebugOutput::set_debug_destination_from_settings(&settings);
 
-    _front_pannel = new CFpAnalog(&settings); // new CFpRotEnc(&settings);
+    _front_pannel = new CFrontPanel(&settings);
 
     // Front pannel LEDs - give some feedback we're powering up (display takes almost second to appear)
     CLedControl led = CLedControl(PIN_LED, &settings);
@@ -243,14 +240,8 @@ int main()
 
     sleep_ms(100);
    
-    #ifdef SINGLE_CORE
-        Core1 *core1 = new Core1(&routines, &settings);
-        core1->init();
-        CRoutineOutput *routine_output = new CRoutineOutputDebug(core1, &display);
-    #else
-        core1_start(&routines, &settings);
-        CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
-    #endif
+    core1_start(&routines, &settings);
+    CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
 
