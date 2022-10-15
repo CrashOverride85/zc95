@@ -168,6 +168,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
         case menu_entry_type::AUDIO_VIEW_WAVE:
         case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
         case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+        case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
             if (change >= 1)
             {
                 increment_gain(10);
@@ -257,6 +258,18 @@ void CMenuRoutineAdjust::draw()
             uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
 
             _audio->draw_audio_wave(x0, y0, x1, y1, true, false);
+
+            break;
+        }
+
+        case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
+        {
+            uint8_t x0 = _area.x0+1;
+            uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
+            uint8_t x1 = _area.x1-3;
+            uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
+
+            _audio->draw_audio_virt3(x0, y0, x1, y1, true);
 
             break;
         }

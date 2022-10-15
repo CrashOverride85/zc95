@@ -24,7 +24,8 @@ enum class menu_entry_type
     AUDIO_VIEW_SPECT,
     AUDIO_VIEW_WAVE,
     AUDIO_VIEW_INTENSITY_STEREO,
-    AUDIO_VIEW_INTENSITY_MONO
+    AUDIO_VIEW_INTENSITY_MONO,
+    AUDIO_VIEW_VIRTUAL_3
 };
 
 enum class trigger_socket
@@ -116,7 +117,7 @@ class CRoutine
         virtual void soft_button_pushed (soft_button button, bool pushed) {}; // pushed: true=pushed, false=released
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
-        virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan) {};
+        virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
         virtual void pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
 
         virtual void loop(uint64_t time_us) = 0;

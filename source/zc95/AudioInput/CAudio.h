@@ -43,9 +43,11 @@ class CAudio
 
         void audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
         void audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
+        void audio_virtual_3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
 
         void draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain, bool mono);
         void draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour);
+        void draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain);
 
         void process();
         void set_audio_mode(audio_mode_t audio_mode);
@@ -56,6 +58,7 @@ class CAudio
         uint16_t get_bar_height(uint8_t *buffer, uint16_t sample_pos, uint8_t sample_count);
         void threshold_cross_process_and_send();
         void get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_intensity);
+        uint8_t *get_virtual_channel(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
         const uint8_t AudioDisplayWidth = 114;
 
         bool _digipot_found;
@@ -68,7 +71,7 @@ class CAudio
         audio_mode_t _audio_mode = audio_mode_t::OFF;
         bool _audio_update_available;
         CSavedSettings *_saved_settings;
-        CAudio3Process *_audio3_process[2]; // Left & right
+        CAudio3Process *_audio3_process[3]; // Left, right & virtual
         uint8_t _gain_l = 0;
         uint8_t _gain_r = 0;
         CInteruptableSection _interuptable_section;

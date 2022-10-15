@@ -24,6 +24,7 @@ CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPo
 
     _audio3_process[AUDIO_LEFT ] = new CAudio3Process(0, analogueCapture);
     _audio3_process[AUDIO_RIGHT] = new CAudio3Process(1, analogueCapture);
+    _audio3_process[AUDIO_VIRT ] = new CAudio3Process(2, analogueCapture);
 }
 
 CAudio::~CAudio()
@@ -193,6 +194,11 @@ void CAudio::process()
     else if (_audio_mode == audio_mode_t::AUDIO_INTENSITY)
     {
         audio_intensity(sample_count, sample_buffer_left, sample_buffer_right);
+    }
+
+    else if (_audio_mode == audio_mode_t::AUDIO_VIRTUAL_3)
+    {
+        audio_virtual_3(sample_count, sample_buffer_left, sample_buffer_right);
     }
 
     _audio_update_available = true;
@@ -384,6 +390,49 @@ void CAudio::draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buff
     }
 }
 
+void CAudio::draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain)
+{
+    uint16_t sample_count;
+    uint8_t *sample_buffer_left;
+    uint8_t *sample_buffer_right;
+    uint8_t *sample_buffer_virt;
+    uint8_t bar_height = 2;
+    CHorzBarGraph bar_graph = CHorzBarGraph(_display);
+    struct display_area bar_graph_area = 
+    {
+        .x0 = x0,
+        .y0 = (int16_t)(y1 - bar_height),
+        .x1 = x1,
+        .y1 = y1
+    };
+
+    _interuptable_section.start();
+
+    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
+    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
+    sample_buffer_virt = get_virtual_channel(sample_count, sample_buffer_left, sample_buffer_right);
+    if (!sample_buffer_virt)
+        return;
+
+    uint16_t display_window_width = x1 - x0;
+    uint16_t wave_width = display_window_width / 3;
+
+    draw_audio_wave_channel(sample_count, sample_buffer_left , x0+(wave_width * 0), y0+2, x0+(wave_width * 1), y1, hagl_color(0xFF, 0xFF, 0xFF));
+    draw_audio_wave_channel(sample_count, sample_buffer_right, x0+(wave_width * 1), y0+2, x0+(wave_width * 2), y1, hagl_color(0xFF, 0x00, 0x00));
+    draw_audio_wave_channel(sample_count, sample_buffer_virt , x0+(wave_width * 2), y0+2, x0+(wave_width * 3), y1, hagl_color(0xFF, 0xFF, 0x00));
+
+    hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+
+    // Draw gain setting if digipot found
+    if (get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
+    {
+        color_t yellow  = hagl_color(0xFF, 0xFF, 0x00);
+        bar_graph.draw_horz_bar_graph(bar_graph_area, 0, 255, _gain_l, "", yellow, true);
+    }
+
+    free (sample_buffer_virt);
+}
+
 void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     uint8_t width  = x1 - x0;
@@ -504,4 +553,77 @@ void CAudio::get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_
     }
 
     *out_intensity = max - min; // crude approximation of volume
+}
+
+void CAudio::audio_virtual_3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
+{
+    static uint8_t last_intensity_left  = 0;
+    static uint8_t last_intensity_right = 0;
+    static uint8_t last_intensity_virt  = 0;
+    uint8_t intensity_left  = 0;
+    uint8_t intensity_right = 0;
+    uint8_t intensity_virt  = 0;
+
+    _interuptable_section.start();
+
+    // generate 3rd channel
+    uint8_t *sample_buffer_virt = get_virtual_channel(sample_count, sample_buffer_left, sample_buffer_right);
+    if (!sample_buffer_virt)
+        return;
+
+    _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
+    _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
+    _audio3_process[AUDIO_VIRT ]->process_samples(sample_count, sample_buffer_virt , &intensity_virt );
+
+    // Change power level based on audio level. Power level changes are slow, so do this at most once every 20ms
+    static uint64_t last_level_change_time_us = 0;
+    if (time_us_64() - last_level_change_time_us > (1000 * 20))
+    {
+        if 
+        (
+            last_intensity_left  != intensity_left  || 
+            last_intensity_right != intensity_right ||
+            last_intensity_virt  != intensity_virt 
+        )
+        {
+            last_intensity_left  = intensity_left;
+            last_intensity_right = intensity_right;
+            last_intensity_virt  = intensity_virt;
+            last_level_change_time_us = time_us_64();
+
+            if (_routine_output)
+            {
+                _routine_output->audio_intensity_change (intensity_left, intensity_right, intensity_virt);
+            }  
+        }
+    }
+
+    free(sample_buffer_virt);
+    _interuptable_section.end();
+}
+
+uint8_t* CAudio::get_virtual_channel(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
+{
+    uint8_t *sample_buffer_virt = (uint8_t*)malloc(sample_count);
+    if (!sample_buffer_virt)
+    {
+        printf("CAudio::get_virtual_channel: failed to allocate memory\n");
+        return NULL;
+    }
+
+    for (uint16_t sample=0; sample < sample_count; sample++)
+    {
+        int16_t difference = sample_buffer_left[sample] - sample_buffer_right[sample];
+        difference /= 2;
+
+        int16_t virt = difference + 127;
+        if (virt > 255)
+            virt = 255;
+        if (virt < 0)
+            virt = 0;
+
+        sample_buffer_virt[sample] = virt;
+    }
+
+    return sample_buffer_virt;
 }

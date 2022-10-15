@@ -311,9 +311,10 @@ void Core1::process_message(message msg)
         case MESSAGE_AUDIO_INTENSITY:
             if (_active_routine != NULL)
             {
-                uint8_t left_chan = msg.msg8[1];
+                uint8_t left_chan  = msg.msg8[1];
                 uint8_t right_chan = msg.msg8[2];
-                _active_routine->audio_intensity(left_chan, right_chan);
+                uint8_t virt_chan  = msg.msg8[3];
+                _active_routine->audio_intensity(left_chan, right_chan, virt_chan);
             }
             break;
     }
