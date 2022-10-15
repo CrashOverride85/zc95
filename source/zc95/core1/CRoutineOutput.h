@@ -19,6 +19,7 @@ class CRoutineOutput
 
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) = 0;
         virtual void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id) = 0;
+        virtual void menu_selected(uint8_t menu_id) = 0;
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) = 0;
         virtual void soft_button_pressed(soft_button button, bool pressed) = 0;
         virtual void loop() {};

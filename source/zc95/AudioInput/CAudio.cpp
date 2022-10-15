@@ -100,35 +100,35 @@ void CAudio::set_routine_output(CRoutineOutput *routine_output)
 
 // Taking into account the audio setting in the menu (Auto/present no gain/off) and if the digipot on the audio 
 // board was found, return state: NOT_PRESENT, PRESENT_NO_GAIN (basically forced on by menu) or PRESENT
-CAudio::audio_hardware_state_t CAudio::get_audio_hardware_state()
+audio_hardware_state_t CAudio::get_audio_hardware_state()
 {
     if (_saved_settings == NULL)
     {
         printf("CAudio::audio_hardware_state_t CAudio::get_audio_hardware_state(): ERROR - NULL _saved_settings\n");
-        return CAudio::audio_hardware_state_t::NOT_PRESENT;
+        return audio_hardware_state_t::NOT_PRESENT;
     }
 
-    CAudio::audio_hardware_state_t state;
+    audio_hardware_state_t state;
     switch (_saved_settings->get_audio_setting())
     {
         case CSavedSettings::setting_audio::AUTO:
             if (_digipot_found)
             {
-                state = CAudio::audio_hardware_state_t::PRESENT;
+                state = audio_hardware_state_t::PRESENT;
             }
             else
             {
-                state = CAudio::audio_hardware_state_t::NOT_PRESENT;
+                state = audio_hardware_state_t::NOT_PRESENT;
             }
             break;
 
         case CSavedSettings::setting_audio::NO_GAIN:
-            state = CAudio::audio_hardware_state_t::PRESENT_NO_GAIN;
+            state = audio_hardware_state_t::PRESENT_NO_GAIN;
             break;
 
         case CSavedSettings::setting_audio::OFF:
         default:
-            state = CAudio::audio_hardware_state_t::NOT_PRESENT;
+            state = audio_hardware_state_t::NOT_PRESENT;
             break;
     }
     
@@ -179,15 +179,20 @@ void CAudio::process()
     if (_audio_mode == audio_mode_t::OFF)
         return;
 
-    if (_audio_mode == audio_mode_t::THRESHOLD_CROSS_FFT)
+    else if (_audio_mode == audio_mode_t::THRESHOLD_CROSS_FFT)
     {
         do_fft(sample_count, sample_buffer_left);
         threshold_cross_process_and_send();
     }
 
-    if (_audio_mode == audio_mode_t::AUDIO3)
+    else if (_audio_mode == audio_mode_t::AUDIO3)
     {
         audio3(sample_count, sample_buffer_left, sample_buffer_right);
+    }
+
+    else if (_audio_mode == audio_mode_t::AUDIO_INTENSITY)
+    {
+        audio_intensity(sample_count, sample_buffer_left, sample_buffer_right);
     }
 
     _audio_update_available = true;
@@ -294,7 +299,7 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
     _interuptable_section.end();
 }
 
-void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain)
+void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain, bool mono)
 {
     uint16_t sample_count;
     uint8_t *sample_buffer_left;
@@ -311,12 +316,20 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
 
     _interuptable_section.start();
 
-    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
-    _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
+    if (mono)
+    {
+        _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left);
+        draw_audio_wave_channel(sample_count, sample_buffer_left, x0, y0+2, x1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+    }
+    else
+    {
+        _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
+        _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
 
-    draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(0xFF, 0xFF, 0xFF));
-    draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(0xFF, 0x00, 0x00));
-    
+        draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+        draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(0xFF, 0x00, 0x00));
+    }
+
     hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
 
     // Draw gain setting if digipot found
@@ -428,4 +441,67 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     }
 
     _interuptable_section.end();
+}
+
+void CAudio::audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
+{
+    _interuptable_section.start();
+    static uint8_t last_intensity_left  = 0;
+    static uint8_t last_intensity_right = 0;
+    uint8_t intensity_left;
+    uint8_t intensity_right;
+
+    get_intensity(sample_count, sample_buffer_left , &intensity_left );
+    get_intensity(sample_count, sample_buffer_right, &intensity_right);
+        
+    static uint64_t last_level_change_time_us = 0;
+    if (time_us_64() - last_level_change_time_us > (1000 * 20))
+    {
+        if 
+        (
+            last_intensity_left  != intensity_left || 
+            last_intensity_right != intensity_right
+        )
+        {
+            last_intensity_left  = intensity_left;
+            last_intensity_right = intensity_right;
+            last_level_change_time_us = time_us_64();
+
+            if (_routine_output)
+            {
+                _routine_output->audio_intensity_change (intensity_left, intensity_right);
+            }  
+        }
+    }
+
+    _interuptable_section.end();
+}
+
+void CAudio::get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_intensity)
+{
+    // Figure out min, max and average (mean) sample values
+    uint32_t total = 0;
+    int16_t min = INT16_MAX;
+    int16_t max = INT16_MIN;
+    for (uint16_t x = 0; x < sample_count; x++)
+    {
+        if (buffer[x] > max)
+            max = buffer[x];
+
+        if (buffer[x] < min)
+            min = buffer[x];
+    
+        total += buffer[x];
+    }
+    uint8_t avg = total / sample_count;
+
+
+    // Noise filter. If no/very weak signal, don't continue (don't want to trigger on noise)
+    if (abs(min-avg) < 5 && abs(max-avg) < 5)
+    {
+        *out_intensity = 0;
+        return;
+    }
+
+    *out_intensity = max - min; // crude approximation of volume
 }

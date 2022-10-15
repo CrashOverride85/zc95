@@ -50,7 +50,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
     // Set the text used on the status bar
     _title = _active_routine_conf.name;
 
-    enable_audio_if_required_by_routine();
+    _audio->set_audio_mode(_active_routine_conf.audio_processing_mode);
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
@@ -69,7 +69,7 @@ CMenuRoutineAdjust::~CMenuRoutineAdjust()
     }
 
     _routine_output->stop_routine();
-    _audio->set_audio_mode(CAudio::audio_mode_t::OFF);
+    _audio->set_audio_mode(audio_mode_t::OFF);
 }
 
 void CMenuRoutineAdjust::button_released(Button button)
@@ -82,8 +82,9 @@ void CMenuRoutineAdjust::button_released(Button button)
 
 void CMenuRoutineAdjust::button_pressed(Button button)
 {
-    // "A" button is passed onto routines, that may or may not use it
+    uint8_t menu_selection = _routine_adjust_display_list->get_current_selection_id();
 
+    // "A" button is passed onto routines, that may or may not use it
     if (button == Button::A)
     {
         _routine_output->soft_button_pressed(soft_button::BUTTON_A, true);
@@ -101,9 +102,19 @@ void CMenuRoutineAdjust::button_pressed(Button button)
     }
 
     if (button == Button::D) // "Down"
-    {
+    {       
         _routine_adjust_display_list->down();
         set_options_on_multi_choice_list();
+    }
+
+    // if selected menu has changed, signal the routine (although most won't care)
+    if (button == Button::C || button == Button::D) // Up or Down
+    {
+        if (_routine_adjust_display_list->get_current_selection_id() != menu_selection)
+        {
+            struct menu_entry *menu_item = &(_active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()]);
+            _routine_output->menu_selected(menu_item->id);
+        }
     }
 }
 
@@ -155,6 +166,8 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
             }
 
         case menu_entry_type::AUDIO_VIEW_WAVE:
+        case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+        case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
             if (change >= 1)
             {
                 increment_gain(10);
@@ -219,7 +232,31 @@ void CMenuRoutineAdjust::draw()
             uint8_t x1 = _area.x1-3;
             uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
 
-            _audio->draw_audio_wave(x0, y0, x1, y1, true);
+            _audio->draw_audio_wave(x0, y0, x1, y1, true, true);
+
+            break;
+        }
+
+        case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+        {
+            uint8_t x0 = _area.x0+1;
+            uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
+            uint8_t x1 = _area.x1-3;
+            uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
+
+            _audio->draw_audio_wave(x0, y0, x1, y1, true, true);
+
+            break;
+        }
+
+        case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+        {
+            uint8_t x0 = _area.x0+1;
+            uint8_t y0 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11;
+            uint8_t x1 = _area.x1-3;
+            uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
+
+            _audio->draw_audio_wave(x0, y0, x1, y1, true, false);
 
             break;
         }
@@ -305,24 +342,6 @@ uint8_t CMenuRoutineAdjust::choice_id_to_menu_index(struct menu_entry selected_m
 
     printf("CMenuRoutineAdjust::choice_id_to_menu_index(): Invalid config for menu [%s]\n", selected_menu.title.c_str());
     return 0;
-}
-
-void CMenuRoutineAdjust::enable_audio_if_required_by_routine()
-{
-    for (std::vector<menu_entry>::iterator it = _active_routine_conf.menu.begin(); it != _active_routine_conf.menu.end(); it++)
-    {
-        if (it->menu_type == menu_entry_type::AUDIO_VIEW_SPECT)
-        {
-            _audio->set_audio_mode(CAudio::audio_mode_t::THRESHOLD_CROSS_FFT);
-            return;
-        }
-
-        if (it->menu_type == menu_entry_type::AUDIO_VIEW_WAVE)
-        {
-            _audio->set_audio_mode(CAudio::audio_mode_t::AUDIO3);
-            return;
-        }
-    }
 }
 
 void CMenuRoutineAdjust::increment_gain(uint8_t by)

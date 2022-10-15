@@ -23,6 +23,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
+        void menu_selected(uint8_t menu_id);
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void soft_button_pressed(soft_button button, bool pressed);
         void loop();

@@ -117,6 +117,15 @@ void CRoutineOutputCore1::menu_multi_choice_change(uint8_t menu_id, uint8_t choi
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::menu_selected(uint8_t menu_id)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_ROUTINE_MENU_SELECTED;
+    msg.msg8[1] = menu_id;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::trigger(trigger_socket socket, trigger_part part, bool active)
 {
     message msg = {0};

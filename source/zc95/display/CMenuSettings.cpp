@@ -149,7 +149,7 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
     _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
     
-    if (_audio->get_audio_hardware_state() != CAudio::audio_hardware_state_t::NOT_PRESENT)
+    if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     
     _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));

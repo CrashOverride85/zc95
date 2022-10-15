@@ -206,7 +206,7 @@ void CMenuSettingAudio::draw()
     hagl_draw_line(disp_area.x0, y_middle, disp_area.x1, y_middle, 0xAA);
 
     // Only show gain control if audio mode set to AUTO and digipot was found
-    if (_audio->get_audio_hardware_state() == CAudio::audio_hardware_state_t::PRESENT)
+    if (_audio->get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
     {
         color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
         _bar_graph->draw_horz_bar_graph(_bar_graph_area, 0, 255, _gain, "vol", bar_colour);
@@ -225,7 +225,7 @@ void CMenuSettingAudio::show()
 
 void CMenuSettingAudio::set_gain(uint8_t gain, bool save)
 {
-    if (_audio->get_audio_hardware_state() == CAudio::audio_hardware_state_t::PRESENT)
+    if (_audio->get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
     {
         _audio->set_gain(CAnalogueCapture::channel::LEFT,  gain);
         _audio->set_gain(CAnalogueCapture::channel::RIGHT, gain);

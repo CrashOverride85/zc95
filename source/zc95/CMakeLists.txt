@@ -71,6 +71,7 @@ add_executable(zc95
   core1/routines/CPredicament.cpp
   core1/routines/CAudioThreshold.cpp
   core1/routines/CAudioWave.cpp
+  core1/routines/CAudioIntensity.cpp
   
   FpKnobs/CRotEnc.cpp
   FpKnobs/CFrontPanel.cpp

@@ -148,7 +148,7 @@ void CMenuRoutineSelection::show()
         }
         else
         {
-            if (_audio->get_audio_hardware_state() != CAudio::audio_hardware_state_t::NOT_PRESENT)
+            if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
             {
                 _routine_disply_list->add_option(name, index);
             }
@@ -169,12 +169,5 @@ void CMenuRoutineSelection::show()
 // If a routine has any menu item that uses audio, return true
 bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
 {
-    for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
-    {
-        if (it->menu_type == menu_entry_type::AUDIO_VIEW_SPECT ||
-            it->menu_type == menu_entry_type::AUDIO_VIEW_WAVE)
-            return true;
-    }
-
-    return false;
+    return (!(conf.audio_processing_mode != audio_mode_t::OFF));
 }
