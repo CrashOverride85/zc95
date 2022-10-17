@@ -288,5 +288,5 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
 [Audio Threshold]: images/screen_pattern_audioThreshold.jpg "Audio Threshold"
 [Audio Wave Stereo]: images/screen_pattern_audioWave.jpg "Audio Wave"
-[Audio virtual 3]: images/TODO.jpg "Audio virtual 3"
-[Audio intensity mono]: images/TODO.jpg "Audio intensity mono"
+[Audio virtual 3]: images/screen_pattern_audioVirtual3.jpg "Audio virtual 3"
+[Audio intensity mono]: images/screen_pattern_audioIntensity.jpg "Audio intensity mono"
