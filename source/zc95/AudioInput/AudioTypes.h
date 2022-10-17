@@ -6,8 +6,7 @@ enum class audio_mode_t
     OFF,
     THRESHOLD_CROSS_FFT,
     AUDIO3,
-    AUDIO_INTENSITY,
-    AUDIO_VIRTUAL_3
+    AUDIO_INTENSITY
 };
 
 enum class audio_hardware_state_t

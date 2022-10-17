@@ -46,7 +46,7 @@ void CAudioVirtual3::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
 
-    conf->audio_processing_mode = audio_mode_t::AUDIO_VIRTUAL_3;
+    conf->audio_processing_mode = audio_mode_t::AUDIO3;
 
     struct menu_entry menu_mono;
     menu_mono.id = menu_ids::AUDIO_VIRTUAL_3;

@@ -196,11 +196,6 @@ void CAudio::process()
         audio_intensity(sample_count, sample_buffer_left, sample_buffer_right);
     }
 
-    else if (_audio_mode == audio_mode_t::AUDIO_VIRTUAL_3)
-    {
-        audio_virtual_3(sample_count, sample_buffer_left, sample_buffer_right);
-    }
-
     _audio_update_available = true;
 }
 
@@ -460,13 +455,21 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
 {
     static uint8_t last_intensity_left  = 0;
     static uint8_t last_intensity_right = 0;
+    static uint8_t last_intensity_virt  = 0;
     uint8_t intensity_left  = 0;
     uint8_t intensity_right = 0;
+    uint8_t intensity_virt  = 0;
 
     _interuptable_section.start();
 
+    // generate 3rd channel
+    uint8_t *sample_buffer_virt = get_virtual_channel(sample_count, sample_buffer_left, sample_buffer_right);
+    if (!sample_buffer_virt)
+        return;
+
     _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
     _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
+    _audio3_process[AUDIO_VIRT ]->process_samples(sample_count, sample_buffer_virt , &intensity_virt );
 
     // Change power level based on audio level. Power level changes are slow, so do this at most once every 20ms
     static uint64_t last_level_change_time_us = 0;
@@ -474,21 +477,24 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     {
         if 
         (
-            last_intensity_left  != intensity_left || 
-            last_intensity_right != intensity_right
+            last_intensity_left  != intensity_left  || 
+            last_intensity_right != intensity_right ||
+            last_intensity_virt  != intensity_virt 
         )
         {
             last_intensity_left  = intensity_left;
             last_intensity_right = intensity_right;
+            last_intensity_virt  = intensity_virt;
             last_level_change_time_us = time_us_64();
 
             if (_routine_output)
             {
-                _routine_output->audio_intensity_change (intensity_left, intensity_right);
+                _routine_output->audio_intensity_change (intensity_left, intensity_right, intensity_virt);
             }  
         }
     }
 
+    free(sample_buffer_virt);
     _interuptable_section.end();
 }
 
@@ -553,53 +559,6 @@ void CAudio::get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_
     }
 
     *out_intensity = max - min; // crude approximation of volume
-}
-
-void CAudio::audio_virtual_3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
-{
-    static uint8_t last_intensity_left  = 0;
-    static uint8_t last_intensity_right = 0;
-    static uint8_t last_intensity_virt  = 0;
-    uint8_t intensity_left  = 0;
-    uint8_t intensity_right = 0;
-    uint8_t intensity_virt  = 0;
-
-    _interuptable_section.start();
-
-    // generate 3rd channel
-    uint8_t *sample_buffer_virt = get_virtual_channel(sample_count, sample_buffer_left, sample_buffer_right);
-    if (!sample_buffer_virt)
-        return;
-
-    _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
-    _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
-    _audio3_process[AUDIO_VIRT ]->process_samples(sample_count, sample_buffer_virt , &intensity_virt );
-
-    // Change power level based on audio level. Power level changes are slow, so do this at most once every 20ms
-    static uint64_t last_level_change_time_us = 0;
-    if (time_us_64() - last_level_change_time_us > (1000 * 20))
-    {
-        if 
-        (
-            last_intensity_left  != intensity_left  || 
-            last_intensity_right != intensity_right ||
-            last_intensity_virt  != intensity_virt 
-        )
-        {
-            last_intensity_left  = intensity_left;
-            last_intensity_right = intensity_right;
-            last_intensity_virt  = intensity_virt;
-            last_level_change_time_us = time_us_64();
-
-            if (_routine_output)
-            {
-                _routine_output->audio_intensity_change (intensity_left, intensity_right, intensity_virt);
-            }  
-        }
-    }
-
-    free(sample_buffer_virt);
-    _interuptable_section.end();
 }
 
 uint8_t* CAudio::get_virtual_channel(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)

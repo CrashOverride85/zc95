@@ -96,7 +96,7 @@ void CAudioIntensity::trigger(trigger_socket socket, trigger_part part, bool act
 
 }
 
-void CAudioIntensity::audio_intensity(uint8_t left_chan, uint8_t right_chan)
+void CAudioIntensity::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
 {
     uint16_t power_left  = left_chan  * 4;
     uint16_t power_right = right_chan * 4;

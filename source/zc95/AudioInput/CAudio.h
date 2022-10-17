@@ -43,7 +43,6 @@ class CAudio
 
         void audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
         void audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
-        void audio_virtual_3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
 
         void draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain, bool mono);
         void draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour);
