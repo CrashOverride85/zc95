@@ -14,9 +14,9 @@ Buttons 1 - 4 are soft buttons and the purpose changes dependant on the screen.
 | 4      | Softbutton - Usually scroll down
 | 5      | Power. Left is off, right is on. Probably should have labelled that.
 | 6      | Power in. Should be centre positive 15v DC
-| 7      | Serial port. Currently only debugging output (RS232 level). Tip is TX / output from box, Sleeve is ground.
+| 7      | Either Serial port, or if optional audio input board fitted, can be toggled between serial and audio input. In serial mode, Tip is TX / output from box, Sleeve is ground.
 | 8      | Accessory port. Includes power, serial and 3x GPIO pins. See "Accessory port" in misc section. Currently not really used by much.
-| 9      | Trigger input 1. Shorting either Sleeve or Ring to Tip registers trigger. The box can differentiate between S-T and R-T triggers (i.e. each trigger socket can react to two different inputs), however this capability is unused.
+| 9      | Trigger input 1. Shorting either Sleeve or Ring to Tip registers trigger. The box can differentiate between S-T and R-T triggers (i.e. each trigger socket can react to two different inputs)
 | 10     | Trigger input 2. As above, except currently unused.
 | 11     | 2.5mm socket for channel 1 output
 | 12     | 2.5mm socket for channel 2 output
