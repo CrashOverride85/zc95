@@ -233,7 +233,7 @@ void CMenuRoutineAdjust::draw()
             uint8_t x1 = _area.x1-3;
             uint8_t y1 = _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21;
 
-            _audio->draw_audio_wave(x0, y0, x1, y1, true, true);
+            _audio->draw_audio_wave(x0, y0, x1, y1, true, false);
 
             break;
         }
