@@ -1,7 +1,7 @@
 #ifndef _CROUTINES_H
 #define _CROUTINES_H
 
-
+#include "../../AudioInput/AudioTypes.h"
 #include "../output/CSimpleOutputChannel.h"
 #include "../output/CFullOutputChannel.h"
 #include "CAccPort.h"
@@ -22,7 +22,10 @@ enum class menu_entry_type
     MULTI_CHOICE,
     MIN_MAX,
     AUDIO_VIEW_SPECT,
-    AUDIO_VIEW_WAVE
+    AUDIO_VIEW_WAVE,
+    AUDIO_VIEW_INTENSITY_STEREO,
+    AUDIO_VIEW_INTENSITY_MONO,
+    AUDIO_VIEW_VIRTUAL_3
 };
 
 enum class trigger_socket
@@ -89,6 +92,7 @@ struct routine_conf
     std::vector<menu_entry> menu;
     std::string button_text[(int)soft_button::BUTTON_MAX];
     bool enable_channel_isolation = true;
+    audio_mode_t audio_processing_mode = audio_mode_t::OFF;
 };
 
 
@@ -108,11 +112,12 @@ class CRoutine
         virtual void start() = 0;
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) {};
         virtual void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id) {};
+        virtual void menu_selected(uint8_t menu_id) {};
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) {};
         virtual void soft_button_pushed (soft_button button, bool pushed) {}; // pushed: true=pushed, false=released
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
-        virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan) {};
+        virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
         virtual void pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
 
         virtual void loop(uint64_t time_us) = 0;
@@ -137,6 +142,8 @@ class CRoutine
             conf.name = "";
             conf.outputs.clear();
             conf.menu.clear();
+            conf.audio_processing_mode = audio_mode_t::OFF;
+            conf.enable_channel_isolation = true;
 
             for (int x=0; x < (int)soft_button::BUTTON_MAX; x++)
                 conf.button_text[x] = " ";

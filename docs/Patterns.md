@@ -130,9 +130,51 @@ The left audio channel is output on channels 1+2, the right on 3+4. It probably 
 *Warning*: Enables triphase mode / disables channel isolation, so should not be used above the waist. 
 
 ### Menu options
-* Audio view - Shows two wave forms - for left and right channels. The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom.
+* Stereo view - Shows two wave forms - for left and right channels. 
+* Triphase view - Shows three wave forms - left, right and a virtual / calculated triphase effect.
 
-![Audio Wave]
+Note that the selected view does not affect the output, and the indicated triphase effect will only be felt if channel 1+3 (or 2+4) have a common electrode. The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom of the waveform display.
+
+![Audio Wave Stereo]
+
+### Extra hardware required?:
+Audio output board fitted and audio source
+
+------------------------------------------------------------
+
+## Audio intensity
+Only available if audio enabled. 
+
+Intended for use with a microphone (see [audio config](./AudioInput-Operation.md) to switch to mic mode), but also allows for stereo input. 
+
+The louder the sound, the greater the output. Not much more to this pattern.
+
+### Menu options
+* Mono - Shows one waveform corresponding to the left channel, and all output channels are the same intensity depending on the input from the left channel
+* Stereo - Shows two waveform corresponding to the left and right channels. Output channels 1+2 have an intensity corresponding to the left channel, and channels 3+4 have an intensity corresponding to the right channel
+
+The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom. 
+
+![Audio intensity mono]
+
+### Extra hardware required?:
+Audio output board fitted and audio source
+
+------------------------------------------------------------
+
+## Audio virtual 3
+Only available if audio enabled. 
+
+Well suited to estim audio tracks, with the audio [configured](./AudioInput-Operation.md) for line level input. Generates a 3rd channel from the difference between the left and right channels, and outputs it on channel 3 (channel 4 is not used).
+
+Unlike the "Audio Wave" pattern, this does not disable channel isolation, so could be used above the waist with suitable electrode placement (usual warnings still apply). This also means the channels should *not* be connected with a common electrode.
+
+### Menu options
+* Audio view - Shows three wave forms - left (channel 1), right (channel 2) and simulated "triphase" effect (channel 3).
+
+The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom. 
+
+![Audio virtual 3]
 
 ### Extra hardware required?:
 Audio output board fitted and audio source
@@ -245,4 +287,6 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
 [Audio Threshold]: images/screen_pattern_audioThreshold.jpg "Audio Threshold"
-[Audio Wave]: images/screen_pattern_audioWave.jpg "Audio Wave"
+[Audio Wave Stereo]: images/screen_pattern_audioWave.jpg "Audio Wave"
+[Audio virtual 3]: images/screen_pattern_audioVirtual3.jpg "Audio virtual 3"
+[Audio intensity mono]: images/screen_pattern_audioIntensity.jpg "Audio intensity mono"

@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include "AudioTypes.h"
 
 #include "CMCP4651.h"
 #include "CAudio3Process.h"
@@ -19,26 +20,6 @@
 class CAudio
 {
     public:
-        enum class audio_mode_t
-        {
-            OFF,
-            THRESHOLD_CROSS_FFT,
-            AUDIO3
-        };
-
-        enum class audio_hardware_state_t
-        {
-            NOT_PRESENT,
-            PRESENT_NO_GAIN,
-            PRESENT
-        };
-
-        enum audio_channel_t
-        {
-            AUDIO_LEFT  = 0,
-            AUDIO_RIGHT = 1
-        };
-
         CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls);
         ~CAudio();
         void set_audio_digipot_found(bool found);
@@ -61,9 +42,11 @@ class CAudio
         void draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
         void audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
+        void audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
 
-        void draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain);
+        void draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain, bool mono);
         void draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour);
+        void draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain);
 
         void process();
         void set_audio_mode(audio_mode_t audio_mode);
@@ -73,6 +56,8 @@ class CAudio
         uint16_t get_bar_height(float sample);
         uint16_t get_bar_height(uint8_t *buffer, uint16_t sample_pos, uint8_t sample_count);
         void threshold_cross_process_and_send();
+        void get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_intensity);
+        uint8_t *get_virtual_channel(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right);
         const uint8_t AudioDisplayWidth = 114;
 
         bool _digipot_found;
@@ -85,7 +70,7 @@ class CAudio
         audio_mode_t _audio_mode = audio_mode_t::OFF;
         bool _audio_update_available;
         CSavedSettings *_saved_settings;
-        CAudio3Process *_audio3_process[2]; // Left & right
+        CAudio3Process *_audio3_process[3]; // Left, right & virtual
         uint8_t _gain_l = 0;
         uint8_t _gain_r = 0;
         CInteruptableSection _interuptable_section;

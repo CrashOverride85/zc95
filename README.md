@@ -39,7 +39,6 @@ The primary reason for having separate PCBs for the main and output board is for
 
 # TODO
 ## Firmware
-   - More audio patterns
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
    - Save pattern settings on exit?
 

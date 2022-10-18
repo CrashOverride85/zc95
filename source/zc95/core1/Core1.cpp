@@ -244,7 +244,14 @@ void Core1::process_message(message msg)
             menu_multi_choice_change(menu_id, choice_id);
             break;
         }
-        
+
+        case MESSAGE_ROUTINE_MENU_SELECTED:
+        {
+            uint8_t menu_id = msg.msg8[1];
+            menu_selected(menu_id);
+            break;
+        }
+
         case MESSAGE_ROUTINE_TRIGGER:
         {
             uint8_t socket = msg.msg8[1];
@@ -304,9 +311,10 @@ void Core1::process_message(message msg)
         case MESSAGE_AUDIO_INTENSITY:
             if (_active_routine != NULL)
             {
-                uint8_t left_chan = msg.msg8[1];
+                uint8_t left_chan  = msg.msg8[1];
                 uint8_t right_chan = msg.msg8[2];
-                _active_routine->audio_intensity(left_chan, right_chan);
+                uint8_t virt_chan  = msg.msg8[3];
+                _active_routine->audio_intensity(left_chan, right_chan, virt_chan);
             }
             break;
     }
@@ -504,6 +512,14 @@ void Core1::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
     if (_active_routine != NULL)
     {
         _active_routine->menu_multi_choice_change(menu_id, choice_id);
+    }
+}
+
+void Core1::menu_selected(uint8_t menu_id)
+{
+    if (_active_routine != NULL)
+    {
+        _active_routine->menu_selected(menu_id);
     }
 }
 

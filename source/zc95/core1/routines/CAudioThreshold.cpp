@@ -47,6 +47,8 @@ void CAudioThreshold::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
     conf->outputs.push_back(output_type::SIMPLE);
 
+    conf->audio_processing_mode = audio_mode_t::THRESHOLD_CROSS_FFT;
+
     // menu entry 1: "Audio trigger"
     struct menu_entry menu_audio;
     menu_audio.id = menu_ids::AUDIO_VIEW;

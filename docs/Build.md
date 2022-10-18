@@ -138,7 +138,7 @@ Finally, attach the front panel controls board using 20mm bolts. The completed a
 
 * Slot the boards into the case, and screw in place: Screw Length (Excluding Head): 1/4" (6.5mm), Screw Size: No.6 (3.5mm)
 
-* Stick the battery down. Suggest using 3M double sided tape (‎MNT-FT24MM-16FT)
+* Stick the battery down. Suggest using 3M double sided tape (MNT-FT24MM-16FT)
 
 * Connect front panel to main board using IDC cable
 
@@ -180,7 +180,7 @@ If any of the I2C devices aren't detected, you should see an error similar to th
 ![hw check fail]
 
 Here, it can't find the two ICs on the front panel (in this case, the IDC cable was unplugged).
-There is also serial debugging output on the 3.5mm serial connector on the front panel at RS232 levels.
+There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel at RS232 levels.
 
 There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it. 
 

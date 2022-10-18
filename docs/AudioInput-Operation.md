@@ -25,7 +25,6 @@ Disabling the mic preamp switches to line level input, and shows stereo input:
 
 ![Audio input line]
 
-Note that at present, the single audio pattern only uses the left channel. One day soon....
 
 ### Hardware config
 There are two relevant entries in the hardware config menu:

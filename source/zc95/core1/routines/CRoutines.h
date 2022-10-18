@@ -13,6 +13,8 @@
 #include "CBuzz.h"
 #include "CAudioThreshold.h"
 #include "CAudioWave.h"
+#include "CAudioIntensity.h"
+#include "CAudioVirtual3.h"
 
 class CRoutines
 {
@@ -28,6 +30,8 @@ class CRoutines
             routines->push_back(make<CFire>);
             routines->push_back(make<CAudioThreshold>);
             routines->push_back(make<CAudioWave>);
+            routines->push_back(make<CAudioIntensity>);
+            routines->push_back(make<CAudioVirtual3>);
             routines->push_back(make<CClimbPulse>);
             routines->push_back(make<CPredicament>);
             routines->push_back(make<CShockChoice>);

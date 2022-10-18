@@ -46,13 +46,20 @@ void CAudioWave::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
 
-    // menu entry 1: "Audio view". Not sure what to call this "menu" item. Which isn't really 
-    //               like the other menu items, as it doesn't let you change anything
-    struct menu_entry menu_audio;
-    menu_audio.id = menu_ids::AUDIO_WAVE;
-    menu_audio.title = "Audio view";
-    menu_audio.menu_type = menu_entry_type::AUDIO_VIEW_WAVE;
-    conf->menu.push_back(menu_audio);
+    conf->audio_processing_mode = audio_mode_t::AUDIO3;
+
+    struct menu_entry menu_stereo_view;
+    menu_stereo_view.id = menu_ids::AUDIO_WAVE;
+    menu_stereo_view.title = "Stereo view";
+    menu_stereo_view.menu_type = menu_entry_type::AUDIO_VIEW_WAVE;
+    conf->menu.push_back(menu_stereo_view);
+
+    struct menu_entry menu_triphase_view;
+    menu_triphase_view.id = menu_ids::AUDIO_WAVE;
+    menu_triphase_view.title = "Triphase view";
+    menu_triphase_view.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
+    conf->menu.push_back(menu_triphase_view);
+
     conf->enable_channel_isolation = false;
 }
 
@@ -81,7 +88,7 @@ void CAudioWave::trigger(trigger_socket socket, trigger_part part, bool active)
 
 }
 
-void CAudioWave::audio_intensity(uint8_t left_chan, uint8_t right_chan)
+void CAudioWave::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
 {
     uint16_t power_left  = left_chan  * 4;
     uint16_t power_right = right_chan * 4;

@@ -23,6 +23,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
+        void menu_selected(uint8_t menu_id);
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void soft_button_pressed(soft_button button, bool pressed);
         void loop();
@@ -30,7 +31,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);
         void reinit_channels();
         void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
-        void audio_intensity_change(uint8_t left_chan, uint8_t right_chan);
+        void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0);
 
         void reset_acc_port();
         void set_acc_io_port_state(enum ExtInputPort output, bool high);

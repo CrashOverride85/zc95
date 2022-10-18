@@ -19,6 +19,7 @@ class CRoutineOutput
 
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) = 0;
         virtual void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id) = 0;
+        virtual void menu_selected(uint8_t menu_id) = 0;
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) = 0;
         virtual void soft_button_pressed(soft_button button, bool pressed) = 0;
         virtual void loop() {};
@@ -26,7 +27,7 @@ class CRoutineOutput
         virtual void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power) = 0;
         virtual void reinit_channels();
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
-        virtual void audio_intensity_change(uint8_t left_chan, uint8_t right_chan);
+        virtual void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0);
 };
 
 #endif
