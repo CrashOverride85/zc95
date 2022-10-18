@@ -145,7 +145,7 @@ Audio output board fitted and audio source
 ## Audio intensity
 Only available if audio enabled. 
 
-Intended for use when with a microphone (see [audio config](./AudioInput-Operation.md) to switch to mic mode), but also allows for stereo input. 
+Intended for use with a microphone (see [audio config](./AudioInput-Operation.md) to switch to mic mode), but also allows for stereo input. 
 
 The louder the sound, the greater the output. Not much more to this pattern.
 

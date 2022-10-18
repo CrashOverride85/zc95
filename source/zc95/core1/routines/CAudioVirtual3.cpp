@@ -23,9 +23,6 @@ enum menu_ids
     AUDIO_VIRTUAL_3 = 1
 };
 
-#define CHANNEL_COUNT 4
-
-
 CAudioVirtual3::CAudioVirtual3()
 {
     printf("CAudioVirtual3()\n");
