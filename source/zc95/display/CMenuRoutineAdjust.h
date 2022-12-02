@@ -7,7 +7,7 @@
 
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
-#include "../core1/routines/CRoutineMaker.h"
+#include "../core1/routines/CRoutines.h"
 #include "../config.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
@@ -19,7 +19,7 @@
 class CMenuRoutineAdjust : public CMenu
 {
     public:
-        CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio);
+        CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine routine, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio);
         ~CMenuRoutineAdjust();
         void button_pressed(Button button);
         void button_released(Button button);

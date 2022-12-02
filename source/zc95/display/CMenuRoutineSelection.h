@@ -9,7 +9,7 @@
 #include "../core1/output/CChannelConfig.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutine.h"
-#include "../core1/routines/CRoutineMaker.h"
+#include "../core1/routines/CRoutines.h"
 #include "../config.h"
 #include "../CSavedSettings.h"
 #include "../ECButtons.h"
@@ -24,7 +24,7 @@
 class CMenuRoutineSelection : public CMenu
 {
     public:
-        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
+        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -37,7 +37,7 @@ class CMenuRoutineSelection : public CMenu
         COptionsList *_routine_disply_list = NULL;
         struct display_area _area;
         CDisplay* _display;
-        std::vector<CRoutineMaker*> *_routines;
+        std::vector<CRoutines::Routine> *_routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CRoutineOutput *_routine_output;

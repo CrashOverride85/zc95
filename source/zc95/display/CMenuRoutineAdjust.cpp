@@ -19,7 +19,7 @@
 #include "CMenuRoutineAdjust.h"
 
 
-CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
+CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine routine, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -32,9 +32,10 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
     _routine_output = routine_output;
 
     // get routine config
-    CRoutine* routine = routine_maker();
-    routine->get_config(&_active_routine_conf);
-    delete routine;
+    CRoutine* routine_ptr = routine.routine_maker();
+    routine_ptr->set_param(routine.param);
+    routine_ptr->get_config(&_active_routine_conf);
+    delete routine_ptr;
 
     // Use the top half of the display for the list routine paramers that can be adjusted
     area = _area;

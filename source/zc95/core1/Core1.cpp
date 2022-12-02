@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "routines/CRoutineMaker.h"
-
 #include "Core1.h"
 #include "../globals.h"
 #include <string.h>
@@ -39,7 +37,7 @@ void core1_entry()
         core1->loop();
 }
 
-Core1* core1_start(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings) 
+Core1* core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings) 
 {   
     printf("core1_start\n");
     if (core1 == NULL)
@@ -54,7 +52,7 @@ Core1* core1_start(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_
     return core1;
 }
 
-Core1::Core1(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings)
+Core1::Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
 {
     printf("Core1::Core1()\n");
     _saved_settings = saved_settings;
@@ -367,9 +365,9 @@ void Core1::process_audio_pulse_queue()
 
 void Core1::activate_routine(uint8_t routine_id)
 {
-    CRoutineMaker* routine_maker = (*_routines)[routine_id];    
+    CRoutines::Routine routine = (*_routines)[routine_id];
     
-    if (!routine_maker)
+    if (!routine.routine_maker)
     {
         printf("CMenuRoutineSelection::activate_routine NULL routine - exit\n");
         return;
@@ -377,9 +375,10 @@ void Core1::activate_routine(uint8_t routine_id)
     
     stop_routine();
 
-    _active_routine = routine_maker();
+    _active_routine = routine.routine_maker();
 
     routine_conf conf;
+    _active_routine->set_param(routine.param);
     _active_routine->get_config(&conf);
 
     // Loop through all the channels the routine has requsted

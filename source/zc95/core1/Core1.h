@@ -4,6 +4,7 @@
 
 
 #include "routines/CRoutine.h"
+#include "routines/CRoutines.h"
 #include "routines/CRoutineMaker.h"
 
 #include "output/CChannelConfig.h"
@@ -23,7 +24,7 @@ class Core1
 {
 
     public:
-        Core1(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings);
+        Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings);
         ~Core1();
         void init();
         void loop();
@@ -52,13 +53,13 @@ class Core1
         CFullChannelAsSimpleChannel *_fullChannelAsSimpleChannels[MAX_CHANNELS];
         CSavedSettings *_saved_settings;
         COutputChannel *_real_output_channel[MAX_CHANNELS];
-        std::vector<CRoutineMaker*> *_routines;
+        std::vector<CRoutines::Routine> *_routines;
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
 };
 
-Core1* core1_start(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings);
+Core1* core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings);
 
 #endif
 

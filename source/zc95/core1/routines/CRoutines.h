@@ -1,3 +1,6 @@
+#ifndef _CROUTINES_H
+#define _CROUTINES_H
+
 #include "CRoutineMaker.h"
 #include "CWaves.h"
 #include "CToggle.h"
@@ -19,23 +22,37 @@
 class CRoutines
 {
     public:
-        static void get_routines(std::vector<CRoutineMaker*> *routines)
-        {   
-            routines->push_back(make<CWaves>);
-            routines->push_back(make<CToggle>);
-            routines->push_back(make<CRoundRobin>);
-            routines->push_back(make<CTens>);
-            routines->push_back(make<CClimb>);
-            routines->push_back(make<CTriggeredClimb>);
-            routines->push_back(make<CFire>);
-            routines->push_back(make<CAudioThreshold>);
-            routines->push_back(make<CAudioWave>);
-            routines->push_back(make<CAudioIntensity>);
-            routines->push_back(make<CAudioVirtual3>);
-            routines->push_back(make<CClimbPulse>);
-            routines->push_back(make<CPredicament>);
-            routines->push_back(make<CShockChoice>);
-            routines->push_back(make<CCamTrigger>);
-            routines->push_back(make<CBuzz>);   
+        struct Routine
+        {
+            CRoutineMaker* routine_maker;
+            int param;
+        };
+
+        static void get_routines(std::vector<Routine> *routines)
+        {
+
+            // TODO: loop through and add all lua scripts
+         //   routines->push_back({make<CLuaRoutine>, 0});
+
+            routines->push_back({make<CWaves>, 0});
+            routines->push_back({make<CToggle>, 0});
+            routines->push_back({make<CRoundRobin>, 0});
+            routines->push_back({make<CTens>, 0});
+            routines->push_back({make<CClimb>, 0});
+            routines->push_back({make<CTriggeredClimb>, 0});
+            routines->push_back({make<CFire>, 0});
+            routines->push_back({make<CAudioThreshold>, 0});
+            routines->push_back({make<CAudioWave>, 0});
+            routines->push_back({make<CAudioIntensity>, 0});
+            routines->push_back({make<CAudioVirtual3>, 0});
+            routines->push_back({make<CClimbPulse>, 0});
+            routines->push_back({make<CPredicament>, 0});
+            routines->push_back({make<CShockChoice>, 0});
+            routines->push_back({make<CCamTrigger>, 0});
+            routines->push_back({make<CBuzz>, 0});
+
+
         }
 };
+
+#endif

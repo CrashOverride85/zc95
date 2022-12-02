@@ -1,5 +1,5 @@
-#ifndef _CROUTINES_H
-#define _CROUTINES_H
+#ifndef _CROUTINE_H
+#define _CROUTINE_H
 
 #include "../../AudioInput/AudioTypes.h"
 #include "../output/CSimpleOutputChannel.h"
@@ -149,7 +149,13 @@ class CRoutine
                 conf.button_text[x] = " ";
         }
 
+        void set_param(int param)
+        {
+            _param = param;
+        }
+
     protected:
+        int _param;
         CAccPort acc_port;
         static struct multi_choice_option get_choice(std::string choice_name, uint8_t choice_id)
         {

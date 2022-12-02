@@ -221,7 +221,7 @@ int main()
     display.init(); // This takes some time - not far off a second
 
     // Get list of available patterns / routines
-    std::vector<CRoutineMaker*> routines;
+    std::vector<CRoutines::Routine> routines;
     CRoutines::get_routines(&routines);
    
     hw_check.check_part2(&led, &controls); // If a fault is found, this never returns

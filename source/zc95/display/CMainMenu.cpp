@@ -22,7 +22,7 @@
 
 CMainMenu::CMainMenu(
     CDisplay* display, 
-    std::vector<CRoutineMaker*> *routines,
+    std::vector<CRoutines::Routine> *routines,
     CGetButtonState *buttons,
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,

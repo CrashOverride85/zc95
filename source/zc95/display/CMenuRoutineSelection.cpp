@@ -28,7 +28,7 @@
 
 CMenuRoutineSelection::CMenuRoutineSelection(
     CDisplay* display, 
-    std::vector<CRoutineMaker*> *routines, 
+    std::vector<CRoutines::Routine> *routines, 
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
@@ -83,11 +83,10 @@ void CMenuRoutineSelection::button_pressed(Button button)
         {
         if (button == Button::A) // Select
         {
-            CRoutineMaker* routine_maker = (*_routines)[_routine_disply_list->get_current_selection_id()];
-            _routine_output->activate_routine(_routine_disply_list->get_current_selection_id());
+            CRoutines::Routine routine = (*_routines)[_routine_disply_list->get_current_selection()];
             _last_selection = _routine_disply_list->get_current_selection();
-
-            set_active_menu(new CMenuRoutineAdjust(_display, routine_maker, _buttons, _routine_output, _audio));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio));
+            _routine_output->activate_routine(_routine_disply_list->get_current_selection());
         }
 
         if (button == Button::B) // "Config"
@@ -128,10 +127,11 @@ void CMenuRoutineSelection::show()
     // Get a list of routines to show
     _routine_disply_list->clear_options();
     int index=0;
-    for (std::vector<CRoutineMaker*>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
     {
         struct routine_conf conf;
-        CRoutine* routine = (*it)();
+        CRoutine* routine = (*it).routine_maker();
+        routine->set_param((*it).param);
         routine->get_config(&conf);
 
         // Add a warning for routines that disable channel isolation
