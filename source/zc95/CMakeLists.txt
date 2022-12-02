@@ -73,6 +73,7 @@ add_executable(zc95
   core1/routines/CAudioWave.cpp
   core1/routines/CAudioIntensity.cpp
   core1/routines/CAudioVirtual3.cpp
+  core1/routines/CLuaRoutine.cpp
   
   FpKnobs/CRotEnc.cpp
   FpKnobs/CFrontPanel.cpp
@@ -95,12 +96,13 @@ add_executable(zc95
   display/COptionsList
   display/CHorzBarGraph
 
-
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
   AudioInput/CAudio3Process.cpp
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
+
+  LuaScript.S
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -129,15 +131,18 @@ target_link_libraries(zc95
         hardware_pio
         hardware_adc
         pico_multicore
+        pico_float
         hagl
         hagl_hal
         git_version
+        lua_static
         )
 
 pico_add_extra_outputs(zc95)
 
 add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
+add_subdirectory(external/lua)
 #target_link_libraries(zc95 hagl hagl_hal)
 
 target_compile_definitions(zc95 PRIVATE
@@ -148,7 +153,7 @@ target_compile_definitions(zc95 PRIVATE
   HAGL_HAL_USE_DMA
   HAGL_HAL_DEBUG
   MIPI_DISPLAY_ST7735
-  PICO_STACK_SIZE=3072
+  PICO_STACK_SIZE=4096
   PICO_USE_STACK_GUARDS # would rather die instantly on stack overflow, than get weird, hard to debug, errors
 )
 

@@ -18,6 +18,7 @@
 #include "CAudioWave.h"
 #include "CAudioIntensity.h"
 #include "CAudioVirtual3.h"
+#include "CLuaRoutine.h"
 
 class CRoutines
 {
@@ -32,7 +33,7 @@ class CRoutines
         {
 
             // TODO: loop through and add all lua scripts
-         //   routines->push_back({make<CLuaRoutine>, 0});
+            routines->push_back({make<CLuaRoutine>, 0});
 
             routines->push_back({make<CWaves>, 0});
             routines->push_back({make<CToggle>, 0});

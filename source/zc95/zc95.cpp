@@ -239,9 +239,10 @@ int main()
     led.set_all_led_colour(LedColour::Black);
 
     sleep_ms(100);
-   
+
     core1_start(&routines, &settings);
     CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
+  
 
     audio.set_routine_output(routine_output);
 
