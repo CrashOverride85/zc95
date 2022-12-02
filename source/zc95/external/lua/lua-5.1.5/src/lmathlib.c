@@ -212,7 +212,7 @@ static int math_randomseed (lua_State *L) {
 }
 
 
-const luaL_reg mathlib[] = {
+extern const luaL_reg mathlib[] = {
   {"abs",   math_abs},
   {"acos",  math_acos},
   {"asin",  math_asin},
@@ -247,7 +247,7 @@ const luaL_reg mathlib[] = {
   {NULL, NULL}
 };
 
-const luaR_value_entry mathlib_vals[] = {
+extern const luaR_value_entry mathlib_vals[] = {
   {"pi",   PI},
   {"huge", HUGE_VAL},
   {NULL, 0}

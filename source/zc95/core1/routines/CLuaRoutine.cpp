@@ -16,10 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-extern "C"
-{
-    #include "../../external/lua/lua-5.1.5/include/lstate.h"
-}
+#include "../../external/lua/lua-5.1.5/include/lstate.h"
 
 #include "CLuaRoutine.h"
 #include <string>

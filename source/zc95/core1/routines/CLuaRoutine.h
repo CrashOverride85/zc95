@@ -1,11 +1,8 @@
 #include "CRoutine.h"
 
-extern "C"
-{
 #include "../../external/lua/lua-5.1.5/include/lua.h"
 #include "../../external/lua/lua-5.1.5/include/lauxlib.h"
 #include "../../external/lua/lua-5.1.5/include/lualib.h"
-}
 
 
 class CLuaRoutine: public CRoutine

@@ -35,7 +35,7 @@ extern const luaL_Reg syslib[];
 extern const luaL_Reg tab_funcs[];
 extern const luaL_Reg dblib[];
 extern const luaL_Reg co_funcs[];
-const luaR_table lua_rotable[] = 
+extern const luaR_table lua_rotable[] = 
 {
 #if LUA_OPTIMIZE_MEMORY > 0
   {LUA_MATHLIBNAME, mathlib, mathlib_vals},

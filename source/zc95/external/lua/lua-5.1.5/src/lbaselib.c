@@ -623,7 +623,7 @@ static int luaB_corunning (lua_State *L) {
 }
 
 
-const luaL_Reg co_funcs[] = {
+extern const luaL_Reg co_funcs[] = {
   {"create", luaB_cocreate},
   {"resume", luaB_coresume},
   {"running", luaB_corunning},

@@ -443,7 +443,7 @@
 ** functions to consume unlimited stack space. (must be smaller than
 ** -LUA_REGISTRYINDEX)
 */
-#define LUAI_MAXCSTACK	8000
+#define LUAI_MAXCSTACK	3000
 
 
 

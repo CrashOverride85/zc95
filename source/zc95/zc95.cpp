@@ -62,6 +62,8 @@
 #include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
 
+#include <malloc.h>
+
 CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
 CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
@@ -239,7 +241,41 @@ int main()
     led.set_all_led_colour(LedColour::Black);
 
     sleep_ms(100);
+/*
+while(1)
+{
+    for (std::vector<CRoutines::Routine>::iterator it = routines.begin(); it != routines.end(); it++)
+    {
+        struct routine_conf conf;
+        CRoutine* routine = (*it).routine_maker();
+        routine->set_param((*it).param);
+        routine->get_config(&conf);
+        delete routine;
+    }
 
+
+
+    {
+        struct mallinfo m;
+        m = mallinfo();
+
+        printf("Free chunks: %zu\tTotal allocated: %zub\tfree space: %zub\n", m.ordblks, m.uordblks, m.fordblks);
+
+
+        
+    }
+//sleep_ms(400);
+}
+*/
+
+/*
+while (1)
+    {
+        CLuaRoutine lua = CLuaRoutine();
+        struct routine_conf conf;
+        lua.get_config(&conf);
+    }
+*/
     core1_start(&routines, &settings);
     CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
   

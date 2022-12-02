@@ -636,7 +636,7 @@ LUALIB_API int luaopen_package (lua_State *L) {
   int i;
   /* create new type _LOADLIB */
   luaL_newmetatable(L, "_LOADLIB");
-  lua_pushlightfunction(L, gctm);
+  lua_pushlightfunction(L, (void*)gctm);
   lua_setfield(L, -2, "__gc");
   /* create `package' table */
   luaL_register_light(L, LUA_LOADLIBNAME, pk_funcs);
