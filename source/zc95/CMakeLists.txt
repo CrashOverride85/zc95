@@ -94,6 +94,7 @@ add_executable(zc95
   display/CMenuSettingAbout
   display/CMenuSettingAudio
   display/CMenuSettingHardware
+  display/CMenuSettingSerialAccess
   display/COptionsList
   display/CHorzBarGraph
 
@@ -104,6 +105,7 @@ add_executable(zc95
   CAnalogueCapture.cpp
 
   LuaScript.S
+  LuaScripts.S
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -133,6 +135,7 @@ target_link_libraries(zc95
         hardware_adc
         pico_multicore
         pico_float
+        hardware_flash
         hagl
         hagl_hal
         git_version

@@ -284,6 +284,17 @@ void CRoutineOutputCore1::reinit_channels()
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::suspend_core1()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_CORE1_SUSPEND;
+    msg.msg8[1] = 0;
+    msg.msg8[2] = 0;
+    msg.msg8[3] = 0;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count)
 {
     message msg = {0};

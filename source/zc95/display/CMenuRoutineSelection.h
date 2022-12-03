@@ -16,6 +16,8 @@
 #include "../CGetButtonState.h"
 #include "../CHwCheck.h"
 #include "../AudioInput/CAudio.h"
+#include "../CAnalogueCapture.h"
+
 #include <string>
 #include <vector>
 
@@ -24,7 +26,7 @@
 class CMenuRoutineSelection : public CMenu
 {
     public:
-        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
+        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio, CAnalogueCapture *analogueCapture);
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -44,7 +46,7 @@ class CMenuRoutineSelection : public CMenu
         CHwCheck *_hwCheck;
         CAudio *_audio;
         int _last_selection = -1;
-
+        CAnalogueCapture *_analogueCapture;
 };
 
 #endif

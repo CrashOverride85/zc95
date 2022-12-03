@@ -30,6 +30,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);
         void reinit_channels();
+        void suspend_core1();
         void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
         void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0);
 

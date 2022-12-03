@@ -222,7 +222,7 @@ void Core1::process_messages()
 
 void Core1::process_message(message msg)
 {
-    // printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
+    printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
     switch (msg.msg8[0])
     {
     case MESSAGE_ROUTINE_LOAD:
@@ -323,7 +323,27 @@ void Core1::process_message(message msg)
             _active_routine->audio_intensity(left_chan, right_chan, virt_chan);
         }
         break;
+
+    case MESSAGE_CORE1_SUSPEND:
+        printf("Core1: suspending\n");
+        core1_suspend();
+        printf("Core1: resumed\n");
+        break;   
     }
+}
+
+void __not_in_flash_func(Core1::core1_suspend)(void)
+{
+    uint32_t save = save_and_disable_interrupts();
+
+    // Core0 will have acquired this sem before suspending this core. Let it know it can continue by releasing it.
+    sem_release(&g_core1_suspend_sem);
+
+    mutex_enter_blocking(&g_core1_suspend_mutex);
+
+    restore_interrupts(save);
+
+    mutex_exit(&g_core1_suspend_mutex);
 }
 
 void Core1::process_audio_pulse_queue()

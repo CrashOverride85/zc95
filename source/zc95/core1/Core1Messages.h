@@ -17,6 +17,7 @@
 #define MESSAGE_AUDIO_THRES_REACHED          10
 #define MESSAGE_AUDIO_INTENSITY              11
 #define MESSAGE_ROUTINE_MENU_SELECTED        12
+#define MESSAGE_CORE1_SUSPEND                13
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100

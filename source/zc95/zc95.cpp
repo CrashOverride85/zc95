@@ -233,7 +233,6 @@ int main()
     // Load/set gain, mic preamp, etc., from eeprom
     audio.init(&settings, &display);
 
-    analogueCapture.init();
     analogueCapture.start();
 
     led.set_all_led_colour(LedColour::Black);
@@ -266,7 +265,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio, &analogueCapture);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);

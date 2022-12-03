@@ -15,9 +15,11 @@
 #include "CPowerLevelControl.h"
 #include "Core1Messages.h"
 
-extern  mutex_t g_collar_message_mutex;
+extern mutex_t g_collar_message_mutex;
 extern CCollarComms::collar_message g_collar_message;
 
+extern mutex_t g_core1_suspend_mutex;
+extern struct semaphore g_core1_suspend_sem;
 
 class Core1
 {
@@ -45,6 +47,7 @@ class Core1
         void update_power_levels();
         void set_output_chanels_to_off(bool enable_channel_isolation);
         void process_audio_pulse_queue();
+        static void __not_in_flash_func(core1_suspend)(void);
 
         CChannelConfig *_channel_config;
         CRoutine *_active_routine = NULL;

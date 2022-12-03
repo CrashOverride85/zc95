@@ -21,7 +21,7 @@
 class CMainMenu : public CMenu
 {
     public:
-        CMainMenu(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
+        CMainMenu(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio, CAnalogueCapture *analogueCapture);
         ~CMainMenu();
         void button_pressed(Button button);
         void button_released(Button button);
