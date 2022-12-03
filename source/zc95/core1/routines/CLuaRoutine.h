@@ -4,6 +4,7 @@
 #include "../../external/lua/lua-5.1.5/include/lauxlib.h"
 #include "../../external/lua/lua-5.1.5/include/lualib.h"
 
+#define CHANNEL_COUNT 4
 
 class CLuaRoutine: public CRoutine
 {
@@ -38,14 +39,19 @@ class CLuaRoutine: public CRoutine
         int get_int_field(const char *field_name);
         std::string get_string_field(const char *field_name);
         bool is_channel_number_valid(int channel_number);
+        bool runnable();
+        int pcall (int nargs, int nresults, int errfunc);
+        void channel_pulse_processing();
 
         // called form lua
         int lua_channel_on(lua_State *L);
         int lua_channel_off(lua_State *L);
+        int lua_channel_pulse(lua_State *L);
         int lua_set_power(lua_State *L);
         int lua_set_freq(lua_State *L);
         int lua_set_pulse_width(lua_State *L);
               
         lua_State *_lua_state;
         ScriptValid _script_valid = ScriptValid::UNKNOWN;
+        uint64_t _channel_switch_off_at_us[CHANNEL_COUNT] = {0};
 };

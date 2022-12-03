@@ -22,8 +22,6 @@
 #include <string>
 #include <string.h>
 
-#define CHANNEL_COUNT 4
-
 typedef int (CLuaRoutine::*mem_func)(lua_State * L);
 
 // Copied / adpated from https://stackoverflow.com/a/32416597 
@@ -69,16 +67,12 @@ void CLuaRoutine::load_lua_script_if_required()
     if (_script_valid != ScriptValid::UNKNOWN)
         return;
 
-    printf("CLuaRoutine::load_lua_script_if_required()\n");
+   // printf("CLuaRoutine::load_lua_script_if_required()\n");
 // extern uint8_t lua_script1_start;
    // void *original_start2 = &lua_script1_start;
 
     extern uint8_t arm_payload_start;
     void *original_start = &arm_payload_start;
-
-    //_lua_state = luaL_newstate_ud(this);
-    //luaL_openlibs(_lua_state);
-
 
     if (CheckLua(luaL_dostring(_lua_state, (const char*)original_start)))
     {
@@ -87,6 +81,7 @@ void CLuaRoutine::load_lua_script_if_required()
         const luaL_Reg regs[] = {
             { "ChannelOn"    , &dispatch<&CLuaRoutine::lua_channel_on>  },
             { "ChannelOff"   , &dispatch<&CLuaRoutine::lua_channel_off> },
+            { "ChannelPulse" , &dispatch<&CLuaRoutine::lua_channel_pulse> },
             { "SetPower"     , &dispatch<&CLuaRoutine::lua_set_power> },
             { "SetFrequency" , &dispatch<&CLuaRoutine::lua_set_freq> },
             { "SetPulseWidth", &dispatch<&CLuaRoutine::lua_set_pulse_width> },
@@ -174,10 +169,15 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
     conf->name = "Lua:" + conf->name;
 }
 
+bool CLuaRoutine::runnable()
+{
+    return (_lua_state && _script_valid == ScriptValid::VALID);
+}
+
 void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
     lua_getglobal(_lua_state, "MinMaxChange");
@@ -185,31 +185,29 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     {
         lua_pushinteger(_lua_state, menu_id);
         lua_pushinteger(_lua_state, new_value);
-        lua_call(_lua_state, 2, 0);
+        pcall(2, 0, 0);
     }
 }
 
 void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 {
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
-    /*
-    if (menu_id == menu_ids::MODE)
+    lua_getglobal(_lua_state, "MultiChoiceChange");
+    if (lua_isfunction(_lua_state, -1))
     {
-        if (choice_id == 1)
-            _pulse_mode = true;
-        else
-            _pulse_mode = false;
+        lua_pushinteger(_lua_state, menu_id);
+        lua_pushinteger(_lua_state, choice_id);
+        pcall(2, 0, 0);
     }
-    */
 }
 
 void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
 {
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
     /*
@@ -238,7 +236,7 @@ void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
 void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 {
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
     // External tigger input is the same as pressing the "Fire" soft-button
@@ -248,7 +246,7 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 void CLuaRoutine::start()
 {
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
     set_all_channels_power(POWER_FULL);
@@ -256,8 +254,9 @@ void CLuaRoutine::start()
 
 void CLuaRoutine::loop(uint64_t time_us)
 {
+    channel_pulse_processing();
     load_lua_script_if_required();
-    if (!_lua_state)
+    if (!runnable())
         return;
 
     int32_t time_ms = time_us/1000;
@@ -265,22 +264,48 @@ void CLuaRoutine::loop(uint64_t time_us)
     if (lua_isfunction(_lua_state, -1))
     {
         lua_pushinteger(_lua_state, time_ms);
-        lua_call(_lua_state, 1, 0);
+        pcall(1, 0, 0);
+    }
+}
+
+void CLuaRoutine::channel_pulse_processing()
+{
+    for (uint8_t channel_id = 0; channel_id < CHANNEL_COUNT; channel_id++)
+    {
+        if (_channel_switch_off_at_us[channel_id])
+        {
+            if (time_us_64() >  _channel_switch_off_at_us[channel_id])
+            {
+                full_channel_off(channel_id);
+                _channel_switch_off_at_us[channel_id] = 0;
+            }
+        }
     }
 }
 
 void CLuaRoutine::stop()
 {
-    load_lua_script_if_required();
-    if (!_lua_state)
-        return;
-
-   set_all_channels_power(0);
+    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
         full_channel_off(x);
 }
 
 //////////////////////////////////// LUA //////////////////////////////////////////////////////
+
+// Call lua in protected mode to trap any errors in the lua script. 
+// If anything goes wrong, output the error, mark the script as invalid and switch off the output
+int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
+{
+    int retval = lua_pcall(_lua_state, nargs, nresults, errfunc);
+    if (retval)
+    {
+        printf("CLuaRoutine::pcall error: %s\n", lua_tostring(_lua_state, -1));
+        _script_valid = ScriptValid::INVALID;
+        stop();
+    }
+
+    return retval;
+}
 
 /////////////////////////////////////
 ///// Processing for get config /////
@@ -397,6 +422,23 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
 
     full_channel_off(chan-1);
+    return 1;
+}
+
+// Params: 
+// int: channel number (1-4)
+// int: duration (ms)
+int CLuaRoutine::lua_channel_pulse(lua_State *L)
+{
+    // Channel will be switched off by channel_pulse_processing() which is called from loop()
+    int chan        = lua_tointeger(L, 1);
+    int duration_ms = lua_tointeger(L, 2);
+    if (!is_channel_number_valid(chan)) return 0;
+    if (duration_ms < 0) return 0;
+
+    _channel_switch_off_at_us[chan-1] = time_us_64() + (duration_ms * 1000);
+    full_channel_on(chan-1);
+
     return 1;
 }
 

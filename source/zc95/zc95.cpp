@@ -240,6 +240,18 @@ int main()
 
     sleep_ms(100);
 
+
+     /*
+    CRoutine *lua = CLuaRoutine::create(0);
+    struct routine_conf conf;
+    lua->get_config(&conf);
+    lua->loop(0);
+    lua->menu_min_max_change(1, 1);
+    lua->loop(0);
+    lua->menu_min_max_change(1, 1);
+
+    while(1);
+*/
     core1_start(&routines, &settings);
     CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
