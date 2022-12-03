@@ -79,19 +79,19 @@ void CLuaRoutine::load_lua_script_if_required()
         _script_valid = ScriptValid::VALID;
 
         const luaL_Reg regs[] = {
-            { "ChannelOn"    , &dispatch<&CLuaRoutine::lua_channel_on>  },
-            { "ChannelOff"   , &dispatch<&CLuaRoutine::lua_channel_off> },
-            { "ChannelPulse" , &dispatch<&CLuaRoutine::lua_channel_pulse> },
-            { "SetPower"     , &dispatch<&CLuaRoutine::lua_set_power> },
-            { "SetFrequency" , &dispatch<&CLuaRoutine::lua_set_freq> },
-            { "SetPulseWidth", &dispatch<&CLuaRoutine::lua_set_pulse_width> },
+            { "ChannelOn"     , &dispatch<&CLuaRoutine::lua_channel_on>  },
+            { "ChannelOff"    , &dispatch<&CLuaRoutine::lua_channel_off> },
+            { "ChannelPulseMs", &dispatch<&CLuaRoutine::lua_channel_pulse_ms> },
+            { "SetPower"      , &dispatch<&CLuaRoutine::lua_set_power> },
+            { "SetFrequency"  , &dispatch<&CLuaRoutine::lua_set_freq> },
+            { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
             { NULL, NULL }
         };
         luaL_register(_lua_state, "zc", regs);
     }
     else
     {
-        printf("CLuaTest: script INVALID\n");
+        printf("CLuaRoutine: script INVALID\n");
         _script_valid = ScriptValid::INVALID;
         lua_close(_lua_state);
         _lua_state = NULL;
@@ -166,7 +166,7 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
     }
 
-    conf->name = "Lua:" + conf->name;
+    conf->name = "U:" + conf->name;
 }
 
 bool CLuaRoutine::runnable()
@@ -428,7 +428,7 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
 // Params: 
 // int: channel number (1-4)
 // int: duration (ms)
-int CLuaRoutine::lua_channel_pulse(lua_State *L)
+int CLuaRoutine::lua_channel_pulse_ms(lua_State *L)
 {
     // Channel will be switched off by channel_pulse_processing() which is called from loop()
     int chan        = lua_tointeger(L, 1);

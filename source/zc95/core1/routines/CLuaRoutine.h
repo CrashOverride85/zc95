@@ -46,7 +46,7 @@ class CLuaRoutine: public CRoutine
         // called form lua
         int lua_channel_on(lua_State *L);
         int lua_channel_off(lua_State *L);
-        int lua_channel_pulse(lua_State *L);
+        int lua_channel_pulse_ms(lua_State *L);
         int lua_set_power(lua_State *L);
         int lua_set_freq(lua_State *L);
         int lua_set_pulse_width(lua_State *L);
