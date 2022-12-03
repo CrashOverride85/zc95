@@ -27,7 +27,7 @@ enum menu_ids
 
 const uint16_t inital_speed = 1000;
 
-CRoundRobin::CRoundRobin()
+CRoundRobin::CRoundRobin(uint8_t param)
 {
     printf("CRoundRobin()\n");
     _delay_setting_ms = inital_speed;

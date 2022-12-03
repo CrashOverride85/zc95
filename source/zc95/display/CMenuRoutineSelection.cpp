@@ -130,8 +130,7 @@ void CMenuRoutineSelection::show()
     for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
     {
         struct routine_conf conf;
-        CRoutine* routine = (*it).routine_maker();
-        routine->set_param((*it).param);
+        CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
         // Add a warning for routines that disable channel isolation

@@ -28,7 +28,7 @@ enum menu_ids
     CLIMB_RESET = 2
 };
 
-CClimb::CClimb()
+CClimb::CClimb(uint8_t param)
 {
     printf("CClimb()\n");
     _next_pulse_time = 0;

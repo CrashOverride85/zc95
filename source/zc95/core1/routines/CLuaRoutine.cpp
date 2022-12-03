@@ -38,25 +38,51 @@ template <mem_func func> int dispatch(lua_State *L)
     return 0;
 }
 
-CLuaRoutine::CLuaRoutine()
+CLuaRoutine::CLuaRoutine(uint8_t script_index)
 {
-    printf("CLuaRoutine()\n");
-    
+    printf("CLuaRoutine(%d)\n", script_index);
+    _lua_state = NULL;
+    _script_valid = ScriptValid::UNKNOWN;
 
-   // extern uint8_t lua_script1_start;
+    _lua_state = luaL_newstate_ud(this);
+    luaL_openlibs(_lua_state);
+    load_lua_script_if_required();
+}
+
+CLuaRoutine::~CLuaRoutine()
+{
+    printf("~CLuaRoutine()\n");
+ 
+    if (_lua_state)
+    {
+        _lua_state->l_G->ud = NULL;
+        lua_close(_lua_state);
+        _lua_state = NULL;
+    }
+}
+
+void CLuaRoutine::load_lua_script_if_required()
+{
+    if (!_lua_state)
+        return;
+
+    if (_script_valid != ScriptValid::UNKNOWN)
+        return;
+
+    printf("CLuaRoutine::load_lua_script_if_required()\n");
+// extern uint8_t lua_script1_start;
    // void *original_start2 = &lua_script1_start;
 
     extern uint8_t arm_payload_start;
     void *original_start = &arm_payload_start;
 
-    _lua_state = luaL_newstate_ud(this);
-    luaL_openlibs(_lua_state);
-    //luaL_requiref (_lua_state, LUA_IOLIBNAME, luaopen_io, 1 );
-    //lua_pop(_lua_state, 1);
+    //_lua_state = luaL_newstate_ud(this);
+    //luaL_openlibs(_lua_state);
+
 
     if (CheckLua(luaL_dostring(_lua_state, (const char*)original_start)))
     {
-        _script_valid = true;
+        _script_valid = ScriptValid::VALID;
 
         const luaL_Reg regs[] = {
             { "ChannelOn"    , &dispatch<&CLuaRoutine::lua_channel_on>  },
@@ -71,26 +97,28 @@ CLuaRoutine::CLuaRoutine()
     else
     {
         printf("CLuaTest: script INVALID\n");
-        _script_valid = false;
+        _script_valid = ScriptValid::INVALID;
         lua_close(_lua_state);
         _lua_state = NULL;
     }
 }
 
-CLuaRoutine::~CLuaRoutine()
+bool CLuaRoutine::is_script_valid()
 {
-    printf("~CLuaRoutine()\n");
-    _lua_state->l_G->ud = NULL;
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return false;
 
-    if (_lua_state)
-    {
-        lua_close(_lua_state);
-        _lua_state = NULL;
-    }
+    return (_script_valid == ScriptValid::VALID);
 }
 
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
+    load_lua_script_if_required();
+
+    if (!_lua_state)
+        return;
+
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
@@ -147,7 +175,11 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
 }
 
 void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
-{        
+{
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     lua_getglobal(_lua_state, "MinMaxChange");
     if (lua_isfunction(_lua_state, -1))
     {
@@ -158,7 +190,11 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 }
 
 void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
-{    
+{
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     /*
     if (menu_id == menu_ids::MODE)
     {
@@ -172,6 +208,10 @@ void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 
 void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
 {
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     /*
     if (button == soft_button::BUTTON_A)
     {
@@ -197,17 +237,29 @@ void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
 
 void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 {
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     // External tigger input is the same as pressing the "Fire" soft-button
     //soft_button_pushed(soft_button::BUTTON_A, !active);
 }
 
 void CLuaRoutine::start()
 {
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     set_all_channels_power(POWER_FULL);
 }
 
 void CLuaRoutine::loop(uint64_t time_us)
 {
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
     int32_t time_ms = time_us/1000;
     lua_getglobal(_lua_state, "Loop");
     if (lua_isfunction(_lua_state, -1))
@@ -219,6 +271,10 @@ void CLuaRoutine::loop(uint64_t time_us)
 
 void CLuaRoutine::stop()
 {
+    load_lua_script_if_required();
+    if (!_lua_state)
+        return;
+
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
         full_channel_off(x);

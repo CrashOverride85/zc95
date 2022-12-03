@@ -3,8 +3,9 @@
 class CAudioVirtual3: public CRoutine
 {
     public:
-        CAudioVirtual3();
+        CAudioVirtual3(uint8_t param);
         ~CAudioVirtual3();
+        static CRoutine* create(uint8_t param) { return new CAudioVirtual3(param); };
         void get_config(struct routine_conf *conf);
         static void config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);

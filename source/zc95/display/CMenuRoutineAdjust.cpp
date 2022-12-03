@@ -32,8 +32,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine rou
     _routine_output = routine_output;
 
     // get routine config
-    CRoutine* routine_ptr = routine.routine_maker();
-    routine_ptr->set_param(routine.param);
+    CRoutine* routine_ptr = routine.routine_maker(routine.param);
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
 

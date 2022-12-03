@@ -24,7 +24,7 @@ enum menu_ids
     PULSE_CONT = 2
 };
 
-CToggle::CToggle()
+CToggle::CToggle(uint8_t param)
 {
     printf("CToggle()\n");
     _speed_setting = 500;

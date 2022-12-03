@@ -8,8 +8,9 @@
 class CLuaRoutine: public CRoutine
 {
     public:
-        CLuaRoutine();
+        CLuaRoutine(uint8_t script_index);
         ~CLuaRoutine();
+        static CRoutine* create(uint8_t param) { return new CLuaRoutine(param); };
         void get_config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
@@ -18,11 +19,18 @@ class CLuaRoutine: public CRoutine
         void start();
         void loop(uint64_t time_us);
         void stop();
-
-
+        bool is_script_valid();
         
 
     private:
+        enum class ScriptValid 
+        {
+            VALID, 
+            INVALID, 
+            UNKNOWN   // inital state before CheckLua ran
+        };
+
+        void load_lua_script_if_required();
         bool CheckLua(int r);
         bool GetMenuEntryTypeFromString(const char* type, menu_entry_type *menu_type_out);
         void get_multi_choice_entry(struct menu_entry *entry);
@@ -39,5 +47,5 @@ class CLuaRoutine: public CRoutine
         int lua_set_pulse_width(lua_State *L);
               
         lua_State *_lua_state;
-        bool _script_valid = false;
+        ScriptValid _script_valid = ScriptValid::UNKNOWN;
 };

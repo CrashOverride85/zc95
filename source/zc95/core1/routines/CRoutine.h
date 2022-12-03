@@ -95,6 +95,8 @@ struct routine_conf
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
 };
 
+class CRoutine;
+typedef CRoutine* (*routine_creator)(uint8_t);
 
 class CRoutine
 {
@@ -107,6 +109,8 @@ class CRoutine
                 set_all_channels_off();
             }
         };
+
+     //   virtual CRoutine *create(uint8_t param) {return NULL;}; // TODO change to =0
 
         virtual void get_config(struct routine_conf *conf) = 0;
         virtual void start() = 0;
@@ -149,13 +153,7 @@ class CRoutine
                 conf.button_text[x] = " ";
         }
 
-        void set_param(int param)
-        {
-            _param = param;
-        }
-
     protected:
-        int _param;
         CAccPort acc_port;
         static struct multi_choice_option get_choice(std::string choice_name, uint8_t choice_id)
         {

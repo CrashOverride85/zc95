@@ -3,8 +3,9 @@
 class CAudioIntensity: public CRoutine
 {
     public:
-        CAudioIntensity();
+        CAudioIntensity(uint8_t param);
         ~CAudioIntensity();
+        static CRoutine* create(uint8_t param) { return new CAudioIntensity(param); };
         void get_config(struct routine_conf *conf);
         static void config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);

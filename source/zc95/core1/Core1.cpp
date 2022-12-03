@@ -27,7 +27,9 @@
  * For code that runs on core1
  */
 
+#define STACK_SIZE 4096
 static Core1 *core1 = NULL;
+static uint32_t *_stack = NULL;
 
 void core1_entry()
 {
@@ -45,13 +47,16 @@ Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *sa
     {
         core1 = new Core1(routines, saved_settings);
     }
+    if (_stack == NULL)
+    {
+        _stack = (uint32_t *)malloc(STACK_SIZE);
+    }
 
     multicore_reset_core1(); // Try and fix issue with random hangs when debugging (on start)
     sleep_ms(100);
-    //multicore_launch_core1(core1_entry);
 
-    uint32_t *stack = (uint32_t *)malloc(4096);
-    multicore_launch_core1_with_stack(core1_entry, stack, 4096);
+ // multicore_launch_core1(core1_entry);
+    multicore_launch_core1_with_stack(core1_entry, _stack, STACK_SIZE);
 
     sleep_ms(10);
     return core1;
@@ -379,10 +384,9 @@ void Core1::activate_routine(uint8_t routine_id)
 
     stop_routine();
 
-    _active_routine = routine.routine_maker();
+    _active_routine= routine.routine_maker(routine.param);
 
     routine_conf conf;
-    _active_routine->set_param(routine.param);
     _active_routine->get_config(&conf);
 
     // Loop through all the channels the routine has requsted

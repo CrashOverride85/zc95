@@ -25,7 +25,7 @@ enum menu_ids
     FREQUENCY   = 2
 };
 
-CTens::CTens()
+CTens::CTens(uint8_t param)
 {
     printf("CTens()\n");
 }

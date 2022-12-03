@@ -5,7 +5,6 @@
 
 #include "routines/CRoutine.h"
 #include "routines/CRoutines.h"
-#include "routines/CRoutineMaker.h"
 
 #include "output/CChannelConfig.h"
 #include "output/collar/CCollarComms.h"

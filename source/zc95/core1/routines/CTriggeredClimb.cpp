@@ -30,7 +30,7 @@ static const int default_shock_inc_pp = 1;
 static const int default_shock_dur_ms = 200;
 static const int default_duration_sec = 60; 
 
-CTriggeredClimb::CTriggeredClimb()
+CTriggeredClimb::CTriggeredClimb(uint8_t param)
 {
     printf("CTriggeredClimb()\n");
 

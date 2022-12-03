@@ -27,7 +27,7 @@ enum menu_ids
 #define CHANNEL_COUNT 4
 static const int DefaultPulseLengthMs = 500;
 
-CFire::CFire()
+CFire::CFire(uint8_t param)
 {
     printf("CFire()\n");
     _pulse_len_ms = DefaultPulseLengthMs;

@@ -2,7 +2,6 @@
 #define _CROUTINEOUTPUT_H
 
 #include <inttypes.h>
-#include "routines/CRoutineMaker.h"
 #include "routines/CRoutine.h"
 #include "output/collar/CCollarComms.h"
 

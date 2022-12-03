@@ -26,7 +26,7 @@ enum menu_ids
 #define CHANNEL_COUNT 4
 
 
-CAudioWave::CAudioWave()
+CAudioWave::CAudioWave(uint8_t param)
 {
     printf("CAudioWave()\n");
 }

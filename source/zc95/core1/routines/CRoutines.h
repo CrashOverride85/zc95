@@ -1,7 +1,7 @@
 #ifndef _CROUTINES_H
 #define _CROUTINES_H
 
-#include "CRoutineMaker.h"
+#include "CRoutine.h"
 #include "CWaves.h"
 #include "CToggle.h"
 #include "CRoundRobin.h"
@@ -25,34 +25,42 @@ class CRoutines
     public:
         struct Routine
         {
-            CRoutineMaker* routine_maker;
+            routine_creator routine_maker;
             int param;
         };
 
         static void get_routines(std::vector<Routine> *routines)
         {
-
             // TODO: loop through and add all lua scripts
-            routines->push_back({make<CLuaRoutine>, 0});
+            uint8_t index = 0;
+            if (is_lua_script_valid(index))
+                routines->push_back({&(CLuaRoutine::create), index});
 
-            routines->push_back({make<CWaves>, 0});
-            routines->push_back({make<CToggle>, 0});
-            routines->push_back({make<CRoundRobin>, 0});
-            routines->push_back({make<CTens>, 0});
-            routines->push_back({make<CClimb>, 0});
-            routines->push_back({make<CTriggeredClimb>, 0});
-            routines->push_back({make<CFire>, 0});
-            routines->push_back({make<CAudioThreshold>, 0});
-            routines->push_back({make<CAudioWave>, 0});
-            routines->push_back({make<CAudioIntensity>, 0});
-            routines->push_back({make<CAudioVirtual3>, 0});
-            routines->push_back({make<CClimbPulse>, 0});
-            routines->push_back({make<CPredicament>, 0});
-            routines->push_back({make<CShockChoice>, 0});
-            routines->push_back({make<CCamTrigger>, 0});
-            routines->push_back({make<CBuzz>, 0});
+            routines->push_back({&(CWaves::create)         , 0});
+            routines->push_back({&(CToggle::create)        , 0});
+            routines->push_back({&(CRoundRobin::create)    , 0});
+            routines->push_back({&(CTens::create)          , 0});
+            routines->push_back({&(CClimb::create)         , 0});
+            routines->push_back({&(CTriggeredClimb::create), 0});
+            routines->push_back({&(CFire::create)          , 0});
+            routines->push_back({&(CAudioThreshold::create), 0});
+            routines->push_back({&(CAudioWave::create)     , 0});
+            routines->push_back({&(CAudioIntensity::create), 0});
+            routines->push_back({&(CAudioVirtual3::create) , 0});
+            routines->push_back({&(CClimbPulse::create)    , 0});
+            routines->push_back({&(CPredicament::create)   , 0});
+            routines->push_back({&(CShockChoice::create)   , 0});
+            routines->push_back({&(CCamTrigger::create)    , 0});
+            routines->push_back({&(CBuzz::create)          , 0});
+        }
 
-
+    private:
+        static bool is_lua_script_valid(uint8_t index)
+        {
+            CLuaRoutine *lua = new CLuaRoutine(index);
+            bool is_valid = lua->is_script_valid();
+            delete lua;
+            return is_valid;
         }
 };
 

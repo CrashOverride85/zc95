@@ -23,7 +23,7 @@ enum menu_ids
     AUDIO_VIRTUAL_3 = 1
 };
 
-CAudioVirtual3::CAudioVirtual3()
+CAudioVirtual3::CAudioVirtual3(uint8_t param)
 {
     printf("CAudioVirtual3()\n");
     _mono = true;

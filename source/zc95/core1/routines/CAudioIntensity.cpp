@@ -27,7 +27,7 @@ enum menu_ids
 #define CHANNEL_COUNT 4
 
 
-CAudioIntensity::CAudioIntensity()
+CAudioIntensity::CAudioIntensity(uint8_t param)
 {
     printf("CAudioIntensity()\n");
     _mono = true;
