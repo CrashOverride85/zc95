@@ -1,91 +1,98 @@
-.\" $Id: lua.man,v 1.11 2006/01/06 16:03:34 lhf Exp $
-.TH LUA 1 "$Date: 2006/01/06 16:03:34 $"
-.SH NAME
-lua \- Lua interpreter
-.SH SYNOPSIS
-.B lua
+<!-- $Id: lua.man,v 1.11 2006/01/06 16:03:34 lhf Exp $ -->
+<HTML>
+<HEAD>
+<TITLE>LUA man page</TITLE>
+<LINK REL="stylesheet" TYPE="text/css" HREF="lua.css">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H2>NAME</H2>
+lua - Lua interpreter
+<H2>SYNOPSIS</H2>
+<B>lua</B>
 [
-.I options
+<I>options</I>
 ]
 [
-.I script
+<I>script</I>
 [
-.I args
+<I>args</I>
 ]
 ]
-.SH DESCRIPTION
-.B lua
+<H2>DESCRIPTION</H2>
+<B>lua</B>
 is the stand-alone Lua interpreter.
 It loads and executes Lua programs,
 either in textual source form or
 in precompiled binary form.
 (Precompiled binaries are output by
-.BR luac ,
+<B>luac</B>,
 the Lua compiler.)
-.B lua
+<B>lua</B>
 can be used as a batch interpreter and also interactively.
-.LP
+<P>
 The given
-.I options
+<I>options</I>
 (see below)
 are executed and then
 the Lua program in file
-.I script
+<I>script</I>
 is loaded and executed.
 The given
-.I args
+<I>args</I>
 are available to
-.I script
+<I>script</I>
 as strings in a global table named
-.BR arg .
+<B>arg</B>.
 If these arguments contain spaces or other characters special to the shell,
 then they should be quoted
 (but note that the quotes will be removed by the shell).
 The arguments in
-.B arg
+<B>arg</B>
 start at 0,
 which contains the string
-.RI ' script '.
+'<I>script</I>'.
 The index of the last argument is stored in
-.BR arg.n .
+<B>arg.n</B>.
 The arguments given in the command line before
-.IR script ,
+<I>script</I>,
 including the name of the interpreter,
 are available in negative indices in
-.BR arg .
-.LP
+<B>arg</B>.
+<P>
 At the very start,
 before even handling the command line,
-.B lua
+<B>lua</B>
 executes the contents of the environment variable
-.BR LUA_INIT ,
+<B>LUA_INIT</B>,
 if it is defined.
 If the value of
-.B LUA_INIT
+<B>LUA_INIT</B>
 is of the form
-.RI '@ filename ',
+'@<I>filename</I>',
 then
-.I filename
+<I>filename</I>
 is executed.
 Otherwise, the string is assumed to be a Lua statement and is executed.
-.LP
+<P>
 Options start with
-.B '\-'
+<B>'-'</B>
 and are described below.
 You can use
-.B "'\--'"
+<B>'--'</B>
 to signal the end of options.
-.LP
+<P>
 If no arguments are given,
 then
-.B "\-v \-i"
+<B>"-v -i"</B>
 is assumed when the standard input is a terminal;
 otherwise,
-.B "\-"
+<B>"-"</B>
 is assumed.
-.LP
+<P>
 In interactive mode,
-.B lua
+<B>lua</B>
 prompts the user,
 reads lines from the standard input,
 and executes them as they are read.
@@ -96,21 +103,21 @@ a syntax error is found.
 So, one way to interrupt the reading of an incomplete statement is
 to force a syntax error:
 adding a
-.B ';' 
+<B>';'</B>
 in the middle of a statement is a sure way of forcing a syntax error
 (except inside multiline strings and comments; these must be closed explicitly).
 If a line starts with
-.BR '=' ,
+<B>'='</B>,
 then
-.B lua
+<B>lua</B>
 displays the values of all the expressions in the remainder of the
 line. The expressions must be separated by commas.
 The primary prompt is the value of the global variable
-.BR _PROMPT ,
+<B>_PROMPT</B>,
 if this value is a string;
 otherwise, the default prompt is used.
 Similarly, the secondary prompt is the value of the global variable
-.BR _PROMPT2 .
+<B>_PROMPT2</B>.
 So,
 to change the prompts,
 set the corresponding variable to a string of your choice.
@@ -118,46 +125,48 @@ You can do that after calling the interpreter
 or on the command line
 (but in this case you have to be careful with quotes
 if the prompt string contains a space; otherwise you may confuse the shell.)
-The default prompts are "> " and ">> ".
-.SH OPTIONS
-.TP
-.B \-
+The default prompts are "&gt; " and "&gt;&gt; ".
+<H2>OPTIONS</H2>
+<P>
+<B>-</B>
 load and execute the standard input as a file,
 that is,
 not interactively,
 even when the standard input is a terminal.
-.TP
-.BI \-e " stat"
+<P>
+<B>-e </B><I>stat</I>
 execute statement
-.IR stat .
+<I>stat</I>.
 You need to quote
-.I stat 
+<I>stat </I>
 if it contains spaces, quotes,
 or other characters special to the shell.
-.TP
-.B \-i
+<P>
+<B>-i</B>
 enter interactive mode after
-.I script
+<I>script</I>
 is executed.
-.TP
-.BI \-l " name"
+<P>
+<B>-l </B><I>name</I>
 call
-.BI require(' name ')
+<B>require</B>('<I>name</I>')
 before executing
-.IR script .
+<I>script</I>.
 Typically used to load libraries.
-.TP
-.B \-v
+<P>
+<B>-v</B>
 show version information.
-.SH "SEE ALSO"
-.BR luac (1)
-.br
-http://www.lua.org/
-.SH DIAGNOSTICS
+<H2>SEE ALSO</H2>
+<B>luac</B>(1)
+<BR>
+<A HREF="http://www.lua.org/">http://www.lua.org/</A>
+<H2>DIAGNOSTICS</H2>
 Error messages should be self explanatory.
-.SH AUTHORS
+<H2>AUTHORS</H2>
 R. Ierusalimschy,
 L. H. de Figueiredo,
 and
 W. Celes
-.\" EOF
+<!-- EOF -->
+</BODY>
+</HTML>

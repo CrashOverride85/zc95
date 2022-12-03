@@ -4,7 +4,7 @@
 ** See Copyright Notice in lua.h
 */
 
-
+#include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,6 +103,7 @@ void luaD_throw (lua_State *L, int errcode) {
       lua_unlock(L);
       G(L)->panic(L);
     }
+    printf("LUA EXIT\n");
     exit(EXIT_FAILURE);
   }
 }
