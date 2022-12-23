@@ -2,10 +2,13 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+set(PICO_BOARD pico_w)
+
 # add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+set(PICO_CYW43_SUPPORTED 1)
 
 # initalize pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
@@ -104,6 +107,11 @@ add_executable(zc95
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
 
+  RemoteAccess/dhcpserver.c
+  RemoteAccess/dnserver.c
+  RemoteAccess/httpd.c
+  ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
+
   LuaScript.S
   LuaScripts.S
   )
@@ -128,6 +136,7 @@ target_link_libraries(zc95 pico_stdlib)
 
 # Add any user requested libraries
 target_link_libraries(zc95
+        pico_cyw43_arch_lwip_poll
         hardware_spi
         hardware_i2c
         hardware_dma
@@ -184,4 +193,8 @@ target_compile_definitions(zc95 PRIVATE
 
   PICO_DEFAULT_UART_TX_PIN=8
   PICO_DEFAULT_UART_RX_PIN=9
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
 )
