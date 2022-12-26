@@ -189,6 +189,7 @@ int main()
     // Note eeprom ic is on i2c bus
     sleep_ms(100); // wait for eeprom to be ready
     CSavedSettings settings = CSavedSettings(&eeprom);
+    g_SavedSettings = &settings;
 
     // Configure AUX port for serial or audio use
     if (settings.get_aux_port_use() == CSavedSettings::setting_aux_port_use::AUDIO)
@@ -283,6 +284,12 @@ int main()
     controls.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
+
+ // TODO: remove me
+    std::string ssid; 
+    std::string psk;
+    g_SavedSettings->get_wifi_credentials(ssid, psk);
+    printf("SSID=%s, psk=%s\n", ssid.c_str(), psk.c_str());
 
     while (1) 
     {

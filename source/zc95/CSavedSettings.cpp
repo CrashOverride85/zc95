@@ -184,6 +184,47 @@ void CSavedSettings::set_aux_port_use(setting_aux_port_use setting)
     _eeprom_contents[(uint8_t)setting::AuxPort] = (uint8_t)setting;
 }
 
+bool CSavedSettings::get_wifi_credentials(std::string &out_ssid, std::string &out_password)
+{
+    // If wifi not yet configured, don't try to get ssid/password
+    if (_eeprom_contents[(uint8_t)setting::WiFiConfigured] != EEPROM_MAGIC_VAL)
+        return false;
+
+    // If the last character of the ssid isn't a NULL, somethings gone wrong (WifiPSK is the next thing after WifiSSID)
+    if (_eeprom_contents[(uint8_t)setting::WifiPSK - 1] != '\0')
+        return false;
+    
+    // If the last character of the password isn't a NULL, somethings gone wrong (WiFiConfigured is the next thing after WifiPSK)
+    if (_eeprom_contents[(uint8_t)setting::WiFiConfigured - 1] != '\0')
+        return false;
+    
+    out_ssid = (char*)&_eeprom_contents[(uint8_t)setting::WifiSSID];
+    out_password = (char*)&_eeprom_contents[(uint8_t)setting::WifiPSK];
+
+    return true;
+}
+
+bool CSavedSettings::set_wifi_credentials(std::string ssid, std::string password)
+{
+    if (ssid.length() > (uint8_t)setting::WifiPSK - (uint8_t)setting::WifiSSID - 1)
+    {
+        printf("ssid [%s] too long, not saving\n", ssid.c_str());
+        return false;
+    }
+
+    if (ssid.length() > (uint8_t)setting::WiFiConfigured - (uint8_t)setting::WifiPSK - 1)
+    {
+        printf("password [%s] too long, not saving\n", password.c_str());
+        return false;
+    }
+
+    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiSSID], ssid.c_str()    );
+    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiPSK] , password.c_str());
+    _eeprom_contents[(uint8_t)setting::WiFiConfigured] = EEPROM_MAGIC_VAL;
+
+    return true;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)

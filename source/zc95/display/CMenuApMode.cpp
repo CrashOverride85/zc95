@@ -12,6 +12,7 @@ CMenuApMode::CMenuApMode(CDisplay* display, CGetButtonState *buttons, CSavedSett
     _wifi = wifi;
     _analogueCapture = analogueCapture;
     _qr_code = "";
+    _setupwebinterface = new SetupWebInterface(saved_settings);
 }
 
 CMenuApMode::~CMenuApMode()
@@ -21,6 +22,12 @@ CMenuApMode::~CMenuApMode()
     {
         delete _submenu_active;
         _submenu_active = NULL;
+    }
+
+    if (_setupwebinterface)
+    {
+        delete _setupwebinterface;
+        _setupwebinterface = NULL;
     }
 }
 
@@ -95,10 +102,10 @@ void CMenuApMode::wifi_scan()
         if (time_us_64() > (_scan_start_us + (1000 * 1000 * seconds)))
         {
             printf("CMenuApMode::wifi_scan(): scan finished, start AP mode\n");
-            _setupwebinterface.startAccessPoint();
+            _setupwebinterface->startAccessPoint();
             _state = state_t::AP_MODE_STARTED;
             _analogueCapture->start();
-            _qr_code = _setupwebinterface.getQrCode();
+            _qr_code = _setupwebinterface->getQrCode();
         }
     }
 }

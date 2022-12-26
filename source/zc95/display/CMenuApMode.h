@@ -39,7 +39,7 @@ class CMenuApMode : public CMenu
         CWifi *_wifi;
         state_t _state = state_t::INIT;      
         uint64_t _scan_start_us;  
-        SetupWebInterface _setupwebinterface;
+        SetupWebInterface *_setupwebinterface = NULL;
         std::string _qr_code;
 };
 

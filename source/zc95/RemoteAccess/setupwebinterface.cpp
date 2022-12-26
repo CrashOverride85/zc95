@@ -12,16 +12,9 @@
 #include "lwip/init.h"
 #include "lwip/timeouts.h"
 #include "lwip/apps/httpd.h"
-// #include "littlefs-lib/pico_hal.h"
-// #include "display.h"
 #include <string>
+#include "../globals.h"
 
-/* Use the DHCP/DNS server code from TinyUSB 
-extern "C" {
-#include "pico-sdk/lib/tinyusb/lib/networking/dhserver.h"
-#include "pico-sdk/lib/tinyusb/lib/networking/dnserver.h"
-}
-*/
 
 /*
 static std::string _pico_readln(int fd)
@@ -40,8 +33,9 @@ static std::string _pico_readln(int fd)
     return s;
 }
 */
-SetupWebInterface::SetupWebInterface()
+SetupWebInterface::SetupWebInterface(CSavedSettings *saved_settings)
 {
+    _saved_settings = saved_settings;
  /*   int rc = pico_mount(false);
     if (rc != LFS_ERR_OK)
     {
@@ -193,7 +187,6 @@ void SetupWebInterface::startAccessPoint()
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));
 
     _qr_code = std::string("WIFI:S:")+ssid+";T:WPA;P:"+psk+";;";
- //   Display::instance()->showQr(qr);
 }
 
 static void _reboot()
@@ -214,6 +207,10 @@ void SetupWebInterface::saveSettings(const std::string &ssid, const std::string 
     pico_close(fd);
     pico_unmount();
 */
+
+    g_SavedSettings->set_wifi_credentials(ssid, psk);
+    g_SavedSettings->save();
+
     _reboot();
 }
 

@@ -5,7 +5,7 @@
 
 #pragma once
 
-// #include "hardware/flash.h"
+#include "../CSavedSettings.h"
 #include "wlanscanner.h"
 #include <string>
 
@@ -18,7 +18,7 @@ extern "C"
 class SetupWebInterface
 {
     public:
-        SetupWebInterface();
+        SetupWebInterface(CSavedSettings *saved_settings);
         virtual ~SetupWebInterface();
         bool alreadyConfigured();
         std::string savedSSID();        
@@ -34,4 +34,5 @@ class SetupWebInterface
     private:
         ip4_addr_t _gw, _mask;
         dhcp_server_t _dhcp_server;
+        CSavedSettings *_saved_settings;
 };

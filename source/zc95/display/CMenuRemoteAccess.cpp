@@ -85,44 +85,6 @@ void CMenuRemoteAccess::show_selected_setting()
         case option_id::AP_MODE:
             set_active_menu(new CMenuApMode(_display, _buttons, _saved_settings, _wifi, _analogueCapture));
             break;
-
-        /*
-        case setting_id::CHANNEL_CONFIG:
-            set_active_menu(new CMenuChannelConfig(_display, _buttons, _saved_options, _routine_output));
-            break;
-
-        case setting_id::COLLAR_CONFIG:
-            set_active_menu(new CMenuCollarConfig(_display, _buttons, _saved_options, _routine_output));
-            break;
-
-        case setting_id::LED_BRIGHTNESS:
-            set_active_menu(new CMenuSettingLedBrightnes(_display, _buttons, _saved_options));
-            break;
-
-        case setting_id::POWER_STEP:
-            set_active_menu(new CMenuSettingPowerStep(_display, _buttons, _saved_options));
-            break;
-
-        case setting_id::RAMP_UP_TIME:
-            set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_options));
-            break;
-
-        case setting_id::AUDIO:
-            set_active_menu(new CMenuSettingAudio(_display, _buttons, _audio, _saved_options));
-            break;
-
-        case setting_id::HARDWARE:
-            set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_options, _routine_output, _audio));
-            break;
-
-        case setting_id::SERIAL_ACCESS:
-            set_active_menu(new CMenuSettingSerialAccess(_display, _buttons, _routine_output, _analogueCapture));
-            break;
-
-        case setting_id::ABOUT:
-            set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
-            break;
-            */
     }
 }
 
@@ -145,7 +107,7 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE,  "AP mode"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE,  "Config Wifi/AP mode"));
     
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)

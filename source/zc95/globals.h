@@ -4,6 +4,7 @@
 #include "pico/util/queue.h"
 #include "pico/mutex.h"
 #include "config.h"
+#include "CSavedSettings.h"
 #include <string>
 
 extern bool gInteruptable;
@@ -13,5 +14,7 @@ extern bool gFatalError;
 extern std::string gErrorString;
 
 extern mutex_t gI2cMutex;
+
+extern CSavedSettings *g_SavedSettings;
 
 #endif

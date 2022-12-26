@@ -39,8 +39,12 @@ class CSavedSettings
        // Collar9Mode  = 78
        // not used     = 79
 
-       AuxPort         = 80 // Aux port usage - Audio or Serial
+       AuxPort         = 80,  // Aux port usage - Audio or Serial
+       WifiSSID        = 81,  // SSID to connect to. 32 characters/bytes + null
+       WifiPSK         = 114, // Password, 64 characters + null
+       WiFiConfigured  = 179  // Set to EEPROM_MAGIC_VAL if wifi configured. Anything else means not configured.
     };
+
     public:
         struct channel_selection
         {
@@ -119,7 +123,11 @@ class CSavedSettings
         // Aux port use
         setting_aux_port_use get_aux_port_use();
         void set_aux_port_use(setting_aux_port_use setting);
-        
+
+        // Wifi credentials. Returns true if credentials returned (wifi already configured)        
+        bool get_wifi_credentials(std::string &out_ssid, std::string &out_password);
+        bool set_wifi_credentials(std::string ssid, std::string password); // Returns true if saved, false otherwise (e.g. too long)
+
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
