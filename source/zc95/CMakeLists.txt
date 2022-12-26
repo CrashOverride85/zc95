@@ -98,6 +98,8 @@ add_executable(zc95
   display/CMenuSettingAudio
   display/CMenuSettingHardware
   display/CMenuSettingSerialAccess
+  display/CMenuRemoteAccess
+  display/CMenuApMode
   display/COptionsList
   display/CHorzBarGraph
 
@@ -110,6 +112,10 @@ add_executable(zc95
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c
   RemoteAccess/httpd.c
+  RemoteAccess/CWifi.cpp
+  RemoteAccess/setupwebinterface.cpp
+  RemoteAccess/wlanscanner.cpp
+  RemoteAccess/QR-Code-generator/c/qrcodegen.c
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScript.S

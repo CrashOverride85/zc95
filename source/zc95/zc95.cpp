@@ -51,6 +51,7 @@
 
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
+#include "display/CMenuApMode.h"
 
 #include "core1/Core1.h"
 #include "core1/Core1Messages.h"
@@ -58,6 +59,8 @@
 #include "core1/routines/CRoutines.h"
 #include "core1/CRoutineOutput.h"
 #include "core1/CRoutineOutputCore1.h"
+
+#include "RemoteAccess/CWifi.h"
 
 #include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
@@ -70,6 +73,7 @@ CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &controls);
+CWifi *wifi = NULL;
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
@@ -170,6 +174,8 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
+    wifi = new CWifi();
+
     CHwCheck hw_check(&batteryGauge);
     hw_check.check_part1(); // If a fault is found, this never returns
     audio.set_audio_digipot_found(hw_check.audio_digipot_found());
@@ -194,6 +200,9 @@ int main()
     {
         controls.audio_input_enable(false);
     }
+
+    //CMenuApMode temp = CMenuApMode(NULL, NULL, &settings, wifi, _ana);
+
 
     CDebugOutput::set_debug_destination_from_settings(&settings);
 
@@ -239,7 +248,6 @@ int main()
 
     sleep_ms(100);
 
-
      /*
     CRoutine *lua = CLuaRoutine::create(0);
     struct routine_conf conf;
@@ -265,7 +273,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio, &analogueCapture);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -279,6 +287,7 @@ int main()
     while (1) 
     {
         uint64_t loop_start = time_us_64();
+        wifi->loop();
 
         display.update();
         process_front_pannel_input(&controls, current_menu);

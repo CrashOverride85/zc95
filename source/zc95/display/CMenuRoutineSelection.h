@@ -17,6 +17,7 @@
 #include "../CHwCheck.h"
 #include "../AudioInput/CAudio.h"
 #include "../CAnalogueCapture.h"
+#include "../RemoteAccess/CWifi.h"
 
 #include <string>
 #include <vector>
@@ -26,7 +27,17 @@
 class CMenuRoutineSelection : public CMenu
 {
     public:
-        CMenuRoutineSelection(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio, CAnalogueCapture *analogueCapture);
+        CMenuRoutineSelection(
+                CDisplay* display, 
+                std::vector<CRoutines::Routine> *routines, 
+                CGetButtonState *buttons, 
+                CSavedSettings *settings, 
+                CRoutineOutput *routine_output, 
+                CHwCheck *hwCheck, 
+                CAudio *audio, 
+                CAnalogueCapture *analogueCapture, 
+                CWifi *wifi);
+
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -47,6 +58,7 @@ class CMenuRoutineSelection : public CMenu
         CAudio *_audio;
         int _last_selection = -1;
         CAnalogueCapture *_analogueCapture;
+        CWifi *_wifi;
 };
 
 #endif

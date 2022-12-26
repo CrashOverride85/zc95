@@ -34,7 +34,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CRoutineOutput *routine_output,
     CHwCheck *hwCheck,
     CAudio *audio,
-    CAnalogueCapture *analogueCapture)
+    CAnalogueCapture *analogueCapture,
+    CWifi *wifi)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -48,6 +49,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _routine_output = routine_output;
     _audio = audio;
     _analogueCapture = analogueCapture;
+    _wifi = wifi;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -93,7 +95,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi));
         }
         
         if (button == Button::C) // "Up"

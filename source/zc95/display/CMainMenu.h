@@ -12,6 +12,7 @@
 #include "../CGetButtonState.h"
 #include "../CHwCheck.h"
 #include "../AudioInput/CAudio.h"
+#include "../RemoteAccess/CWifi.h"
 
 #include <string>
 #include <vector>
@@ -21,7 +22,17 @@
 class CMainMenu : public CMenu
 {
     public:
-        CMainMenu(CDisplay* display, std::vector<CRoutines::Routine> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio, CAnalogueCapture *analogueCapture);
+        CMainMenu(
+            CDisplay* display, 
+            std::vector<CRoutines::Routine> *routines, 
+            CGetButtonState *buttons, 
+            CSavedSettings *settings, 
+            CRoutineOutput *routine_output, 
+            CHwCheck *hwCheck, 
+            CAudio *audio, 
+            CAnalogueCapture *analogueCapture,
+            CWifi *wifi);
+
         ~CMainMenu();
         void button_pressed(Button button);
         void button_released(Button button);
