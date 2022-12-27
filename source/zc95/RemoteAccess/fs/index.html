@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Pico-w mobile interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.min.css">
+    <style>
+        /* we have slightly larger icons (jQuery mobile default = 16px) */
+        .ui-listview .ui-li-icon {
+            max-height: 22px !important;
+            max-width: 22px !important;
+            top: .7em !important;
+        }
+    </style>
+    <script src="jquery/jquery-1.11.2.min.js"></script>
+    <script>
+        $(document).bind("mobileinit", function () {
+            $.mobile.defaultPageTransition = 'slide';
+        });
+    </script>
+    <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+</head>
+<body>
+    
+    <div id="mainpage" data-role="page">
+        <div data-role="header">
+            <h1>ZC95</h1>
+        </div>
+        <div data-role="content">
+            <ul data-role="listview">
+                <li><a id="wifilink" href="#wifinetworks">Change wifi settings</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="wifinetworks" data-role="page">
+        <div data-role="header">
+            <a data-rel="back">Back</a>
+            <h1>Select network</h1>
+        </div>
+        <div data-role="content">
+            <ul id="networklist" data-role="listview"></ul>
+        </div>
+    </div>
+
+    <div id="wifilogin" data-role="page">
+        <div data-role="header">
+            <a data-rel="back">Back</a>
+            <h1>Login</h1>
+        </div>
+        <div data-role="content">
+            <div class="ui-body ui-body-a ui-corner-all">
+                <h3 id="ssid"></h3>
+                <form>
+                    <div data-role="fieldcontain" id="usernameblock">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" id="username">
+                    </div>
+                    <div data-role="fieldcontain" id="passwordblock">
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" id="password">
+                    </div>
+                    <div data-role="fieldcontain">
+                        <input id="connectbutton" type="button" value="Connect to the wifi network">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        
+    <div id="wificonnecting" data-role="page">
+        <div data-role="header">
+            <a data-rel="back">Back</a>
+            <h1>Connecting</h1>
+        </div>
+        <div data-role="content">
+        WiFi settings saved<br><br>
+        <div id="networkstatus"></div>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="mobile.js"></script>
+</body>
+</html>
