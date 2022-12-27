@@ -285,12 +285,6 @@ int main()
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 
- // TODO: remove me
-    std::string ssid; 
-    std::string psk;
-    g_SavedSettings->get_wifi_credentials(ssid, psk);
-    printf("SSID=%s, psk=%s\n", ssid.c_str(), psk.c_str());
-
     while (1) 
     {
         uint64_t loop_start = time_us_64();

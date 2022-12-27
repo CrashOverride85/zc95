@@ -15,41 +15,9 @@
 #include <string>
 #include "../globals.h"
 
-
-/*
-static std::string _pico_readln(int fd)
-{
-    std::string s;
-    char c;
-
-    while ( pico_read(fd, &c, 1) == 1 )
-    {
-        if (c == '\n')
-            break;
-        else if (c != '\r')
-            s += c;
-    }
-
-    return s;
-}
-*/
 SetupWebInterface::SetupWebInterface(CSavedSettings *saved_settings)
 {
     _saved_settings = saved_settings;
- /*   int rc = pico_mount(false);
-    if (rc != LFS_ERR_OK)
-    {
-        // Format 
-        rc = pico_mount(true);
-    }
-
-    int fd = pico_open("wlansettings", LFS_O_RDONLY);
-    if (fd >= 0)
-    {
-        _ssid = _pico_readln(fd);
-        _psk = _pico_readln(fd);
-    }
-    pico_unmount(); */
 }
 
 SetupWebInterface::~SetupWebInterface()
@@ -169,8 +137,7 @@ void SetupWebInterface::startAccessPoint()
     snprintf(ssid, sizeof(ssid), "zc95-%02x%02x%02x%02x%02x%02x",
         netif_default->hwaddr[0], netif_default->hwaddr[1], netif_default->hwaddr[2],
         netif_default->hwaddr[3], netif_default->hwaddr[4], netif_default->hwaddr[5]);
-    snprintf(psk, sizeof(psk), "%08x%08x%08x%08x", LWIP_RAND(), LWIP_RAND(), LWIP_RAND(), LWIP_RAND() );
-    //snprintf(psk, sizeof(psk), "12345678");
+    snprintf(psk, sizeof(psk), "%08x%08x", LWIP_RAND(), LWIP_RAND() );
 
     cyw43_arch_enable_ap_mode(ssid, psk, CYW43_AUTH_WPA2_AES_PSK);
     cyw43_wifi_pm(&cyw43_state, 0xa11140);
@@ -187,6 +154,18 @@ void SetupWebInterface::startAccessPoint()
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));
 
     _qr_code = std::string("WIFI:S:")+ssid+";T:WPA;P:"+psk+";;";
+    _ap_psk  = std::string(psk);
+    _ap_ssid = std::string(ssid) ;
+}
+
+std::string SetupWebInterface::getApSsid()
+{
+    return _ap_ssid;
+}
+
+std::string SetupWebInterface::getApPsk()
+{
+    return _ap_psk;
 }
 
 static void _reboot()
@@ -198,27 +177,17 @@ static void _reboot()
 
 void SetupWebInterface::saveSettings(const std::string &ssid, const std::string &psk)
 {
-  //  Display::instance()->showText("Saving settings...");
-/*
-    pico_mount(false);
-    int fd = pico_open("wlansettings", LFS_O_WRONLY | LFS_O_CREAT);
-    std::string buf = ssid+"\n"+psk+"\n";
-    pico_write(fd, buf.c_str(), buf.size());
-    pico_close(fd);
-    pico_unmount();
-*/
-
+    printf("Saving ssid=[%s], psk=[%s]\n", ssid.c_str(), psk.c_str());
     g_SavedSettings->set_wifi_credentials(ssid, psk);
     g_SavedSettings->save();
-
-    _reboot();
+  //  _reboot();
 }
 
 void SetupWebInterface::eraseSavedWlan()
 {
   //  pico_mount(true);
   //  pico_unmount();
-    _reboot();
+   // _reboot();
 }
 
 std::string SetupWebInterface::getQrCode()
