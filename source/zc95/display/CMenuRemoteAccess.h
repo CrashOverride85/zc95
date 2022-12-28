@@ -1,6 +1,7 @@
 #include "CMenu.h"
 #include "CDisplay.h"
 #include "COptionsList.h"
+#include "CMenuRemoteAccessConnectWifi.h"
 #include "../CSavedSettings.h"
 #include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
@@ -33,7 +34,8 @@ class CMenuRemoteAccess : public CMenu
 
         enum option_id
         {
-            AP_MODE = 0
+            AP_MODE      = 0,
+            CONNECT_WIFI = 1
         };
 
         std::vector<option> _options;

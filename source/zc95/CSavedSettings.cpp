@@ -225,6 +225,17 @@ bool CSavedSettings::set_wifi_credentials(std::string ssid, std::string password
     return true;
 }
 
+void CSavedSettings::clear_wifi_credentials()
+{
+    memset(&_eeprom_contents[(uint8_t)setting::WifiSSID], 0, (uint8_t)setting::WifiPSK - (uint8_t)setting::WifiSSID);
+    _eeprom_contents[(uint8_t)setting::WiFiConfigured] = 0;
+}
+
+bool CSavedSettings::wifi_is_configured()
+{
+    return (_eeprom_contents[(uint8_t)setting::WiFiConfigured] == EEPROM_MAGIC_VAL);
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)

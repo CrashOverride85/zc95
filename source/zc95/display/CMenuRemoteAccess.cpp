@@ -85,6 +85,10 @@ void CMenuRemoteAccess::show_selected_setting()
         case option_id::AP_MODE:
             set_active_menu(new CMenuApMode(_display, _buttons, _saved_settings, _wifi, _analogueCapture));
             break;
+
+        case option_id::CONNECT_WIFI:
+            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi, _analogueCapture));
+            break;
     }
 }
 
@@ -107,7 +111,8 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE,  "Config Wifi/AP mode"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE     ,  "Config Wifi/AP mode"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI,  "Connect to WiFi"));
     
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)

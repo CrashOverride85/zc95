@@ -99,6 +99,7 @@ add_executable(zc95
   display/CMenuSettingHardware
   display/CMenuSettingSerialAccess
   display/CMenuRemoteAccess
+  display/CMenuRemoteAccessConnectWifi
   display/CMenuApMode
   display/COptionsList
   display/CHorzBarGraph
@@ -202,6 +203,7 @@ target_compile_definitions(zc95 PRIVATE
 
   PICO_DEFAULT_UART_TX_PIN=8
   PICO_DEFAULT_UART_RX_PIN=9
+  CYW43_HOST_NAME="ZC95"
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

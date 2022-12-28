@@ -66,4 +66,3 @@
 
 #define PIN_ACC_UART_TX 8
 #define PIN_ACC_UART_RX 9
-

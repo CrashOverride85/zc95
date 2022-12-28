@@ -29,6 +29,8 @@ CMenuApMode::~CMenuApMode()
         delete _setupwebinterface;
         _setupwebinterface = NULL;
     }
+
+    _wifi->stop();
 }
 
 void CMenuApMode::button_pressed(Button button)
@@ -144,8 +146,7 @@ void CMenuApMode::wifi_scan()
         _analogueCapture->stop();
 
         printf("CMenuApMode::wifi_scan(): Start scanning for wifi networks\n");
-        cyw43_arch_enable_sta_mode();
-        cyw43_wifi_pm(&cyw43_state, 0xa11140);        
+        _wifi->start_ap();
         WlanScanner::instance()->startScanning();
         _state = state_t::WIFI_SCAN;
         set_button_a_text();

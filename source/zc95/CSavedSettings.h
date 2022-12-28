@@ -127,6 +127,8 @@ class CSavedSettings
         // Wifi credentials. Returns true if credentials returned (wifi already configured)        
         bool get_wifi_credentials(std::string &out_ssid, std::string &out_password);
         bool set_wifi_credentials(std::string ssid, std::string password); // Returns true if saved, false otherwise (e.g. too long)
+        void clear_wifi_credentials();
+        bool wifi_is_configured();
 
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);

@@ -174,7 +174,7 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    wifi = new CWifi();
+    wifi = new CWifi(&analogueCapture);
 
     CHwCheck hw_check(&batteryGauge);
     hw_check.check_part1(); // If a fault is found, this never returns
