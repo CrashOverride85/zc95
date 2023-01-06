@@ -147,6 +147,8 @@ void CMenuRemoteAccessConnectWifi::draw()
         {
             _state = state_t::CONNECTING;
         }
+
+        _web_server.loop();
     } 
 }
 

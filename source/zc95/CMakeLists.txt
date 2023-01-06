@@ -121,6 +121,7 @@ add_executable(zc95
   RemoteAccess/sha1.c
   RemoteAccess/base64.c
   RemoteAccess/CWebServer.cpp
+  RemoteAccess/CWsConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScript.S
