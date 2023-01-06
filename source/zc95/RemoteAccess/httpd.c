@@ -150,12 +150,18 @@
 #define HTTP_DATA_TO_SEND_CONTINUE 1
 #define HTTP_NO_DATA_TO_SEND       0
 
+static uint8_t _ap_mode;
 
 
 typedef struct {
   const char *name;
   u8_t shtml;
 } default_filename;
+
+enum {
+  WS_TEXT_MODE = 0x01,
+  WS_BIN_MODE  = 0x02,
+} WS_MODE;
 
 static const char WS_HEADER[] = "Upgrade: websocket\r\n";
 static const char WS_GUID[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -385,6 +391,10 @@ static char *http_cgi_param_vals[LWIP_HTTPD_MAX_CGI_PARAMETERS]; /* Values for e
 
 int host_matches_ip(const char *data)
 {
+    // If not in AP mode, skip this check
+    if (!_ap_mode)
+      return 1;
+
     const char *host_param_name = "Host: ";
     const char *our_ip = "192.168.4.1";
     
@@ -2955,9 +2965,10 @@ httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
  * Initialize the httpd: set up a listening PCB and bind it to the defined port
  */
 void
-httpd_init(void)
+httpd_init(uint8_t ap_mode)
 {
   struct altcp_pcb *pcb;
+  _ap_mode = ap_mode;
 
 #if HTTPD_USE_MEM_POOL
   LWIP_MEMPOOL_INIT(HTTPD_STATE);

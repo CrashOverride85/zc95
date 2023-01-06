@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @file
  * HTTP server
@@ -242,10 +244,7 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 
 #endif /* LWIP_HTTPD_SUPPORT_POST */
 
-enum {
-  WS_TEXT_MODE = 0x01,
-  WS_BIN_MODE  = 0x02,
-} WS_MODE;
+
 
 typedef void (*tWsHandler)(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode);
 typedef void (*tWsOpenHandler)(struct tcp_pcb *pcb, const char *uri);
@@ -269,7 +268,7 @@ err_t websocket_write(struct tcp_pcb *pcb, const uint8_t *data, uint16_t len, ui
  */
 void websocket_register_callbacks(tWsOpenHandler ws_open_cb, tWsHandler ws_cb);
 
-void httpd_init(void);
+void httpd_init(uint8_t ap_mode);
 
 #if HTTPD_ENABLE_HTTPS
 struct altcp_tls_config;

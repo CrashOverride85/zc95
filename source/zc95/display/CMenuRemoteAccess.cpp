@@ -87,7 +87,7 @@ void CMenuRemoteAccess::show_selected_setting()
             break;
 
         case option_id::CONNECT_WIFI:
-            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi, _analogueCapture));
+            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi));
             break;
     }
 }

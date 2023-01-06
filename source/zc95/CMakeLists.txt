@@ -120,6 +120,7 @@ add_executable(zc95
   RemoteAccess/strcasestr.c
   RemoteAccess/sha1.c
   RemoteAccess/base64.c
+  RemoteAccess/CWebServer.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScript.S
@@ -209,4 +210,5 @@ target_compile_definitions(zc95 PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess
+    ${PICO_SDK_PATH}/lib/lwip/include/lwip/apps
 )

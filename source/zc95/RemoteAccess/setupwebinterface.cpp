@@ -11,7 +11,7 @@
 #include "lwip/netif.h"
 #include "lwip/init.h"
 #include "lwip/timeouts.h"
-#include "lwip/apps/httpd.h"
+#include "httpd.h"
 #include <string>
 #include "../globals.h"
 
@@ -149,7 +149,7 @@ void SetupWebInterface::startAccessPoint()
 
     while (dnserv_init(IP_ADDR_ANY, 53, dns_query_proc) != ERR_OK);
 
-    httpd_init();
+    httpd_init(1);
     http_set_ssi_handler(wlanscan_ssi_handler, ssi_tags, LWIP_ARRAYSIZE(ssi_tags));
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));
 

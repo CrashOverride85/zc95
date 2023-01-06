@@ -23,8 +23,7 @@ CMenuRemoteAccessConnectWifi::CMenuRemoteAccessConnectWifi(
     CDisplay* display,
     CGetButtonState *buttons,
     CSavedSettings *saved_settings,
-    CWifi *wifi,
-    CAnalogueCapture *analogueCapture)
+    CWifi *wifi)
 {
     printf("CMenuRemoteAccessConnectWifi() \n");
     _display = display;
@@ -93,8 +92,6 @@ void CMenuRemoteAccessConnectWifi::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuRemoteAccessConnectWifi::draw()
 {
-    char connecting_dots[] = "......";
-
     if (_state == state_t::NOT_CONFIGURED)
     {
         int y = ((_disp_area.y1-_disp_area.y0)/2);
@@ -109,6 +106,7 @@ void CMenuRemoteAccessConnectWifi::draw()
         y += 10;
 
         // Show a "..." animation to show we're (trying!) to do something
+        char connecting_dots[] = "......";
         if (time_us_64() > _last_connecting_screen_update_us + 200000) // 200ms
         {
             _connecting_dot_count++;
@@ -126,6 +124,7 @@ void CMenuRemoteAccessConnectWifi::draw()
         if (_wifi->get_connection_status(connection_status))
         {
             _state = state_t::CONNECTED;
+            _web_server.start();
         }
         _display->put_text(connection_status, _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
     } 
