@@ -161,6 +161,7 @@ target_link_libraries(zc95
         hagl_hal
         git_version
         lua_static
+        ArduinoJson
         )
 
 pico_add_extra_outputs(zc95)
@@ -168,6 +169,7 @@ pico_add_extra_outputs(zc95)
 add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
 add_subdirectory(external/lua)
+add_subdirectory(external/ArduinoJson)
 #target_link_libraries(zc95 hagl hagl_hal)
 
 target_compile_definitions(zc95 PRIVATE

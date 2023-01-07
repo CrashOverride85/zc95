@@ -13,7 +13,6 @@ CWebServer::~CWebServer()
     printf("~CWebServer()\n");
 
     std::map<struct tcp_pcb*, CWsConnection*>::iterator it;
-
     for (it = _s_ws_connections.begin(); it != _s_ws_connections.end(); it++)
     {
         if (it->second != NULL)
@@ -81,11 +80,7 @@ void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     if (!strcmp(uri, "/stream")) 
     {
         printf("request for streaming\n");
-      //  xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
-
         _s_ws_connections[pcb] = new CWsConnection(pcb);
-
-
     }
 }
 
