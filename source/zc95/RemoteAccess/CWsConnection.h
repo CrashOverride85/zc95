@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include "httpd.h"
+#include "CLuaLoad.h"
 
 class CWsConnection
 {
@@ -17,16 +18,19 @@ class CWsConnection
         bool active();
 
     private:
-        void send_ack(std::string result, int msg_count);
-
         enum class state_t
         {
             ACTIVE,
+            LUA_LOAD,
             DEAD
         };
 
+        void send_ack(std::string result, int msg_count);
+        void set_state(state_t new_state);
+
         struct tcp_pcb *_pcb;
         state_t _state = state_t::ACTIVE;
+        CLuaLoad *_lua_load = NULL;
 };
 
 #endif

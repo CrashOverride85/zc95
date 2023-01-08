@@ -10,7 +10,7 @@
 .global lua_script3_start
 .global lua_script4_start
 .global lua_script5_start
-.global lua_script_end
+.global lua_script5_end
 
 lua_script1_start:
 .balign 4096
@@ -32,5 +32,5 @@ lua_script5_start:
 .balign 4096
 .fill 24576, 1, 0x00 /* 24k */
 
-.global lua_script_end
-lua_script_end:
+.global lua_script5_end
+lua_script5_end:

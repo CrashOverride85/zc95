@@ -15,7 +15,6 @@ class CWebServer
         ~CWebServer();
         void start();
         void loop();
-        
 
     private:
         static char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
@@ -24,7 +23,6 @@ class CWebServer
 
         bool _started = false;
         static std::map<struct tcp_pcb*, CWsConnection*> _s_ws_connections;
-
 };
 
 #endif
