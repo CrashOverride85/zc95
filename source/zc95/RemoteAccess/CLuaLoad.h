@@ -23,6 +23,8 @@ class CLuaLoad
         int get_lua_flash_size(uint8_t index);
 
         uint8_t *_lua_buffer = NULL;
+        size_t _lua_buffer_size = 0;
+        uint _lua_buffer_postion = 0;
 };
 
 #endif

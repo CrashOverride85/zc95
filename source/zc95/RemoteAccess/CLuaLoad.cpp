@@ -8,7 +8,6 @@ CLuaLoad::CLuaLoad(std::function<void(std::string)> send_function, std::function
     _send_ack = send_ack;
 }
 
-
 CLuaLoad::~CLuaLoad()
 {
     printf("CLuaLoad::~CLuaLoad()\n");
@@ -16,13 +15,18 @@ CLuaLoad::~CLuaLoad()
     {
         free(_lua_buffer);
         _lua_buffer = NULL;
+        _lua_buffer_size = 0;
+        _lua_buffer_postion = 0;
     }
 }
 
+// Returns true when finished processing Lua messages. Which is either on receiving a LuaEnd
+// message, or on an error processing LuaStart or LuaLine
 bool CLuaLoad::process(StaticJsonDocument<200> *doc)
 {
     std::string msgType = (*doc)["Type"];
     int msgCount = (*doc)["MsgCount"];
+    bool retval = false;
 
     if (msgType == "LuaStart")
     {
@@ -30,6 +34,8 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
         {
             free(_lua_buffer);
             _lua_buffer = NULL;
+            _lua_buffer_size = 0;
+            _lua_buffer_postion = 0;
         }
 
         int index = (*doc)["Index"];
@@ -38,27 +44,65 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
 
         if (flash_size != 0)
         {
-            _lua_buffer = (uint8_t*)malloc(flash_size);
+            _lua_buffer_size = flash_size;
+            _lua_buffer = (uint8_t*)calloc(_lua_buffer_size, sizeof(uint8_t));
+            _lua_buffer_postion = 0;
         }
 
         if (_lua_buffer == NULL)
-            _send_ack("ERROR", msgCount);
-        else
-            _send_ack("OK", msgCount);
-
+        {
+            printf("CLuaLoad: NULL lua buffer. Invalid index or out of memory?\n");
+            retval = true;
+        }
     }
+    else if (msgType == "LuaLine")
+    {
+        if (_lua_buffer)
+        {
+            std::string text = (*doc)["Text"];
+            text += "\n";
+            if (_lua_buffer_postion + text.length() + 4 >= _lua_buffer_size)
+            {
+                printf("CLuaLoad: Buffer full! Lua script too large\n");
+                retval = true;
+            }
+            else
+            {
+                memcpy(_lua_buffer + _lua_buffer_postion, text.c_str(), text.length());
+                _lua_buffer_postion += text.length();
+            }
+        } 
+        else
+        {
+            // NULL _lua_buffer
+            printf("CLuaLoad: LuaLine without valid LuaStart\n");
+            retval = true;
+        }
+    }
+    else if (msgType == "LuaEnd")
+    {
+        if (_lua_buffer)
+        {
+            printf("_lua_buffer_\n");
+            puts((char*)_lua_buffer);
+        }
+
+        // TODO
+        _send_ack("OK", msgCount);
+        return true; // This is the only case where a true return value is not also an error
+    }
+    else
+    {
+        printf("CLuaLoad: Unexpected message type: %s\n", msgType.c_str());
+        retval = true;
+    }
+
+    if (retval)
+        _send_ack("ERROR", msgCount);
     else
         _send_ack("OK", msgCount);
 
-
-
-    
-
-
-    if (msgType == "LuaEnd")
-        return true;
-    else
-        return false;
+    return retval;
 }
 
 int CLuaLoad::get_lua_flash_size(uint8_t index)
@@ -66,7 +110,7 @@ int CLuaLoad::get_lua_flash_size(uint8_t index)
     int flash_size = 0;
 
     // These are definied in LuaScripts.S and are empty contiguous blocks of 24k flash that can be used 
-    // put lua scripts in
+    // to put lua scripts in
     extern uint8_t lua_script1_start;  
     extern uint8_t lua_script2_start;
     extern uint8_t lua_script3_start;
