@@ -83,7 +83,7 @@ void CWsConnection::set_state(state_t new_state)
             if (_lua_load == NULL) // this should always be true
                 _lua_load = new CLuaLoad(
                         std::bind(&CWsConnection::send    , this, std::placeholders::_1),
-                        std::bind(&CWsConnection::send_ack, this, std::placeholders::_1, std::placeholders::_2),
+                        std::bind(&CWsConnection::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                         _analogue_capture,
                         _routine_output);
             break;
@@ -106,13 +106,18 @@ void CWsConnection::set_state(state_t new_state)
     _state = new_state;
 }
 
-void CWsConnection::send_ack(std::string result, int msg_count)
+void CWsConnection::send_ack(std::string result, int msg_count, std::string error)
 {
     StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
 
     doc["Type"] = "Ack";
     doc["MsgCount"] = msg_count;
     doc["Result"] = result;
+
+    if (error.length() > 0)
+    {
+        doc["Error"] = error;
+    }
 
     std::string generatedJson;
     serializeJson(doc, generatedJson);

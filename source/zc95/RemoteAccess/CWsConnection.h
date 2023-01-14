@@ -28,7 +28,7 @@ class CWsConnection
             DEAD
         };
 
-        void send_ack(std::string result, int msg_count);
+        void send_ack(std::string result, int msg_count, std::string error = "");
         void set_state(state_t new_state);
 
         struct tcp_pcb *_pcb;

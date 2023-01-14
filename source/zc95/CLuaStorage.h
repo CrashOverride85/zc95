@@ -16,12 +16,13 @@ class CLuaStorage
         CLuaStorage(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output);
         ~CLuaStorage();
 
-        size_t get_lua_flash_size(uint8_t index);
+        static size_t get_lua_flash_size(uint8_t index);
         bool store_script(uint8_t index, const char* lua_script, size_t buffer_size);
 
+        static const char* get_script_at_index(uint8_t index);
 
     private:
-        uint32_t get_flash_offset(uint8_t script_index);
+        static uint32_t get_flash_offset(uint8_t script_index);
         
         CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output;

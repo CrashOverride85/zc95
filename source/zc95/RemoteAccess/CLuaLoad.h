@@ -16,7 +16,7 @@ class CLuaLoad
     public:
         CLuaLoad(
             std::function<void(std::string)> send_function, 
-            std::function<void(std::string result, int msg_count)> send_ack,
+            std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
             CAnalogueCapture *analogue_capture, 
             CRoutineOutput *routine_output);
         ~CLuaLoad();
@@ -24,7 +24,8 @@ class CLuaLoad
 
     private:
         std::function<void(std::string)> _send;
-        std::function<void(std::string result, int msg_count)> _send_ack;
+        std::function<void(std::string result, int msg_count, std::string error)> _send_ack;
+        void send_ack(std::string result, int msg_count);
 
         uint8_t *_lua_buffer = NULL;
         size_t _lua_buffer_size = 0;

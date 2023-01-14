@@ -1,16 +1,34 @@
+/*
+ * ZC95
+ * Copyright (C) 2023  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #include "CLuaLoad.h"
 #include "CLuaTest.h"
 
 CLuaLoad::CLuaLoad(
         std::function<void(std::string)> send_function, 
-        std::function<void(std::string result, int msg_count)> send_ack,
+        std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
         CAnalogueCapture *analogue_capture, 
         CRoutineOutput *routine_output
 )
 {
     printf("CLuaLoad::CLuaLoad()\n");
     _send = send_function;
-    _send_ack = send_ack;
+    _send_ack = send_ack_func;
     _lua_storage = new CLuaStorage(analogue_capture, routine_output);
 }
 
@@ -109,14 +127,11 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
             else
             {
                 printf("CLuaLoad::process() bad script!\n\t%s\n", lua_error.c_str());
+                _send_ack("ERROR", msgCount, "Invalid script: " + lua_error);
             }
-
-
-
-
         }
 
-        _send_ack("OK", msgCount);
+        send_ack("OK", msgCount);
         return true; // This is the only case where a true return value is not also an error
     }
     else
@@ -126,11 +141,14 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
     }
 
     if (retval)
-        _send_ack("ERROR", msgCount);
+        send_ack("ERROR", msgCount);
     else
-        _send_ack("OK", msgCount);
+        send_ack("OK", msgCount);
 
     return retval;
 }
 
-
+void CLuaLoad::send_ack(std::string result, int msg_count)
+{
+    _send_ack(result, msg_count, "");
+}

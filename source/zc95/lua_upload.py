@@ -1,4 +1,5 @@
 import websocket # pip3 install websocket-client
+import argparse
 import time
 import json 
 
@@ -13,14 +14,16 @@ def GetLuaLine(msgCount, lineNumber, text):
 
 def Send(message):
   msgToSend = json.dumps(message);  
-  print("> " + msgToSend)
+  if args.debug:
+    print("> " + msgToSend)
   ws.send(msgToSend)
   GetAndProcessAck(msgCount)
 
 
 def GetAndProcessAck(expectedMsgCount):
   resultJson = ws.recv()
-  print("< " + resultJson)
+  if args.debug:  
+    print("< " + resultJson)
   
   result = json.loads(resultJson)
   if result["Type"] != "Ack":
@@ -32,33 +35,43 @@ def GetAndProcessAck(expectedMsgCount):
     quit()
 
   if result["Result"] != "OK":
-    print("Result not OK")
+    if "Error" in result:
+      print("Got error message: ")
+      print("    " + result["Error"])
+    else:
+      print("Result not OK")
+
     quit()
 
-ws = websocket.WebSocket()
+parser = argparse.ArgumentParser(description='Upload Lua scripts on ZC95')
+parser.add_argument('--debug', action='store_true', help='Show debugging information')
+parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
+parser.add_argument('--index', action='store', required=True, type=int, choices=range(1, 6), help='Slot/index on ZC95 to upload script to')
+parser.add_argument('--script', action='store', required=True, help='Lua script to upload')
+args = parser.parse_args()
 
-ws.connect("ws://192.168.1.136/stream")
+ws = websocket.WebSocket()
+print("Connecting")
+ws.connect("ws://" + args.ip + "/stream")
 
 msgCount = 0
 msgStart = {
     "Type": "LuaStart",
-    "Index": 1,
+    "Index": args.index,
     "MsgCount": msgCount
 }
 Send(msgStart)
 msgCount += 1
 
-luaFile = open("toggle2.lua", "r")
+luaFile = open(args.script, "r")
 lineNumber = 0
+print("Connected, uploading...")
 for luaLineString in luaFile:
   luaLineToSend = GetLuaLine(msgCount, lineNumber, luaLineString)
   lineNumber += 1
   
   Send(luaLineToSend)
   msgCount += 1
-  
-  #time.sleep(0.05)
-
 
 msgEnd = {
     "Type": "LuaEnd",
@@ -67,3 +80,4 @@ msgEnd = {
 Send(msgEnd)
 msgCount += 1
 
+print("Done!")

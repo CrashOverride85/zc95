@@ -31,10 +31,12 @@ class CRoutines
 
         static void get_routines(std::vector<Routine> *routines)
         {
-            // TODO: loop through and add all lua scripts
-            uint8_t index = 0;
-            if (is_lua_script_valid(index))
-                routines->push_back({&(CLuaRoutine::create), index});
+            // Loop through and add all valid lua scripts
+            for (uint8_t index=1; index <= 5; index++)
+            {
+                if (is_lua_script_valid(index))
+                    routines->push_back({&(CLuaRoutine::create), index});
+            }
 
             routines->push_back({&(CWaves::create)         , 0});
             routines->push_back({&(CToggle::create)        , 0});

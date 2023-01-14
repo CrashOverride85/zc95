@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2022  CrashOverride85
+ * Copyright (C) 2023  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ template <mem_func func> int dispatch(lua_State *L)
 CLuaRoutine::CLuaRoutine(uint8_t script_index)
 {
     printf("CLuaRoutine(%d)\n", script_index);
+    _script_index = script_index;
     _lua_state = NULL;
     _script_valid = ScriptValid::UNKNOWN;
 
@@ -67,14 +68,17 @@ void CLuaRoutine::load_lua_script_if_required()
     if (_script_valid != ScriptValid::UNKNOWN)
         return;
 
-   // printf("CLuaRoutine::load_lua_script_if_required()\n");
-// extern uint8_t lua_script1_start;
-   // void *original_start2 = &lua_script1_start;
+    const char *script = CLuaStorage::get_script_at_index(_script_index);
+    if (script == NULL)
+    {
+        printf("CLuaRoutine::load_lua_script_if_required(): No or invalid script at index %d\n", _script_index);
+        lua_close(_lua_state);
+        _lua_state = NULL;
+        _script_valid = ScriptValid::INVALID;
+        return;
+    }
 
-    extern uint8_t arm_payload_start;
-    void *original_start = &arm_payload_start;
-
-    if (CheckLua(luaL_dostring(_lua_state, (const char*)original_start)))
+    if (CheckLua(luaL_dostring(_lua_state, script)))
     {
         _script_valid = ScriptValid::VALID;
 

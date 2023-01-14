@@ -1,5 +1,28 @@
+/*
+ * ZC95
+ * Copyright (C) 2023  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #include "CLuaStorage.h"
 #include "hardware/flash.h"
+#include <string.h>
+
+/* CLuaStorage
+ * Class to manage the saving of lua scripts to flash, and loading from flash.
+ */
 
 // These are definied in LuaScripts.S and are empty contiguous blocks of 24k flash that can be used 
 // to put lua scripts in
@@ -134,4 +157,24 @@ size_t CLuaStorage::get_lua_flash_size(uint8_t index)
     }
 
     return flash_size;
+}
+
+const char* CLuaStorage::get_script_at_index(uint8_t index)
+{
+    uint32_t flash_offset = get_flash_offset(index);
+    if (flash_offset == 0)
+        return NULL;
+
+    size_t flash_size = get_lua_flash_size(index);
+    if (flash_size == 0)
+        return NULL;
+
+    const char *script = (const char *)(flash_offset + XIP_BASE);
+
+    size_t script_length = strnlen(script, flash_size);
+    printf("CLuaStorage::get_script_at_index(%d): script size = %d\n", index, script_length);
+    if (script_length == 0 || script_length == flash_size)
+        return NULL;
+
+    return script;
 }

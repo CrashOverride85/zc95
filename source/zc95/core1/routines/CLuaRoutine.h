@@ -1,4 +1,5 @@
 #include "CRoutine.h"
+#include "../../CLuaStorage.h"
 
 #include "../../external/lua/lua-5.1.5/include/lua.h"
 #include "../../external/lua/lua-5.1.5/include/lauxlib.h"
@@ -54,4 +55,5 @@ class CLuaRoutine: public CRoutine
         lua_State *_lua_state;
         ScriptValid _script_valid = ScriptValid::UNKNOWN;
         uint64_t _channel_switch_off_at_us[CHANNEL_COUNT] = {0};
+        uint8_t _script_index;
 };
