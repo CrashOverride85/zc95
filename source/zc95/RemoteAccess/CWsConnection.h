@@ -31,6 +31,8 @@ class CWsConnection
         struct tcp_pcb *_pcb;
         state_t _state = state_t::ACTIVE;
         CLuaLoad *_lua_load = NULL;
+        StaticJsonDocument<200> _json_message;
+        bool _pending_message = false;
 };
 
 #endif

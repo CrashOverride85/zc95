@@ -23,7 +23,8 @@ void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
     std::string message((char*)data, data_len);
 
     printf("msg = %s\n", message.c_str());
-
+    
+    // Test that the message can be deserialized
     StaticJsonDocument<200> doc;
     DeserializationError error = deserializeJson(doc, message.c_str());
   
@@ -34,25 +35,24 @@ void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
         return;
     }
 
-    std::string msgType = doc["Type"];
-    if (msgType == "LuaStart")
+    // If there's already a message waiting to be processe, give up now (don't alter _json_message)
+    if (_pending_message)
     {
-        set_state(state_t::LUA_LOAD);
+        printf("CWsConnection::callback(): Error, already have an unprocessed pending message\n");
+        int msgCount = doc["MsgCount"];
+        send_ack("ERROR", msgCount);
+        return;
     }
 
-    if (_state == state_t::LUA_LOAD)
+    // Message can be deserialized and we don't have a message, so deserialize in into _json_message
+    error = deserializeJson(_json_message, message.c_str());
+    if (error)
     {
-        if (_lua_load->process(&doc))
-        {
-            // process returns true when lua load is finished
-            set_state(state_t::ACTIVE);
-        }
+        printf("deserializeJson() failed: %s", error.c_str());
+        send_ack("ERROR", -1);
+        return;    
     }
-    else
-    {
-        int msgCount = doc["MsgCount"];
-        send_ack("OK", msgCount);
-    }
+    _pending_message = true;
 }
 
 void CWsConnection::set_state(state_t new_state)
@@ -114,6 +114,35 @@ void CWsConnection::loop()
         _state = state_t::DEAD;
         return;
     }
+
+
+    if (_pending_message)
+    {
+        printf("CWsConnection::loop() processing pending message\n");
+        std::string msgType = _json_message["Type"];
+        if (msgType == "LuaStart")
+        {
+            set_state(state_t::LUA_LOAD);
+        }
+
+        if (_state == state_t::LUA_LOAD)
+        {
+            if (_lua_load->process(&_json_message))
+            {
+                // process returns true when lua load is finished
+                set_state(state_t::ACTIVE);
+            }
+        }
+        else
+        {
+            int msgCount = _json_message["MsgCount"];
+            send_ack("OK", msgCount);
+        }
+
+        _json_message.clear();
+        _pending_message = false;
+    }
+
 }
 
 void CWsConnection::send(std::string message)

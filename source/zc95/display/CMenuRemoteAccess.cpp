@@ -111,8 +111,8 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE     ,  "Config Wifi/AP mode"));
     _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI,  "Connect to WiFi"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE     ,  "Config Wifi/AP mode"));
     
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)

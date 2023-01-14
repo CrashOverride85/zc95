@@ -1,5 +1,5 @@
 #include "CLuaLoad.h"
-
+#include "CLuaTest.h"
 
 CLuaLoad::CLuaLoad(std::function<void(std::string)> send_function, std::function<void(std::string result, int msg_count)> send_ack)
 {
@@ -85,6 +85,22 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
         {
             printf("_lua_buffer_\n");
             puts((char*)_lua_buffer);
+
+            CLuaTest lua_test = CLuaTest();
+            std::string lua_error;
+            bool ret = lua_test.check_script((const char*)_lua_buffer, lua_error);
+            if (ret)
+            {
+                printf("CLuaLoad::process() script ok\n");
+            }
+            else
+            {
+                printf("CLuaLoad::process() bad script!\n\t%s\n", lua_error.c_str());
+            }
+
+
+
+
         }
 
         // TODO
