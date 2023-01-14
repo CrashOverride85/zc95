@@ -15,6 +15,12 @@ void CWifi::loop()
         return;
     
     cyw43_arch_poll();
+
+    if (_web_server)
+    {
+        _web_server->loop();
+        cyw43_arch_poll();
+    }
 }
 
 // returns true if connected with an IP, false otherwise
@@ -70,6 +76,7 @@ void CWifi::start_ap()
 
 void CWifi::stop()
 {
+    stop_webserver();
     if (_wifi_init)
     {
         printf("CWifi::stop(): Deinit wifi\n");
@@ -113,4 +120,23 @@ void CWifi::connect_to_wifi(std::string ssid, std::string psk)
     cyw43_wifi_pm(&cyw43_state, 0xa11140);
     cyw43_arch_wifi_connect_async(ssid.c_str(), psk.c_str(), CYW43_AUTH_WPA2_MIXED_PSK);
     _analogue_capture->start();
+}
+
+void CWifi::start_webserver()
+{
+    if (!_web_server)
+    {
+        _web_server = new CWebServer();
+        _web_server->start();
+    }
+
+}
+
+void CWifi::stop_webserver()
+{
+    if (_web_server)
+    {
+        delete _web_server;
+        _web_server = NULL;
+    }
 }

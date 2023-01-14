@@ -6,6 +6,7 @@
 #include <string>
 #include <functional>
 #include <ArduinoJson.h>
+#include "../config.h"
 
 class CLuaLoad
 {
@@ -14,7 +15,7 @@ class CLuaLoad
                 std::function<void(std::string)> send_function,
                 std::function<void(std::string result, int msg_count)> send_ack);
         ~CLuaLoad();
-        bool process(StaticJsonDocument<200> *doc);
+        bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
 
     private:
         std::function<void(std::string)> _send;

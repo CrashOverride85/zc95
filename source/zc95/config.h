@@ -17,6 +17,9 @@
 #define ZC624_REQUIRED_MAJOR_VERION 0
 #define ZC624_MIN_MINOR_VERION      3
 
+// The maximum length a web socket message can be in bytes
+#define MAX_WS_MESSAGE_SIZE 200
+
 // Other pins
 #define PIN_LED           10 // ws2812 LED chain
 #define PIN_CONTROLS_INT   7 // front pannel controls port expander interrupt pin

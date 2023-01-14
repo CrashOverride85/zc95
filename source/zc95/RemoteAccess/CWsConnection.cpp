@@ -4,6 +4,8 @@
 CWsConnection::CWsConnection(struct tcp_pcb *pcb)
 {
     printf("CWsConnection::CWsConnection()\n");
+    _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
+    _pending_message = false;
     _pcb = pcb;
 }
 
@@ -15,8 +17,16 @@ CWsConnection::~CWsConnection()
         delete _lua_load;
         _lua_load = NULL;
     }
+
+    if (_pending_message_buffer)
+    {
+        free(_pending_message_buffer);
+        _pending_message_buffer = NULL;
+    }
 }
 
+// Process web socket message. This is called from the wifi/tcp polling thread, and is supposed to return quickly.
+// So where possible, put incoming messages into _pending_message_buffer for later processing from loop()
 void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
 {
     printf("CWsConnection::callback()\n");
@@ -24,35 +34,37 @@ void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
 
     printf("msg = %s\n", message.c_str());
     
-    // Test that the message can be deserialized
-    StaticJsonDocument<200> doc;
-    DeserializationError error = deserializeJson(doc, message.c_str());
-  
-    if (error)
+    if (data_len > MAX_WS_MESSAGE_SIZE) // Check is important: later mempcy into _pending_message_buffer assumes data_len <= MAX_WS_MESSAGE_SIZE
     {
-        printf("deserializeJson() failed: %s", error.c_str());
+        printf("CWsConnection::callback(): error: message is too large (%d bytes)\n", data_len);
         send_ack("ERROR", -1);
         return;
     }
 
-    // If there's already a message waiting to be processe, give up now (don't alter _json_message)
     if (_pending_message)
     {
         printf("CWsConnection::callback(): Error, already have an unprocessed pending message\n");
+
+        // Deserialize message just to get MsgCount to include in error response. Might remove this.
+        StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
+        DeserializationError error = deserializeJson(doc, message.c_str());
+        if (error)
+        {
+            printf("deserializeJson() failed: %s", error.c_str());
+            send_ack("ERROR", -1);
+            return;
+        }
+
         int msgCount = doc["MsgCount"];
         send_ack("ERROR", msgCount);
         return;
     }
-
-    // Message can be deserialized and we don't have a message, so deserialize in into _json_message
-    error = deserializeJson(_json_message, message.c_str());
-    if (error)
+    else
     {
-        printf("deserializeJson() failed: %s", error.c_str());
-        send_ack("ERROR", -1);
-        return;    
+        memcpy(_pending_message_buffer, data, data_len);
+        _pending_message_buffer[MAX_WS_MESSAGE_SIZE] = 0;
+        _pending_message = true;
     }
-    _pending_message = true;
 }
 
 void CWsConnection::set_state(state_t new_state)
@@ -92,7 +104,7 @@ void CWsConnection::set_state(state_t new_state)
 
 void CWsConnection::send_ack(std::string result, int msg_count)
 {
-    StaticJsonDocument<200> doc;
+    StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
 
     doc["Type"] = "Ack";
     doc["MsgCount"] = msg_count;
@@ -115,11 +127,20 @@ void CWsConnection::loop()
         return;
     }
 
-
     if (_pending_message)
     {
         printf("CWsConnection::loop() processing pending message\n");
-        std::string msgType = _json_message["Type"];
+
+        StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
+        DeserializationError error = deserializeJson(doc, _pending_message_buffer);
+        if (error)
+        {
+            printf("deserializeJson() failed: %s", error.c_str());
+            send_ack("ERROR", -1);
+            return;
+        }
+
+        std::string msgType = doc["Type"];
         if (msgType == "LuaStart")
         {
             set_state(state_t::LUA_LOAD);
@@ -127,7 +148,7 @@ void CWsConnection::loop()
 
         if (_state == state_t::LUA_LOAD)
         {
-            if (_lua_load->process(&_json_message))
+            if (_lua_load->process(&doc))
             {
                 // process returns true when lua load is finished
                 set_state(state_t::ACTIVE);
@@ -135,14 +156,17 @@ void CWsConnection::loop()
         }
         else
         {
-            int msgCount = _json_message["MsgCount"];
+            int msgCount = doc["MsgCount"];
             send_ack("OK", msgCount);
         }
 
-        _json_message.clear();
+        doc.clear();
+        memset(_pending_message_buffer, 0, MAX_WS_MESSAGE_SIZE);
         _pending_message = false;
     }
 
+    tcp_output(_pcb);   // Send contents of TCP buffer now. Not required (will get sent 
+                        // eventually without), but things are much faster with this.
 }
 
 void CWsConnection::send(std::string message)

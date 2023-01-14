@@ -55,6 +55,7 @@ CMenuRemoteAccessConnectWifi::~CMenuRemoteAccessConnectWifi()
         _submenu_active = NULL;
     }
 
+    _wifi->stop_webserver();
     _wifi->stop();
 }
 
@@ -124,7 +125,7 @@ void CMenuRemoteAccessConnectWifi::draw()
         if (_wifi->get_connection_status(connection_status))
         {
             _state = state_t::CONNECTED;
-            _web_server.start();
+            _wifi->start_webserver();
         }
         _display->put_text(connection_status, _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
     } 
@@ -147,8 +148,6 @@ void CMenuRemoteAccessConnectWifi::draw()
         {
             _state = state_t::CONNECTING;
         }
-
-        _web_server.loop();
     } 
 }
 

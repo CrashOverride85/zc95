@@ -4,7 +4,6 @@
 #include "../CSavedSettings.h"
 #include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
-#include "../RemoteAccess/CWebServer.h"
 
 class CMenuRemoteAccessConnectWifi : public CMenu
 {
@@ -41,6 +40,4 @@ class CMenuRemoteAccessConnectWifi : public CMenu
         std::string _ssid;
         uint64_t _last_connecting_screen_update_us = 0;  
         uint8_t _connecting_dot_count = 0;
-        CWebServer _web_server;
-
 };

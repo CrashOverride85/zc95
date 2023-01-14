@@ -6,6 +6,7 @@
 #include <string>
 #include "httpd.h"
 #include "CLuaLoad.h"
+#include "../config.h"
 
 class CWsConnection
 {
@@ -31,7 +32,8 @@ class CWsConnection
         struct tcp_pcb *_pcb;
         state_t _state = state_t::ACTIVE;
         CLuaLoad *_lua_load = NULL;
-        StaticJsonDocument<200> _json_message;
+
+        char *_pending_message_buffer  = NULL;
         bool _pending_message = false;
 };
 
