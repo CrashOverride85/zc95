@@ -174,8 +174,6 @@ int main()
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    wifi = new CWifi(&analogueCapture);
-
     CHwCheck hw_check(&batteryGauge);
     hw_check.check_part1(); // If a fault is found, this never returns
     audio.set_audio_digipot_found(hw_check.audio_digipot_found());
@@ -261,9 +259,10 @@ int main()
     while(1);
 */
     core1_start(&routines, &settings);
-    CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
+    CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
+    wifi = new CWifi(&analogueCapture, routine_output);  
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);

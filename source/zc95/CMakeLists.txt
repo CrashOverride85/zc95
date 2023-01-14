@@ -109,6 +109,7 @@ add_executable(zc95
   AudioInput/CAudio3Process.cpp
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
+  CLuaStorage.cpp
 
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c

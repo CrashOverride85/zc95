@@ -1,12 +1,14 @@
 #include <ArduinoJson.h>
 #include "CWsConnection.h"
 
-CWsConnection::CWsConnection(struct tcp_pcb *pcb)
+CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output)
 {
     printf("CWsConnection::CWsConnection()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
     _pending_message = false;
     _pcb = pcb;
+    _analogue_capture = analogue_capture;
+    _routine_output = routine_output;
 }
 
 CWsConnection::~CWsConnection()
@@ -81,7 +83,9 @@ void CWsConnection::set_state(state_t new_state)
             if (_lua_load == NULL) // this should always be true
                 _lua_load = new CLuaLoad(
                         std::bind(&CWsConnection::send    , this, std::placeholders::_1),
-                        std::bind(&CWsConnection::send_ack, this, std::placeholders::_1, std::placeholders::_2));
+                        std::bind(&CWsConnection::send_ack, this, std::placeholders::_1, std::placeholders::_2),
+                        _analogue_capture,
+                        _routine_output);
             break;
 
         case state_t::DEAD:

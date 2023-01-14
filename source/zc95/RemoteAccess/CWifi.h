@@ -10,7 +10,7 @@
 class CWifi
 {
     public:
-        CWifi(CAnalogueCapture *analogueCapture);
+        CWifi(CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output);
         void loop();
 
         void start_ap();
@@ -24,6 +24,7 @@ class CWifi
         bool init();
         bool _wifi_init = false;
         CAnalogueCapture *_analogue_capture;
+        CRoutineOutput *_routine_output;
         CWebServer *_web_server = NULL;
 };
 
