@@ -18,6 +18,7 @@
 
 #include "CLuaLoad.h"
 #include "CLuaTest.h"
+#include "globals.h"
 
 CLuaLoad::CLuaLoad(
         std::function<void(std::string)> send_function, 
@@ -51,7 +52,7 @@ CLuaLoad::~CLuaLoad()
 }
 
 // Returns true when finished processing Lua messages. Which is either on receiving a LuaEnd
-// message, or on an error processing LuaStart or LuaLine
+// message, or on an error processing LuaStart/LuaLine/LuaEnd
 bool CLuaLoad::process(StaticJsonDocument<200> *doc)
 {
     std::string msgType = (*doc)["Type"];
@@ -123,11 +124,13 @@ bool CLuaLoad::process(StaticJsonDocument<200> *doc)
             {
                 printf("CLuaLoad::process() script ok\n");
                 _lua_storage->store_script(_index, (const char*)_lua_buffer, _lua_buffer_size);
+                gRoutinesListUpdated = true;
             }
             else
             {
                 printf("CLuaLoad::process() bad script!\n\t%s\n", lua_error.c_str());
                 _send_ack("ERROR", msgCount, "Invalid script: " + lua_error);
+                return true;
             }
         }
 

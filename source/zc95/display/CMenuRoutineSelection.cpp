@@ -19,10 +19,9 @@
 #include "CMenuRoutineSelection.h"
 #include "CMenuRoutineAdjust.h"
 #include "CMenuSettings.h"
+#include "../globals.h"
 #include "../core1/output/CFullChannelAsSimpleChannel.h"
-
 #include "../core1/CRoutineOutput.h"
-
 
 #include <string.h>
 
@@ -128,6 +127,8 @@ void CMenuRoutineSelection::show()
     _display->set_option_c("Up");
     _display->set_option_d("Down");
 
+    update_routine_list_if_required();
+
     // Get a list of routines to show
     _routine_disply_list->clear_options();
     int index=0;
@@ -173,4 +174,15 @@ void CMenuRoutineSelection::show()
 bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
 {
     return (!(conf.audio_processing_mode != audio_mode_t::OFF));
+}
+
+void CMenuRoutineSelection::update_routine_list_if_required()
+{
+    if (gRoutinesListUpdated)
+    {
+        printf("CMenuRoutineSelection: routines list has changed, updating\n");
+        _routines->clear();
+        CRoutines::get_routines(_routines);
+        gRoutinesListUpdated = false;
+    }
 }

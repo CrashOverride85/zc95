@@ -12,5 +12,6 @@ queue_t gPulseQueue[MAX_CHANNELS];
 bool gFatalError;
 std::string gErrorString;
 mutex_t gI2cMutex;
+bool gRoutinesListUpdated = false;
 
 CSavedSettings *g_SavedSettings = NULL;

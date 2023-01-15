@@ -15,6 +15,8 @@ extern std::string gErrorString;
 
 extern mutex_t gI2cMutex;
 
+extern bool gRoutinesListUpdated;
+
 extern CSavedSettings *g_SavedSettings;
 
 #endif
