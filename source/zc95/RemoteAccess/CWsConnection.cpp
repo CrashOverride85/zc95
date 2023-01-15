@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include <list>
 #include "CWsConnection.h"
 
 CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output)
@@ -163,6 +164,10 @@ void CWsConnection::loop()
                 set_state(state_t::ACTIVE);
             }
         }
+        else if (msgType == "GetLuaScripts")
+        {
+            send_lua_scripts(&doc);
+        }
         else
         {
             int msgCount = doc["MsgCount"];
@@ -176,6 +181,34 @@ void CWsConnection::loop()
 
     tcp_output(_pcb);   // Send contents of TCP buffer now. Not required (will get sent 
                         // eventually without), but things are much faster with this.
+}
+
+void CWsConnection::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgCount"];
+    StaticJsonDocument<1000> response_message;
+
+    response_message["Type"] = "LuaScripts";
+    response_message["MsgCount"] = msg_count;
+    
+    JsonArray scripts = response_message.createNestedArray("Scripts");
+
+    std::list<CLuaStorage::lua_script_t> lua_scripts = CLuaStorage::get_lua_scripts();
+    for (std::list<CLuaStorage::lua_script_t>::iterator it = lua_scripts.begin(); it != lua_scripts.end(); ++it)
+    {
+        JsonObject obj = scripts.createNestedObject();
+        obj["Index"] = it->index;
+        obj["Empty"] = it->empty;
+        obj["Valid"] = it->valid;
+        obj["Name"] = it->name;
+    
+    }
+
+    response_message["Result"] = "OK";
+
+    std::string generatedJson;
+    serializeJson(response_message, generatedJson);
+    send(generatedJson);
 }
 
 void CWsConnection::send(std::string message)

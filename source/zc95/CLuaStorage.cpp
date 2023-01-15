@@ -20,6 +20,8 @@
 #include "hardware/flash.h"
 #include <string.h>
 
+#include "core1/routines/CLuaRoutine.h"
+
 /* CLuaStorage
  * Class to manage the saving of lua scripts to flash, and loading from flash.
  */
@@ -177,4 +179,45 @@ const char* CLuaStorage::get_script_at_index(uint8_t index)
         return NULL;
 
     return script;
+}
+
+std::list<CLuaStorage::lua_script_t> CLuaStorage::get_lua_scripts()
+{
+    std::list<CLuaStorage::lua_script_t> lua_scripts;
+
+    for (uint8_t index=1; index <= 5; index++)
+    {
+        CLuaStorage::lua_script_t lua_script;
+        lua_script.index = index;
+        lua_script.empty = true;
+        lua_script.valid = false;
+        lua_script.name  = "<invalid>";
+
+        const char* script = get_script_at_index(index);
+        if (script == NULL)
+        {
+            lua_script.name  = "<empty>";
+        }
+        else
+        {
+            lua_script.empty = false;
+
+            CLuaRoutine *lua = new CLuaRoutine(index);
+            
+            if (lua->is_script_valid())
+            {
+                struct routine_conf conf;
+                lua->get_config(&conf);
+                lua_script.name = conf.name;
+                lua_script.valid = true;
+            }
+
+            delete lua;
+        }
+
+        printf("CLuaStorage::get_lua_scripts(): Adding: i=%d, name = %s\n", lua_script.index, lua_script.name.c_str());
+        lua_scripts.push_front(lua_script);
+    }
+
+    return lua_scripts;
 }

@@ -53,7 +53,7 @@ CLuaLoad::~CLuaLoad()
 
 // Returns true when finished processing Lua messages. Which is either on receiving a LuaEnd
 // message, or on an error processing LuaStart/LuaLine/LuaEnd
-bool CLuaLoad::process(StaticJsonDocument<200> *doc)
+bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     std::string msgType = (*doc)["Type"];
     int msgCount = (*doc)["MsgCount"];
