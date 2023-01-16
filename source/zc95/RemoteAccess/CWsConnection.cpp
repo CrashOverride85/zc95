@@ -101,6 +101,12 @@ void CWsConnection::set_state(state_t new_state)
         _lua_load != NULL
     )
     {
+        // If LuaLoad changed the routines list (e.g new routine loaded), refresh the list
+        if (_lua_load->routines_updated())
+        {
+            reload_routines();
+        }
+
         delete _lua_load;
         _lua_load = NULL;
     }
@@ -177,6 +183,10 @@ void CWsConnection::loop()
         {
             send_pattern_list(&doc);
         }
+        else if (msgType == "GetPatternDetail")
+        {
+            send_pattern_detail(&doc);
+        }
         else
         {
             int msgCount = doc["MsgCount"];
@@ -192,6 +202,7 @@ void CWsConnection::loop()
                         // eventually without), but things are much faster with this.
 }
 
+// Send list of Lua script names loaded in flash (or "<empty>" if nothing loaded in slot)
 void CWsConnection::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgCount"];
@@ -229,6 +240,8 @@ void CWsConnection::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *d
         send_ack("OK", msg_count);
     else
         send_ack("ERROR", msg_count);
+
+    reload_routines();
 }
 
 void CWsConnection::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
@@ -267,6 +280,72 @@ void CWsConnection::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *d
     send(generatedJson);
 }
 
+void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgCount"];
+    int id = (*doc)["Id"];
+
+    StaticJsonDocument<2000> response_message;
+    response_message["Type"] = "PatternDetail";
+    response_message["MsgCount"] = msg_count;
+
+    if (id < 0 || id >= (int)((*_routines).size()))
+    {
+        printf("CWsConnection::send_pattern_detail: invalid id: %d\n", id);
+        response_message["Result"] = "ERROR";
+    }
+    else
+    {
+        // Get pattern config
+        struct routine_conf conf;
+        CRoutines::Routine routine = (*_routines)[id];
+        CRoutine* routine_ptr = routine.routine_maker(routine.param);
+        routine_ptr->get_config(&conf);
+        delete routine_ptr;
+
+        response_message["Name"] = conf.name;
+        response_message["Id"] = id;
+
+        JsonArray menu_items = response_message.createNestedArray("MenuItems");
+        for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
+        {
+            JsonObject menu_item = menu_items.createNestedObject();
+            menu_item["Id"] = it->id;
+            menu_item["Title"] = it->title;
+
+            switch (it->menu_type)
+            {
+                case menu_entry_type::MIN_MAX:
+                    menu_item["Type"] = "MIN_MAX";
+                    menu_item["Min"] = it->minmax.min;
+                    menu_item["Max"] = it->minmax.max;
+                    menu_item["IncrementStep"] = it->minmax.increment_step;
+                    menu_item["UoM"] = it->minmax.UoM;
+                    menu_item["Default"] = it->minmax.current_value;
+                    break;
+
+                case menu_entry_type::MULTI_CHOICE:
+                    menu_item["Type"] = "MULTI_CHOICE";
+
+                    JsonArray choices = menu_item.createNestedArray("Choices");
+                    for (std::vector<multi_choice_option>::iterator it2 = it->multichoice.choices.begin(); it2 != it->multichoice.choices.end(); it2++)
+                    {
+                        JsonObject choice = choices.createNestedObject();
+                        choice["Id"] = it2->choice_id;
+                        choice["Name"] = it2->choice_name;
+                    }
+                    break;
+            }
+        }
+
+        response_message["Result"] = "OK";
+    }
+        
+    std::string generatedJson;
+    serializeJson(response_message, generatedJson);
+    send(generatedJson);
+}
+
 void CWsConnection::send(std::string message)
 {
     websocket_write(_pcb, (const uint8_t*)message.c_str(), message.length(), 0x01);
@@ -275,4 +354,11 @@ void CWsConnection::send(std::string message)
 bool CWsConnection::active()
 {
     return (_state != state_t::DEAD);
+}
+
+void CWsConnection::reload_routines()
+{
+    printf("CWsConnection::reload_routines(): routines list has changed, updating\n");
+    _routines->clear();
+    CRoutines::get_routines(_routines);
 }

@@ -124,7 +124,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             {
                 printf("CLuaLoad::process() script ok\n");
                 _lua_storage->store_script(_index, (const char*)_lua_buffer, _lua_buffer_size);
-                gRoutinesListUpdated = true;
+                _routines_updated = true;
             }
             else
             {
@@ -151,7 +151,13 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     return retval;
 }
 
+bool CLuaLoad::routines_updated()
+{
+    return _routines_updated;
+}
+
 void CLuaLoad::send_ack(std::string result, int msg_count)
 {
     _send_ack(result, msg_count, "");
 }
+

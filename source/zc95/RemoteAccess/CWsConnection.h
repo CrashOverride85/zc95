@@ -31,9 +31,11 @@ class CWsConnection
 
         void send_ack(std::string result, int msg_count, std::string error = "");
         void set_state(state_t new_state);
+        void reload_routines();
         void send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
 
         struct tcp_pcb *_pcb;
         CAnalogueCapture *_analogue_capture;

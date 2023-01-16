@@ -21,6 +21,7 @@ class CLuaLoad
             CRoutineOutput *routine_output);
         ~CLuaLoad();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        bool routines_updated();
 
     private:
         std::function<void(std::string)> _send;
@@ -32,6 +33,7 @@ class CLuaLoad
         uint _lua_buffer_postion = 0;
         int _index = 0;
         CLuaStorage *_lua_storage;
+        bool _routines_updated = false;
 };
 
 #endif
