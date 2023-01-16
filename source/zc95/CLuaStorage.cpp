@@ -47,6 +47,7 @@ CLuaStorage::~CLuaStorage()
     printf("CLuaStorage::~CLuaStorage()\n");
 }
 
+// Store a script. If lua_script == NULL and buffer_size=0, any existing script at specified index is erased without writing anything new
 bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buffer_size)
 {
     if (!_routine_output)
@@ -59,10 +60,25 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
     uint32_t flash_offset = get_flash_offset(index);
     size_t flash_size = get_lua_flash_size(index);
     printf("CLuaStorage::store_script: index=%d, flash_offset=%lu, flash_size=%d\n", index, flash_offset, flash_size);
-
-    if (buffer_size != flash_size)
+    if (lua_script == NULL && buffer_size == 0)
     {
-        printf("CLuaStorage::store_script(): ERROR - expected buffer to be %d but was %d\n", flash_size, buffer_size);
+        printf("Erasing flash for index %d only\n", index);
+    }
+
+    if (flash_size == 0)
+    {
+        // Could do extra validation here. e.g. not too big, is a multiple of 4096, etc.
+        printf("CLuaStorage::store_script(): invalid flash size\n");
+        return false;
+    }
+
+    if 
+    (
+        buffer_size != flash_size &&
+        (!(buffer_size == 0 && lua_script == NULL))
+    )
+    {
+        printf("CLuaStorage::store_script(): ERROR - expected either buffer=0 and script=NULL, or buffer to be %d (but was %d)\n", flash_size, buffer_size);
         return false;
     }    
 
@@ -77,7 +93,9 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
 
     // core1 suspended: write flash
     flash_range_erase(flash_offset, flash_size);
-    flash_range_program(flash_offset, (const uint8_t*)lua_script, flash_size);
+
+    if (lua_script != NULL && buffer_size != 0)
+        flash_range_program(flash_offset, (const uint8_t*)lua_script, flash_size);
 
     // restore everything
     restore_interrupts(save);
@@ -89,6 +107,11 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
     printf("flash write done, resume analogue capture\n");
     _analogue_capture->start();
     return true;
+}
+
+bool CLuaStorage::delete_script_at_index(uint8_t index)
+{
+    return store_script(index, NULL, 0);
 }
 
 uint32_t CLuaStorage::get_flash_offset(uint8_t script_index)

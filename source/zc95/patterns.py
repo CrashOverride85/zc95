@@ -35,40 +35,25 @@ def GetResponse(expectedMsgCount, expectedType):
     
   return result
 
-def GetLuaScripts():
+def GetPatterns():
   msgCount = 1
   msgGetLuaScripts = {
-    "Type": "GetLuaScripts",
+    "Type": "GetPatterns",
     "MsgCount": msgCount
   }
   Send(msgGetLuaScripts)
-  expectedType = "LuaScripts"
+  expectedType = "PatternList"
   response = GetResponse(msgCount, expectedType)
   
-  scripts = response["Scripts"]
-  print("Script slots on ZC95:")
-  for script in scripts:
-    print(str(script["Index"]) + " - " + script["Name"])
+  patterns = response["Patterns"]
+  print("Patterns on ZC95:")
+  for pattern in patterns:
+    print(str(pattern["Id"]) + "\t" + pattern["Name"])
   
-def DeleteLuaScript(scriptIndexToDelete):
-  msgCount = 1
-  msgGetLuaScripts = {
-    "Type": "DeleteLuaScript",
-    "MsgCount": msgCount,
-    "Index": scriptIndexToDelete
-  }
-  Send(msgGetLuaScripts)
-  expectedType = "Ack"
-  response = GetResponse(msgCount, expectedType)
-  print("Done.")
-  
-
-parser = argparse.ArgumentParser(description='Manage Lua scripts on ZC95')
+parser = argparse.ArgumentParser(description='Get pattern info from ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
 parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
-
-parser.add_argument('--list', action='store_true', help='List scripts stored on ZC95')
-parser.add_argument('--delete', action='store', type=int, choices=range(1, 6), help='Delete script at slot on ZC95')
+parser.add_argument('--list', action='store_true', help='List patterns on ZC95')
 
 args = parser.parse_args()
 
@@ -77,9 +62,8 @@ print("Connecting")
 ws.connect("ws://" + args.ip + "/stream")
 
 if args.list:
-  GetLuaScripts()
-elif args.delete:
-  DeleteLuaScript(args.delete)
+  GetPatterns()
+
 
 
 

@@ -248,7 +248,7 @@ int main()
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
-    wifi = new CWifi(&analogueCapture, routine_output);  
+    wifi = new CWifi(&analogueCapture, routine_output, &routines);  
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);

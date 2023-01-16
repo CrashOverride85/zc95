@@ -27,6 +27,7 @@ class CLuaStorage
 
         static size_t get_lua_flash_size(uint8_t index);
         bool store_script(uint8_t index, const char* lua_script, size_t buffer_size);
+        bool delete_script_at_index(uint8_t index);
 
         static const char* get_script_at_index(uint8_t index);
         static std::list<CLuaStorage::lua_script_t> get_lua_scripts();

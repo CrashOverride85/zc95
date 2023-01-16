@@ -2,7 +2,7 @@
 #include <list>
 #include "CWsConnection.h"
 
-CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output)
+CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
     printf("CWsConnection::CWsConnection()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
@@ -10,6 +10,7 @@ CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_cap
     _pcb = pcb;
     _analogue_capture = analogue_capture;
     _routine_output = routine_output;
+    _routines = routines;
 }
 
 CWsConnection::~CWsConnection()
@@ -168,6 +169,14 @@ void CWsConnection::loop()
         {
             send_lua_scripts(&doc);
         }
+        else if (msgType == "DeleteLuaScript")
+        {
+            delete_lua_script(&doc);
+        }
+        else if (msgType == "GetPatterns")
+        {
+            send_pattern_list(&doc);
+        }
         else
         {
             int msgCount = doc["MsgCount"];
@@ -201,7 +210,54 @@ void CWsConnection::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *do
         obj["Empty"] = it->empty;
         obj["Valid"] = it->valid;
         obj["Name"] = it->name;
+    }
+
+    response_message["Result"] = "OK";
+
+    std::string generatedJson;
+    serializeJson(response_message, generatedJson);
+    send(generatedJson);
+}
+
+void CWsConnection::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgCount"];
+    int index = (*doc)["Index"];
+    CLuaStorage lua_storage = CLuaStorage(_analogue_capture, _routine_output);
     
+    if (lua_storage.delete_script_at_index(index))
+        send_ack("OK", msg_count);
+    else
+        send_ack("ERROR", msg_count);
+}
+
+void CWsConnection::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgCount"];
+    StaticJsonDocument<2000> response_message;
+
+    response_message["Type"] = "PatternList";
+    response_message["MsgCount"] = msg_count;
+    
+    JsonArray patterns = response_message.createNestedArray("Patterns");
+
+    int index=0;
+    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    {
+        struct routine_conf conf;
+        CRoutine* routine = (*it).routine_maker((*it).param);
+        routine->get_config(&conf);
+
+        // Audio stuff probably isn't going to work correctly remotely, so skip
+        if (conf.audio_processing_mode == audio_mode_t::OFF)
+        {
+            JsonObject obj = patterns.createNestedObject();
+            obj["Id"] = index;
+            obj["Name"] = conf.name;
+        }
+
+        index++;
+        delete routine;
     }
 
     response_message["Result"] = "OK";

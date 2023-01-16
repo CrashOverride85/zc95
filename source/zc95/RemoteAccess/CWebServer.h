@@ -9,11 +9,12 @@
 #include "CWsConnection.h"
 #include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
+#include "../core1/routines/CRoutines.h"
 
 class CWebServer
 {
     public:
-        CWebServer(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output);
+        CWebServer(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CWebServer();
         void start();
         void loop();
@@ -24,6 +25,7 @@ class CWebServer
         static void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode);
 
         bool _started = false;
+        static std::vector<CRoutines::Routine> *_s_routines;
         static std::map<struct tcp_pcb*, CWsConnection*> _s_ws_connections;
         static CAnalogueCapture *_s_analogue_capture;
         static CRoutineOutput *_s_routine_output;
