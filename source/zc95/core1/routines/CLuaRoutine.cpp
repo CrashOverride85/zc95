@@ -101,7 +101,7 @@ void CLuaRoutine::load_lua_script_if_required()
     {
         _script_valid = ScriptValid::VALID;
 
-        const luaL_Reg regs[] = {
+        const luaL_Reg zc_regs[] = {
             { "ChannelOn"     , &dispatch<&CLuaRoutine::lua_channel_on>  },
             { "ChannelOff"    , &dispatch<&CLuaRoutine::lua_channel_off> },
             { "ChannelPulseMs", &dispatch<&CLuaRoutine::lua_channel_pulse_ms> },
@@ -110,7 +110,16 @@ void CLuaRoutine::load_lua_script_if_required()
             { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
             { NULL, NULL }
         };
-        luaL_register(_lua_state, "zc", regs);
+        luaL_register(_lua_state, "zc", zc_regs);
+
+        const luaL_Reg global_regs[] = 
+        {
+            { "print"     , &dispatch<&CLuaRoutine::lua_print>},
+            { NULL, NULL }
+        };
+        lua_getglobal(_lua_state, "_G");
+        luaL_register(_lua_state, NULL, global_regs);
+        lua_pop(_lua_state, 1);
     }
     else
     {
@@ -434,6 +443,34 @@ bool CLuaRoutine::is_channel_number_valid(int channel_number)
 ////// Called from Lua scripts //////
 /////////////////////////////////////
 
+// Copied from lbaselib.c/luaB_print (lua_State *L) and tweaked
+int CLuaRoutine::lua_print(lua_State *L)
+{
+    std::string output_string = "";
+    int n = lua_gettop(L);  /* number of arguments */
+    int i;
+    lua_getglobal(L, "tostring");
+    for (i=1; i<=n; i++) 
+    {
+        const char *s;
+        lua_pushvalue(L, -1);  /* function to be called */
+        lua_pushvalue(L, i);   /* value to print */
+        lua_call(L, 1, 1);
+        s = lua_tostring(L, -1);  /* get result */
+        if (s == NULL)
+        {
+            return luaL_error(L, LUA_QL("tostring") " must return a string to "
+                                LUA_QL("print"));
+        }
+        if (i>1) 
+            output_string += "\t";
+
+        output_string += s;
+        lua_pop(L, 1);  /* pop result */
+    }
+    printf("[LUA] %s\n", output_string.c_str());    
+    return 0;
+}
 
 // Takes one param: channel number (1-4)
 int CLuaRoutine::lua_channel_on(lua_State *L)
