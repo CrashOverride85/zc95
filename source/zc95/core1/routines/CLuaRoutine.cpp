@@ -39,12 +39,26 @@ template <mem_func func> int dispatch(lua_State *L)
 CLuaRoutine::CLuaRoutine(uint8_t script_index)
 {
     printf("CLuaRoutine(%d)\n", script_index);
+    _script = NULL;
     _script_index = script_index;
+    CLuaRoutine_common();
+}
+
+CLuaRoutine::CLuaRoutine(const char *script)
+{
+    printf("CLuaRoutine(<script>)\n");
+    _script = script;
+    CLuaRoutine_common();
+}
+
+void CLuaRoutine::CLuaRoutine_common()
+{
+    _last_lua_error = "";
     _lua_state = NULL;
     _script_valid = ScriptValid::UNKNOWN;
 
     _lua_state = luaL_newstate_ud(this);
-   // luaL_openlibs(_lua_state);
+    luaL_openlibs(_lua_state);
     load_lua_script_if_required();
 }
 
@@ -68,7 +82,12 @@ void CLuaRoutine::load_lua_script_if_required()
     if (_script_valid != ScriptValid::UNKNOWN)
         return;
 
-    const char *script = CLuaStorage::get_script_at_index(_script_index);
+    const char *script;
+    if (_script)
+        script = _script;
+    else
+        script = CLuaStorage::get_script_at_index(_script_index);
+
     if (script == NULL)
     {
         printf("CLuaRoutine::load_lua_script_if_required(): No or invalid script at index %d\n", _script_index);
@@ -334,10 +353,17 @@ bool CLuaRoutine::CheckLua(int r)
 {
 	if (r != 0)
 	{
-		printf("Error: %s\n", lua_tostring(_lua_state, -1));
+        const char *lua_error = lua_tostring(_lua_state, -1);
+        _last_lua_error = lua_error;
+		printf("Error: %s\n", lua_error);
 		return false;
 	}
 	return true;
+}
+
+std::string CLuaRoutine::get_last_lua_error()
+{
+    return _last_lua_error;
 }
 
 void CLuaRoutine::get_multi_choice_entry(struct menu_entry *entry)

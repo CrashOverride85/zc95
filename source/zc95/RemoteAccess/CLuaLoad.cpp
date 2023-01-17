@@ -17,8 +17,8 @@
  */
 
 #include "CLuaLoad.h"
-#include "CLuaTest.h"
 #include "globals.h"
+#include "../core1/routines/CLuaRoutine.h"
 
 CLuaLoad::CLuaLoad(
         std::function<void(std::string)> send_function, 
@@ -117,9 +117,8 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             printf("_lua_buffer_\n");
             puts((char*)_lua_buffer);
 
-            CLuaTest lua_test = CLuaTest();
-            std::string lua_error;
-            bool ret = lua_test.check_script((const char*)_lua_buffer, lua_error);
+            CLuaRoutine lua = CLuaRoutine((const char*)_lua_buffer);
+            bool ret = lua.is_script_valid();
             if (ret)
             {
                 printf("CLuaLoad::process() script ok\n");
@@ -128,6 +127,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             }
             else
             {
+                std::string lua_error = lua.get_last_lua_error();
                 printf("CLuaLoad::process() bad script!\n\t%s\n", lua_error.c_str());
                 _send_ack("ERROR", msgCount, "Invalid script: " + lua_error);
                 return true;

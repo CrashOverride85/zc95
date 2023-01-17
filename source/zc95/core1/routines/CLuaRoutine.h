@@ -11,6 +11,7 @@ class CLuaRoutine: public CRoutine
 {
     public:
         CLuaRoutine(uint8_t script_index);
+        CLuaRoutine(const char *script);
         ~CLuaRoutine();
         static CRoutine* create(uint8_t param) { return new CLuaRoutine(param); };
         void get_config(struct routine_conf *conf);
@@ -22,6 +23,7 @@ class CLuaRoutine: public CRoutine
         void loop(uint64_t time_us);
         void stop();
         bool is_script_valid();
+        std::string get_last_lua_error();
         
 
     private:
@@ -32,6 +34,7 @@ class CLuaRoutine: public CRoutine
             UNKNOWN   // inital state before CheckLua ran
         };
 
+        void CLuaRoutine_common();
         void load_lua_script_if_required();
         bool CheckLua(int r);
         bool GetMenuEntryTypeFromString(const char* type, menu_entry_type *menu_type_out);
@@ -56,4 +59,6 @@ class CLuaRoutine: public CRoutine
         ScriptValid _script_valid = ScriptValid::UNKNOWN;
         uint64_t _channel_switch_off_at_us[CHANNEL_COUNT] = {0};
         uint8_t _script_index;
+        const char *_script;
+        std::string _last_lua_error;
 };
