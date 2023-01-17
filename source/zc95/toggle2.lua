@@ -1,4 +1,4 @@
-Config =ert {
+Config = {
     name = "Toggle",
     menu_items = {
         {

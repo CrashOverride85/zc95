@@ -44,7 +44,7 @@ CLuaRoutine::CLuaRoutine(uint8_t script_index)
     _script_valid = ScriptValid::UNKNOWN;
 
     _lua_state = luaL_newstate_ud(this);
-    luaL_openlibs(_lua_state);
+   // luaL_openlibs(_lua_state);
     load_lua_script_if_required();
 }
 
