@@ -19,6 +19,7 @@
 #include "../../external/lua/lua-5.1.5/include/lstate.h"
 
 #include "CLuaRoutine.h"
+#include "../../config.h"
 #include <string>
 #include <string.h>
 
@@ -59,6 +60,7 @@ void CLuaRoutine::CLuaRoutine_common()
 
     _lua_state = luaL_newstate_ud(this);
     luaL_openlibs(_lua_state);
+    lua_sethook(_lua_state, CLuaRoutine::s_lua_hook, LUA_MASKCOUNT, _hook_call_frequency);
     load_lua_script_if_required();
 }
 
@@ -328,6 +330,7 @@ void CLuaRoutine::stop()
 // If anything goes wrong, output the error, mark the script as invalid and switch off the output
 int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
 {
+    _instruction_count = 0;
     int retval = lua_pcall(_lua_state, nargs, nresults, errfunc);
     if (retval)
     {
@@ -337,6 +340,31 @@ int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
     }
 
     return retval;
+}
+
+void CLuaRoutine::s_lua_hook(lua_State *L, lua_Debug *ar)
+{
+    CLuaRoutine *ptr = (CLuaRoutine*)(L->l_G->ud);
+    if (ptr)
+    {
+        ptr->lua_hook(ar);
+    }
+}
+
+// If a Lua function continuously executes for more than about LUA_MAX_INTRUCTIONS, kill the 
+// script. This is to protect from infinite loops locking up the box.
+void CLuaRoutine::lua_hook(lua_Debug *ar)
+{
+    if (ar->event == LUA_HOOKCOUNT)
+    {
+        _instruction_count += _hook_call_frequency;
+        if (_instruction_count > LUA_MAX_INSTRUCTIONS)
+        {
+            printf("CLuaRoutine(): Terminating execution of Lua script due to instruction limit being reached\n");
+            luaL_error(_lua_state, "Instruction limit reached");
+            return;
+        }
+    }
 }
 
 /////////////////////////////////////

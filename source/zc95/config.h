@@ -20,6 +20,9 @@
 // The maximum length a web socket message can be in bytes
 #define MAX_WS_MESSAGE_SIZE 200
 
+// How many Lua instructions can be run on each Lua call. Protects against infinite loops locking up box.
+#define LUA_MAX_INSTRUCTIONS 10000
+
 // Other pins
 #define PIN_LED           10 // ws2812 LED chain
 #define PIN_CONTROLS_INT   7 // front pannel controls port expander interrupt pin

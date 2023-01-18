@@ -24,6 +24,8 @@ class CLuaRoutine: public CRoutine
         void stop();
         bool is_script_valid();
         std::string get_last_lua_error();
+        
+        void lua_hook(lua_Debug *ar);
 
     private:
         enum class ScriptValid 
@@ -46,6 +48,8 @@ class CLuaRoutine: public CRoutine
         int pcall (int nargs, int nresults, int errfunc);
         void channel_pulse_processing();
 
+        static void s_lua_hook(lua_State *L, lua_Debug *ar);
+
         // called form lua
         int lua_print(lua_State *L);
 
@@ -62,4 +66,6 @@ class CLuaRoutine: public CRoutine
         uint8_t _script_index;
         const char *_script;
         std::string _last_lua_error;
+        int _instruction_count = 0;
+        const int _hook_call_frequency = 25;
 };
