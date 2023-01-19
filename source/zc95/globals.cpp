@@ -9,6 +9,8 @@
 bool gInteruptable;
 queue_t gPulseQueue[MAX_CHANNELS];
 
+queue_t gPatternTextOutputQueue;
+
 bool gFatalError;
 std::string gErrorString;
 mutex_t gI2cMutex;

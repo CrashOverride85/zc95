@@ -50,4 +50,13 @@ struct pulse_message_t
     uint8_t  neg_pulse_us;
 };
 
+enum class text_type_t { DEBUG };
+
+struct pattern_text_output_t
+{
+    text_type_t text_type;
+    char text[100];
+    uint64_t time_generated_us;
+};
+
 #endif

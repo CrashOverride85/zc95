@@ -46,6 +46,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void update_display(uint8_t channel);
         void process_message(message msg);
+        void process_text_message_queue();
 
         Core1 *_core1 = NULL;
         CDisplay *_display;

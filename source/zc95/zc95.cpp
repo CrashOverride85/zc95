@@ -235,6 +235,10 @@ int main()
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
         queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
 
+    // Queue used for routines (so far just Lua) running on Core1 to send debug messages (via print())
+    // out over a websocket connection, if running via RemoteAccess
+    queue_init(&gPatternTextOutputQueue, sizeof(pattern_text_output_t), PATTERN_TEXT_OUTPUT_QUEUE_LENGTH);
+
     // Load/set gain, mic preamp, etc., from eeprom
     audio.init(&settings, &display);
 

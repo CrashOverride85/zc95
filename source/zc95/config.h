@@ -1,6 +1,8 @@
 
 #define PULSE_QUEUE_LENGTH 8  // queue size for pules sent from core0 to core1. Only used for audio pattern
-                           // (maybe serial input in the future), where processing happens on core0
+                              // (maybe serial input in the future), where processing happens on core0
+
+#define PATTERN_TEXT_OUTPUT_QUEUE_LENGTH 4 // Max number of queued text/debug messages from Core1 (so far just lua) to Core0
 
 #define ZC624_ADDR                  0x10
 #define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)

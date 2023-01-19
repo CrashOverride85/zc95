@@ -496,7 +496,8 @@ int CLuaRoutine::lua_print(lua_State *L)
         output_string += s;
         lua_pop(L, 1);  /* pop result */
     }
-    printf("[LUA] %s\n", output_string.c_str());    
+    printf("[LUA] %s\n", output_string.c_str());
+    print("%s", output_string.c_str());
     return 0;
 }
 

@@ -16,8 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+/* Includes functions to send messages to Core1, as well as processing
+ * incoming messages from Core1
+ */
+
 #include "pico/multicore.h"
 #include "pico/mutex.h"
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+
 
 #include "../EExtInputPort.h"
 #include "CRoutineOutputCore1.h"
@@ -157,6 +165,8 @@ void CRoutineOutputCore1::loop()
         // printf("CRoutineOutputCore1::loop(): get message (%d\t%d\t%d\t%d\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
         process_message(msg);
     }
+
+    process_text_message_queue();
 }
 
 // Process message received from core1
@@ -237,6 +247,18 @@ void CRoutineOutputCore1::process_message(message msg)
         case MESSAGE_SET_ACC_IO_PORT_RESET:
             reset_acc_port();
             break;
+    }
+}
+
+void CRoutineOutputCore1::process_text_message_queue()
+{
+    pattern_text_output_t text_message;
+    memset(&text_message, 0, sizeof(text_message));
+
+    while (queue_try_remove(&gPatternTextOutputQueue, &text_message))
+    {
+        // TODO
+        printf("*** GOT TEXT MSG: [%s] (%llu us old)\n", text_message.text, time_us_64() - text_message.time_generated_us);
     }
 }
 
