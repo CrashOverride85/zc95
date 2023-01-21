@@ -47,7 +47,7 @@ CControlsPortExp::CControlsPortExp(uint8_t address)
 // Can't do this in the constructor as i2c won't have been initialised 
 void CControlsPortExp::clear_input()
 {
-    int retval = i2c_read("__func__", _address, &_last_read, 1, false);
+    int retval = i2c_read(__func__, _address, &_last_read, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CControlsPortExp::clear_intput i2c read error!\n");
@@ -68,7 +68,7 @@ void CControlsPortExp::process(bool always_update)
     _interrupt = false;
     uint8_t buffer[1];
 
-    int retval = i2c_read("__func__", _address, buffer, 1, false);
+    int retval = i2c_read(__func__, _address, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CControlsPortExp::process i2c read error!\n");
