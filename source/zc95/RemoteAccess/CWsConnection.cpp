@@ -305,6 +305,7 @@ void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> 
 
         response_message["Name"] = conf.name;
         response_message["Id"] = id;
+        response_message["ButtonA"] = conf.button_text[(int)soft_button::BUTTON_A];
 
         JsonArray menu_items = response_message.createNestedArray("MenuItems");
         for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
@@ -326,6 +327,7 @@ void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> 
 
                 case menu_entry_type::MULTI_CHOICE:
                     menu_item["Type"] = "MULTI_CHOICE";
+                    menu_item["Default"] = it->multichoice.current_selection;
 
                     JsonArray choices = menu_item.createNestedArray("Choices");
                     for (std::vector<multi_choice_option>::iterator it2 = it->multichoice.choices.begin(); it2 != it->multichoice.choices.end(); it2++)
