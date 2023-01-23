@@ -161,6 +161,7 @@ typedef struct {
 enum {
   WS_TEXT_MODE = 0x01,
   WS_BIN_MODE  = 0x02,
+  WS_PING      = 0x09
 } WS_MODE;
 
 static const char WS_HEADER[] = "Upgrade: websocket\r\n";
@@ -2747,8 +2748,9 @@ websocket_parse(struct tcp_pcb *pcb, struct pbuf *p)
     switch (opcode) {
       case WS_TEXT_MODE:
       case WS_BIN_MODE:
+      case WS_PING:
         LWIP_DEBUGF(HTTPD_DEBUG, ("Opcode: 0x%hX, frame length: %d\n", opcode, data_len));
-        if (data_len > 6 && websocket_cb != NULL) {
+        if ((data_len > 6 || (data_len == 6 && opcode == WS_PING)) && websocket_cb != NULL) {
           int data_offset = 6;
           u8_t *dptr = &data[6];
           u8_t *kptr = &data[2];
@@ -2780,8 +2782,15 @@ websocket_parse(struct tcp_pcb *pcb, struct pbuf *p)
           for (int i = 0; i < len; i++)
             *(dptr++) ^= kptr[i % 4];
 
-          /* user callback */
-          websocket_cb(pcb, &data[data_offset], len, opcode);
+          if (opcode == WS_PING)
+          {
+            websocket_write(pcb, &data[data_offset], len, 0x0A);
+          }
+          else
+          {
+            /* user callback */
+            websocket_cb(pcb, &data[data_offset], len, opcode);
+          }
         }
         break;
       case 0x08: // close
