@@ -24,6 +24,7 @@ CWebServer::~CWebServer()
         if (it->second != NULL)
             delete it->second;
     }
+    _s_ws_connections.clear();
 }
 
 void CWebServer::start()

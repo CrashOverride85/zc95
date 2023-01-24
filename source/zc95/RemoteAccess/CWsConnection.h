@@ -6,6 +6,7 @@
 #include <string>
 #include "httpd.h"
 #include "CLuaLoad.h"
+#include "CRoutineRun.h"
 #include "../config.h"
 #include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
@@ -26,6 +27,7 @@ class CWsConnection
         {
             ACTIVE,
             LUA_LOAD,
+            ROUTINE_RUN,
             DEAD
         };
 
@@ -44,6 +46,7 @@ class CWsConnection
 
         state_t _state = state_t::ACTIVE;
         CLuaLoad *_lua_load = NULL;
+        CRoutineRun *_routine_run = NULL;
 
         char *_pending_message_buffer  = NULL;
         bool _pending_message = false;

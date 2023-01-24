@@ -2784,6 +2784,7 @@ websocket_parse(struct tcp_pcb *pcb, struct pbuf *p)
 
           if (opcode == WS_PING)
           {
+            LWIP_DEBUGF(HTTPD_DEBUG, ("[wsoc] sending pong\n"));
             websocket_write(pcb, &data[data_offset], len, 0x0A);
           }
           else

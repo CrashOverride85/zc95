@@ -22,6 +22,12 @@ CWsConnection::~CWsConnection()
         _lua_load = NULL;
     }
 
+    if (_routine_run)
+    {
+        delete _routine_run;
+        _routine_run = NULL;
+    }
+
     if (_pending_message_buffer)
     {
         free(_pending_message_buffer);
@@ -90,10 +96,22 @@ void CWsConnection::set_state(state_t new_state)
                         _routine_output);
             break;
 
+        case state_t::ROUTINE_RUN:
+            if (_routine_run == NULL)
+            {
+                _routine_run = new CRoutineRun(
+                        std::bind(&CWsConnection::send    , this, std::placeholders::_1),
+                        std::bind(&CWsConnection::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                        _routine_output,
+                        _routines);
+            }
+            break;
+
         case state_t::DEAD:
             break;
     }
 
+    // Delete _lua_load if no longer needed
     if 
     (
         _state    == state_t::LUA_LOAD && 
@@ -109,6 +127,18 @@ void CWsConnection::set_state(state_t new_state)
 
         delete _lua_load;
         _lua_load = NULL;
+    }
+
+    // Delete _routine_run if no longer needed
+    if 
+    (
+        _state    == state_t::ROUTINE_RUN && 
+        new_state != state_t::ROUTINE_RUN && 
+        _routine_run != NULL
+    )
+    {
+        delete _routine_run;
+        _routine_run = NULL;
     }
 
     _state = new_state;
@@ -154,6 +184,9 @@ void CWsConnection::loop()
         {
             printf("deserializeJson() failed: %s", error.c_str());
             send_ack("ERROR", -1);
+        
+            memset(_pending_message_buffer, 0, MAX_WS_MESSAGE_SIZE);
+            _pending_message = false;
             return;
         }
 
@@ -161,6 +194,10 @@ void CWsConnection::loop()
         if (msgType == "LuaStart")
         {
             set_state(state_t::LUA_LOAD);
+        }
+        else if (msgType == "PatternStart")
+        {
+            set_state(state_t::ROUTINE_RUN);
         }
 
         if (_state == state_t::LUA_LOAD)
@@ -171,6 +208,15 @@ void CWsConnection::loop()
                 set_state(state_t::ACTIVE);
             }
         }
+        else if (_state == state_t::ROUTINE_RUN)
+        {
+            if (_routine_run->process(&doc))
+            {
+                // process returns true when routine run is finished
+                set_state(state_t::ACTIVE);
+            }  
+        }
+
         else if (msgType == "GetLuaScripts")
         {
             send_lua_scripts(&doc);

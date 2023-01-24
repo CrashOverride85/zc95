@@ -1,8 +1,11 @@
 from tkinter.ttk import *
 from tkinter import *
 
+import time
+import threading
 import websocket
 import patterns as zc
+import ZcWs
 
 class MinMaxMenu:
   def __init__(self, min_val, max_val, step_size, current_val, progress_bar, current_val_var):
@@ -38,9 +41,10 @@ class MinMaxMenu:
 
 
 class ZcPatternGui:
-  def __init__(self, root, pattern_config):
+  def __init__(self, root, pattern_config, zc_patterns):
     self.root = root
     self.pattern_config = pattern_config
+    self.zc_patterns = zc_patterns
     root.title("ZC95")
     root.config(bg="red")
     root.resizable(False,False)
@@ -74,7 +78,7 @@ class ZcPatternGui:
       self.var_radio_buttons[menu_item["Id"]].set(menu_item["Default"])
       choice_count = 0
       for choice in menu_item["Choices"]:
-        Radiobutton(radio_button_frame, text=choice["Name"], variable=self.var_radio_buttons[menu_item["Id"]], value=int(choice["Id"])).grid(row=choice_count, column=0, padx=5, pady=5)
+        Radiobutton(radio_button_frame, text=choice["Name"], variable=self.var_radio_buttons[menu_item["Id"]], value=int(choice["Id"]), command=lambda: self.MultiChoiceChanged(menu_item["Id"])).grid(row=choice_count, column=0, padx=5, pady=5)
         choice_count += 1
       
   def MinMaxButtonPushed(self, menu_id, direction):
@@ -86,6 +90,11 @@ class ZcPatternGui:
     else:
       self.min_max_menus[menu_id].decrement()
       
+    self.zc_patterns.PatternMinMaxChange(menu_id, self.min_max_menus[menu_id].current_val)
+      
+  def MultiChoiceChanged(self, menu_id):
+    choice_id = self.var_radio_buttons[menu_id].get()
+    self.zc_patterns.PatternMultiChoiceChange(menu_id, choice_id)
 
   def InitDisplay(self, root):
     pattern_frame = Frame(root, width=400, height=400)
@@ -96,7 +105,10 @@ class ZcPatternGui:
     pattern_options_frame.grid(row=1, column=0, padx=10, pady=5)
 
     Label (pattern_options_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
-    Button(pattern_options_frame, text=pattern["ButtonA"]).grid(row=0, column=1, padx=5, pady=5)
+    soft_button = Button(pattern_options_frame, text=pattern["ButtonA"])
+    soft_button.grid(row=0, column=1, padx=5, pady=5)    
+    soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
+    soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
 
     row = 1
     self.var_radio_buttons = {}
@@ -116,18 +128,32 @@ class ZcPatternGui:
       Label(pattern_options_frame, text=title).grid(row=row, column=0, padx=5, pady=5, sticky=W)
       self.AddMenuOptions(pattern_options_frame, row, menu_item)
       row += 1
+      
+  def SoftButtonPressed(self, event):
+    self.zc_patterns.PatternSoftButton(1)
+    
+  def SoftButtonReleased(self, event):
+    self.zc_patterns.PatternSoftButton(0)
 
 
-ws = websocket.WebSocket()
-print("Connecting")
-ws.connect("ws://192.168.1.136/stream")
-patterns = zc.ZcPatterns(ws)
+# websocket.enableTrace(True)
+zcws = ZcWs.ZcWs("ws://192.168.1.136/stream")
 
-pattern = patterns.GetPatternDetails(14)
+
+ws_thread = threading.Thread(target=zcws.run_forever)
+ws_thread.start()
+
+zcws.wait_for_connection()
+
+zc_patterns = zc.ZcPatterns(zcws)
+
+pattern = zc_patterns.GetPatternDetails(6)
+
+zc_patterns.PatternStart(6)
 
 root = Tk() 
-gui = ZcPatternGui(root, pattern)
+gui = ZcPatternGui(root, pattern, zc_patterns)
 
 root.mainloop()
-
+zcws.stop()
 
