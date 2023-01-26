@@ -1,6 +1,6 @@
 from tkinter.ttk import *
 from tkinter import *
-
+import argparse
 import time
 import threading
 import websocket
@@ -136,24 +136,29 @@ class ZcPatternGui:
     self.zc_patterns.PatternSoftButton(0)
 
 
-# websocket.enableTrace(True)
-zcws = ZcWs.ZcWs("ws://192.168.1.136/stream")
+parser = argparse.ArgumentParser(description='Start and run pattern on ZC95')
+parser.add_argument('--debug', action='store_true', help='Show debugging information')
+parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
+parser.add_argument('--index', action='store', required=True, help='Start pattern at specified index')
 
+args = parser.parse_args()
+
+# this is a bit much, even for debug
+#if args.debug:
+#  websocket.enableTrace(True)
+
+zcws = ZcWs.ZcWs("ws://" + args.ip + "/stream")
 
 ws_thread = threading.Thread(target=zcws.run_forever)
 ws_thread.start()
-
 zcws.wait_for_connection()
 
-zc_patterns = zc.ZcPatterns(zcws)
-
-pattern = zc_patterns.GetPatternDetails(6)
-
-zc_patterns.PatternStart(6)
+zc_patterns = zc.ZcPatterns(zcws, args.debug)
+pattern = zc_patterns.GetPatternDetails(args.index)
+zc_patterns.PatternStart(args.index)
 
 root = Tk() 
 gui = ZcPatternGui(root, pattern, zc_patterns)
-
 root.mainloop()
 zcws.stop()
 

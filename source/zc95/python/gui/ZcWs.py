@@ -22,14 +22,15 @@ class ZcWs:
       self.__recv_event.set()
       
     else:    
-      print(message)
+      print("< " + message)
 
   def __on_error(self, ws, error):
-    print(error)
+    if str(error) != "None":
+      print("Websocket error: " + str(error))
 
   def __on_close(self, ws, close_status_code, close_msg):
-    print("### closed ###")
-
+    print("Websocket connection closed")
+    quit()
 
   def __on_open(self, ws):
     print("Connection opened")
@@ -58,8 +59,3 @@ class ZcWs:
     
   def stop(self):
     self.ws.close()
-
-if __name__ == "__main__":
-  zs = ZcWs("ws://192.168.1.136/stream")
-
-  zs.ws.run_forever()

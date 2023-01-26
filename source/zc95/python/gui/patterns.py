@@ -3,27 +3,26 @@ import time
 import json 
 
 class ZcPatterns:
-  def __init__(self, websocket):
+  def __init__(self, websocket, debug):
     self.ws = websocket
     self.msgCount = 1
+    self.debug = debug
   
   def Send(self, message):
     msgToSend = json.dumps(message);  
-    #if args.debug:
-    if True:
+    if self.debug:
       print("> " + msgToSend)
     self.ws.send(msgToSend)
 
 
   def GetResponse(self, expectedMsgCount, expectedType):
     resultJson = self.ws.recv()
-    #if args.debug:  
     
     if resultJson == None:
       print("Didn't get any message, expected " + expectedType)
       quit()      
     
-    if True:
+    if self.debug:
       print("< " + resultJson)
     
     result = json.loads(resultJson)
@@ -72,7 +71,8 @@ class ZcPatterns:
     expectedType = "PatternDetail"
     response = self.GetResponse(self.msgCount, expectedType)
     
-    print(json.dumps(response, indent=4))
+    if self.debug:
+      print(json.dumps(response, indent=4))
     return response
   
   def PatternStart(self, pattern_id):
@@ -83,8 +83,7 @@ class ZcPatterns:
       "Index": pattern_id
     }
     self.Send(msgPatternStart)
-    expectedType = "Ack"
-    response = self.GetResponse(self.msgCount, expectedType)
+    self.GetResponse(self.msgCount, "Ack")
 
   def PatternMinMaxChange(self, menu_id, new_value):
     self.msgCount = self.msgCount + 1
@@ -95,6 +94,7 @@ class ZcPatterns:
       "NewValue": new_value
     }
     self.Send(msgPatternMinMaxChange)
+    self.GetResponse(self.msgCount, "Ack")
 
   def PatternMultiChoiceChange(self, menu_id, choice_id):
     self.msgCount = self.msgCount + 1
@@ -105,6 +105,7 @@ class ZcPatterns:
       "ChoiceId": choice_id
     }
     self.Send(msgPatternMultiChoiceChange)
+    self.GetResponse(self.msgCount, "Ack")
   
 
   def PatternSoftButton(self, pressed):
@@ -121,3 +122,4 @@ class ZcPatterns:
       "Pressed": pressed_val
     }
     self.Send(msgPatternSoftButton)
+    self.GetResponse(self.msgCount, "Ack")

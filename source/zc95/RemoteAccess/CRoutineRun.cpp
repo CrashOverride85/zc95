@@ -36,7 +36,6 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         }
 
         _routine_output->activate_routine(index);
-        send_ack("OK", msgCount);
     }
 
     else if (msgType == "PatternMinMaxChange")
@@ -61,6 +60,7 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         _routine_output->soft_button_pressed(soft_button::BUTTON_A, pressed != 0);
     }
 
+    send_ack("OK", msgCount);
     return false;
 }
 
