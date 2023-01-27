@@ -1,5 +1,6 @@
 import websocket # pip3 install websocket-client
 import threading
+import json 
 
 class ZcWs:
   def __init__(self, connection_string):
@@ -12,14 +13,16 @@ class ZcWs:
     self.__recv_waiting = False
     self.__pending_recv_message = ""
     self.__recv_event = threading.Event()
-    
+    self.__waiting_for_msgId = 0
     self.__connection_wait_event = threading.Event()
   
   
   def __on_message(self, ws, message):
     if self.__recv_waiting:
-      self.__pending_recv_message = message
-      self.__recv_event.set()
+      result = json.loads(message)
+      if "MsgCount" in result and result["MsgCount"] == self.__waiting_for_msgId:
+        self.__pending_recv_message = message
+        self.__recv_event.set()
       
     else:    
       print("< " + message)
@@ -42,7 +45,9 @@ class ZcWs:
   def send(self, message):
     self.ws.send(message)
     
-  def recv(self):
+  # note: not at all thread safe
+  def recv(self, msgId):
+    self.__waiting_for_msgId = msgId
     self.__recv_waiting = True
     
     if self.__recv_event.wait(timeout=2): # timeout is seconds
@@ -52,6 +57,7 @@ class ZcWs:
     
     self.__recv_waiting = False
     self.__recv_event.clear()
+    self.__waiting_for_msgId = 0
     return retval
   
   def run_forever(self):

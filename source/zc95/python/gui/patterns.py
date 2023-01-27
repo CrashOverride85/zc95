@@ -16,7 +16,7 @@ class ZcPatterns:
 
 
   def GetResponse(self, expectedMsgCount, expectedType):
-    resultJson = self.ws.recv()
+    resultJson = self.ws.recv(expectedMsgCount)
     
     if resultJson == None:
       print("Didn't get any message, expected " + expectedType)
