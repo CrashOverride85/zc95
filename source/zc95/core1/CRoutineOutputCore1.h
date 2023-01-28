@@ -14,6 +14,9 @@ class CRoutineOutputCore1 : public CRoutineOutput
     public:
         CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp);
         void set_front_panel_power(uint8_t channel, uint16_t power);
+        void set_remote_power(uint8_t channel, uint16_t power);
+        void enable_remote_power_mode();
+        void disable_remote_power_mode();
         uint16_t get_output_power(uint8_t channel);
         uint16_t get_front_pannel_power(uint8_t channel);
         uint16_t get_max_output_power(uint8_t channel);
@@ -53,8 +56,10 @@ class CRoutineOutputCore1 : public CRoutineOutput
         CLedControl *_led_control;
         CExtInputPortExp **_ext_port_exp;
         uint16_t _front_pannel_power[MAX_CHANNELS] = {0};
+        uint16_t _remote_power[MAX_CHANNELS] = {0};
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _max_output_power[MAX_CHANNELS] = {0};      
+        bool _remote_mode_active = false;
 };
 
 #endif

@@ -19,7 +19,7 @@
 #include "CMenuRemoteAccess.h"
 #include "CMenuApMode.h"
 
-CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture)
+CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
@@ -27,6 +27,7 @@ CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons
     _saved_settings = saved_settings;
     _wifi = wifi;
     _analogueCapture = analogueCapture;
+    _routine_output = routine_output;
 
     _exit_menu = false;
     _options_list = new COptionsList(display, display->get_display_area());
@@ -87,7 +88,7 @@ void CMenuRemoteAccess::show_selected_setting()
             break;
 
         case option_id::CONNECT_WIFI:
-            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi));
+            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi, _routine_output));
             break;
     }
 }

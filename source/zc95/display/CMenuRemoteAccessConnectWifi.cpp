@@ -23,7 +23,8 @@ CMenuRemoteAccessConnectWifi::CMenuRemoteAccessConnectWifi(
     CDisplay* display,
     CGetButtonState *buttons,
     CSavedSettings *saved_settings,
-    CWifi *wifi)
+    CWifi *wifi,
+    CRoutineOutput *routine_output)
 {
     printf("CMenuRemoteAccessConnectWifi() \n");
     _display = display;
@@ -32,6 +33,7 @@ CMenuRemoteAccessConnectWifi::CMenuRemoteAccessConnectWifi(
     _wifi = wifi;
     _disp_area = _display->get_display_area();
     _exit_menu = false;
+    _routine_output = routine_output;
 
     std::string psk;
     if (_saved_settings->get_wifi_credentials(_ssid, psk))
@@ -44,6 +46,7 @@ CMenuRemoteAccessConnectWifi::CMenuRemoteAccessConnectWifi(
     {
         _state = state_t::NOT_CONFIGURED;
     }
+    _routine_output->enable_remote_power_mode();
 }
 
 CMenuRemoteAccessConnectWifi::~CMenuRemoteAccessConnectWifi()
@@ -57,6 +60,7 @@ CMenuRemoteAccessConnectWifi::~CMenuRemoteAccessConnectWifi()
 
     _wifi->stop_webserver();
     _wifi->stop();
+    _routine_output->disable_remote_power_mode();
 }
 
 void CMenuRemoteAccessConnectWifi::button_pressed(Button button)

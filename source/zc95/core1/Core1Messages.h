@@ -18,6 +18,8 @@
 #define MESSAGE_AUDIO_INTENSITY              11
 #define MESSAGE_ROUTINE_MENU_SELECTED        12
 #define MESSAGE_CORE1_SUSPEND                13
+#define MESSAGE_SET_REMOTE_ACCESS_POWER      14
+#define MESSAGE_SET_REMOTE_ACCESS_MODE       15
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100

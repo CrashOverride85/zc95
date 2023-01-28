@@ -53,6 +53,9 @@ class PowerDisplay:
     
     self._update_required = False
     self._label_var = StringVar()
+    self._scale_var = IntVar()
+    
+    self._set_power_level_at_last_check = -1
     self.update_percent_label(0)
     
   def set_actual_power_level(self, level):
@@ -68,16 +71,20 @@ class PowerDisplay:
       percent = 100-(((1000-self._power_level) / 1000) * 100)
       self.update_percent_label(percent)
       
+  def set_power_limit(self, level):
+    if self._power_limit != level:
+      self._power_limit = level
+      self._update_required = True
+      
   def update_percent_label(self, percent):
     self._label_var.set(f'{percent:.2f}' + "%")
       
-  def update_if_required(self):
+  def update_display_if_required(self):
     if self._update_required:
       self.CanvasDraw()
       self._update_required = False
     
   def draw(self, row, col):      
-    
     power_frame = Frame(self._root, width=400, highlightbackground="blue", highlightthickness=2)
     power_frame.grid(row=row, column=col, padx=10, pady=5, sticky="ew")
 
@@ -91,7 +98,7 @@ class PowerDisplay:
     label.grid(row=2, column=0, padx=5, pady=5)
     label['textvariable'] = self._label_var   
     
-    scale = Scale(power_frame, orient='vertical', length=200, from_=1000, to=0, showvalue=0) #, variable=num, command=update_lbl)
+    scale = Scale(power_frame, orient='vertical', length=200, from_=1000, to=0, showvalue=0, variable=self._scale_var)
     scale.grid(row=3, column=0, padx=5, pady=5)    
     
   def CanvasDraw(self):
@@ -107,10 +114,21 @@ class PowerDisplay:
     yellow_bar_x0 = self.bar_width/2
     self.canvas.create_rectangle((self.bar_width/2) - (yellow_bar_width/2) , self.bar_height, (self.bar_width/2) + (yellow_bar_width/2), self.bar_height - bar_actual_power_height, fill='yellow')    
     
-    # Red bar at top that marks power limit (if set)
+    # Green bar at top that marks power limit (if set)
     if self._power_limit < 1000:
       bar_power_limit_height = (self.bar_height / 1000) * (1000-self._power_limit)
-      self.canvas.create_rectangle(0, 0, self.bar_width+1, bar_power_limit_height, fill='red')     
+      self.canvas.create_rectangle(0, 0, self.bar_width+1, bar_power_limit_height, fill='green')     
+
+  def HasSetPowerLevelChangedSinceLastCheck(self):
+    has_changed = False
+    if self._set_power_level_at_last_check != self._scale_var.get():
+      has_changed = True
+      self._set_power_level_at_last_check = self._scale_var.get()
+    
+    return has_changed
+
+  def GetSetPowerLevel(self):
+    return self._scale_var.get()
 
 class ZcPatternGui:
   def __init__(self, root, pattern_config, zc_patterns):
@@ -197,7 +215,7 @@ class ZcPatternGui:
       spacer_frame = Frame(pattern_options_frame, width=400, height=4, highlightbackground="blue", highlightthickness=2)
       spacer_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
       row += 1
-
+      
       title = menu_item["Title"] 
       if "UoM" in menu_item:
         if len(menu_item["UoM"]) > 0:
@@ -218,8 +236,25 @@ class ZcPatternGui:
       channel_number = channel["Channel"]
       self.PowerDisplays[channel_number].set_actual_power_level(channel["OutputPower"])
       self.PowerDisplays[channel_number].set_max_power_level(channel["MaxOutputPower"])
-      self.PowerDisplays[channel_number].update_if_required()
-      # self.PowerDisplays[channel_number].draw(0, channel_number)
+      self.PowerDisplays[channel_number].set_power_limit(channel["PowerLimit"])
+      
+      self.PowerDisplays[channel_number].update_display_if_required()
+
+  # When the power sliders are changed, send a message with the new value
+  # Send at most one message every 250ms
+  def TaskUpdatePowerLevel(self):
+    update_message_required = False
+    for channel in range(1, 5):
+      if self.PowerDisplays[channel].HasSetPowerLevelChangedSinceLastCheck():
+        update_message_required = True
+
+    if update_message_required:
+      self.zc_patterns.SendSetPowerMessage(self.PowerDisplays[1].GetSetPowerLevel(), 
+                                           self.PowerDisplays[2].GetSetPowerLevel(),
+                                           self.PowerDisplays[3].GetSetPowerLevel(),
+                                           self.PowerDisplays[4].GetSetPowerLevel())   
+    
+    self.root.after(250, self.TaskUpdatePowerLevel)
 
 
 parser = argparse.ArgumentParser(description='Start and run pattern on ZC95')
@@ -248,6 +283,7 @@ gui = ZcPatternGui(root, pattern, zc_patterns)
 
 zcws.add_recv_message_type_callback("PowerStatus", gui.ProcessPowerStatusMessage)
 
+root.after(250, gui.TaskUpdatePowerLevel)
 root.mainloop()
 zcws.stop()
 

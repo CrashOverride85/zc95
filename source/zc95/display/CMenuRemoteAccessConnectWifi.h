@@ -4,6 +4,7 @@
 #include "../CSavedSettings.h"
 #include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
+#include "../core1/CRoutineOutput.h"
 
 class CMenuRemoteAccessConnectWifi : public CMenu
 {
@@ -12,7 +13,8 @@ class CMenuRemoteAccessConnectWifi : public CMenu
             CDisplay* display,
             CGetButtonState *buttons, 
             CSavedSettings *saved_settings, 
-            CWifi *wifi);
+            CWifi *wifi,
+            CRoutineOutput *routine_output);
         ~CMenuRemoteAccessConnectWifi();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -40,4 +42,5 @@ class CMenuRemoteAccessConnectWifi : public CMenu
         std::string _ssid;
         uint64_t _last_connecting_screen_update_us = 0;  
         uint8_t _connecting_dot_count = 0;
+        CRoutineOutput *_routine_output;
 };

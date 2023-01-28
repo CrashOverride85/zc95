@@ -329,6 +329,29 @@ void Core1::process_message(message msg)
         core1_suspend();
         printf("Core1: resumed\n");
         break;   
+        
+    case MESSAGE_SET_REMOTE_ACCESS_POWER:
+        {
+            uint8_t channel = msg.msg8[1];
+            uint16_t power = msg.msg8[2];
+            power |= msg.msg8[3] << 8;
+            power_level_control->set_remote_power(channel, power);
+            update_channel_power(channel);
+            break;
+        }
+
+    case MESSAGE_SET_REMOTE_ACCESS_MODE:
+        {
+            uint8_t enable = (msg.msg8[1] != 0);
+            if (enable)
+                power_level_control->remote_mode_enable();
+            else
+                power_level_control->remote_mode_disable();
+
+            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+                update_channel_power(channel);
+            break;
+        }
     }
 }
 

@@ -123,3 +123,17 @@ class ZcPatterns:
     }
     self.Send(msgPatternSoftButton)
     self.GetResponse(self.msgCount, "Ack")
+    
+  def SendSetPowerMessage(self, chan1, chan2, chan3, chan4):
+    self.msgCount = self.msgCount + 1
+
+    msgSetPower = {
+      "Type": "SetPower",
+      "MsgCount": self.msgCount,
+      "Chan1": chan1,
+      "Chan2": chan2,
+      "Chan3": chan3,
+      "Chan4": chan4
+    }
+    self.Send(msgSetPower)
+    self.GetResponse(self.msgCount, "Ack")
