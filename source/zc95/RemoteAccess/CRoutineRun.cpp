@@ -12,6 +12,14 @@ CRoutineRun::CRoutineRun(
     _send_ack = send_ack_func;
     _routine_output = routine_output;
     _routines = routines;
+
+    for (uint8_t channel=0; channel < MAX_CHANNELS; channel++)
+    {
+        _output_power[channel]     = _routine_output->get_output_power(channel);
+        _max_output_power[channel] = _routine_output->get_max_output_power(channel);
+    }
+
+    send_power_status_update();
 }
 
 CRoutineRun::~CRoutineRun()
@@ -62,6 +70,57 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 
     send_ack("OK", msgCount);
     return false;
+}
+
+void CRoutineRun::loop()
+{
+    bool update_required = false;
+
+    if (time_us_64() - _last_power_status_update_us > (250 * 1000)) // at most every 250ms
+    {
+        for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+        {
+            if (_routine_output->get_output_power(channel) != _output_power[channel])
+            {
+                _output_power[channel] = _routine_output->get_output_power(channel);
+                update_required = true;
+            }
+
+            if (_routine_output->get_max_output_power(channel) != _max_output_power[channel])
+            {
+                _max_output_power[channel] = _routine_output->get_max_output_power(channel);
+                update_required = true;
+            }
+        }
+
+        if (update_required)
+        {
+            send_power_status_update();
+        }
+
+        _last_power_status_update_us = time_us_64();
+    }
+}
+
+void CRoutineRun::send_power_status_update()
+{
+    StaticJsonDocument<1000> status_message;
+
+    status_message["Type"] = "PowerStatus";
+    status_message["MsgCount"] = -1;
+
+    JsonArray channels = status_message.createNestedArray("Channels");
+    for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    {
+        JsonObject obj = channels.createNestedObject();
+        obj["Channel"]        = channel+1;
+        obj["OutputPower"]    = _output_power[channel];
+        obj["MaxOutputPower"] = _max_output_power[channel];
+    }
+
+    std::string generatedJson;
+    serializeJson(status_message, generatedJson);
+    _send(generatedJson);
 }
 
 void CRoutineRun::send_ack(std::string result, int msg_count)

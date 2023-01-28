@@ -1,6 +1,7 @@
 import websocket # pip3 install websocket-client
 import threading
 import json 
+import sys
 
 class ZcWs:
   def __init__(self, connection_string):
@@ -15,25 +16,28 @@ class ZcWs:
     self.__recv_event = threading.Event()
     self.__waiting_for_msgId = 0
     self.__connection_wait_event = threading.Event()
+    self.__recv_message_callbacks = {}
   
   
   def __on_message(self, ws, message):
+    result = json.loads(message)
     if self.__recv_waiting:
-      result = json.loads(message)
       if "MsgCount" in result and result["MsgCount"] == self.__waiting_for_msgId:
         self.__pending_recv_message = message
         self.__recv_event.set()
       
-    else:    
+    else:
       print("< " + message)
-
+      if "Type" in result and result["Type"] in self.__recv_message_callbacks:
+        self.__recv_message_callbacks[result["Type"]](result)
+    
   def __on_error(self, ws, error):
     if str(error) != "None":
       print("Websocket error: " + str(error))
 
   def __on_close(self, ws, close_status_code, close_msg):
     print("Websocket connection closed")
-    quit()
+    sys.exit()
 
   def __on_open(self, ws):
     print("Connection opened")
@@ -59,6 +63,9 @@ class ZcWs:
     self.__recv_event.clear()
     self.__waiting_for_msgId = 0
     return retval
+  
+  def add_recv_message_type_callback(self, message_type, callback):
+    self.__recv_message_callbacks[message_type] = callback
   
   def run_forever(self):
     self.ws.run_forever(ping_interval=6)

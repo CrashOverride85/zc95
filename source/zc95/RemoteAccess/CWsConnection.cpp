@@ -244,6 +244,11 @@ void CWsConnection::loop()
         _pending_message = false;
     }
 
+    if (_routine_run)
+    {
+        _routine_run->loop();
+    }
+
     tcp_output(_pcb);   // Send contents of TCP buffer now. Not required (will get sent 
                         // eventually without), but things are much faster with this.
 }

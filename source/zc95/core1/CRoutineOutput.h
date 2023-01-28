@@ -11,6 +11,7 @@ class CRoutineOutput
     public:
         virtual void set_front_panel_power(uint8_t channel, uint16_t power) = 0;
         virtual uint16_t get_output_power(uint8_t channel) = 0;
+        virtual uint16_t get_max_output_power(uint8_t channel) = 0;
         virtual uint16_t get_front_pannel_power(uint8_t channel) = 0;
 
         virtual void activate_routine(uint8_t routine_id) = 0;

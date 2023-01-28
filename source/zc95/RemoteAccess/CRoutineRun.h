@@ -20,15 +20,19 @@ class CRoutineRun
             std::vector<CRoutines::Routine> *routines);
         ~CRoutineRun();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
-        bool routines_updated();
+        void loop();
 
     private:
         std::function<void(std::string)> _send;
         std::function<void(std::string result, int msg_count, std::string error)> _send_ack;
+        void send_power_status_update();
         void send_ack(std::string result, int msg_count);
         
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> *_routines;
+        uint16_t _output_power[MAX_CHANNELS];
+        uint16_t _max_output_power[MAX_CHANNELS];
+        uint64_t _last_power_status_update_us = 0;
 
 };
 

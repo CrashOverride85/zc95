@@ -20,7 +20,7 @@ class ZcPatterns:
     
     if resultJson == None:
       print("Didn't get any message, expected " + expectedType)
-      quit()      
+      return      
     
     if self.debug:
       print("< " + resultJson)
@@ -28,11 +28,11 @@ class ZcPatterns:
     result = json.loads(resultJson)
     if result["Type"] != expectedType:
       print("Didn't get expected " + expectedType + " message type")
-      quit()
+      return
 
     if result["MsgCount"] != expectedMsgCount:
       print("Unexpected MsgCount received")
-      quit()
+      return
 
     if "Result" not in result or result["Result"] != "OK":
       if "Error" in result:
@@ -41,7 +41,7 @@ class ZcPatterns:
       else:
         print("Result not OK")
 
-      quit()
+      return
       
     return result
 
