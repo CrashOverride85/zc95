@@ -122,9 +122,8 @@ void CRoutineRun::loop()
         if (update_required)
         {
             send_power_status_update();
+            _last_power_status_update_us = time_us_64();
         }
-
-        _last_power_status_update_us = time_us_64();
     }
 }
 

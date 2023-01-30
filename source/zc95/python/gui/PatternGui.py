@@ -6,6 +6,7 @@ import threading
 import websocket
 import patterns as zc
 import ZcWs
+import queue
 
 class MinMaxMenu:
   def __init__(self, min_val, max_val, step_size, current_val, progress_bar, current_val_var):
@@ -131,10 +132,11 @@ class PowerDisplay:
     return self._scale_var.get()
 
 class ZcPatternGui:
-  def __init__(self, root, pattern_config, zc_patterns):
+  def __init__(self, root, pattern_config, zc_patterns, rcv_queue):
     self.root = root
     self.pattern_config = pattern_config
     self.zc_patterns = zc_patterns
+    self.rcv_queue = rcv_queue
     root.title("ZC95")
     root.config(bg="red")
     root.resizable(False,False)
@@ -256,6 +258,16 @@ class ZcPatternGui:
     
     self.root.after(250, self.TaskUpdatePowerLevel)
 
+  def TaskProcessWsRecvQueue(self):
+    if not self.rcv_queue.empty():
+      message = self.rcv_queue.get_nowait()
+      
+      if "Type" in message and message["Type"] == "PowerStatus":
+        self.ProcessPowerStatusMessage(message)
+
+    self.root.after(20, self.TaskProcessWsRecvQueue)
+    
+    
 
 parser = argparse.ArgumentParser(description='Start and run pattern on ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
@@ -268,7 +280,9 @@ args = parser.parse_args()
 #if args.debug:
 #  websocket.enableTrace(True)
 
-zcws = ZcWs.ZcWs("ws://" + args.ip + "/stream")
+rcv_queue = queue.Queue() # to allow received web socket messages to be sent to the GUI
+
+zcws = ZcWs.ZcWs("ws://" + args.ip + "/stream", rcv_queue)
 
 ws_thread = threading.Thread(target=zcws.run_forever)
 ws_thread.start()
@@ -276,14 +290,15 @@ zcws.wait_for_connection()
 
 zc_patterns = zc.ZcPatterns(zcws, args.debug)
 pattern = zc_patterns.GetPatternDetails(args.index)
-zc_patterns.PatternStart(args.index)
 
 root = Tk() 
-gui = ZcPatternGui(root, pattern, zc_patterns)
-
-zcws.add_recv_message_type_callback("PowerStatus", gui.ProcessPowerStatusMessage)
+gui = ZcPatternGui(root, pattern, zc_patterns, rcv_queue)
 
 root.after(250, gui.TaskUpdatePowerLevel)
+root.after( 20, gui.TaskProcessWsRecvQueue)
+zc_patterns.PatternStart(args.index)
+
+
 root.mainloop()
 zcws.stop()
 

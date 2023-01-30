@@ -19,7 +19,7 @@ class ZcPatterns:
     resultJson = self.ws.recv(expectedMsgCount)
     
     if resultJson == None:
-      print("Didn't get any message, expected " + expectedType)
+      print("Didn't get any message, expected " + expectedType + " (msgId = " + str(expectedMsgCount) + ")" )
       return      
     
     if self.debug:
@@ -27,11 +27,11 @@ class ZcPatterns:
     
     result = json.loads(resultJson)
     if result["Type"] != expectedType:
-      print("Didn't get expected " + expectedType + " message type")
+      print("Didn't get expected " + expectedType + " message type (msgId = " + str(expectedMsgCount) + ")" )
       return
 
     if result["MsgCount"] != expectedMsgCount:
-      print("Unexpected MsgCount received")
+      print("Unexpected MsgCount received (expected msgId = " + str(expectedMsgCount) + ")" )
       return
 
     if "Result" not in result or result["Result"] != "OK":

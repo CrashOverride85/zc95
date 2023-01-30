@@ -2,9 +2,10 @@ import websocket # pip3 install websocket-client
 import threading
 import json 
 import sys
+import queue
 
 class ZcWs:
-  def __init__(self, connection_string):
+  def __init__(self, connection_string, rcv_queue):
     self.ws = websocket.WebSocketApp(connection_string,
                               on_open    = self.__on_open,
                               on_message = self.__on_message,
@@ -16,7 +17,7 @@ class ZcWs:
     self.__recv_event = threading.Event()
     self.__waiting_for_msgId = 0
     self.__connection_wait_event = threading.Event()
-    self.__recv_message_callbacks = {}
+    self.__rcv_queue = rcv_queue
   
   
   def __on_message(self, ws, message):
@@ -25,11 +26,9 @@ class ZcWs:
       if "MsgCount" in result and result["MsgCount"] == self.__waiting_for_msgId:
         self.__pending_recv_message = message
         self.__recv_event.set()
-      
     else:
       print("< " + message)
-      if "Type" in result and result["Type"] in self.__recv_message_callbacks:
-        self.__recv_message_callbacks[result["Type"]](result)
+      self.__rcv_queue.put(result)
     
   def __on_error(self, ws, error):
     if str(error) != "None":
@@ -62,10 +61,8 @@ class ZcWs:
     self.__recv_waiting = False
     self.__recv_event.clear()
     self.__waiting_for_msgId = 0
+    
     return retval
-  
-  def add_recv_message_type_callback(self, message_type, callback):
-    self.__recv_message_callbacks[message_type] = callback
   
   def run_forever(self):
     self.ws.run_forever(ping_interval=6)
