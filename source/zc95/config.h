@@ -49,6 +49,10 @@
 #define TRIGGER_INPUT_DEBOUNCE_US 10000 // 10ms
 #define RAMP_UP_TIME_MAXIMUM_SECS 30    // the maximum ramp up time that can be configured in seconds (0-255)
 
+// For the time being, allowing more than one web socket connection is likely to cause all sorts of issues, 
+// e.g. fighting for control over running routine, possibility to change a lua script whilst it's running, etc.
+#define MAX_WEBSOCKET_CONNECTIONS 1 
+
 // Note that just changing these two values would likely break everything
 #define MAX_POWER_LEVEL 1000
 #define MAX_CHANNELS 4

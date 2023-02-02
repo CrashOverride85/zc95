@@ -78,6 +78,13 @@ void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
 {
     printf("WS URI: %s\n", uri);
 
+    if (_s_ws_connections.size() >= MAX_WEBSOCKET_CONNECTIONS)
+    {
+        printf("CWebServer::websocket_open_cb(): incoming connection, but already at connection limit. Closing connection.\n");
+        tcp_close(pcb);
+        return;
+    }
+
     if (!strcmp(uri, "/stream")) 
     {
         printf("request for streaming\n");
