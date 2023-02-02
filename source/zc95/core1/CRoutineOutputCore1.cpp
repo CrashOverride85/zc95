@@ -286,6 +286,10 @@ void CRoutineOutputCore1::process_message(message msg)
         case MESSAGE_SET_ACC_IO_PORT_RESET:
             reset_acc_port();
             break;
+
+        case MESSAGE_LUA_SCRIPT_STATE:
+            _lua_script_state = (lua_script_state_t)msg.msg8[1];
+            break;
     }
 }
 
@@ -389,3 +393,8 @@ void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
     if (*_ext_port_exp)
         (*_ext_port_exp)->set_acc_io_port_state(output, high);
 }
+
+ lua_script_state_t CRoutineOutputCore1::get_lua_script_state()
+ {
+    return _lua_script_state;
+ }

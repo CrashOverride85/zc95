@@ -39,6 +39,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 
         void reset_acc_port();
         void set_acc_io_port_state(enum ExtInputPort output, bool high);
+        lua_script_state_t get_lua_script_state();
 
     private:
         union __attribute__((packed)) message
@@ -60,6 +61,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _max_output_power[MAX_CHANNELS] = {0};      
         bool _remote_mode_active = false;
+        lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
 };
 
 #endif

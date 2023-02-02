@@ -146,6 +146,8 @@ void Core1::loop()
 
     update_power_levels();
     process_messages();
+    check_validity_of_lua_script();
+
 
     if (gFatalError)
     {
@@ -202,6 +204,29 @@ void Core1::update_power_levels()
                 multicore_fifo_push_blocking(msg.msg32);
                 _output_power_max[channel_number] = power_level_max;
             }
+        }
+    }
+}
+
+void Core1::check_validity_of_lua_script()
+{
+    lua_script_state_t state = lua_script_state_t::NOT_APPLICABLE;
+
+    if (_active_routine != NULL)
+    {
+        state = _active_routine->lua_script_state();
+    }
+
+    if (_script_script_state != state)
+    {
+        message msg = {0};
+        msg.msg8[0] = MESSAGE_LUA_SCRIPT_STATE;
+        msg.msg8[1] = (uint8_t)state;
+
+        if (multicore_fifo_wready())
+        {
+            multicore_fifo_push_blocking(msg.msg32);
+            _script_script_state = state;
         }
     }
 }

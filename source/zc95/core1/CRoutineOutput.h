@@ -5,7 +5,6 @@
 #include "routines/CRoutine.h"
 #include "output/collar/CCollarComms.h"
 
-
 class CRoutineOutput
 {
     public:
@@ -32,6 +31,7 @@ class CRoutineOutput
         virtual void suspend_core1() = 0;
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count);
         virtual void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0);
+        virtual lua_script_state_t get_lua_script_state();
 };
 
 #endif

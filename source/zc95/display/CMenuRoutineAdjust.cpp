@@ -184,6 +184,12 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuRoutineAdjust::draw()
 {
+    if (_routine_output->get_lua_script_state() == lua_script_state_t::INVALID)
+    {
+        draw_bad_script_screen();
+        return;
+    }
+
     // Show the parameter selection list at the top
     _routine_adjust_display_list->draw();
 
@@ -274,6 +280,16 @@ void CMenuRoutineAdjust::draw()
             break;
         }
     }
+}
+
+void CMenuRoutineAdjust::draw_bad_script_screen()
+{
+    color_t colour = hagl_color(0xFF, 0x00, 0x00);
+
+    hagl_draw_line(_area.x0, _area.y0, _area.x1, _area.y1, colour);
+    hagl_draw_line(_area.x1, _area.y0, _area.x0, _area.y1, colour);
+
+    _display->put_text("Script error", 0, _area.y0 + ((_area.y1 - _area.y0) / 2), hagl_color(0xFF, 0xFF, 0x00));
 }
 
 void CMenuRoutineAdjust::show()

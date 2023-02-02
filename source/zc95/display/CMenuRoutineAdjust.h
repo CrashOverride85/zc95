@@ -33,6 +33,7 @@ class CMenuRoutineAdjust : public CMenu
         uint8_t choice_id_to_menu_index(struct menu_entry selected_menu, uint8_t choice_id);
         void increment_gain(uint8_t by);
         void decrement_gain(uint8_t by);
+        void draw_bad_script_screen();
 
         COptionsList *_routine_adjust_display_list = NULL;
         COptionsList *_routine_multi_choice_list = NULL;

@@ -24,7 +24,7 @@ class CLuaRoutine: public CRoutine
         void stop();
         bool is_script_valid();
         std::string get_last_lua_error();
-        
+        lua_script_state_t lua_script_state();
         void lua_hook(lua_Debug *ar);
 
     private:

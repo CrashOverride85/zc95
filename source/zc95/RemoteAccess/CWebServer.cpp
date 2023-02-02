@@ -71,7 +71,6 @@ void CWebServer::websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len
     }
 
     _s_ws_connections[pcb]->callback(data, data_len, mode);
-
 }
 
 void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)

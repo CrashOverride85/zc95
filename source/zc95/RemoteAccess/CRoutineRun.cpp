@@ -96,6 +96,7 @@ void CRoutineRun::loop()
 {
     bool update_required = false;
 
+    // If the power levels change (either front panel dial adjusted or changed by script), send update message with new values
     if (time_us_64() - _last_power_status_update_us > (250 * 1000)) // at most every 250ms
     {
         for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
@@ -125,6 +126,29 @@ void CRoutineRun::loop()
             _last_power_status_update_us = time_us_64();
         }
     }
+
+    // Watch out for script failing, send a message if this happens
+    if (_lua_script_state != _routine_output->get_lua_script_state())
+    {
+        _lua_script_state = _routine_output->get_lua_script_state();
+
+        if (_lua_script_state == lua_script_state_t::INVALID)
+        {
+            send_lua_script_error_message();
+        }
+    }
+}
+
+void CRoutineRun::send_lua_script_error_message()
+{
+    StaticJsonDocument<250> status_message;
+
+    status_message["Type"] = "LuaScriptError";
+    status_message["MsgCount"] = -1;
+
+    std::string generatedJson;
+    serializeJson(status_message, generatedJson);
+    _send(generatedJson);
 }
 
 void CRoutineRun::send_power_status_update()

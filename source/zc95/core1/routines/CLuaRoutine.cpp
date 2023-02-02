@@ -169,7 +169,6 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         for (uint8_t i = 1; i <= menu_item_count; ++i)
         {
             struct menu_entry entry;
-            printf("\n\n");
             lua_rawgeti(_lua_state, -1, i);
 
             entry.title = get_string_field("title");
@@ -182,12 +181,10 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
                 switch (menu_type)
                 {
                     case menu_entry_type::MIN_MAX:
-                        printf("* MIN_MAX\n");
                         get_min_max_entry(&entry);
                         break;
 
                     case menu_entry_type::MULTI_CHOICE:
-                        printf("* MULTI_CHOICE\n");
                         get_multi_choice_entry(&entry);
                         break;
                 }
@@ -322,6 +319,14 @@ void CLuaRoutine::stop()
     set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
         full_channel_off(x);
+}
+
+lua_script_state_t CLuaRoutine::lua_script_state()
+{
+    if (_script_valid == ScriptValid::INVALID)
+        return lua_script_state_t::INVALID;
+    else
+        return lua_script_state_t::VALID;
 }
 
 //////////////////////////////////// LUA //////////////////////////////////////////////////////
