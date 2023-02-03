@@ -101,7 +101,6 @@ class ZcPatterns:
     self.Send(msgPatternMultiChoiceChange)
     self.GetResponse(self.msgCount, "Ack")
   
-
   def PatternSoftButton(self, pressed):
     self.msgCount = self.msgCount + 1
     
