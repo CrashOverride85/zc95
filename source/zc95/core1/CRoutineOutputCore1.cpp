@@ -302,6 +302,8 @@ void CRoutineOutputCore1::process_text_message_queue()
     {
         // TODO
         printf("*** GOT TEXT MSG: [%s] (%llu us old)\n", text_message.text, time_us_64() - text_message.time_generated_us);
+        if (_text_output_callback != NULL)
+            _text_output_callback(text_message);
     }
 }
 
@@ -398,3 +400,8 @@ void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
  {
     return _lua_script_state;
  }
+
+void CRoutineOutputCore1::set_text_callback_function(std::function<void(pattern_text_output_t)> cb)
+{
+    _text_output_callback = cb;
+}

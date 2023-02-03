@@ -28,6 +28,7 @@ class CRoutineRun
         void send_power_status_update();
         void send_lua_script_error_message();
         void send_ack(std::string result, int msg_count);
+        void script_output(pattern_text_output_t output);
         
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> *_routines;
@@ -36,7 +37,6 @@ class CRoutineRun
         uint16_t _front_panel_power[MAX_CHANNELS]; // acts as power limit in remote access mode
         uint64_t _last_power_status_update_us = 0;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
-
 };
 
 #endif

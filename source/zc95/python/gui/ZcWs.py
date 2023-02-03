@@ -5,7 +5,7 @@ import sys
 import queue
 
 class ZcWs:
-  def __init__(self, connection_string, rcv_queue):
+  def __init__(self, connection_string, rcv_queue, debug):
     self.ws = websocket.WebSocketApp(connection_string,
                               on_open    = self.__on_open,
                               on_message = self.__on_message,
@@ -18,16 +18,18 @@ class ZcWs:
     self.__waiting_for_msgId = 0
     self.__connection_wait_event = threading.Event()
     self.__rcv_queue = rcv_queue
-  
+    self.debug = debug
   
   def __on_message(self, ws, message):
+    if self.debug:
+      print("< " + message)
+      
     result = json.loads(message)
     if self.__recv_waiting:
       if "MsgCount" in result and result["MsgCount"] == self.__waiting_for_msgId:
         self.__pending_recv_message = message
         self.__recv_event.set()
     else:
-      print("< " + message)
       self.__rcv_queue.put(result)
     
   def __on_error(self, ws, error):
@@ -46,6 +48,8 @@ class ZcWs:
     self.__connection_wait_event.wait()
     
   def send(self, message):
+    if self.debug:
+      print("> " + message)
     self.ws.send(message)
     
   # note: not at all thread safe

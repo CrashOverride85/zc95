@@ -339,7 +339,9 @@ int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
     int retval = lua_pcall(_lua_state, nargs, nresults, errfunc);
     if (retval)
     {
-        printf("CLuaRoutine::pcall error: %s\n", lua_tostring(_lua_state, -1));
+        const char *err = lua_tostring(_lua_state, -1);
+        printf("CLuaRoutine::pcall error: %s\n", err);
+        print(text_type_t::ERROR, "Script stopped... error: \n%s", err);
         _script_valid = ScriptValid::INVALID;
         stop();
     }
@@ -502,7 +504,7 @@ int CLuaRoutine::lua_print(lua_State *L)
         lua_pop(L, 1);  /* pop result */
     }
     printf("[LUA] %s\n", output_string.c_str());
-    print("%s", output_string.c_str());
+    print(text_type_t::PRINT, "%s", output_string.c_str());
     return 0;
 }
 

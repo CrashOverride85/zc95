@@ -55,7 +55,7 @@ struct pulse_message_t
     uint8_t  neg_pulse_us;
 };
 
-enum class text_type_t { DEBUG };
+enum class text_type_t { PRINT, ERROR };
 
 struct pattern_text_output_t
 {

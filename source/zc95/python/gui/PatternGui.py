@@ -1,5 +1,6 @@
 from tkinter.ttk import *
 from tkinter import *
+from tkinter import messagebox
 import argparse
 import time
 import threading
@@ -132,11 +133,12 @@ class PowerDisplay:
     return self._scale_var.get()
 
 class ZcPatternGui:
-  def __init__(self, root, pattern_config, zc_patterns, rcv_queue):
+  def __init__(self, root, pattern_config, zc_patterns, rcv_queue, debug):
     self.root = root
     self.pattern_config = pattern_config
     self.zc_patterns = zc_patterns
     self.rcv_queue = rcv_queue
+    self.debug = debug 
     root.title("ZC95")
     root.config(bg="red")
     root.resizable(False,False)
@@ -192,14 +194,24 @@ class ZcPatternGui:
   def InitDisplay(self, root):
     self.PowerDisplays = {}
     
+    self.DrawPatternFrame(root, row=0, col=0)
+      
+    # 4 channel power graphs + sliders
+    for channel in range(1, 5):
+      self.PowerDisplays[channel] = PowerDisplay(self.root, channel)
+      self.PowerDisplays[channel].draw(row=0, col=channel)
+      
+    if self.debug:
+      self.debug_text = Text(root, height=10)
+      self.debug_text.grid(row=1, column=0, columnspan=5, sticky=EW)
+      self.debug_text.tag_configure('errorline', background='yellow', font='TkFixedFont', relief='raised')
+      self.debug_text['state'] = 'disabled'
+
+  def DrawPatternFrame(self, root, row, col):
     pattern_frame = Frame(root, width=400, height=400)
     pattern_frame.grid(row=0, column=0, padx=10, pady=5)
     Label(pattern_frame, text=pattern["Name"], font='Helvetica 18 bold').grid(row=0, column=0, padx=5, pady=5)
-    
-    for channel in range(1, 5):
-      self.PowerDisplays[channel] = PowerDisplay(self.root, channel)
-      self.PowerDisplays[channel].draw(0, channel)
-
+  
     pattern_options_frame = Frame(pattern_frame, width=400, height=400)
     pattern_options_frame.grid(row=1, column=0, padx=10, pady=5)
 
@@ -227,6 +239,30 @@ class ZcPatternGui:
       self.AddMenuOptions(pattern_options_frame, row, menu_item)
       row += 1
       
+  # Stolen from https://tkdocs.com/tutorial/text.html
+  def WriteToLog(self, msg, error):
+    
+    # If we're no in debug mode, there's no debug output panel at the bottom. If we get an error,
+    # show it in a popup, as it almost certainly means we were running a lua script that died
+    if not self.debug:
+      if error:
+        messagebox.showerror('Script error', msg)
+      return
+
+    numlines = int(self.debug_text.index('end - 1 line').split('.')[0])
+    self.debug_text['state'] = 'normal'
+    if numlines==9:
+        self.debug_text.delete(1.0, 2.0)
+    if self.debug_text.index('end-1c')!='1.0':
+        self.debug_text.insert('end', '\n')
+    
+    if error:
+      self.debug_text.insert('end', msg, 'errorline')
+    else:
+      self.debug_text.insert('end', msg)
+    
+    self.debug_text['state'] = 'disabled'
+  
   def SoftButtonPressed(self, event):
     self.zc_patterns.PatternSoftButton(1)
     
@@ -241,6 +277,13 @@ class ZcPatternGui:
       self.PowerDisplays[channel_number].set_power_limit(channel["PowerLimit"])
       
       self.PowerDisplays[channel_number].update_display_if_required()
+
+  def ProcessLuaScriptOutputMessage(self, message):
+    if message["TextType"] == "Print":
+      self.WriteToLog(message["Text"], False)
+    elif message["TextType"] == "Error":  
+      self.WriteToLog(message["Text"], True)
+    
 
   # When the power sliders are changed, send a message with the new value
   # Send at most one message every 250ms
@@ -262,8 +305,11 @@ class ZcPatternGui:
     if not self.rcv_queue.empty():
       message = self.rcv_queue.get_nowait()
       
-      if "Type" in message and message["Type"] == "PowerStatus":
-        self.ProcessPowerStatusMessage(message)
+      if "Type" in message:
+        if message["Type"] == "PowerStatus":
+          self.ProcessPowerStatusMessage(message)
+        elif message["Type"] == "LuaScriptOutput":
+          self.ProcessLuaScriptOutputMessage(message)
 
     self.root.after(20, self.TaskProcessWsRecvQueue)
     
@@ -282,7 +328,7 @@ args = parser.parse_args()
 
 rcv_queue = queue.Queue() # to allow received web socket messages to be sent to the GUI
 
-zcws = ZcWs.ZcWs("ws://" + args.ip + "/stream", rcv_queue)
+zcws = ZcWs.ZcWs("ws://" + args.ip + "/stream", rcv_queue, args.debug)
 
 ws_thread = threading.Thread(target=zcws.run_forever)
 ws_thread.start()
@@ -292,7 +338,7 @@ zc_patterns = zc.ZcPatterns(zcws, args.debug)
 pattern = zc_patterns.GetPatternDetails(args.index)
 
 root = Tk() 
-gui = ZcPatternGui(root, pattern, zc_patterns, rcv_queue)
+gui = ZcPatternGui(root, pattern, zc_patterns, rcv_queue, args.debug)
 
 root.after(250, gui.TaskUpdatePowerLevel)
 root.after( 20, gui.TaskProcessWsRecvQueue)

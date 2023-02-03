@@ -1,6 +1,7 @@
 #ifndef _CROUTINEOUTPUTCORE1_H
 #define _CROUTINEOUTPUTCORE1_H
 
+#include <functional>
 #include "CRoutineOutput.h"
 #include "Core1.h"
 #include "../display/CDisplay.h"
@@ -40,6 +41,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void reset_acc_port();
         void set_acc_io_port_state(enum ExtInputPort output, bool high);
         lua_script_state_t get_lua_script_state();
+        void set_text_callback_function(std::function<void(pattern_text_output_t)> cb);
 
     private:
         union __attribute__((packed)) message
@@ -62,6 +64,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         uint16_t _max_output_power[MAX_CHANNELS] = {0};      
         bool _remote_mode_active = false;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
+        std::function<void(pattern_text_output_t)> _text_output_callback = NULL;
 };
 
 #endif

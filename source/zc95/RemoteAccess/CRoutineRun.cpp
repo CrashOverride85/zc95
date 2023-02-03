@@ -13,6 +13,8 @@ CRoutineRun::CRoutineRun(
     _routine_output = routine_output;
     _routines = routines;
 
+    _routine_output->set_text_callback_function(std::bind(&CRoutineRun::script_output, this, std::placeholders::_1));
+
     for (uint8_t channel=0; channel < MAX_CHANNELS; channel++)
     {
         _output_power[channel]     = _routine_output->get_output_power(channel);
@@ -25,6 +27,7 @@ CRoutineRun::~CRoutineRun()
 {
     printf("~CRoutineRun()\n");
     _routine_output->stop_routine();
+    _routine_output->set_text_callback_function(NULL);
 
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
         _routine_output->set_remote_power(channel, 0);
@@ -176,4 +179,33 @@ void CRoutineRun::send_power_status_update()
 void CRoutineRun::send_ack(std::string result, int msg_count)
 {
     _send_ack(result, msg_count, "");
+}
+
+void CRoutineRun::script_output(pattern_text_output_t output)
+{
+    StaticJsonDocument<500> script_output;
+
+    script_output["Type"] = "LuaScriptOutput";
+    script_output["MsgCount"] = -1;
+    script_output["Text"] = output.text;
+    script_output["Time"] = output.time_generated_us;
+
+    switch (output.text_type)
+    {
+        case text_type_t::ERROR:
+            script_output["TextType"] = "Error";
+            break;
+
+        case text_type_t::PRINT:
+            script_output["TextType"] = "Print";
+            break;
+
+        default:
+            script_output["TextType"] = "Unknown";
+            break;
+    }
+
+    std::string generatedJson;
+    serializeJson(script_output, generatedJson);
+    _send(generatedJson);
 }

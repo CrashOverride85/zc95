@@ -10,10 +10,7 @@ class ZcPatterns:
   
   def Send(self, message):
     msgToSend = json.dumps(message);  
-    if self.debug:
-      print("> " + msgToSend)
     self.ws.send(msgToSend)
-
 
   def GetResponse(self, expectedMsgCount, expectedType):
     resultJson = self.ws.recv(expectedMsgCount)
@@ -21,9 +18,6 @@ class ZcPatterns:
     if resultJson == None:
       print("Didn't get any message, expected " + expectedType + " (msgId = " + str(expectedMsgCount) + ")" )
       return      
-    
-    if self.debug:
-      print("< " + resultJson)
     
     result = json.loads(resultJson)
     if result["Type"] != expectedType:

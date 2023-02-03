@@ -273,7 +273,7 @@ class CRoutine
             }
         }
 
-        void print(const char *format, ...)
+        void print(text_type_t text_type, const char *format, ...)
         {
             pattern_text_output_t text_message;
             memset(&text_message, 0, sizeof(text_message));
@@ -281,13 +281,11 @@ class CRoutine
             va_list args;
             va_start(args, format);
 
-            text_message.text_type = text_type_t::DEBUG;
+            text_message.text_type = text_type;
             text_message.time_generated_us = time_us_64();
 
             vsnprintf(text_message.text, sizeof(text_message.text)-1, format, args);
             text_message.text[sizeof(text_message.text)-1] = '\0';
-
-            printf("add to queue: [%s]", text_message.text); // TODO: remove me
 
             if (!queue_try_add(&gPatternTextOutputQueue, &text_message))
             {
