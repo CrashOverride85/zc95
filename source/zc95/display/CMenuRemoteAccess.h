@@ -35,8 +35,10 @@ class CMenuRemoteAccess : public CMenu
 
         enum option_id
         {
-            AP_MODE      = 0,
-            CONNECT_WIFI = 1
+            AP_MODE             = 0,
+            CONNECT_WIFI        = 1,
+            CLEAR_SAVED_CREDS   = 2,
+            REGEN_AP_PSK        = 3
         };
 
         std::vector<option> _options;

@@ -236,6 +236,44 @@ bool CSavedSettings::wifi_is_configured()
     return (_eeprom_contents[(uint8_t)setting::WiFiConfigured] == EEPROM_MAGIC_VAL);
 }
 
+bool CSavedSettings::get_wifi_ap_psk(std::string &out_psk)
+{
+    out_psk = "";
+    // If the last character of the psk isn't a NULL, somethings gone wrong
+    if (_eeprom_contents[(uint8_t)setting::WifiApPskEnd] != '\0')
+        return false;
+
+    out_psk = (char*)&_eeprom_contents[(uint8_t)setting::WifiApPsk];
+    
+    // A psk length < 8 is invalid and won't work
+    return (out_psk.length() >= 8);    
+}
+
+bool CSavedSettings::set_wifi_ap_psk(std::string psk)
+{
+    if (psk.length() < 8)
+    {
+        printf("set_wifi_ap_psk(): psk of [%s] is too short (must be 8-16 characters)\n", psk.c_str());
+        return false;
+    }
+
+    if (psk.length() > 16)
+    {
+        printf("set_wifi_ap_psk(): psk of [%s] is too long (must be 8-16 characters)\n", psk.c_str());
+        return false;
+    }
+
+    clear_saved_ap_psk();
+    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiApPsk], psk.c_str());
+
+    return true;
+}
+
+void CSavedSettings::clear_saved_ap_psk()
+{
+    memset(&_eeprom_contents[(uint8_t)setting::WifiApPsk], 0, ((uint8_t)setting::WifiApPskEnd - (uint8_t)setting::WifiApPsk) + 1);
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)

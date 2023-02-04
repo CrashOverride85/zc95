@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2023  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "CMenuRemoteAccess.h"
 #include "CMenuApMode.h"
+#include "CDisplayMessage.h"
 
 CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output)
 {
@@ -90,6 +91,18 @@ void CMenuRemoteAccess::show_selected_setting()
         case option_id::CONNECT_WIFI:
             set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi, _routine_output));
             break;
+
+        case option_id::CLEAR_SAVED_CREDS:
+            _saved_settings->clear_wifi_credentials();
+            _saved_settings->save();
+            set_active_menu(new CDisplayMessage(_display, _buttons, "Saved WiFi credentials cleared"));
+            break;
+
+        case option_id::REGEN_AP_PSK:
+            _saved_settings->clear_saved_ap_psk();
+            _saved_settings->save();
+            set_active_menu(new CDisplayMessage(_display, _buttons, "New PSK for AP mode will be generated when AP mode next started"));
+            break;
     }
 }
 
@@ -112,8 +125,10 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI,  "Connect to WiFi"));
-    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE     ,  "Config Wifi/AP mode"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI     ,  "Connect to WiFi"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE          ,  "Config Wifi/AP mode"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
+    _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
     
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)

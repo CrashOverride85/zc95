@@ -34,17 +34,6 @@ std::string SetupWebInterface::savedSSID()
     return _ssid;
 }
 
-bool SetupWebInterface::connectToSavedWlan()
-{
-    if (!alreadyConfigured())
-        return false;
-
-    cyw43_arch_enable_sta_mode();
-    cyw43_wifi_pm(&cyw43_state, 0xa11140);
-    cyw43_arch_wifi_connect_async(_ssid.c_str(), _psk.c_str(), CYW43_AUTH_WPA2_MIXED_PSK);
-
-    return true;
-}
 
 /* Play captive portal and reply with our own IP-address for any DNS query */
 static bool dns_query_proc(const char *name, ip4_addr_t *addr)
@@ -125,7 +114,7 @@ static const char *wlanscan_set_wifi_handler(int iIndex, int iNumParams, char *p
 
 void SetupWebInterface::startAccessPoint()
 {
-    char ssid[33], psk[33];
+    char ssid[33];
 
     static const char * ssi_tags[] = {
         "wlanscan"
@@ -137,9 +126,8 @@ void SetupWebInterface::startAccessPoint()
     snprintf(ssid, sizeof(ssid), "zc95-%02x%02x%02x%02x%02x%02x",
         netif_default->hwaddr[0], netif_default->hwaddr[1], netif_default->hwaddr[2],
         netif_default->hwaddr[3], netif_default->hwaddr[4], netif_default->hwaddr[5]);
-    snprintf(psk, sizeof(psk), "%08x%08x", LWIP_RAND(), LWIP_RAND() );
 
-    cyw43_arch_enable_ap_mode(ssid, psk, CYW43_AUTH_WPA2_AES_PSK);
+    cyw43_arch_enable_ap_mode(ssid, getApPsk().c_str(), CYW43_AUTH_WPA2_AES_PSK);
     cyw43_wifi_pm(&cyw43_state, 0xa11140);
 
     // Start DHCP server
@@ -153,9 +141,8 @@ void SetupWebInterface::startAccessPoint()
     http_set_ssi_handler(wlanscan_ssi_handler, ssi_tags, LWIP_ARRAYSIZE(ssi_tags));
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));
 
-    _qr_code = std::string("WIFI:S:")+ssid+";T:WPA;P:"+psk+";;";
-    _ap_psk  = std::string(psk);
-    _ap_ssid = std::string(ssid) ;
+    _qr_code = std::string("WIFI:S:")+ssid+";T:WPA;P:"+getApPsk()+";;";
+    _ap_ssid = std::string(ssid);
 }
 
 std::string SetupWebInterface::getApSsid()
@@ -163,9 +150,24 @@ std::string SetupWebInterface::getApSsid()
     return _ap_ssid;
 }
 
+// Get a PSK for AP mode. If already set in EEPROM, use that, otherwise generate 
+// and return a new one and save in EEPROM for next time
 std::string SetupWebInterface::getApPsk()
 {
-    return _ap_psk;
+    std::string saved_psk;
+    if (_saved_settings->get_wifi_ap_psk(saved_psk))
+    {
+        return saved_psk;
+    }
+    
+    // Need to generate and save PSK
+    char new_psk[33] = {0};
+    snprintf(new_psk, sizeof(new_psk), "%08x", LWIP_RAND());
+    printf("New AP PSK generated: [%s]\n", new_psk);
+    _saved_settings->set_wifi_ap_psk(new_psk);
+    _saved_settings->save();
+
+    return new_psk;
 }
 
 static void _reboot()

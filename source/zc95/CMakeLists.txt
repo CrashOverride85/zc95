@@ -103,6 +103,7 @@ add_executable(zc95
   display/CMenuApMode
   display/COptionsList
   display/CHorzBarGraph
+  display/CDisplayMessage
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp

@@ -131,7 +131,6 @@ void CWifi::start_webserver()
         _web_server = new CWebServer(_analogue_capture, _routine_output, _routines);
         _web_server->start();
     }
-
 }
 
 void CWifi::stop_webserver()
