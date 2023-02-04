@@ -344,8 +344,11 @@ void CLuaRoutine::channel_pulse_processing()
 void CLuaRoutine::stop()
 {
     set_all_channels_power(0);
-    for (int x=0; x < CHANNEL_COUNT; x++)    
-        full_channel_off(x);
+    for (int channel_id=0; channel_id < CHANNEL_COUNT; channel_id++)    
+    {
+        full_channel_off(channel_id);
+        _channel_switch_off_at_us[channel_id] = 0;
+    }
 }
 
 lua_script_state_t CLuaRoutine::lua_script_state()
@@ -542,6 +545,7 @@ int CLuaRoutine::lua_channel_on(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
 
     full_channel_on(chan-1);
+    _channel_switch_off_at_us[chan-1] = 0;
     return 1;
 }
 
@@ -552,6 +556,7 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
 
     full_channel_off(chan-1);
+    _channel_switch_off_at_us[chan-1] = 0;
     return 1;
 }
 

@@ -19,8 +19,9 @@ static const luaL_Reg lualibs[] = {
 //  {LUA_LOADLIBNAME, luaopen_package},
 //  {LUA_IOLIBNAME, luaopen_io},
   {LUA_STRLIBNAME, luaopen_string},
-#if LUA_OPTIMIZE_MEMORY == 0
   {LUA_MATHLIBNAME, luaopen_math},
+#if LUA_OPTIMIZE_MEMORY == 0
+  // {LUA_MATHLIBNAME, luaopen_math},
   {LUA_OSLIBNAME, luaopen_os},
   {LUA_TABLIBNAME, luaopen_table},
   {LUA_DBLIBNAME, luaopen_debug},

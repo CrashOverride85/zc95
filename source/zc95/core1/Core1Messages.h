@@ -60,7 +60,7 @@ enum class text_type_t { PRINT, ERROR };
 struct pattern_text_output_t
 {
     text_type_t text_type;
-    char text[100];
+    char text[150];
     uint64_t time_generated_us;
 };
 
