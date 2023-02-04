@@ -300,8 +300,6 @@ void CRoutineOutputCore1::process_text_message_queue()
 
     while (queue_try_remove(&gPatternTextOutputQueue, &text_message))
     {
-        // TODO
-        printf("*** GOT TEXT MSG: [%s] (%llu us old)\n", text_message.text, time_us_64() - text_message.time_generated_us);
         if (_text_output_callback != NULL)
             _text_output_callback(text_message);
     }

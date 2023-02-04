@@ -241,27 +241,15 @@ void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
     if (!runnable())
         return;
 
-    /*
     if (button == soft_button::BUTTON_A)
     {
-        if (_pulse_mode)
+        lua_getglobal(_lua_state, "SoftButton");
+        if (lua_isfunction(_lua_state, -1))
         {
-            // Pulse mode (pulse for preset length when button pushed)
-            if (pushed)
-            {
-                all_channels_pulse(_pulse_len_ms);
-            }
-        }
-        else
-        {
-            // Continous mode (on whilst button held down)
-            if (pushed)
-                all_channels(true);
-            else
-                all_channels(false);
+            lua_pushboolean(_lua_state, pushed);
+            pcall(1, 0, 0);
         }
     }
-    */
 }
 
 void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
@@ -270,8 +258,47 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
     if (!runnable())
         return;
 
-    // External tigger input is the same as pressing the "Fire" soft-button
-    //soft_button_pushed(soft_button::BUTTON_A, !active);
+    std::string str_socket;
+    std::string str_part;
+
+    switch (socket)
+    {
+        case trigger_socket::Trigger1:
+            str_socket = "TRIGGER1";
+            break;
+
+        case trigger_socket::Trigger2:
+            str_socket = "TRIGGER2";
+            break;
+
+        default:
+            printf("CLuaRoutine::trigger: Error, unexpected trigger socket: %d\n", (int)socket);
+            return;
+    }
+
+    switch (part)
+    {
+        case trigger_part::A:
+            str_part = "A";
+            break;
+
+        case trigger_part::B:
+            str_part = "B";
+            break;
+
+        default:
+            printf("CLuaRoutine::trigger: Error, unexpected trigger part: %d\n", (int)part);
+            return;
+    }
+
+    lua_getglobal(_lua_state, "ExternalTrigger");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        lua_pushstring(_lua_state, str_socket.c_str());
+        lua_pushstring(_lua_state, str_part.c_str());
+        lua_pushboolean(_lua_state, active);
+        pcall(3, 0, 0);
+    }
 }
 
 void CLuaRoutine::start()
