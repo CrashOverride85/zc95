@@ -19,6 +19,10 @@
 #define ZC624_REQUIRED_MAJOR_VERION 0
 #define ZC624_MIN_MINOR_VERION      3
 
+// Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
+#define WEBSOCKET_API_VERION_MAJOR  1   // Increment on breaking change
+#define WEBSOCKET_API_VERION_MINOR  0   // Increment non-breaking change
+
 // The maximum length a web socket message can be in bytes
 #define MAX_WS_MESSAGE_SIZE 200
 

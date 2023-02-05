@@ -87,6 +87,14 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             _routine_output->set_remote_power(channel, channel_power[channel]);
     }
 
+    else if (msgType == "PatternStop")
+    {
+        // Return value of true means CWsConnection knows we're done and will delete this object.
+        // Destructor will then call _routine_output->stop_routine();
+        send_ack("OK", msgCount);
+        return true;
+    }
+
     send_ack("OK", msgCount);
 
     if (pattern_start)

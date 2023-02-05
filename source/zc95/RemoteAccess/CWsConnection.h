@@ -38,6 +38,7 @@ class CWsConnection
         void delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        void send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
 
         struct tcp_pcb *_pcb;
         CAnalogueCapture *_analogue_capture;

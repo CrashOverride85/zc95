@@ -1,6 +1,7 @@
 #include <ArduinoJson.h>
 #include <list>
 #include "CWsConnection.h"
+#include "../git_version.h"
 
 CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
@@ -233,10 +234,15 @@ void CWsConnection::loop()
         {
             send_pattern_detail(&doc);
         }
+        else if (msgType == "GetVersion")
+        {
+            send_version_details(&doc);
+        }
         else
         {
+            printf("Unknown or unexpected message type: %s\n", msgType.c_str());
             int msgCount = doc["MsgCount"];
-            send_ack("OK", msgCount);
+            send_ack("ERROR", msgCount);
         }
 
         doc.clear();
@@ -394,6 +400,23 @@ void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> 
         response_message["Result"] = "OK";
     }
         
+    std::string generatedJson;
+    serializeJson(response_message, generatedJson);
+    send(generatedJson);
+}
+
+void CWsConnection::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgCount"];
+    StaticJsonDocument<250> response_message;
+
+    response_message["Type"] = "VersionDetails";
+    response_message["MsgCount"] = msg_count;
+    response_message["ZC95"] = kGitHash;
+    response_message["WsMajor"] = WEBSOCKET_API_VERION_MAJOR;
+    response_message["WsMinor"] = WEBSOCKET_API_VERION_MINOR;
+    response_message["Result"] = "OK";
+
     std::string generatedJson;
     serializeJson(response_message, generatedJson);
     send(generatedJson);

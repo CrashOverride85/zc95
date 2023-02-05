@@ -130,3 +130,24 @@ class ZcPatterns:
     }
     self.Send(msgSetPower)
     self.GetResponse(self.msgCount, "Ack")
+    
+  def SendPatternStopMessage(self):
+    self.msgCount = self.msgCount + 1
+
+    msgStopPattern = {
+      "Type": "PatternStop",
+      "MsgCount": self.msgCount
+    }
+    self.Send(msgStopPattern)
+    self.GetResponse(self.msgCount, "Ack")
+
+  def GetVersionDetails(self):
+    self.msgCount = self.msgCount + 1
+    msgVersionDetails = {
+      "Type": "GetVersion",
+      "MsgCount": self.msgCount,
+    }
+    self.Send(msgVersionDetails)
+    expectedType = "VersionDetails"
+    response = self.GetResponse(self.msgCount, expectedType)
+    return response
