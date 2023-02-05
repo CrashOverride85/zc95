@@ -97,7 +97,6 @@ add_executable(zc95
   display/CMenuSettingAbout
   display/CMenuSettingAudio
   display/CMenuSettingHardware
-  display/CMenuSettingSerialAccess
   display/CMenuRemoteAccess
   display/CMenuRemoteAccessConnectWifi
   display/CMenuApMode

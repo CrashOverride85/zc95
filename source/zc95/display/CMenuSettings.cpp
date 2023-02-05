@@ -25,7 +25,6 @@
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
-#include "CMenuSettingSerialAccess.h"
 #include "CMenuRemoteAccess.h"
 #include "../core1/routines/CRoutine.h"
 
@@ -131,10 +130,6 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output, _audio));
             break;
 
-        case setting_id::SERIAL_ACCESS:
-            set_active_menu(new CMenuSettingSerialAccess(_display, _buttons, _routine_output, _analogueCapture));
-            break;
-
         case setting_id::REMOTE_ACCESS:
             set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output));
             break;
@@ -165,7 +160,6 @@ void CMenuSettings::show()
 
     _settings.clear();
     _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
-    _settings.push_back(CMenuSettings::setting(setting_id::SERIAL_ACCESS,  "Serial access"  ));
     
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
@@ -177,7 +171,6 @@ void CMenuSettings::show()
     
     _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));
 //    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
-//  _settings.push_back(CMenuSettings::setting(setting_id::SERIAL_ACCESS,  "Serial access"  ));
     _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"          ));  
     
    _settings_list->clear_options();

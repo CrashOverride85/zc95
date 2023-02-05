@@ -55,9 +55,8 @@ class CMenuSettings : public CMenu
             RAMP_UP_TIME   = 4,
             AUDIO          = 5,
             HARDWARE       = 6,
-            SERIAL_ACCESS  = 7,
-            REMOTE_ACCESS  = 8,
-            ABOUT          = 9
+            REMOTE_ACCESS  = 7,
+            ABOUT          = 8
         };
 
         std::vector<setting> _settings;
