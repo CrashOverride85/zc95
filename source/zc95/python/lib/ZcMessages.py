@@ -2,7 +2,7 @@ import websocket # pip3 install websocket-client
 import time
 import json 
 
-class ZcPatterns:
+class ZcMessages:
   def __init__(self, websocket, debug):
     self.ws = websocket
     self.msgId = 1
@@ -43,17 +43,14 @@ class ZcPatterns:
     self.msgId = self.msgId + 1
     msgGetLuaScripts = {
       "Type": "GetPatterns",
-      "MsgId": msgId
+      "MsgId": self.msgId
     }
     self.Send(msgGetLuaScripts)
     expectedType = "PatternList"
     response = self.GetResponse(self.msgId, expectedType)
     
-    patterns = response["Patterns"]
-    print("Patterns on ZC95:")
-    for pattern in patterns:
-      print(str(pattern["Id"]) + "\t" + pattern["Name"])
-    
+    return response["Patterns"]
+
   def GetPatternDetails(self, pattern_id):
     self.msgId = self.msgId + 1
     msgGetPatternDetail = {
@@ -145,9 +142,58 @@ class ZcPatterns:
     self.msgId = self.msgId + 1
     msgVersionDetails = {
       "Type": "GetVersion",
-      "MsgId": self.msgId,
+      "MsgId": self.msgId
     }
     self.Send(msgVersionDetails)
     expectedType = "VersionDetails"
     response = self.GetResponse(self.msgId, expectedType)
     return response
+  
+  def SendLuaStart(self, index):
+    self.msgId = self.msgId + 1
+    msgStart = {
+        "Type": "LuaStart",
+        "Index": index,
+        "MsgId": self.msgId
+    }
+    self.Send(msgStart)
+    return self.GetResponse(self.msgId, "Ack")
+  
+  def SendLuaLine(self, lineNumber, text):
+    self.msgId = self.msgId + 1
+    msgLuaLine = {
+        "Type": "LuaLine",
+        "LineNumber": lineNumber,
+        "Text": text.rstrip(),
+        "MsgId": self.msgId
+    }
+    self.Send(msgLuaLine)
+    return self.GetResponse(self.msgId, "Ack")
+    
+  def SendLuaEnd(self):
+    self.msgId = self.msgId + 1
+    msgEnd = {
+        "Type": "LuaEnd",
+        "MsgId": self.msgId
+    }
+    self.Send(msgEnd)
+    return self.GetResponse(self.msgId, "Ack")
+  
+  def SendGetLuaScripts(self):
+    self.msgId = self.msgId + 1
+    msgGetLuaScripts = {
+      "Type": "GetLuaScripts",
+      "MsgId": self.msgId
+    }
+    self.Send(msgGetLuaScripts)
+    return self.GetResponse(self.msgId, "LuaScripts")["Scripts"]
+    
+  def SendDeleteLuaScript(self, scriptIndexToDelete):
+    self.msgId = self.msgId + 1
+    msgDeleteLuaScript = {
+      "Type": "DeleteLuaScript",
+      "MsgId": self.msgId,
+      "Index": scriptIndexToDelete
+    }
+    self.Send(msgDeleteLuaScript)
+    return self.GetResponse(self.msgId, "Ack")

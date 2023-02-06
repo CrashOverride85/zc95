@@ -2,47 +2,15 @@ import websocket # pip3 install websocket-client
 import argparse
 import time
 import json 
-
-def GetLuaLine(msgId, lineNumber, text):
-  msgLuaLine = {
-      "Type": "LuaLine",
-      "LineNumber": lineNumber,
-      "Text": text.rstrip(),
-      "MsgId": msgId
-  } 
-  return msgLuaLine
-
-def Send(message):
-  msgToSend = json.dumps(message);  
-  if args.debug:
-    print("> " + msgToSend)
-  ws.send(msgToSend)
-  GetAndProcessAck(msgId)
-
-
-def GetAndProcessAck(expectedMsgId):
-  resultJson = ws.recv()
-  if args.debug:  
-    print("< " + resultJson)
-  
-  result = json.loads(resultJson)
-  if result["Type"] != "Ack":
-    print("Didn't get expected Ack")
-    quit()
-
-  if result["MsgId"] != expectedMsgId:
-    print("Unexpected MsgId received")
-    quit()
-
-  if result["Result"] != "OK":
-    if "Error" in result:
-      print("Got error message: ")
-      print("    " + result["Error"])
-    else:
-      print("Result not OK")
-
-    quit()
-
+import threading
+import queue
+import lib.ZcMessages as zc
+from lib.ZcWs import ZcWs
+ 
+def ExitWithError(zcws, error):
+  zcws.stop()
+  quit(error)
+ 
 parser = argparse.ArgumentParser(description='Upload Lua scripts on ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
 parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
@@ -50,34 +18,37 @@ parser.add_argument('--index', action='store', required=True, type=int, choices=
 parser.add_argument('--script', action='store', required=True, help='Lua script to upload')
 args = parser.parse_args()
 
-ws = websocket.WebSocket()
-print("Connecting")
-ws.connect("ws://" + args.ip + "/stream")
+# Open script
+try:
+  luaFile = open(args.script, "r")
+except OSError:
+  quit("Failed to open [" + args.script + "]")
 
-msgId = 0
-msgStart = {
-    "Type": "LuaStart",
-    "Index": args.index,
-    "MsgId": msgId
-}
-Send(msgStart)
-msgId += 1
+# Websocket setup / connect
+rcv_queue = queue.Queue() 
+zcws = ZcWs(args.ip, rcv_queue, args.debug)
+ws_thread = threading.Thread(target=zcws.run_forever)
+ws_thread.start()
+zcws.wait_for_connection()
 
-luaFile = open(args.script, "r")
+zc_messages = zc.ZcMessages(zcws, args.debug)
+
+# Send start message with index/slot of where the new Lua script should go
+if zc_messages.SendLuaStart(args.index) == None:
+  ExitWithError(zcws, "Failed")
+ 
 lineNumber = 0
-print("Connected, uploading...")
+print("Uploading...")
 for luaLineString in luaFile:
-  luaLineToSend = GetLuaLine(msgId, lineNumber, luaLineString)
-  lineNumber += 1
-  
-  Send(luaLineToSend)
-  msgId += 1
+  if zc_messages.SendLuaLine(lineNumber, luaLineString) == None:
+      ExitWithError(zcws, "Failed")
 
-msgEnd = {
-    "Type": "LuaEnd",
-    "MsgId": msgId
-}
-Send(msgEnd)
-msgId += 1
+  lineNumber += 1
+
+# Finished sending message, send end message. This step may fail if the script is invalid
+if zc_messages.SendLuaEnd() == None:
+  ExitWithError(zcws, "Failed")
 
 print("Done!")
+
+zcws.stop()

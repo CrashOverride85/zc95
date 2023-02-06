@@ -5,7 +5,10 @@ import sys
 import queue
 
 class ZcWs:
-  def __init__(self, connection_string, rcv_queue, debug):
+  def __init__(self, ip, rcv_queue, debug):
+    connection_string = "ws://" + ip + "/stream"
+    
+    print("Connecting")   
     self.ws = websocket.WebSocketApp(connection_string,
                               on_open    = self.__on_open,
                               on_message = self.__on_message,
@@ -32,7 +35,7 @@ class ZcWs:
       self.__rcv_queue.put(result)
     
   def __on_error(self, ws, error):
-    if str(error) != "None":
+    if str(error) != "None" and len(str(error)) > 1:
       print("Websocket error: " + str(error))
 
   def __on_close(self, ws, close_status_code, close_msg):

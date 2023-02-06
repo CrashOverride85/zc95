@@ -5,7 +5,7 @@ import argparse
 import time
 import threading
 import websocket
-import lib.patterns as zc
+import lib.ZcMessages as zc
 import queue
 from lib.ZcWs import ZcWs
 from lib.MinMaxMenu import MinMaxMenu
@@ -207,23 +207,22 @@ args = parser.parse_args()
 
 rcv_queue = queue.Queue() # to allow received web socket messages to be sent to the GUI
 
-zcws = ZcWs("ws://" + args.ip + "/stream", rcv_queue, args.debug)
+zcws = ZcWs(args.ip, rcv_queue, args.debug)
 
 ws_thread = threading.Thread(target=zcws.run_forever)
 ws_thread.start()
 zcws.wait_for_connection()
 
-zc_patterns = zc.ZcPatterns(zcws, args.debug)
-pattern = zc_patterns.GetPatternDetails(args.index)
+zc_messages = zc.ZcMessages(zcws, args.debug)
+pattern = zc_messages.GetPatternDetails(args.index)
 
 root = Tk() 
-gui = ZcPatternGui(root, pattern, zc_patterns, rcv_queue, args.debug)
+gui = ZcPatternGui(root, pattern, zc_messages, rcv_queue, args.debug)
 
 root.after(250, gui.TaskUpdatePowerLevel)
 root.after( 20, gui.TaskProcessWsRecvQueue)
-zc_patterns.PatternStart(args.index)
+zc_messages.PatternStart(args.index)
 
 
 root.mainloop()
 zcws.stop()
-
