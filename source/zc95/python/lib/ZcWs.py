@@ -25,7 +25,7 @@ class ZcWs:
       print("< " + message)
       
     result = json.loads(message)
-    if self.__recv_waiting and "MsgCount" in result and result["MsgCount"] == self.__waiting_for_msgId:
+    if self.__recv_waiting and "MsgId" in result and result["MsgId"] == self.__waiting_for_msgId:
         self.__pending_recv_message = message
         self.__recv_event.set()
     else:

@@ -466,7 +466,6 @@ void CLuaRoutine::get_multi_choice_entry(struct menu_entry *entry)
     lua_pop(_lua_state, 1);
 }
 
-
 void CLuaRoutine::get_min_max_entry(struct menu_entry *entry)
 {
     entry->menu_type = menu_entry_type::MIN_MAX;

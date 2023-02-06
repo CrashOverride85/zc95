@@ -1,3 +1,32 @@
+/*
+ * ZC95
+ * Copyright (C) 2023  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+/* 
+ * Handle an incoming websocket connection that's been accepted. Note that the websocket implementation 
+ * in the LWIP HTTP server has something like an 8 second inactivity timeout before closing the connection, 
+ * so the client needs to send _something_ every few seconds (the websocket protocol ping is good).
+ * 
+ * The more complicated flows are passed off to other classes to deal with:
+ *  CLuaLoad    - Transfering/storing Lua scripts
+ *  CRoutineRun - Runing a routine, dealing with input to pass to it, and sending power change updates
+ *                (e.g. front panel power dials changed) to connected client
+ */
+
 #include <ArduinoJson.h>
 #include <list>
 #include "CWsConnection.h"
@@ -66,8 +95,8 @@ void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
             return;
         }
 
-        int msgCount = doc["MsgCount"];
-        send_ack("ERROR", msgCount);
+        int msgId = doc["MsgId"];
+        send_ack("ERROR", msgId);
         return;
     }
     else
@@ -150,7 +179,7 @@ void CWsConnection::send_ack(std::string result, int msg_count, std::string erro
     StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
 
     doc["Type"] = "Ack";
-    doc["MsgCount"] = msg_count;
+    doc["MsgId"] = msg_count;
     doc["Result"] = result;
 
     if (error.length() > 0)
@@ -241,8 +270,8 @@ void CWsConnection::loop()
         else
         {
             printf("Unknown or unexpected message type: %s\n", msgType.c_str());
-            int msgCount = doc["MsgCount"];
-            send_ack("ERROR", msgCount);
+            int msgId = doc["MsgId"];
+            send_ack("ERROR", msgId);
         }
 
         doc.clear();
@@ -262,11 +291,11 @@ void CWsConnection::loop()
 // Send list of Lua script names loaded in flash (or "<empty>" if nothing loaded in slot)
 void CWsConnection::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
-    int msg_count = (*doc)["MsgCount"];
+    int msg_count = (*doc)["MsgId"];
     StaticJsonDocument<1000> response_message;
 
     response_message["Type"] = "LuaScripts";
-    response_message["MsgCount"] = msg_count;
+    response_message["MsgId"] = msg_count;
     
     JsonArray scripts = response_message.createNestedArray("Scripts");
 
@@ -289,7 +318,7 @@ void CWsConnection::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *do
 
 void CWsConnection::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
-    int msg_count = (*doc)["MsgCount"];
+    int msg_count = (*doc)["MsgId"];
     int index = (*doc)["Index"];
     CLuaStorage lua_storage = CLuaStorage(_analogue_capture, _routine_output);
     
@@ -303,11 +332,11 @@ void CWsConnection::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *d
 
 void CWsConnection::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
-    int msg_count = (*doc)["MsgCount"];
+    int msg_count = (*doc)["MsgId"];
     StaticJsonDocument<2000> response_message;
 
     response_message["Type"] = "PatternList";
-    response_message["MsgCount"] = msg_count;
+    response_message["MsgId"] = msg_count;
     
     JsonArray patterns = response_message.createNestedArray("Patterns");
 
@@ -339,12 +368,12 @@ void CWsConnection::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *d
 
 void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
-    int msg_count = (*doc)["MsgCount"];
+    int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
     StaticJsonDocument<2000> response_message;
     response_message["Type"] = "PatternDetail";
-    response_message["MsgCount"] = msg_count;
+    response_message["MsgId"] = msg_count;
 
     if (id < 0 || id >= (int)((*_routines).size()))
     {
@@ -407,11 +436,11 @@ void CWsConnection::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> 
 
 void CWsConnection::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
-    int msg_count = (*doc)["MsgCount"];
+    int msg_count = (*doc)["MsgId"];
     StaticJsonDocument<250> response_message;
 
     response_message["Type"] = "VersionDetails";
-    response_message["MsgCount"] = msg_count;
+    response_message["MsgId"] = msg_count;
     response_message["ZC95"] = kGitHash;
     response_message["WsMajor"] = WEBSOCKET_API_VERION_MAJOR;
     response_message["WsMinor"] = WEBSOCKET_API_VERION_MINOR;

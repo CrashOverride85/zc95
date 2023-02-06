@@ -127,7 +127,6 @@ add_executable(zc95
   RemoteAccess/CRoutineRun.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
-  LuaScript.S
   LuaScripts.S
   )
 

@@ -10,7 +10,7 @@ def Send(message):
   ws.send(msgToSend)
 
 
-def GetResponse(expectedMsgCount, expectedType):
+def GetResponse(expectedMsgId, expectedType):
   resultJson = ws.recv()
   if args.debug:  
     print("< " + resultJson)
@@ -20,8 +20,8 @@ def GetResponse(expectedMsgCount, expectedType):
     print("Didn't get expected " + expectedType + " message type")
     quit()
 
-  if result["MsgCount"] != expectedMsgCount:
-    print("Unexpected MsgCount received")
+  if result["MsgId"] != expectedMsgId:
+    print("Unexpected MsgId received")
     quit()
 
   if result["Result"] != "OK":
@@ -36,14 +36,14 @@ def GetResponse(expectedMsgCount, expectedType):
   return result
 
 def GetLuaScripts():
-  msgCount = 1
+  msgId = 1
   msgGetLuaScripts = {
     "Type": "GetLuaScripts",
-    "MsgCount": msgCount
+    "MsgId": msgId
   }
   Send(msgGetLuaScripts)
   expectedType = "LuaScripts"
-  response = GetResponse(msgCount, expectedType)
+  response = GetResponse(msgId, expectedType)
   
   scripts = response["Scripts"]
   print("Script slots on ZC95:")
@@ -51,15 +51,15 @@ def GetLuaScripts():
     print(str(script["Index"]) + " - " + script["Name"])
   
 def DeleteLuaScript(scriptIndexToDelete):
-  msgCount = 1
+  msgId = 1
   msgGetLuaScripts = {
     "Type": "DeleteLuaScript",
-    "MsgCount": msgCount,
+    "MsgId": msgId,
     "Index": scriptIndexToDelete
   }
   Send(msgGetLuaScripts)
   expectedType = "Ack"
-  response = GetResponse(msgCount, expectedType)
+  response = GetResponse(msgId, expectedType)
   print("Done.")
   
 

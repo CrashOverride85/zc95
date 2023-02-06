@@ -16,6 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+/* Deal with sanity checking and saving Lua scripts being sent over
+ * a websocket connection into flash. 
+ * Processes messages:
+ *  - LuaStart
+ *  - LuaLine
+ *  - LuaEnd
+ */
+
 #include "CLuaLoad.h"
 #include "globals.h"
 #include "../core1/routines/CLuaRoutine.h"
@@ -56,7 +64,7 @@ CLuaLoad::~CLuaLoad()
 bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     std::string msgType = (*doc)["Type"];
-    int msgCount = (*doc)["MsgCount"];
+    int msgId = (*doc)["MsgId"];
     bool retval = false;
 
     if (msgType == "LuaStart")
@@ -129,12 +137,12 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             {
                 std::string lua_error = lua.get_last_lua_error();
                 printf("CLuaLoad::process() bad script!\n\t%s\n", lua_error.c_str());
-                _send_ack("ERROR", msgCount, "Invalid script: " + lua_error);
+                _send_ack("ERROR", msgId, "Invalid script: " + lua_error);
                 return true;
             }
         }
 
-        send_ack("OK", msgCount);
+        send_ack("OK", msgId);
         return true; // This is the only case where a true return value is not also an error
     }
     else
@@ -144,9 +152,9 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     }
 
     if (retval)
-        send_ack("ERROR", msgCount);
+        send_ack("ERROR", msgId);
     else
-        send_ack("OK", msgCount);
+        send_ack("OK", msgId);
 
     return retval;
 }

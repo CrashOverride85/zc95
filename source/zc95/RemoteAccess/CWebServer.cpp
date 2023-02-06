@@ -1,3 +1,34 @@
+/*
+ * ZC95
+ * Copyright (C) 2023  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+/* Start/manage the LWIP HTTP webserver for the web socket interface when 
+ * connected to WiFi. Doesn't deal with AP mode (yet).
+ * Creates an instance of CWsConnection to deal with incoming web socket 
+ * connections.
+ *
+ * WARNINGS:
+ *  1. Uses statics for a few things, so creating mutiple instances of this 
+ *     class is not going to go well
+ *  2. Only one Websocket connection is permitted. This class should be fine 
+ *     with more, but if two web socket connections are trying to control the
+ *     box at once, that would be bad
+*/
+
 #include "CWebServer.h"
 #include <queue>
 

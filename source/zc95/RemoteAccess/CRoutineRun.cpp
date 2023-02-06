@@ -1,3 +1,41 @@
+/*
+ * ZC95
+ * Copyright (C) 2023  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+/* 
+ * Deal with running a routine using input from a web socket connection. Uses the same
+ * method as when ran via the menus i.e. sending messages to core1 to start/stop pass 
+ * user input to the routine.
+ * Can handle message types:
+ *  - PatternStart
+ *  - PatternMinMaxChange
+ *  - PatternMultiChoiceChange
+ *  - PatternSoftButton
+ *  - SetPower
+ *  - PatternStop
+ * 
+ * and will send (as needed):
+ *  - PowerStatus
+ *  - LuaScriptOutput
+ *  - LuaScriptError
+ * 
+ * On being deleted, the destructor will stop any running routine.
+ */
+
 #include "CRoutineRun.h"
 
 CRoutineRun::CRoutineRun(
@@ -36,7 +74,7 @@ CRoutineRun::~CRoutineRun()
 bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     std::string msgType = (*doc)["Type"];
-    int msgCount = (*doc)["MsgCount"];
+    int msgId = (*doc)["MsgId"];
     bool pattern_start = false;
 
     if (msgType == "PatternStart")
@@ -45,7 +83,7 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 
         if (index < 0 || index >= (int)_routines->size())
         {
-            send_ack("ERROR", msgCount);
+            send_ack("ERROR", msgId);
             return true; // finished
         }
 
@@ -91,11 +129,11 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     {
         // Return value of true means CWsConnection knows we're done and will delete this object.
         // Destructor will then call _routine_output->stop_routine();
-        send_ack("OK", msgCount);
+        send_ack("OK", msgId);
         return true;
     }
 
-    send_ack("OK", msgCount);
+    send_ack("OK", msgId);
 
     if (pattern_start)
         send_power_status_update();
@@ -155,7 +193,7 @@ void CRoutineRun::send_lua_script_error_message()
     StaticJsonDocument<250> status_message;
 
     status_message["Type"] = "LuaScriptError";
-    status_message["MsgCount"] = -1;
+    status_message["MsgId"] = -1;
 
     std::string generatedJson;
     serializeJson(status_message, generatedJson);
@@ -167,7 +205,7 @@ void CRoutineRun::send_power_status_update()
     StaticJsonDocument<1000> status_message;
 
     status_message["Type"] = "PowerStatus";
-    status_message["MsgCount"] = -1;
+    status_message["MsgId"] = -1;
 
     JsonArray channels = status_message.createNestedArray("Channels");
     for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
@@ -194,7 +232,7 @@ void CRoutineRun::script_output(pattern_text_output_t output)
     StaticJsonDocument<500> script_output;
 
     script_output["Type"] = "LuaScriptOutput";
-    script_output["MsgCount"] = -1;
+    script_output["MsgId"] = -1;
     script_output["Text"] = output.text;
     script_output["Time"] = output.time_generated_us;
 

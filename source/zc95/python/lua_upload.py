@@ -3,12 +3,12 @@ import argparse
 import time
 import json 
 
-def GetLuaLine(msgCount, lineNumber, text):
+def GetLuaLine(msgId, lineNumber, text):
   msgLuaLine = {
       "Type": "LuaLine",
       "LineNumber": lineNumber,
       "Text": text.rstrip(),
-      "MsgCount": msgCount
+      "MsgId": msgId
   } 
   return msgLuaLine
 
@@ -17,10 +17,10 @@ def Send(message):
   if args.debug:
     print("> " + msgToSend)
   ws.send(msgToSend)
-  GetAndProcessAck(msgCount)
+  GetAndProcessAck(msgId)
 
 
-def GetAndProcessAck(expectedMsgCount):
+def GetAndProcessAck(expectedMsgId):
   resultJson = ws.recv()
   if args.debug:  
     print("< " + resultJson)
@@ -30,8 +30,8 @@ def GetAndProcessAck(expectedMsgCount):
     print("Didn't get expected Ack")
     quit()
 
-  if result["MsgCount"] != expectedMsgCount:
-    print("Unexpected MsgCount received")
+  if result["MsgId"] != expectedMsgId:
+    print("Unexpected MsgId received")
     quit()
 
   if result["Result"] != "OK":
@@ -54,30 +54,30 @@ ws = websocket.WebSocket()
 print("Connecting")
 ws.connect("ws://" + args.ip + "/stream")
 
-msgCount = 0
+msgId = 0
 msgStart = {
     "Type": "LuaStart",
     "Index": args.index,
-    "MsgCount": msgCount
+    "MsgId": msgId
 }
 Send(msgStart)
-msgCount += 1
+msgId += 1
 
 luaFile = open(args.script, "r")
 lineNumber = 0
 print("Connected, uploading...")
 for luaLineString in luaFile:
-  luaLineToSend = GetLuaLine(msgCount, lineNumber, luaLineString)
+  luaLineToSend = GetLuaLine(msgId, lineNumber, luaLineString)
   lineNumber += 1
   
   Send(luaLineToSend)
-  msgCount += 1
+  msgId += 1
 
 msgEnd = {
     "Type": "LuaEnd",
-    "MsgCount": msgCount
+    "MsgId": msgId
 }
 Send(msgEnd)
-msgCount += 1
+msgId += 1
 
 print("Done!")
