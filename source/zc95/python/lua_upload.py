@@ -11,7 +11,7 @@ def ExitWithError(zcws, error):
   zcws.stop()
   quit(error)
  
-parser = argparse.ArgumentParser(description='Upload Lua scripts on ZC95')
+parser = argparse.ArgumentParser(description='Upload Lua scripts to ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
 parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
 parser.add_argument('--index', action='store', required=True, type=int, choices=range(1, 6), help='Slot/index on ZC95 to upload script to')

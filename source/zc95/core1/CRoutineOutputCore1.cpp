@@ -295,10 +295,13 @@ void CRoutineOutputCore1::process_message(message msg)
 
 void CRoutineOutputCore1::process_text_message_queue()
 {
+    uint8_t count = 0;
     pattern_text_output_t text_message;
     memset(&text_message, 0, sizeof(text_message));
 
-    while (queue_try_remove(&gPatternTextOutputQueue, &text_message))
+    // Get at most 5 messages from queue, to prevent a flood of print() messages from lua 
+    // effectively locking us up
+    while (queue_try_remove(&gPatternTextOutputQueue, &text_message) && count++ < 5)
     {
         if (_text_output_callback != NULL)
             _text_output_callback(text_message);
