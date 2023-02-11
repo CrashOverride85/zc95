@@ -334,6 +334,14 @@ void CLuaRoutine::loop(uint64_t time_us)
         lua_pushinteger(_lua_state, time_ms);
         pcall(1, 0, 0);
     }
+    else
+    {
+        // There must be a loop function, or the script isn't going to work
+        printf("CLuaRoutine::loop(): No loop function in script!\n");
+        print(text_type_t::ERROR, "Script stopped... no loop function found in script!");
+        _script_valid = ScriptValid::INVALID;
+        stop();
+    }
 }
 
 void CLuaRoutine::channel_pulse_processing()
