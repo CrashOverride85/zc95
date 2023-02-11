@@ -307,7 +307,17 @@ void CLuaRoutine::start()
     if (!runnable())
         return;
 
-    set_all_channels_power(POWER_FULL);
+    lua_getglobal(_lua_state, "Setup");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        int32_t time_ms = time_us_64()/1000;
+        lua_pushinteger(_lua_state, time_ms);
+        pcall(1, 0, 0);
+    }
+    else
+    {
+        set_all_channels_power(POWER_FULL);
+    }
 }
 
 void CLuaRoutine::loop(uint64_t time_us)
