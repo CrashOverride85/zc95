@@ -28,6 +28,7 @@ class CHwCheck
         std::string get_zc624_version();
         bool audio_digipot_found();
         void die(CLedControl *led_control, std::string error_message);
+        static bool running_on_picow();
 
     private:
         enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION};

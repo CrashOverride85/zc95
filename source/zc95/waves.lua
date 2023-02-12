@@ -110,7 +110,6 @@ function MinMaxChange(menu_id, min_max_val)
     channels[menu_id]["us"]["duration_ms"]   = min_max_val * 900 -- slightly different so not always in sync
 end
 
-last_run = time_ms
 function Loop(time_ms)
     for chan = 1, 4, 1
     do

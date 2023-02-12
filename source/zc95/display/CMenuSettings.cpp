@@ -159,7 +159,9 @@ void CMenuSettings::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
+
+    if (CHwCheck::running_on_picow())
+        _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
     
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
@@ -170,7 +172,6 @@ void CMenuSettings::show()
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     
     _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));
-//    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
     _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"          ));  
     
    _settings_list->clear_options();

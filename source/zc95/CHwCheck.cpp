@@ -67,7 +67,9 @@ void CHwCheck::check_part1()
 
     printf("\n\nHardware check (part1)\n");
     printf("======================\n");
-    
+
+    running_on_picow();
+
     for (uint x=0; x < 10; x++)
         get_battery_readings();
 
@@ -269,6 +271,44 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
     hagl_flush();
 
     halt(ledControl);
+}
+
+// Try and determine if running on a Pico or Pico W, based on code from 
+// "connecting-to-the-internet-with-pico-w.pdf", section 2.4 (Raspberry 
+// Pi Ltd datasheet)
+// Should be called for the first time right at startup - definitely before
+// analog capture has started.
+bool CHwCheck::running_on_picow()
+{
+    static bool already_ran = false;
+    static bool on_pi_w = false;
+
+    if (already_ran)
+    {
+        return on_pi_w;
+    }
+    already_ran = true;
+
+    adc_gpio_init(29);
+
+    adc_select_input(3);
+    const float conversion_factor = 3.3f / (1 << 12);
+    uint16_t result = adc_read();
+    float voltage = result * conversion_factor;
+    // printf("ADC3 value: 0x%03x, voltage: %f V\n", result, voltage);
+
+    if (voltage < 0.3)
+    {
+        printf("Running on Pico W (probably: ADC3 voltage = %fv)\n", voltage);
+        on_pi_w = true;
+    }
+    else
+    {
+        printf("Running on Pico non-W (probably: ADC3 voltage = %fv)\n", voltage);
+        on_pi_w = false;
+    }
+
+    return on_pi_w;
 }
 
 void CHwCheck::halt(CLedControl *led_control)
