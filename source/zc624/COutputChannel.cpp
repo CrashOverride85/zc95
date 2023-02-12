@@ -78,7 +78,14 @@ bool COutputChannel::calibrate()
     }
 
     uint16_t dac_val = 0;
-    for (dac_val = 3400; dac_val > 2800; dac_val-=10)
+
+    /* Ending up with any _cal_value between 3600 and 1600 would produce valid dac levels (0-4000) 
+       for any valid power level (0-1000), but if it's outside the range below, it's likely 
+       something is wrong.
+    
+       Note that extending it beyond 3600-1600 will cause set_power() to sometimes break.
+    */
+    for (dac_val = 3400; dac_val > 2400; dac_val-=10)
     {
         _dac->set_channel_value(_dac_channel, dac_val);
         sleep_us(100);
