@@ -71,12 +71,12 @@ u16_t wlanscan_ssi_handler(int iIndex, char *buf, int buflen, u16_t current_tag_
         json_buf += "]";
     }
 
-    if (current_tag_part+buflen > json_buf.size() )
+    if (current_tag_part+buflen > (int)json_buf.size() )
         buflen = json_buf.size()-current_tag_part;
     
     memcpy(buf, json_buf.c_str() + current_tag_part, buflen);
 
-    if (current_tag_part+buflen < json_buf.size() )
+    if (current_tag_part+buflen < (int)json_buf.size() )
     {
         *next_tag_part = current_tag_part+buflen;
     }
@@ -168,13 +168,6 @@ std::string SetupWebInterface::getApPsk()
     _saved_settings->save();
 
     return new_psk;
-}
-
-static void _reboot()
-{
-   // Display::instance()->showText("Rebooting...");
-    /* Reboot after half a second, so that webserver has time to finish sending response */
-    watchdog_reboot(0, SRAM_END, 500);
 }
 
 void SetupWebInterface::saveSettings(const std::string &ssid, const std::string &psk)

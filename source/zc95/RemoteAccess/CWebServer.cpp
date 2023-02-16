@@ -122,7 +122,7 @@ void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     }
 }
 
-char *CWebServer::websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char *CWebServer::websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     return "/websockets.html";
 }

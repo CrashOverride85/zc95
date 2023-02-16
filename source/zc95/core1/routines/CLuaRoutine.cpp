@@ -187,6 +187,15 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
                     case menu_entry_type::MULTI_CHOICE:
                         get_multi_choice_entry(&entry);
                         break;
+
+                    case menu_entry_type::AUDIO_VIEW_SPECT:
+                    case menu_entry_type::AUDIO_VIEW_WAVE:
+                    case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+                    case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+                    case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
+                        // Unsupported from Lua (so far)
+                        // GetMenuEntryTypeFromString() should mean we never end up here.
+                        break;
                 }
             }
             conf->menu.push_back(entry);

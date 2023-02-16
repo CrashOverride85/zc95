@@ -20,7 +20,7 @@ class CWebServer
         void loop();
 
     private:
-        static char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
+        static const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
         static void websocket_open_cb(struct tcp_pcb *pcb, const char *uri);
         static void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode);
 

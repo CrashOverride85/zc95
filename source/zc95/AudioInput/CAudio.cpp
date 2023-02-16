@@ -449,7 +449,6 @@ void CAudio::draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bo
 void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     uint8_t width  = x1 - x0;
-    uint8_t height = y1 - y0;
 
     color_t colour = hagl_color(0x00, 0xFF, 0x00);
 

@@ -89,7 +89,7 @@ void COptionsList::draw()
         if 
         (
             ((_current_selection+option) >= 0) &&
-            ((_current_selection+option) < _options.size())
+            ((_current_selection+option) < (int8_t)_options.size())
         )
         {
             _display->put_text(_options[_current_selection+option].DisplayText(), text_x, _area.y0 + centre_y + (option_height * option), colour);
