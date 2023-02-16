@@ -95,6 +95,12 @@ void CMenuRoutineAdjust::button_pressed(Button button)
        _exit_menu = true;
     }
 
+    // Menu up / down
+    
+    // If there's no options, exit now
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     if (button == Button::C) // "Up"
     {
         _routine_adjust_display_list->up();
@@ -121,6 +127,10 @@ void CMenuRoutineAdjust::button_pressed(Button button)
 void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
 {
     int32_t new_current_val = 0;
+
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     struct menu_entry *menu_item = &(_active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()]);
 
     switch (menu_item->menu_type)
@@ -192,6 +202,10 @@ void CMenuRoutineAdjust::draw()
 
     // Show the parameter selection list at the top
     _routine_adjust_display_list->draw();
+
+    // If no menu entries (i.e. pattern with nothing configurable), nothing to do
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
 
     // Show menu entry
     uint8_t current_selection = _routine_adjust_display_list->get_current_selection();
@@ -343,6 +357,9 @@ void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width
 
 void CMenuRoutineAdjust::set_options_on_multi_choice_list()
 {
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     struct menu_entry selected = _active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()];
     
     if (selected.menu_type == menu_entry_type::MULTI_CHOICE)
