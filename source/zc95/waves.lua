@@ -3,7 +3,7 @@ _freq_max_hz = 250
 _pulse_min_us = 40
 _pulse_max_us = 200
 
-_initial_duration_sec = 30
+_initial_duration_sec = 25
 
 Config = {
     name = "Waves",
@@ -26,7 +26,7 @@ Config = {
             max = 60,
             increment_step = 1,
             uom = "sec",
-            default = _initial_duration_sec
+            default = _initial_duration_sec + 5
          },
          {
             type = "MIN_MAX",
@@ -36,7 +36,7 @@ Config = {
             max = 60,
             increment_step = 1,
             uom = "sec",
-            default = _initial_duration_sec
+            default = _initial_duration_sec + 10
          },
          {
             type = "MIN_MAX",
@@ -46,7 +46,7 @@ Config = {
             max = 60,
             increment_step = 1,
             uom = "sec",
-            default = _initial_duration_sec
+            default = _initial_duration_sec + 15
          }
     }
 }
