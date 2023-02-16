@@ -99,7 +99,6 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
 
     // restore everything
     restore_interrupts(save);
-    sleep_ms(1000);
 
     mutex_exit(&g_core1_suspend_mutex);
     sem_release(&g_core1_suspend_sem);

@@ -1,5 +1,3 @@
-_delay_ms = 500
-
 Config = {
     name = "Fire"
 }
