@@ -221,7 +221,7 @@ void CSavedSettings::eeprom_initialise()
 {
     printf("Initialise EEPROM...\n");
     memset(_eeprom_contents, 0, sizeof(_eeprom_contents));
-    _eeprom_contents[(uint16_t)setting::EepromInit] = 0; // write this seperatly & last, in case something goes wrong mid way
+    _eeprom_contents[(uint16_t)setting::EepromInit] = 0; // write this separately & last, in case something goes wrong mid way
 
     // Set channels 0->internal Chan1, 1->internal chan2, etc..., and the rest to none
     for (int channel_id=0; channel_id < 4; channel_id++)

@@ -169,5 +169,5 @@ void CMenuRoutineSelection::show()
 // If a routine has any menu item that uses audio, return true
 bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
 {
-    return (!(conf.audio_processing_mode != audio_mode_t::OFF));
+    return (conf.audio_processing_mode != audio_mode_t::OFF);
 }
