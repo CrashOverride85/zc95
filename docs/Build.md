@@ -144,7 +144,7 @@ Finally, attach the front panel controls board using 20mm bolts. The completed a
 
 * Connect LCD to main board using 10pin cable
 
-* Copy main board firmware onto first Pico (see section below), then plug into main board (USB socket pointing towards the left / nearest case edge)
+* Copy main board firmware onto first Pico, or a Pico W if wanting remote access (see section below), then plug into main board (USB socket pointing towards the left / nearest case edge)
 
 * Copy ZC624 firmware onto second Pico (see section below), then plug into ZC624 board (USB socket pointing towards the left)
 

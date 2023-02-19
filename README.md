@@ -5,7 +5,10 @@
 The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
 Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
 
-Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing the audio input, bluetooth and, _so far_, most of the patterns of the 312.
+If a Pico-W is used for the main MCU, it can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it.
+
+Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing bluetooth and, _so far_, most of the patterns of the 312. Audio input is possible with an extra/optional board.
+
 Additionally, if a 433MHz transmitter is fitted it can be used to control certain types of shock collars from some patterns.
 
 It's mostly built using through hole parts, with one PCB being mostly SMD - but using parts available through the JLCPCB SMT assembly service. The only exception to this is the ADC for the front panel which is a SOIC-16 footprint so should still be easy enough for most to solder.
@@ -37,6 +40,8 @@ The primary reason for having separate PCBs for the main and output board is for
 
 ## [Pattern guide](docs/Patterns.md)
 
+## [Lua scripting notes](docs/Lua.md)
+
 # TODO
 ## Firmware
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
@@ -48,9 +53,6 @@ The primary reason for having separate PCBs for the main and output board is for
 
 ## Long term road map
 May do some of this, all of this, or none of this!
-
-   - LUA scripting. Proof of concept completed. The pico's definitely powerful enough. Not sure if there's enough free RAM for scripts of a useful length
-   - Switch to Pico W, and allow some kind of remote access. Maybe just to upload LUA scripts
    - Combine main, output and audio boards into one, and probably switch to almost all SMD so it can be assembled by JLCPCB
    - Probably remove "Aux" socket and swap for seperate "Serial" and "Audio" sockets
    - Use a lithium battery pack instead of a 12v SLA
@@ -59,5 +61,6 @@ May do some of this, all of this, or none of this!
 
 ## Known issues
    - Battery gauge is pretty hopeless
+   - Depending on the pattern, the LEDs aren't very useful - either Red or Green, with no dimming depending on power
 
 [zc95]: docs/images/zc95.jpg "Assembled ZC95"
