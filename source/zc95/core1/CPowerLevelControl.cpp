@@ -26,6 +26,8 @@
  * Includes:
  *   - routine_requested_power - Power level (0-1000) that a routine has requested. It will usually be 1000.
  *   - front_panel_power       - Power level (0-1000) as set on the front pannel. Due to the ADC, there are only 255 discrete values possible 
+ *   - remote_access_power     - Power level (0-1000) set by remote UI. If in remote access mode, this largely takes the place of front_panel_power,
+ *                               with front_panel_power serving as a power limit
  *   - max_power_level         - The maximum power level currenly possible - always <= front_panel_power. This takes into account ramp up 
  *                             - time, so for the first few seconds this will increase (assuming the front pannel isn't set to 0)
  *   - output_power_level      - The power level to be sent to output chanel after combining all the above
@@ -37,12 +39,14 @@ CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings)
     memset(_front_panel_power, 0, sizeof(_front_panel_power));
     memset(_routine_power, 0, sizeof(_routine_power));
     memset(_output_power, 0, sizeof(_output_power));
+    memset(_remote_access_power, 0, sizeof(_remote_access_power));
 
     _ramp_percent = 0; 
     _ramp_last_increment_us = 0;
     _ramp_increment_period_ms = 0;
         
     _ramp_in_progress = false;
+    _remote_mode_active = false;
 }
 
 // Call with the power level set on the front panel 
@@ -57,6 +61,44 @@ void CPowerLevelControl::set_front_panel_power(uint8_t channel, uint16_t power)
         _front_panel_power[channel] = power;
         calc_output_power(channel);
     }
+}
+
+// Call with power level set remotely
+// power is 0-1000, channel is 0-3
+void CPowerLevelControl::set_remote_power(uint8_t channel, uint16_t power)
+{
+    if (channel >= MAX_CHANNELS)
+        return;
+
+    if (power > 1000)
+        power = 1000;
+
+    if (_remote_access_power[channel] != power)
+    {
+        _remote_access_power[channel] = power;
+        calc_output_power(channel);
+    }
+}
+
+void CPowerLevelControl::remote_mode_enable()
+{
+    _remote_mode_active = true;
+    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    {
+        _remote_access_power[chan] = 0;
+        calc_output_power(chan);
+    }
+}
+
+void CPowerLevelControl::remote_mode_disable()
+{
+    _remote_mode_active = false;
+    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    {
+        _remote_access_power[chan] = 0;
+        calc_output_power(chan);
+    }
+    zero_power_level();
 }
 
 // Power level being requested by routine (0-1000)
@@ -84,13 +126,27 @@ uint16_t CPowerLevelControl::get_output_power_level(uint8_t channel)
 // Get the current maximum power level (0-1000)
 uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
 {
+    uint16_t selected_power = 0;
+
     if (channel >= MAX_CHANNELS)
         return 0;
 
-    if (_ramp_in_progress)
-        return (float)_front_panel_power[channel] * ((float)_ramp_percent / (float)100);
+    if (_remote_mode_active)
+    {
+        // Max power is limited by what's set on the front panel
+        selected_power = _remote_access_power[channel];
+        if (selected_power > _front_panel_power[channel])
+            selected_power = _front_panel_power[channel];
+    }
     else
-        return _front_panel_power[channel];
+    {
+        selected_power = _front_panel_power[channel];
+    }
+
+    if (_ramp_in_progress)
+        return (float)selected_power* ((float)_ramp_percent / (float)100);
+    else
+        return selected_power;
 }
 
 // Get the maximum power level (power level set on front pannel - 0-1000) that's being ramped up to
@@ -149,9 +205,23 @@ void CPowerLevelControl::loop()
 
 void CPowerLevelControl::calc_output_power(uint8_t channel)
 {
-    // Routines request power levels between 0-1000, combine this with the 0-1000 power level set on 
-    // the front pannel to get the actual power required from the channel.
-    float scaled_power = (float)_routine_power[channel] * ((float)_front_panel_power[channel] / (float)1000);
+    float scaled_power;
+
+    // Routines request power levels between 0-1000, combine this with the 0-1000 power level either set on 
+    // the front panel, or supplied by remote access, to get the actual power required from the channel.
+    if (_remote_mode_active)
+    {
+        scaled_power = (float)_routine_power[channel] * ((float)_remote_access_power[channel] / (float)1000);
+
+        // in remote access mode, the front panel power is used as a power limit
+        if (scaled_power > _front_panel_power[channel]) 
+            scaled_power = _front_panel_power[channel]; 
+    }
+    else
+    {
+        scaled_power = (float)_routine_power[channel] * ((float)_front_panel_power[channel] / (float)1000);
+    }
+    
     scaled_power = ceil(scaled_power);
     
     if (scaled_power > 1000)

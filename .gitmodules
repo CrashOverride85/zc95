@@ -7,3 +7,6 @@
 [submodule "source/zc624/external/pico_i2c_slave"]
 	path = source/zc624/external/pico_i2c_slave
 	url = https://github.com/CrashOverride85/pico_i2c_slave.git
+[submodule "source/zc95/external/ArduinoJson"]
+	path = source/zc95/external/ArduinoJson
+	url = https://github.com/CrashOverride85/ArduinoJson.git

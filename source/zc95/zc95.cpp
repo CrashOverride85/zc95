@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2023  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@
 
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
+#include "display/CMenuApMode.h"
 
 #include "core1/Core1.h"
 #include "core1/Core1Messages.h"
@@ -58,6 +59,8 @@
 #include "core1/routines/CRoutines.h"
 #include "core1/CRoutineOutput.h"
 #include "core1/CRoutineOutputCore1.h"
+
+#include "RemoteAccess/CWifi.h"
 
 #include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
@@ -70,6 +73,7 @@ CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &controls);
+CWifi *wifi = NULL;
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
@@ -183,6 +187,7 @@ int main()
     // Note eeprom ic is on i2c bus
     sleep_ms(100); // wait for eeprom to be ready
     CSavedSettings settings = CSavedSettings(&eeprom);
+    g_SavedSettings = &settings;
 
     // Configure AUX port for serial or audio use
     if (settings.get_aux_port_use() == CSavedSettings::setting_aux_port_use::AUDIO)
@@ -221,7 +226,7 @@ int main()
     display.init(); // This takes some time - not far off a second
 
     // Get list of available patterns / routines
-    std::vector<CRoutineMaker*> routines;
+    std::vector<CRoutines::Routine> routines;
     CRoutines::get_routines(&routines);
    
     hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
@@ -230,20 +235,24 @@ int main()
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
         queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
 
+    // Queue used for routines (so far just Lua) running on Core1 to send debug messages (via print())
+    // out over a websocket connection, if running via RemoteAccess
+    queue_init(&gPatternTextOutputQueue, sizeof(pattern_text_output_t), PATTERN_TEXT_OUTPUT_QUEUE_LENGTH);
+
     // Load/set gain, mic preamp, etc., from eeprom
     audio.init(&settings, &display);
 
-    analogueCapture.init();
     analogueCapture.start();
 
     led.set_all_led_colour(LedColour::Black);
 
     sleep_ms(100);
-   
+
     core1_start(&routines, &settings);
-    CRoutineOutput *routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
+    CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
+    wifi = new CWifi(&analogueCapture, routine_output, &routines);  
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
@@ -254,7 +263,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -268,6 +277,7 @@ int main()
     while (1) 
     {
         uint64_t loop_start = time_us_64();
+        wifi->loop();
 
         display.update();
         process_front_pannel_input(&controls, current_menu);

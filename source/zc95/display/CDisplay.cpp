@@ -51,6 +51,7 @@ CDisplay::CDisplay()
     _font_height = glyph.height;
     _battery_percentage = 0;
     _active_pattern = "";
+    _remote_mode_active = false;
 }
 
 uint8_t CDisplay::get_font_width()
@@ -128,7 +129,7 @@ void CDisplay::set_option_d(std::string text)
 
 // Max_power = 0-1000, as set on the front panel
 // actual_power = scaled power as requested by running routine (actual_power should always be <= max_power)
-void CDisplay::set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power) // chan 0-3, others 0-1000
+void CDisplay::set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active) // chan 0-3, others 0-1000
 {
     if (front_pannel_power > 1000)
         front_pannel_power = 1000;
@@ -144,6 +145,8 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_pannel_power, int1
         maximum_power = 1000;
     if (maximum_power < 0)
         maximum_power = 0;
+
+    _remote_mode_active = remote_mode_active;
 
     switch (channel)
     {
@@ -237,19 +240,39 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
     put_text(label, (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 10, hagl_color(0, 0xFF, 0));
     hagl_draw_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width), (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(0xFF, 0, 0));
 
-    uint8_t upper_limit = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
-    uint8_t bottom = menu_bar_height + 2;
+    // 0,0 is in the top left. Display area is the bit we can draw in (free of the top and bottom menu bars and the status bar at the bottom)
+    uint8_t bottom_of_display_area = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
+    uint8_t top_of_display_area = menu_bar_height + 2;
 
-    // Max power outline
-    float max_power_top = (((1000-max_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
-    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, max_power_top, bar_colour);
+    // When in remote access mode, the front panel control are used to set the power limit, so mark the part of the power bar that can't be
+    // reached due to the limit in green.
+    if (_remote_mode_active)
+    {
+        float power_limit_bottom = (((1000-front_pannel_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
+        hagl_fill_rectangle(
+            (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2,     // x0
+            top_of_display_area,                            // y0
+            (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-2, // x1
+            power_limit_bottom,                             // y1
+            hagl_color(0x00, 0xFF, 0x00));
+    }
 
-    // Front pannel power setting
-    float fp_power_top = (((1000-front_pannel_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
+    // Blue max power bar
+    float max_power_top = (((1000-max_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
+    hagl_fill_rectangle(
+        (DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
+        (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, 
+        (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, 
+        max_power_top, 
+        bar_colour);
+        
+    // Front panel power setting
+    float fp_power_top = (((1000-front_pannel_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
     float fp_power_bottom = fp_power_top-1;
     if (fp_power_bottom < 0)
         fp_power_bottom = 0;
 
+    // Blue max power line (main blue bar ramps up to this)
     hagl_fill_rectangle(
             (DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
             fp_power_bottom,
@@ -259,7 +282,7 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
 
     // current power
     color_t current_power_colour   =  hagl_color(0xFF, 0xFF, 0x00);
-    float current_power_top = (((1000-current_power)/(float)1000) * ((float)upper_limit-(float)bottom)) + (float)bottom;
+    float current_power_top = (((1000-current_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
     hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
 }
 

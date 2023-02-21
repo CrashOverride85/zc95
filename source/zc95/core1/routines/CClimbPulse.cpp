@@ -30,7 +30,7 @@ enum menu_ids
     CLIMB_PULSE_DURATION = 3
 };
 
-CClimbPulse::CClimbPulse()
+CClimbPulse::CClimbPulse(uint8_t param)
 {
     printf("CClimbPulse()\n");
     _next_pulse_time = 0;

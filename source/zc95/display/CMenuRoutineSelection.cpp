@@ -19,21 +19,22 @@
 #include "CMenuRoutineSelection.h"
 #include "CMenuRoutineAdjust.h"
 #include "CMenuSettings.h"
+#include "../globals.h"
 #include "../core1/output/CFullChannelAsSimpleChannel.h"
-
 #include "../core1/CRoutineOutput.h"
-
 
 #include <string.h>
 
 CMenuRoutineSelection::CMenuRoutineSelection(
     CDisplay* display, 
-    std::vector<CRoutineMaker*> *routines, 
+    std::vector<CRoutines::Routine> *routines, 
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
     CHwCheck *hwCheck,
-    CAudio *audio)
+    CAudio *audio,
+    CAnalogueCapture *analogueCapture,
+    CWifi *wifi)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -46,6 +47,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _hwCheck = hwCheck;
     _routine_output = routine_output;
     _audio = audio;
+    _analogueCapture = analogueCapture;
+    _wifi = wifi;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -83,16 +86,15 @@ void CMenuRoutineSelection::button_pressed(Button button)
         {
         if (button == Button::A) // Select
         {
-            CRoutineMaker* routine_maker = (*_routines)[_routine_disply_list->get_current_selection_id()];
-            _routine_output->activate_routine(_routine_disply_list->get_current_selection_id());
+            CRoutines::Routine routine = (*_routines)[_routine_disply_list->get_current_selection()];
             _last_selection = _routine_disply_list->get_current_selection();
-
-            set_active_menu(new CMenuRoutineAdjust(_display, routine_maker, _buttons, _routine_output, _audio));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio));
+            _routine_output->activate_routine(_routine_disply_list->get_current_selection());
         }
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi));
         }
         
         if (button == Button::C) // "Up"
@@ -128,10 +130,10 @@ void CMenuRoutineSelection::show()
     // Get a list of routines to show
     _routine_disply_list->clear_options();
     int index=0;
-    for (std::vector<CRoutineMaker*>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
     {
         struct routine_conf conf;
-        CRoutine* routine = (*it)();
+        CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
         // Add a warning for routines that disable channel isolation

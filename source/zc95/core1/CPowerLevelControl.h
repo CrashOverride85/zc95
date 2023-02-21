@@ -14,6 +14,16 @@ class CPowerLevelControl
         // power is 0-1000, channel is 0-3
         void set_front_panel_power(uint8_t channel, uint16_t power);
 
+        // Call with the power level set remotely
+        // power is 0-1000, channel is 0-3
+        void set_remote_power(uint8_t channel, uint16_t power);
+
+        // Enable remote mode; front panel power acts as power limit, and remote power as the user selected power level
+        void remote_mode_enable();
+
+        // Disable remote modes; restore normal/default operation - remote power setting is ignored
+        void remote_mode_disable();
+
         // Power level being requested by routine (0-1000)
         void set_routine_requested_power_level(uint8_t channel, uint16_t power);
 
@@ -39,14 +49,15 @@ class CPowerLevelControl
     private:
         void calc_output_power(uint8_t channel);
         uint16_t _front_panel_power[MAX_CHANNELS];
+        uint16_t _remote_access_power[MAX_CHANNELS];
         uint16_t _routine_power[MAX_CHANNELS];
         uint16_t _output_power[MAX_CHANNELS];
 
-        const uint8_t  _ramp_duration_secs = 5;
         uint8_t  _ramp_percent = 0; // 100=full power
         uint64_t _ramp_last_increment_us = 0;
         uint16_t _ramp_increment_period_ms = 0;
         bool _ramp_in_progress = false;
+        bool _remote_mode_active = false;
 
         CSavedSettings *_saved_settings;
 };

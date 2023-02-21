@@ -3,8 +3,9 @@
 class CCamTrigger: public CRoutine
 {
     public:
-        CCamTrigger();
+        CCamTrigger(uint8_t param);
         ~CCamTrigger();
+        static CRoutine* create(uint8_t param) { return new CCamTrigger(param); };
         void get_config(struct routine_conf *conf);
         static void config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);

@@ -1,60 +1,68 @@
 /*
  * ZC95
  * Copyright (C) 2021  CrashOverride85
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-
-#include "routines/CRoutineMaker.h"
 
 #include "Core1.h"
 #include "../globals.h"
 #include <string.h>
 #include "pico/multicore.h"
 #include "pico/util/queue.h"
+#include <malloc.h>
 
-/* 
+/*
  * For code that runs on core1
  */
 
+#define STACK_SIZE 4096
 static Core1 *core1 = NULL;
+static uint32_t *_stack = NULL;
 
-void core1_entry() 
+void core1_entry()
 {
     printf("Core1::core1_entry()\n");
     core1->init();
 
-    while(1)
+    while (1)
         core1->loop();
 }
 
-Core1* core1_start(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings) 
-{   
+Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
+{
     printf("core1_start\n");
     if (core1 == NULL)
     {
         core1 = new Core1(routines, saved_settings);
     }
-    
+    if (_stack == NULL)
+    {
+        _stack = (uint32_t *)malloc(STACK_SIZE);
+    }
+
     multicore_reset_core1(); // Try and fix issue with random hangs when debugging (on start)
     sleep_ms(100);
-    multicore_launch_core1(core1_entry);
+
+ // multicore_launch_core1(core1_entry);
+    multicore_launch_core1_with_stack(core1_entry, _stack, STACK_SIZE);
+
     sleep_ms(10);
     return core1;
 }
 
-Core1::Core1(std::vector<CRoutineMaker*> *routines, CSavedSettings *saved_settings)
+Core1::Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
 {
     printf("Core1::Core1()\n");
     _saved_settings = saved_settings;
@@ -72,7 +80,7 @@ void Core1::init()
 {
     // Note: If channel config is changed, this will be called again
     printf("Core1::init()\n");
-    
+
     for (int x = 0; x < MAX_CHANNELS; x++)
     {
         if (_fullChannelAsSimpleChannels[x] != NULL)
@@ -86,7 +94,7 @@ void Core1::init()
             delete _active_channels[x];
             _active_channels[x] = NULL;
         }
-    } 
+    }
 
     if (_channel_config != NULL)
     {
@@ -124,7 +132,7 @@ void Core1::loop()
         _active_routine->loop(time_us_64());
     }
 
-    for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
+    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
         if (_active_channels[channel_number] != NULL)
         {
             _active_channels[channel_number]->loop(time_us_64());
@@ -136,14 +144,14 @@ void Core1::loop()
     if (_channel_config != NULL)
         _channel_config->loop();
 
-#ifndef SINGLE_CORE
     update_power_levels();
     process_messages();
-#endif
+    check_validity_of_lua_script();
+
 
     if (gFatalError)
     {
-        for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
+        for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
         {
             if (_active_channels[channel_number] != NULL)
             {
@@ -155,13 +163,13 @@ void Core1::loop()
 
         _channel_config->shutdown_zc624();
         printf("Core1: HALT.\n");
-        while(1);
+        while (1);
     }
 }
 
 void Core1::update_power_levels()
 {
-    for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
+    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
     {
         // Send current power level being output, if changed
         uint16_t power_level = power_level_control->get_output_power_level(channel_number);
@@ -200,6 +208,29 @@ void Core1::update_power_levels()
     }
 }
 
+void Core1::check_validity_of_lua_script()
+{
+    lua_script_state_t state = lua_script_state_t::NOT_APPLICABLE;
+
+    if (_active_routine != NULL)
+    {
+        state = _active_routine->lua_script_state();
+    }
+
+    if (_script_script_state != state)
+    {
+        message msg = {0};
+        msg.msg8[0] = MESSAGE_LUA_SCRIPT_STATE;
+        msg.msg8[1] = (uint8_t)state;
+
+        if (multicore_fifo_wready())
+        {
+            multicore_fifo_push_blocking(msg.msg32);
+            _script_script_state = state;
+        }
+    }
+}
+
 void Core1::process_messages()
 {
     // main FIFO queue - insturctions to start routines, change settings, etc.
@@ -216,112 +247,155 @@ void Core1::process_messages()
 
 void Core1::process_message(message msg)
 {
-    // printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
-    switch(msg.msg8[0])
+    printf("Core1::process_message(): got msg type %d (%d, %d, %d)\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
+    switch (msg.msg8[0])
     {
-        case MESSAGE_ROUTINE_LOAD:
-            activate_routine(msg.msg8[1]);
-            break;
+    case MESSAGE_ROUTINE_LOAD:
+        activate_routine(msg.msg8[1]);
+        break;
 
-        case MESSAGE_ROUTINE_STOP:
-            stop_routine();
-            break;
+    case MESSAGE_ROUTINE_STOP:
+        stop_routine();
+        break;
 
-        case MESSAGE_ROUTINE_MIN_MAX_CHANGE:
+    case MESSAGE_ROUTINE_MIN_MAX_CHANGE:
+    {
+        uint8_t menu_id = msg.msg8[1];
+        uint16_t new_value = msg.msg8[2];
+        new_value |= msg.msg8[3] << 8;
+        menu_min_max_change(menu_id, new_value);
+        break;
+    }
+
+    case MESSAGE_ROUTINE_MULTI_CHOICE_CHANGE:
+    {
+        uint8_t menu_id = msg.msg8[1];
+        uint16_t choice_id = msg.msg8[2];
+        choice_id |= msg.msg8[3] << 8;
+        menu_multi_choice_change(menu_id, choice_id);
+        break;
+    }
+
+    case MESSAGE_ROUTINE_MENU_SELECTED:
+    {
+        uint8_t menu_id = msg.msg8[1];
+        menu_selected(menu_id);
+        break;
+    }
+
+    case MESSAGE_ROUTINE_TRIGGER:
+    {
+        uint8_t socket = msg.msg8[1];
+        uint16_t part = msg.msg8[2];
+        bool active = msg.msg8[3];
+        trigger((trigger_socket)socket, (trigger_part)part, active);
+        break;
+    }
+
+    case MESSAGE_SET_FRONT_PANNEL_POWER:
+    {
+        uint8_t channel = msg.msg8[1];
+        uint16_t power = msg.msg8[2];
+        power |= msg.msg8[3] << 8;
+        power_level_control->set_front_panel_power(channel, power);
+        update_channel_power(channel);
+        break;
+    }
+
+    case MESSAGE_TRIGGER_COLLAR:
+    {
+        if (mutex_enter_block_until(&g_collar_message_mutex, 0))
         {
-            uint8_t menu_id = msg.msg8[1];
-            uint16_t new_value = msg.msg8[2];
-            new_value |= msg.msg8[3] << 8;
-            menu_min_max_change(menu_id, new_value);
-            break;
+            collar_transmit(g_collar_message.id, g_collar_message.channel, g_collar_message.mode, g_collar_message.power);
+            mutex_exit(&g_collar_message_mutex);
         }
-
-        case MESSAGE_ROUTINE_MULTI_CHOICE_CHANGE:
+        else
         {
-            uint8_t menu_id = msg.msg8[1];
-            uint16_t choice_id = msg.msg8[2];
-            choice_id |= msg.msg8[3] << 8;
-            menu_multi_choice_change(menu_id, choice_id);
-            break;
+            printf("Core1::process_message(): Failed to get g_collar_message_mutex, message ignored\n");
         }
+        break;
+    }
 
-        case MESSAGE_ROUTINE_MENU_SELECTED:
+    case MESSAGE_ROUTINE_SOFT_BUTTON_PUSHED:
+    {
+        soft_button button = (soft_button)msg.msg8[1];
+        bool pushed = msg.msg8[2];
+        soft_button_pushed(button, pushed);
+        break;
+    }
+
+    case MESSAGE_REINIT_CHANNELS:
+        stop_routine();
+        init();
+        break;
+
+    case MESSAGE_AUDIO_THRES_REACHED:
+        if (_active_routine != NULL)
         {
-            uint8_t menu_id = msg.msg8[1];
-            menu_selected(menu_id);
-            break;
+            uint16_t fundamental_freq = msg.msg8[1];
+            fundamental_freq |= msg.msg8[2] << 8;
+            uint8_t cross_count = msg.msg8[3];
+            _active_routine->audio_threshold_reached(fundamental_freq, cross_count);
         }
+        break;
 
-        case MESSAGE_ROUTINE_TRIGGER:
+    case MESSAGE_AUDIO_INTENSITY:
+        if (_active_routine != NULL)
         {
-            uint8_t socket = msg.msg8[1];
-            uint16_t part = msg.msg8[2];
-            bool active = msg.msg8[3];
-            trigger((trigger_socket)socket, (trigger_part)part, active);
-            break;
+            uint8_t left_chan = msg.msg8[1];
+            uint8_t right_chan = msg.msg8[2];
+            uint8_t virt_chan = msg.msg8[3];
+            _active_routine->audio_intensity(left_chan, right_chan, virt_chan);
         }
+        break;
 
-        case MESSAGE_SET_FRONT_PANNEL_POWER:
+    case MESSAGE_CORE1_SUSPEND:
+        printf("Core1: suspending\n");
+        core1_suspend();
+        printf("Core1: resumed\n");
+        break;   
+        
+    case MESSAGE_SET_REMOTE_ACCESS_POWER:
         {
             uint8_t channel = msg.msg8[1];
             uint16_t power = msg.msg8[2];
             power |= msg.msg8[3] << 8;
-            power_level_control->set_front_panel_power(channel, power);
+            power_level_control->set_remote_power(channel, power);
             update_channel_power(channel);
             break;
         }
 
-        case MESSAGE_TRIGGER_COLLAR:
+    case MESSAGE_SET_REMOTE_ACCESS_MODE:
         {
-            if (mutex_enter_block_until(&g_collar_message_mutex, 0))
-            {
-                collar_transmit(g_collar_message.id, g_collar_message.channel, g_collar_message.mode, g_collar_message.power);
-                mutex_exit(&g_collar_message_mutex);
-            }
+            uint8_t enable = (msg.msg8[1] != 0);
+            if (enable)
+                power_level_control->remote_mode_enable();
             else
-            {
-                printf("Core1::process_message(): Failed to get g_collar_message_mutex, message ignored\n");
-            }
+                power_level_control->remote_mode_disable();
+
+            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+                update_channel_power(channel);
             break;
         }
-
-        case MESSAGE_ROUTINE_SOFT_BUTTON_PUSHED:
-        {
-            soft_button button = (soft_button)msg.msg8[1];
-            bool pushed        =  msg.msg8[2];
-            soft_button_pushed(button, pushed);
-            break;
-        }
-
-        case MESSAGE_REINIT_CHANNELS:
-            stop_routine();
-            init();
-            break;
-
-        case MESSAGE_AUDIO_THRES_REACHED:
-            if (_active_routine != NULL)
-            {
-                uint16_t fundamental_freq = msg.msg8[1];
-                fundamental_freq |= msg.msg8[2] << 8;
-                uint8_t cross_count = msg.msg8[3];
-                _active_routine->audio_threshold_reached(fundamental_freq, cross_count);
-            }
-            break;
-
-        case MESSAGE_AUDIO_INTENSITY:
-            if (_active_routine != NULL)
-            {
-                uint8_t left_chan  = msg.msg8[1];
-                uint8_t right_chan = msg.msg8[2];
-                uint8_t virt_chan  = msg.msg8[3];
-                _active_routine->audio_intensity(left_chan, right_chan, virt_chan);
-            }
-            break;
     }
 }
 
+void __not_in_flash_func(Core1::core1_suspend)(void)
+{
+    uint32_t save = save_and_disable_interrupts();
+
+    // Core0 will have acquired this sem before suspending this core. Let it know it can continue by releasing it.
+    sem_release(&g_core1_suspend_sem);
+
+    mutex_enter_blocking(&g_core1_suspend_mutex);
+
+    restore_interrupts(save);
+
+    mutex_exit(&g_core1_suspend_mutex);
+}
+
 void Core1::process_audio_pulse_queue()
-{   
+{
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
     {
         if (_pulse_messages[channel].abs_time_us)
@@ -332,7 +406,7 @@ void Core1::process_audio_pulse_queue()
                 if (msg_age > 1000)
                 {
                     // The pulse is too old for some reason - discard
-                    //printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
+                    // printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
                 }
                 else
                 {
@@ -355,7 +429,7 @@ void Core1::process_audio_pulse_queue()
                     printf("DISCARD msg with time in past (chan %d)\n", channel);
                 }
                 else if (_pulse_messages[channel].abs_time_us > (time_us_64() + (1000 * 1000)))
-                { 
+                {
                     // if the pulse is more than a second in the future, something's probably gone wrong... discard
                     _pulse_messages[channel].abs_time_us = 0;
                     printf("DISCARD msg with time too far in future (chan %d)\n", channel);
@@ -367,23 +441,24 @@ void Core1::process_audio_pulse_queue()
 
 void Core1::activate_routine(uint8_t routine_id)
 {
-    CRoutineMaker* routine_maker = (*_routines)[routine_id];    
-    
-    if (!routine_maker)
+    printf("Core1::activate_routine(%d)\n", routine_id);
+    CRoutines::Routine routine = (*_routines)[routine_id];
+
+    if (!routine.routine_maker)
     {
         printf("CMenuRoutineSelection::activate_routine NULL routine - exit\n");
         return;
     }
-    
+
     stop_routine();
 
-    _active_routine = routine_maker();
+    _active_routine= routine.routine_maker(routine.param);
 
     routine_conf conf;
     _active_routine->get_config(&conf);
 
     // Loop through all the channels the routine has requsted
-    uint8_t channel=0;
+    uint8_t channel = 0;
     for (std::vector<output_type>::iterator it = conf.outputs.begin(); it != conf.outputs.end(); it++)
     {
         if (_active_channels[channel] == NULL)
@@ -394,40 +469,40 @@ void Core1::activate_routine(uint8_t routine_id)
         {
             switch (*it)
             {
-                case output_type::SIMPLE:
-                    if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
-                    {
-                        // Routine wants a simple channel, but that channel is a full one. So use a wrapper to convert it into a simple channel
-                        _fullChannelAsSimpleChannels[channel] = new CFullChannelAsSimpleChannel(_saved_settings, (CFullOutputChannel*)_active_channels[channel], channel, power_level_control);
-                        _active_channels[channel] = _fullChannelAsSimpleChannels[channel];
-                    }
+            case output_type::SIMPLE:
+                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
+                {
+                    // Routine wants a simple channel, but that channel is a full one. So use a wrapper to convert it into a simple channel
+                    _fullChannelAsSimpleChannels[channel] = new CFullChannelAsSimpleChannel(_saved_settings, (CFullOutputChannel *)_active_channels[channel], channel, power_level_control);
+                    _active_channels[channel] = _fullChannelAsSimpleChannels[channel];
+                }
 
-                    if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::SIMPLE)
-                    {
-                        _active_routine->set_simple_output_channel(channel, (CSimpleOutputChannel*)_active_channels[channel]);
-                    }
+                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::SIMPLE)
+                {
+                    _active_routine->set_simple_output_channel(channel, (CSimpleOutputChannel *)_active_channels[channel]);
+                }
 
-                    else
-                    {
-                        printf("ERROR: Unknown channel type for channel (%d)\n", channel);
-                    }
-                    break;
+                else
+                {
+                    printf("ERROR: Unknown channel type for channel (%d)\n", channel);
+                }
+                break;
 
-                case output_type::FULL:
-                    if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
-                    {
-                        _active_routine->set_full_output_channel(channel, (CFullOutputChannel*)_active_channels[channel]);
-                        ((CFullOutputChannel*)_active_channels[channel])->set_channel_isolation(conf.enable_channel_isolation);
-                    }
-                    else
-                    {
-                        printf("CMenuRoutineSelection::activate_routine(): ERROR - routine requested FULL output channel, but chan %d is not type FULL\n", channel);
-                    }
-                    break;
+            case output_type::FULL:
+                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
+                {
+                    _active_routine->set_full_output_channel(channel, (CFullOutputChannel *)_active_channels[channel]);
+                    ((CFullOutputChannel *)_active_channels[channel])->set_channel_isolation(conf.enable_channel_isolation);
+                }
+                else
+                {
+                    printf("CMenuRoutineSelection::activate_routine(): ERROR - routine requested FULL output channel, but chan %d is not type FULL\n", channel);
+                }
+                break;
 
-                default:
-                    printf("CMenuRoutineSelection::activate_routine(): ERROR - unexpected output_type\n");
-                    break;
+            default:
+                printf("CMenuRoutineSelection::activate_routine(): ERROR - unexpected output_type\n");
+                break;
             }
         }
 
@@ -436,6 +511,7 @@ void Core1::activate_routine(uint8_t routine_id)
 
     power_level_control->ramp_start();
     _active_routine->start();
+    printf("Core1::activate_routine: completed\n");
 }
 
 void Core1::stop_routine()
@@ -458,7 +534,7 @@ void Core1::stop_routine()
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
 {
     // set power levels to min/off
-    for (uint8_t channel_number=0; channel_number < MAX_CHANNELS; channel_number++)
+    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
     {
         if (_active_channels[channel_number] != NULL)
         {
@@ -467,7 +543,7 @@ void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
             // Make sure ChannelIsolation is on ready for the next routine. This should happen anyway, but just to make sure.
             if (enable_channel_isolation && _active_channels[channel_number]->get_channel_type() == COutputChannel::channel_type::FULL)
             {
-                ((CFullOutputChannel*)_active_channels[channel_number])->set_channel_isolation(true);
+                ((CFullOutputChannel *)_active_channels[channel_number])->set_channel_isolation(true);
             }
         }
     }
@@ -478,7 +554,7 @@ void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
 
 void Core1::delete_fullChannelAsSimpleChannels_and_restore_channels()
 {
-    for (int x=0; x < MAX_CHANNELS; x++)
+    for (int x = 0; x < MAX_CHANNELS; x++)
     {
         if (_fullChannelAsSimpleChannels[x] != NULL)
         {
@@ -536,10 +612,10 @@ void Core1::soft_button_pushed(soft_button button, bool pushed)
     if (_active_routine != NULL)
     {
         _active_routine->soft_button_pushed(button, pushed);
-    } 
+    }
 }
 
-void Core1::collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power)
+void Core1::collar_transmit(uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power)
 {
     CCollarComms *collar_comms = _channel_config->get_collar_comms();
 

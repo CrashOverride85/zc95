@@ -1,6 +1,8 @@
 
 #define PULSE_QUEUE_LENGTH 8  // queue size for pules sent from core0 to core1. Only used for audio pattern
-                           // (maybe serial input in the future), where processing happens on core0
+                              // (maybe serial input in the future), where processing happens on core0
+
+#define PATTERN_TEXT_OUTPUT_QUEUE_LENGTH 4 // Max number of queued text/debug messages from Core1 (so far just lua) to Core0
 
 #define ZC624_ADDR                  0x10
 #define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
@@ -16,6 +18,16 @@
 // Set expected version for zc624 output module
 #define ZC624_REQUIRED_MAJOR_VERION 0
 #define ZC624_MIN_MINOR_VERION      3
+
+// Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
+#define WEBSOCKET_API_VERION_MAJOR  1   // Increment on breaking change
+#define WEBSOCKET_API_VERION_MINOR  0   // Increment non-breaking change
+
+// The maximum length a web socket message can be in bytes
+#define MAX_WS_MESSAGE_SIZE 200
+
+// How many Lua instructions can be run on each Lua call. Protects against infinite loops locking up box.
+#define LUA_MAX_INSTRUCTIONS 10000
 
 // Other pins
 #define PIN_LED           10 // ws2812 LED chain
@@ -40,6 +52,10 @@
 
 #define TRIGGER_INPUT_DEBOUNCE_US 10000 // 10ms
 #define RAMP_UP_TIME_MAXIMUM_SECS 30    // the maximum ramp up time that can be configured in seconds (0-255)
+
+// For the time being, allowing more than one web socket connection is likely to cause all sorts of issues, 
+// e.g. fighting for control over running routine, possibility to change a lua script whilst it's running, etc.
+#define MAX_WEBSOCKET_CONNECTIONS 1 
 
 // Note that just changing these two values would likely break everything
 #define MAX_POWER_LEVEL 1000
@@ -66,4 +82,3 @@
 
 #define PIN_ACC_UART_TX 8
 #define PIN_ACC_UART_RX 9
-

@@ -4,6 +4,8 @@
 #include "../AudioInput/CAudio.h"
 #include "../CHwCheck.h"
 #include "../CSavedSettings.h"
+#include "../CAnalogueCapture.h"
+#include "../RemoteAccess/CWifi.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/output/COutputChannel.h"
 #include "../core1/output/CChannelConfig.h"
@@ -12,7 +14,16 @@
 class CMenuSettings : public CMenu
 {
     public:
-        CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
+        CMenuSettings(
+            CDisplay* display, 
+            CGetButtonState *buttons, 
+            CSavedSettings *saved_settings, 
+            CRoutineOutput *routine_output, 
+            CHwCheck *hwCheck, 
+            CAudio *audio, 
+            CAnalogueCapture *analogueCapture,
+            CWifi *wifi);
+
         ~CMenuSettings();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -44,7 +55,8 @@ class CMenuSettings : public CMenu
             RAMP_UP_TIME   = 4,
             AUDIO          = 5,
             HARDWARE       = 6,
-            ABOUT          = 7
+            REMOTE_ACCESS  = 7,
+            ABOUT          = 8
         };
 
         std::vector<setting> _settings;
@@ -58,6 +70,8 @@ class CMenuSettings : public CMenu
         CRoutineOutput *_routine_output;
         CHwCheck *_hwCheck;
         CAudio *_audio;
+        CAnalogueCapture *_analogueCapture;
+        CWifi *_wifi;
 };
 
 

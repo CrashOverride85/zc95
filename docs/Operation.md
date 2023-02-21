@@ -52,11 +52,14 @@ On first power up, the box shows a menu of available patterns. Either the highli
 
 ## Config
 Configuration options so far:
+
+* Remote access - Only visible if running on a Pico-W. Allows for remote access to the ZC95 over WiFi, for the purpose of either remotely controlling it or uploading Lua scripts. See [Remote Access](./RemoteAccess.md) 
+
 * Channel config - For each channel 1-4, picks if either the internal output (on the 2.5mm connector) should be used, or if a shock collar should be triggered
 
 * Collar config - Allows 4x shock collars to be configured. Each shock collar needs to be paired to the box, and the bottom option allows for testing the collar with the current settings. The "Chan." option corresponds to the CH button on the original remote, and it probably makes sense to be left as 1 for all collars, as each will have a unique ID anyway. Note that the mode (shock / vibrate / beep) needs to be set here, and won't change outside of this config screen (for the time being, at least)
 
-* LED brightness - Pretty much what is says. If you value your eyesight, single digit values are good.
+* LED brightness - Pretty much what it says. If you value your eyesight, single digit values are good.
 
 * Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 

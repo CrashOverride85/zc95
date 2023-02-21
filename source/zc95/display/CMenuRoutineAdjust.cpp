@@ -19,7 +19,7 @@
 #include "CMenuRoutineAdjust.h"
 
 
-CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine_maker, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
+CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine routine, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -32,9 +32,9 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutineMaker* routine
     _routine_output = routine_output;
 
     // get routine config
-    CRoutine* routine = routine_maker();
-    routine->get_config(&_active_routine_conf);
-    delete routine;
+    CRoutine* routine_ptr = routine.routine_maker(routine.param);
+    routine_ptr->get_config(&_active_routine_conf);
+    delete routine_ptr;
 
     // Use the top half of the display for the list routine paramers that can be adjusted
     area = _area;
@@ -95,6 +95,12 @@ void CMenuRoutineAdjust::button_pressed(Button button)
        _exit_menu = true;
     }
 
+    // Menu up / down
+    
+    // If there's no options, exit now
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     if (button == Button::C) // "Up"
     {
         _routine_adjust_display_list->up();
@@ -121,6 +127,10 @@ void CMenuRoutineAdjust::button_pressed(Button button)
 void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
 {
     int32_t new_current_val = 0;
+
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     struct menu_entry *menu_item = &(_active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()]);
 
     switch (menu_item->menu_type)
@@ -184,8 +194,18 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuRoutineAdjust::draw()
 {
+    if (_routine_output->get_lua_script_state() == lua_script_state_t::INVALID)
+    {
+        draw_bad_script_screen();
+        return;
+    }
+
     // Show the parameter selection list at the top
     _routine_adjust_display_list->draw();
+
+    // If no menu entries (i.e. pattern with nothing configurable), nothing to do
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
 
     // Show menu entry
     uint8_t current_selection = _routine_adjust_display_list->get_current_selection();
@@ -276,6 +296,16 @@ void CMenuRoutineAdjust::draw()
     }
 }
 
+void CMenuRoutineAdjust::draw_bad_script_screen()
+{
+    color_t colour = hagl_color(0xFF, 0x00, 0x00);
+
+    hagl_draw_line(_area.x0, _area.y0, _area.x1, _area.y1, colour);
+    hagl_draw_line(_area.x1, _area.y0, _area.x0, _area.y1, colour);
+
+    _display->put_text("Script error", 0, _area.y0 + ((_area.y1 - _area.y0) / 2), hagl_color(0xFF, 0xFF, 0x00));
+}
+
 void CMenuRoutineAdjust::show()
 {
     _display->set_option_a(_active_routine_conf.button_text[(int)soft_button::BUTTON_A]);
@@ -327,6 +357,9 @@ void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width
 
 void CMenuRoutineAdjust::set_options_on_multi_choice_list()
 {
+    if (_active_routine_conf.menu.size() <= 0)
+        return;
+
     struct menu_entry selected = _active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()];
     
     if (selected.menu_type == menu_entry_type::MULTI_CHOICE)

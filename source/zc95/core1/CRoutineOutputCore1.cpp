@@ -16,8 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+/* Includes functions to send messages to Core1, as well as processing
+ * incoming messages from Core1
+ */
+
 #include "pico/multicore.h"
 #include "pico/mutex.h"
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+
 
 #include "../EExtInputPort.h"
 #include "CRoutineOutputCore1.h"
@@ -90,9 +98,48 @@ void CRoutineOutputCore1::stop_routine()
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::set_remote_power(uint8_t channel, uint16_t power)
+{
+    if (channel > MAX_CHANNELS)
+        return;
+    
+    if (_remote_power[channel] != power)
+    {
+        message msg = {0};
+        msg.msg8[0] = MESSAGE_SET_REMOTE_ACCESS_POWER;
+        msg.msg8[1] = channel;
+        msg.msg8[2] = power & 0xFF;
+        msg.msg8[3] = (power >> 8) & 0xFF;
+
+        _remote_power[channel] = power;
+        multicore_fifo_push_blocking(msg.msg32);
+        update_display(channel);
+    }
+}
+
+void CRoutineOutputCore1::enable_remote_power_mode()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_SET_REMOTE_ACCESS_MODE;
+    msg.msg8[1] = 1;
+
+    multicore_fifo_push_blocking(msg.msg32);
+    _remote_mode_active = true;
+}
+
+void CRoutineOutputCore1::disable_remote_power_mode()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_SET_REMOTE_ACCESS_MODE;
+    msg.msg8[1] = 0;
+
+    multicore_fifo_push_blocking(msg.msg32);
+    _remote_mode_active = false;
+}
+
 void CRoutineOutputCore1::update_display(uint8_t channel)
 {
-    _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel));
+    _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
 void CRoutineOutputCore1::menu_min_max_change(uint8_t menu_id, int16_t new_value)
@@ -157,6 +204,8 @@ void CRoutineOutputCore1::loop()
         // printf("CRoutineOutputCore1::loop(): get message (%d\t%d\t%d\t%d\n", msg.msg8[0], msg.msg8[1], msg.msg8[2], msg.msg8[3]);
         process_message(msg);
     }
+
+    process_text_message_queue();
 }
 
 // Process message received from core1
@@ -237,6 +286,25 @@ void CRoutineOutputCore1::process_message(message msg)
         case MESSAGE_SET_ACC_IO_PORT_RESET:
             reset_acc_port();
             break;
+
+        case MESSAGE_LUA_SCRIPT_STATE:
+            _lua_script_state = (lua_script_state_t)msg.msg8[1];
+            break;
+    }
+}
+
+void CRoutineOutputCore1::process_text_message_queue()
+{
+    uint8_t count = 0;
+    pattern_text_output_t text_message;
+    memset(&text_message, 0, sizeof(text_message));
+
+    // Get at most 5 messages from queue, to prevent a flood of print() messages from lua 
+    // effectively locking us up
+    while (queue_try_remove(&gPatternTextOutputQueue, &text_message) && count++ < 5)
+    {
+        if (_text_output_callback != NULL)
+            _text_output_callback(text_message);
     }
 }
 
@@ -284,6 +352,17 @@ void CRoutineOutputCore1::reinit_channels()
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::suspend_core1()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_CORE1_SUSPEND;
+    msg.msg8[1] = 0;
+    msg.msg8[2] = 0;
+    msg.msg8[3] = 0;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count)
 {
     message msg = {0};
@@ -316,4 +395,14 @@ void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
 {
     if (*_ext_port_exp)
         (*_ext_port_exp)->set_acc_io_port_state(output, high);
+}
+
+ lua_script_state_t CRoutineOutputCore1::get_lua_script_state()
+ {
+    return _lua_script_state;
+ }
+
+void CRoutineOutputCore1::set_text_callback_function(std::function<void(pattern_text_output_t)> cb)
+{
+    _text_output_callback = cb;
 }

@@ -4,14 +4,19 @@
 #include "pico/util/queue.h"
 #include "pico/mutex.h"
 #include "config.h"
+#include "CSavedSettings.h"
 #include <string>
 
 extern bool gInteruptable;
 extern queue_t gPulseQueue[MAX_CHANNELS];
 
+extern queue_t gPatternTextOutputQueue;
+
 extern bool gFatalError;
 extern std::string gErrorString;
 
 extern mutex_t gI2cMutex;
+
+extern CSavedSettings *g_SavedSettings;
 
 #endif

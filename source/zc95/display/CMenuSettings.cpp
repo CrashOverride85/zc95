@@ -25,9 +25,18 @@
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
+#include "CMenuRemoteAccess.h"
 #include "../core1/routines/CRoutine.h"
 
-CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio)
+CMenuSettings::CMenuSettings(
+        CDisplay* display, 
+        CGetButtonState *buttons, 
+        CSavedSettings *saved_settings, 
+        CRoutineOutput *routine_output, 
+        CHwCheck *hwCheck, 
+        CAudio *audio, 
+        CAnalogueCapture *analogueCapture,
+        CWifi *wifi)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -38,6 +47,8 @@ CMenuSettings::CMenuSettings(CDisplay* display, CGetButtonState *buttons, CSaved
     _settings_list = new COptionsList(display, display->get_display_area());
     _hwCheck = hwCheck;
     _audio = audio;
+    _analogueCapture = analogueCapture;
+    _wifi = wifi;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -119,6 +130,10 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output, _audio));
             break;
 
+        case setting_id::REMOTE_ACCESS:
+            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output));
+            break;
+
         case setting_id::ABOUT:
             set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
             break;
@@ -144,6 +159,10 @@ void CMenuSettings::show()
     _display->set_option_d("Down");
 
     _settings.clear();
+
+    if (CHwCheck::running_on_picow())
+        _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
+    
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
@@ -153,7 +172,7 @@ void CMenuSettings::show()
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     
     _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));
-    _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"));  
+    _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"          ));  
     
    _settings_list->clear_options();
     for (std::vector<CMenuSettings::setting>::iterator it = _settings.begin(); it != _settings.end(); it++)

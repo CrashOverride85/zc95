@@ -1,6 +1,7 @@
-#ifndef _CROUTINES_H
-#define _CROUTINES_H
+#ifndef _CROUTINE_H
+#define _CROUTINE_H
 
+#include "../../globals.h"
 #include "../../AudioInput/AudioTypes.h"
 #include "../output/CSimpleOutputChannel.h"
 #include "../output/CFullOutputChannel.h"
@@ -9,6 +10,8 @@
 #include <vector>
 #include <inttypes.h>
 #include <string>
+#include <string.h>
+#include <stdarg.h>
 
 enum class output_type
 {
@@ -95,6 +98,8 @@ struct routine_conf
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
 };
 
+class CRoutine;
+typedef CRoutine* (*routine_creator)(uint8_t);
 
 class CRoutine
 {
@@ -107,7 +112,7 @@ class CRoutine
                 set_all_channels_off();
             }
         };
-
+    
         virtual void get_config(struct routine_conf *conf) = 0;
         virtual void start() = 0;
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) {};
@@ -119,6 +124,11 @@ class CRoutine
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
         virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
         virtual void pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
+
+        virtual lua_script_state_t lua_script_state()
+        {
+            return lua_script_state_t::NOT_APPLICABLE;
+        }
 
         virtual void loop(uint64_t time_us) = 0;
         virtual void stop() = 0;
@@ -261,6 +271,28 @@ class CRoutine
                 if (_full_channel[channel] != NULL)
                     _full_channel[channel]->off();
             }
+        }
+
+        void print(text_type_t text_type, const char *format, ...)
+        {
+            pattern_text_output_t text_message;
+            memset(&text_message, 0, sizeof(text_message));
+
+            va_list args;
+            va_start(args, format);
+
+            text_message.text_type = text_type;
+            text_message.time_generated_us = time_us_64();
+
+            vsnprintf(text_message.text, sizeof(text_message.text)-1, format, args);
+            text_message.text[sizeof(text_message.text)-1] = '\0';
+
+            if (!queue_try_add(&gPatternTextOutputQueue, &text_message))
+            {
+                printf("gPatternTextOutputQueue FIFO was full\n");
+            }
+
+            va_end(args);
         }
 
     private:

@@ -17,6 +17,9 @@
 #define MESSAGE_AUDIO_THRES_REACHED          10
 #define MESSAGE_AUDIO_INTENSITY              11
 #define MESSAGE_ROUTINE_MENU_SELECTED        12
+#define MESSAGE_CORE1_SUSPEND                13
+#define MESSAGE_SET_REMOTE_ACCESS_POWER      14
+#define MESSAGE_SET_REMOTE_ACCESS_MODE       15
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100
@@ -32,6 +35,9 @@
 #define MESSAGE_SET_ACC_IO_PORT2_STATE      122
 #define MESSAGE_SET_ACC_IO_PORT3_STATE      123
 
+#define MESSAGE_LUA_SCRIPT_STATE            130
+
+enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
 union __attribute__((packed)) message
 {
@@ -47,6 +53,15 @@ struct pulse_message_t
     uint64_t abs_time_us;
     uint8_t  pos_pulse_us;
     uint8_t  neg_pulse_us;
+};
+
+enum class text_type_t { PRINT, ERROR };
+
+struct pattern_text_output_t
+{
+    text_type_t text_type;
+    char text[150];
+    uint64_t time_generated_us;
 };
 
 #endif

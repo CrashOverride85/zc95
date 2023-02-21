@@ -30,7 +30,7 @@ static const int warn_interval_sec = 3;
 static const int default_choice_freq_sec = 10; 
 static const int default_shock_inc_pp = 1;
 
-CShockChoice::CShockChoice()
+CShockChoice::CShockChoice(uint8_t param)
 {
     printf("CShockChoice()\n");
     _choice_freq_sec = default_choice_freq_sec;

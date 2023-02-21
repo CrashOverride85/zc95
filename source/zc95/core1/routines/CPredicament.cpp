@@ -28,7 +28,7 @@ enum menu_ids
 
 #define CHANNEL_COUNT 4
 
-CPredicament::CPredicament()
+CPredicament::CPredicament(uint8_t param)
 {
     printf("CPredicament()\n");
     _output_on = false;

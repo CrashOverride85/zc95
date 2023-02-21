@@ -22,9 +22,15 @@
 #include "Core1.h"
 
 mutex_t g_collar_message_mutex;
+
+mutex_t g_core1_suspend_mutex;
+struct semaphore g_core1_suspend_sem;
+
 CCollarComms::collar_message g_collar_message;
 
 void messages_init()
 {
     mutex_init(&g_collar_message_mutex);
+    mutex_init(&g_core1_suspend_mutex );
+    sem_init(&g_core1_suspend_sem, 1, 1);
 }

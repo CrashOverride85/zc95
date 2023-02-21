@@ -4,7 +4,7 @@
 #include "../core1/CRoutineOutput.h"
 #include "../core1/output/CChannelConfig.h"
 #include "../core1/routines/CRoutine.h"
-#include "../core1/routines/CRoutineMaker.h"
+#include "../core1/routines/CRoutines.h"
 
 #include "../config.h"
 #include "../CSavedSettings.h"
@@ -12,6 +12,7 @@
 #include "../CGetButtonState.h"
 #include "../CHwCheck.h"
 #include "../AudioInput/CAudio.h"
+#include "../RemoteAccess/CWifi.h"
 
 #include <string>
 #include <vector>
@@ -21,7 +22,17 @@
 class CMainMenu : public CMenu
 {
     public:
-        CMainMenu(CDisplay* display, std::vector<CRoutineMaker*> *routines, CGetButtonState *buttons, CSavedSettings *settings, CRoutineOutput *routine_output, CHwCheck *hwCheck, CAudio *audio);
+        CMainMenu(
+            CDisplay* display, 
+            std::vector<CRoutines::Routine> *routines, 
+            CGetButtonState *buttons, 
+            CSavedSettings *settings, 
+            CRoutineOutput *routine_output, 
+            CHwCheck *hwCheck, 
+            CAudio *audio, 
+            CAnalogueCapture *analogueCapture,
+            CWifi *wifi);
+
         ~CMainMenu();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -31,7 +42,7 @@ class CMainMenu : public CMenu
 
     private:
         CDisplay* _display;
-        std::vector<CRoutineMaker*> *_routines;
+        std::vector<CRoutines::Routine> *_routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
 };

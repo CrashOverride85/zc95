@@ -32,7 +32,7 @@ static const int DefaultCamPulseMs = 100;
 
 static const int PulseDelayMs = 300; // This delay corresponds to the response time of the camera + wireless trigger
 
-CCamTrigger::CCamTrigger()
+CCamTrigger::CCamTrigger(uint8_t param)
 {
     printf("CCamTrigger()\n");
     _pulse_len_ms = DefaultPulseLengthMs;

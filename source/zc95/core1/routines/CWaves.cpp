@@ -29,7 +29,7 @@ enum menu_ids
     WAVES_SPEED = 1
 };
 
-CWaves::CWaves()
+CWaves::CWaves(uint8_t param)
 {
     printf("CWaves()\n");
 }

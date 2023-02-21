@@ -29,7 +29,6 @@ class CAnalogueCapture
             RIGHT
         };
 
-        void init();
         void start();
         void stop();
         void process();
@@ -70,6 +69,7 @@ class CAnalogueCapture
         uint32_t _capture_duration_us;
         uint64_t _last_buffer_update_time_us;
         uint64_t _capture_end_time_time_us;
+        bool _running = false;
 };
 
 #endif

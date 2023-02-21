@@ -32,7 +32,7 @@ class CDisplay
         void set_option_c(std::string text);
         void set_option_d(std::string text);
         
-        void set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power);
+        void set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
 
         void set_current_menu(CMenu *menu);
 
@@ -73,6 +73,11 @@ class CDisplay
         int16_t _channel_3_actual_power = 0;
         int16_t _channel_4_actual_power = 0;
 
+        int16_t _channel_1_remote_power = 0; 
+        int16_t _channel_2_remote_power = 0; 
+        int16_t _channel_3_remote_power = 0; 
+        int16_t _channel_4_remote_power = 0; 
+
         uint64_t _last_update;
 
         CMenu *_current_menu;
@@ -84,6 +89,7 @@ class CDisplay
         std::string _active_pattern;
         bool _update_required;
         CInteruptableSection _interuptable_section;
+        bool _remote_mode_active;
 };
 
 #endif

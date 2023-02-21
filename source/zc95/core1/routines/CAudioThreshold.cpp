@@ -26,7 +26,7 @@ enum menu_ids
 #define CHANNEL_COUNT 4
 
 
-CAudioThreshold::CAudioThreshold()
+CAudioThreshold::CAudioThreshold(uint8_t param)
 {
     printf("CAudioThreshold()\n");
 

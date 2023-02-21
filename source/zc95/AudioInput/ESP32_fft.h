@@ -68,11 +68,11 @@ private:
   int             _size;          // FFT size
   int             _samplefreq;
   float           _binwidth;      // freq per bin
-  float        *  _input;         // pointer to input buffer
-  float        *  _output;        // pointer to output buffer
   float        *  _twiddle_factors;  // pointer to buffer holding twiddle factors
   fft_type_t      _type;          // real or complex
   fft_direction_t _direction;     // forward or backward
+  float        *  _input;         // pointer to input buffer
+  float        *  _output;        // pointer to output buffer  
   unsigned int    _flags;         // FFT flags
   float           _max_mag = 0;
   float           _fundamental_freq = 0;

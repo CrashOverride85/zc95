@@ -33,7 +33,7 @@ static const int DefaultInitialPowerPc   = 15;
 
 #define CHANNEL_COUNT 4
 
-CBuzz::CBuzz()
+CBuzz::CBuzz(uint8_t param)
 {
     printf("CBuzz()\n");
     _power_increment_period_ms = DefaultGameLenghtSec;
