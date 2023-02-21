@@ -13,7 +13,7 @@ At present, other than the initial WiFi setup, there is no web interface (yet).
 ## Configuring Wifi
 The basic process is use the "Config Wifi/AP mode" option, ideally connect to the ZC95 using a phone, then use the web interface to enter a WiFi SSID/Password. When the "Connect to Wifi" option is next used, these credentials will be used. At present, other than setting the WiFi SSID/password, nothing else can be done in ap mode.
 
-When selecting "Config Wifi/AP mode", after a brief "Starting" message, you should be presenting with a screen that looks something like:
+When selecting "Config Wifi/AP mode", after a brief "Starting" message, you should be presented with a screen that looks something like:
 
 ![QrCode]
 
@@ -131,15 +131,6 @@ Once uploaded, the script will be visible at the top of the usual patterns list,
 See [Lua](./LuaNotes.md) for notes on writing Lua scripts.
 
 ### pattern_gui.py
-See next section.
-
-Used to start and then control a pattern remotely, start by passing the index (as given by `pattern_list.py`) of the pattern to run:
-```
-$ python3 pattern_gui.py --ip 192.168.1.137 --index 1
-Connecting
-Connection opened
-```
-
 See next section for more details on running a pattern remotely. 
 
 
@@ -149,7 +140,7 @@ See next section for more details on running a pattern remotely.
 When running a pattern remotely, the 4 power dials on the front panel are used to set the maximum power setting possible for the respective channel. I.e. setting all channels to maximum means the box can be fully controlled, up to maximum power, remotely. 
 
 ### Starting
-Start by passing the index (as given by `pattern_list.py`) of the patterns to run to the pattern_gui.py script:
+Start by passing the index (as given by `pattern_list.py`) of the pattern to run to the pattern_gui.py script:
 ```
 $ python3 pattern_gui.py --ip 192.168.1.137 --index 1
 Connecting
@@ -167,29 +158,11 @@ The 4 channels are set to different levels:
 4. Front panel and GUI is at minimum; power is 0%
 
 ### Debug mode
-If started with the ```--debug``` flag, in additon to showing messages sent/received, an output window appears at the bottom of the GUI:
+If started with the ```--debug``` flag, in addition to showing messages sent/received, an output window appears at the bottom of the GUI:
 
 ![GuiDebug]
 
 In this case, it's showing a script that's failed on line 112 due to a call to a function that doesn't exist. Any `print()` output from Lua scripts will also appear here, making this mode useful for testing new Lua scripts.
-
-
-
-
-- seperate page for lua coding tips
-  - api / zc.* functions
-  - "special" functions called by lua - menu change, etc
-  - print + debug
-  - link to uploading notes
-  - exmaple error with line number
-  - descriptions of example scripts
-
-
-
-
-
-
-
 
 
 

@@ -8,7 +8,7 @@ The most significant thing they can't do (that inbuilt patterns can) right now i
 ## Example scripts
 There are a few example scripts in `remote_access/lua`, which demonstrate some of things that can be done from Lua. These scripts are:
 
-* fire.lua - If the soft button is pressed, all channel's are activated for as long as the button is held down. If any of the 4 external triggers (assuming stereo connectors are being used), the the correspond channel (1-4) is activated for as long the trigger is active.
+* fire.lua - If the soft button is pressed, all channel's are activated for as long as the button is held down. If any of the 4 external triggers (assuming stereo connectors are being used), the the corresponding channel (1-4) is activated for as long the trigger is active.
 
 * toggle.lua - switches between channel 1+2 & 3+4 at a speed that can be set via the menu. If the channels are switched on constant or just pulsed can also be set from the menu
 
@@ -221,7 +221,7 @@ The `ToggleChannel()` function (could have been named anything) is switching bet
 See zc.* functions section below for more details along with all available zc.functions
 
 ## zc.* functions
-
+Functions that can be called from Lua scripts to control the box. In addition to these, `print("<whatever>")` can be used from scripts (no `zc.` prefix); the output will appear in the serial output prefixed with '`[LUA]`', and in the debug window of the `pattern_gui.py` GUI if running remotely. 
 
 ### SetPower
 ```
@@ -252,18 +252,50 @@ Sets the pulse width used for the channel, defaults to 150us, but this default m
 For symmetric pulses (as used by most/all inbuilt patterns), these two values should be the same. 
 
 ### ChannelPulseMs
+```
+Params:
+    * channel number (1-4)
+    * duration (ms)
+```
+Switch the channel on for the specified number of milliseconds, using the previously set frequency, pulse width and power level (or the defaults, if not changed).
+
 
 ### ChannelOn
-
+```
+Params:
+    * channel number (1-4)
+```
+Switch on the specified channel, until ChannelOff is called, using the previously set frequency, pulse width and power level (or the defaults, if not changed).
 
 ### ChannelOff
+```
+Params:
+    * channel number (1-4)
+```
+Switch off the specified channel.
 
 
+## Special functions
+These are functions that will be automatically called when applicable whilst the Lua script is running. With the exception of `Loop()`, all are optional. 
 
+### MinMaxChange(menu_id, new_value)
+Called when a `MIN_MAX` type pattern option is changed, and is called with the menu ID of the option, and the new value (which should lie between the min and max configured).
 
+### MultiChoiceChange(menu_id, choice_id)
+Called when a `MULTI_CHOICE` type pattern option is changed, and is called with the menu ID of the option, and the ID of the selected choice.
 
+### SoftButton(pushed)
+Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`.
 
+### ExternalTrigger(socket, part, active)
+Called when an external trigger happens.
 
+Socket: can be either "`TRIGGER1`" or "`TRIGGER2`" for the Trigger1 and Trigger2 sockets respectively. 
 
+Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will `True`, when released it will be `False`.
 
+### Setup
+Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 
 
+### Loop(time_ms)
+Called periodically for as long as the pattern is running. `time_ms` is how long in milliseconds the box has been powered on.

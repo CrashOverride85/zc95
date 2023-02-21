@@ -136,7 +136,7 @@ void CMenuRemoteAccessConnectWifi::draw()
     else if (_state == state_t::CONNECTED)
     {
         int y = ((_disp_area.y1-_disp_area.y0)/2) - 20;
-        _display->put_text("Conencted to:"  , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Connected to:"  , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
         y += 10;
         _display->put_text(_ssid            , _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
         y += 10;

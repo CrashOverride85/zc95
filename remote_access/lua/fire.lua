@@ -8,7 +8,7 @@ end
 
 function ExternalTrigger(socket, part, active)
     channel = 0
-    
+
     if socket == "TRIGGER1" then
         if part == "A" then
             channel = 1

@@ -24,7 +24,7 @@ The ZC95 consists of 4-5 PCBs:
 * Front panel controls - 4x POTs and associated ADC, 1x rotary encoder and 6 serial RGB LEDs
 * Main board - power supply / charging, MCU for display / pattern generation, button input etc
 * Output board ("ZC624 Output module") - 4 channel output generation controlled via SPI from the main board. Designed for production using the SMT assembly service at JLCPCB, with a handful of extra through hole parts also requiring hand soldering.
-* (Optional) audio input board - allows the 3.5mm "Aux" port on the front pannel to be used for audio input
+* (Optional) audio input board - allows the 3.5mm "Aux" port on the front panel to be used for audio input
 
 The primary reason for having separate PCBs for the main and output board is for future flexibility - most of the time & expense is the firmware, case, display, controls, etc., so being able to test new output designs whilst being able to keep all of that should be an advantage. I'm well aware the output design currently used is known to have flaws, mostly stemming from its lack of feedback (which applies equally to the 312b it was taken from). A challenge for another day.
 
@@ -40,7 +40,9 @@ The primary reason for having separate PCBs for the main and output board is for
 
 ## [Pattern guide](docs/Patterns.md)
 
-## [Lua scripting notes](docs/Lua.md)
+## [Lua scripting notes](docs/LuaNotes.md)
+
+## [Credits](docs/Credits.md)
 
 # TODO
 ## Firmware
@@ -54,7 +56,7 @@ The primary reason for having separate PCBs for the main and output board is for
 ## Long term road map
 May do some of this, all of this, or none of this!
    - Combine main, output and audio boards into one, and probably switch to almost all SMD so it can be assembled by JLCPCB
-   - Probably remove "Aux" socket and swap for seperate "Serial" and "Audio" sockets
+   - Probably remove "Aux" socket and swap for separate "Serial" and "Audio" sockets
    - Use a lithium battery pack instead of a 12v SLA
    - Use a USB charger
    - Maybe a smaller, 3D printed case. Probably keeping the same width/weight though
