@@ -28,6 +28,8 @@ The ZC95 consists of 4-5 PCBs:
 
 The primary reason for having separate PCBs for the main and output board is for future flexibility - most of the time & expense is the firmware, case, display, controls, etc., so being able to test new output designs whilst being able to keep all of that should be an advantage. I'm well aware the output design currently used is known to have flaws, mostly stemming from its lack of feedback (which applies equally to the 312b it was taken from). A challenge for another day.
 
+The zc624 output module can also be used standalone and [controlled from an Arduino](misc/Arduino/libraries) (tested with an ESP32), but this is not ideal for a few reasons, and not the focus of this project.
+
 ## [Build guide](docs/Build.md)
 
 ## [Schematics](schematics/)
