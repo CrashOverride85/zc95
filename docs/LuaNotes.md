@@ -1,7 +1,7 @@
 # Lua
 
 ## Capability
-Lua scripts can be written / uploaded (see [Remote Access](./RemoteAccess.md) for how to upload) to add new patterns to the ZC95. These scripts are able switch each channel on/off, set the frequency and pulse width, and set the power level (scaled to what the front panel is set to - i.e. a Lua script can't set the output power to higher than set on the front panel).
+Lua scripts can be written / uploaded (see [Remote Access](./RemoteAccess.md) for how to upload) to add new patterns to the ZC95. These scripts are able to switch each channel on/off, set the frequency and pulse width, and set the power level (scaled to what the front panel is set to - i.e. a Lua script can't set the output power to higher than set on the front panel).
 They can also receive notification of settings being changed via the menu, and inputs from the external trigger inputs along with the top left soft button being pressed.
 The most significant thing they can't do (that inbuilt patterns can) right now is anything to do with audio.
 
@@ -214,7 +214,7 @@ end
 ```
 
 The `ToggleChannel()` function (could have been named anything) is switching between the two pairs of channels. The relevant parts are the zc.* functions:
-* `zc.ChannelPulseMs(channel, duration)` - will pulses a channel on for the specified number of milliseconds
+* `zc.ChannelPulseMs(channel, duration)` - will pulse a channel on for the specified number of milliseconds
 * `zc.ChannelOn(channel)` - switches a channel on until switched off
 * `zc.ChannelOff(channel)` - switches a channel off
 
@@ -292,7 +292,7 @@ Called when an external trigger happens.
 
 Socket: can be either "`TRIGGER1`" or "`TRIGGER2`" for the Trigger1 and Trigger2 sockets respectively. 
 
-Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will `True`, when released it will be `False`.
+Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `True`, when released it will be `False`.
 
 ### Setup
 Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 

@@ -81,9 +81,10 @@ bool COutputChannel::calibrate()
 
     /* Ending up with any _cal_value between 3600 and 1600 would produce valid dac levels (0-4000) 
        for any valid power level (0-1000), but if it's outside the range below, it's likely 
-       something is wrong.
+       something is wrong (i.e. hardware fault on that channel).
     
-       Note that extending it beyond 3600-1600 will cause set_power() to sometimes break.
+       Note that extending it beyond 3600-1600 will cause set_power() to sometimes break - depending
+       on the power level passed to it.
     */
     for (dac_val = 3400; dac_val > 2400; dac_val-=10)
     {
@@ -146,8 +147,8 @@ void COutputChannel::set_power(uint16_t power)
 
     if (dac_value < 0 || dac_value > 4000)
     {
-        printf("COutputChannel::set_power: ERROR - invalid dac_value calculated of %d (_cal_value=%d, power=%d)\n",
-               dac_value, _cal_value, power);
+       // printf("COutputChannel::set_power: ERROR - invalid dac_value calculated of %d (_cal_value=%d, power=%d)\n",
+       //        dac_value, _cal_value, power);
         return;
     }
 
@@ -177,6 +178,7 @@ void COutputChannel::on()
     if (_on)
         return;
 
+    printf("ON: %d\n", _sm);
     add_repeating_timer_us(-1000000 / _freq, s_timer_callback, this, &_timer);
     _freq_changed = false;
     _on = true;
@@ -187,6 +189,7 @@ void COutputChannel::off()
     if (!_on)
         return;
     
+    printf("OFF: %d\n", _sm);    
     _on = false;
     cancel_repeating_timer(&_timer);
 }
