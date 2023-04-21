@@ -147,8 +147,8 @@ void COutputChannel::set_power(uint16_t power)
 
     if (dac_value < 0 || dac_value > 4000)
     {
-       // printf("COutputChannel::set_power: ERROR - invalid dac_value calculated of %d (_cal_value=%d, power=%d)\n",
-       //        dac_value, _cal_value, power);
+        printf("COutputChannel::set_power: ERROR - invalid dac_value calculated of %d (_cal_value=%d, power=%d)\n",
+               dac_value, _cal_value, power);
         return;
     }
 
@@ -178,7 +178,6 @@ void COutputChannel::on()
     if (_on)
         return;
 
-    printf("ON: %d\n", _sm);
     add_repeating_timer_us(-1000000 / _freq, s_timer_callback, this, &_timer);
     _freq_changed = false;
     _on = true;
@@ -189,7 +188,6 @@ void COutputChannel::off()
     if (!_on)
         return;
     
-    printf("OFF: %d\n", _sm);    
     _on = false;
     cancel_repeating_timer(&_timer);
 }
