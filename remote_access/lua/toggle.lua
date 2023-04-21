@@ -9,9 +9,9 @@ Config = {
             id = 1,
             min = 100,
             max = 2000,
-			increment_step = 100,
+            increment_step = 100,
             uom = "ms",
-			default = _delay_ms
+            default = _delay_ms
          },
          {
             type = "MULTI_CHOICE",

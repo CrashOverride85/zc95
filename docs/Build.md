@@ -14,7 +14,7 @@ These notes assume a reasonable amount of experience assembling electronic kits.
 
 ## PCB + Parts ordering
 ### PCBs
-For these 3 boards, order from JLC using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
+For these 3 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
 * [Front panel](../pcb/FrontPanel.zip). Suggest ordering in black
 * [Front panel controls](../pcb/FrontPanelControls.zip). Set "Remove Order Number" to "Specify a location" (location is already specified on the back of this board)
 * [Main board](../pcb/MainBoard.zip)
@@ -174,7 +174,8 @@ On power up, the LEDs should briefly turn purple (~2s), then turn green as the s
 
 ![zc95 powered up]
 
-# Debugging
+# Troubleshooting
+## ZC95 main board
 If any of the I2C devices aren't detected, you should see an error similar to the below:
 
 ![hw check fail]
@@ -182,9 +183,69 @@ If any of the I2C devices aren't detected, you should see an error similar to th
 Here, it can't find the two ICs on the front panel (in this case, the IDC cable was unplugged).
 There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel at RS232 levels.
 
-There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it. 
+## ZC624 output module
+There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it.
+
+Connect a 3.3v TTL serial to USB adapter to the pins labelled Tx and GND on the header, connect at 115200 baud, and power it on. 
+After the output of an I2C scan and a few other bits, it should output something similar to this on success:
+
+```
+calibrate for sm=0 OK: dac_val = 2860, voltage = 0.075732
+calibrate for sm=1 OK: dac_val = 2870, voltage = 0.075732
+calibrate for sm=2 OK: dac_val = 2870, voltage = 0.076538
+calibrate for sm=3 OK: dac_val = 2840, voltage = 0.078149
+Calibration success
+```
+
+On failure, the end of output may look something like this:
+
+```
+calibrate for sm=3 FAILED! final voltage = 0.011279, dac_value = 2600 (expecting 0.075v - 0.090v)
+One or more chanel failed calibration, not enabling power.
+CMessageProcess()
+HALT.
+```
+
+### Self calibration notes
+The purpose of the self calibration is to figure out exactly when the P-channel MOSFET for each channel starts to switch on, as this can vary slightly due to variances between parts, etc. It also serves as a basic self-test.
+
+This probably needs a brief explanation about how the output board is working. The two n-channel MOSFETs per chanel are used to generate +ve/-ve pulses (in the range of 10-255 microseconds). In normal operation, only one is switched on at once, but during calibration both are switched on so that there is little/no estim output.
+
+The P-channel MOSFET is connected to the DAC via an op-amp, and is used to set the output power. With the maximum DAC value (4096) the MOSFET will (should) be fully OFF, and at 0 fully ON (i.e. maximum power).
+
+In practice, if starting at a DAC value of 4000 and working down, the MOSFET should start to turn on at around 3000, and be fully on by ~1000.
+
+During calibration, the voltage across the 0.5R sense resistor is measured, which corresponds to current flow though the P-channel MOSFET and transformer. This can be used to tell when the MOSFET starts to switch on.
+
+The process for self power-on calibration (for each channel) is:
+1. With the 3 MOSFETs switched off (dac value = 4000), the voltage across the sense resistor is measured - ideally it should be 0v as everything is off, but in reality noise means it won't quite be 0; however if it is > 0.03v something is clearly wrong so the calibration errors out.
+2. The DAC is set to 3400
+3. Both N-chanel MOSFETs are switched on
+4. The voltage across the sense resistor is measured, then the N-channel fets switched off
+    - If > 0.09v, something's gone wrong (unexpected jump in current), and calibration errors out
+    - If > 0.075v, the DAC value is saved as the calibration value, and calibration for the channel completes successfully
+    - Otherwise, the DAC value is reduced and the process repeats from step 3. If it's reached 2400 and the voltage still hasn't hit 0.075v, calibration errors out as the P-channel fet should be starting to switch on by this point.
+
+All this means is that an error like this:
+```
+calibrate for sm=3 FAILED! final voltage = 0.011279, dac_value = 2600 (expecting 0.075v - 0.090v)
+```
+means that the PFET never switched on (enough) to complete calibration successfully.
+
+An error like this:
+```
+calibrate for sm=3 FAILED! final voltage = 1.541235, dac_value = 3400 (expecting 0.075v - 0.090v)
+```
+means the opposite - at the starting value of 3400, the voltage across the sense resistor (and therefore current flow though the PFET & transformer) was already way above what it should be.
+
+Possible causes (not exhaustive!) for calibration to fail:
+* If all channels are showing a similar and very low voltage (~0.01v) at a DAC value of 2600, suspect the 9v supply (and in turn, the 12v supply it's derived from)
+* Bad/incorrect PFET - e.g. not an IRF9Z24**NPBF**
+* Too low value sense resistor (if DAC value is 2600), or too high (if DAC value is 3400)
+* Incorrect resistor value in the opamp circuit - likely if the final voltage is wildly off. Also suspect a bad/cracked resistor or poor solder joint if the final voltage keeps changing between power cycles 
 
 
+**Note**: If calibration fails, the 9v supply is switched off, so this not being present after a calibration failure is not a fault.
 
 [jumpers]: images/jumpers.jpg "J8 with jumpers fitted"
 [main board]: images/main_board.jpg "Unpopulated main board"

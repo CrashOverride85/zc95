@@ -1,6 +1,8 @@
 
 # ZC95
 
+**Note**: This repo has submodules, so if cloning, it's best to use the recursive option.
+
 ## Introduction
 The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
 Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
