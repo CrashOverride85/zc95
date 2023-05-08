@@ -25,7 +25,7 @@
 
 typedef int (CLuaRoutine::*mem_func)(lua_State * L);
 
-// Copied / adpated from https://stackoverflow.com/a/32416597 
+// Copied / adapted from https://stackoverflow.com/a/32416597 
 template <mem_func func> int dispatch(lua_State *L) 
 {
     if (L->l_G->ud)
@@ -633,8 +633,8 @@ int CLuaRoutine::lua_set_freq(lua_State *L)
 
 // Params:
 // int: channel number (1-4)
-// int: positive pulse width (1-255) us
-// int: negative pulse width (1-255) us
+// int: positive pulse width (0-255) us
+// int: negative pulse width (0-255) us
 int CLuaRoutine::lua_set_pulse_width(lua_State *L)
 {
     int chan = lua_tointeger(L, 1);
@@ -642,8 +642,8 @@ int CLuaRoutine::lua_set_pulse_width(lua_State *L)
     int neg = lua_tointeger(L, 3);
 
     if (!is_channel_number_valid(chan)) return 0;
-    if (pos <= 0 || pos > 255) return 0;
-    if (neg <= 0 || neg > 255) return 0;
+    if (pos < 0 || pos > 255) return 0;
+    if (neg < 0 || neg > 255) return 0;
 
     full_channel_set_pulse_width(chan-1, pos, neg);
     return 1;

@@ -245,8 +245,8 @@ Sets the output frequency of the specified channel. Currently defaults to 150Hz,
 ```
 Params:
     * channel number (1-4)
-    * positive pulse width (1-255) us
-    * negative pulse width (1-255) us
+    * positive pulse width (0-255) us
+    * negative pulse width (0-255) us
 ```
 Sets the pulse width used for the channel, defaults to 150us, but this default may move into the config menus at some point.
 For symmetric pulses (as used by most/all inbuilt patterns), these two values should be the same. 
