@@ -83,6 +83,16 @@ void CToggle::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 
 void CToggle::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 {    
+    // If no change exit
+    if 
+    (
+        (choice_id == 1 &&  _pulse_mode) ||
+        (choice_id == 0 && !_pulse_mode)
+    )
+    {
+        return;
+    }
+
     if (menu_id == menu_ids::PULSE_CONT)
     {
         // Switch off before changing mode
