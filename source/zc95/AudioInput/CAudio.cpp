@@ -275,7 +275,7 @@ uint16_t CAudio::get_bar_height(float sample)
 
 void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
 {
-    // The FFT logic is slow, and as it's essentially just number crunching (no I/O), it's safe to interupt
+    // The FFT logic is slow, and as it's essentially just number crunching (no I/O), it's safe to interrupt
     _interuptable_section.start();
    
     // These are too big to put on the stack, especially with the recursion used by ESP_fft

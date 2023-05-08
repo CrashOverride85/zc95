@@ -7,7 +7,7 @@
 #define ROT_B   7
 
 /*
- * Front pannel which has 4x potentiometers conencted to an I2C ADC, 
+ * Front panel which has 4x potentiometers connected to an I2C ADC, 
  * and 1x rotary encoder connected to an I2C port expander
  */
 
@@ -16,9 +16,14 @@ CFrontPanel::CFrontPanel(CSavedSettings *saved_settings)
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0;
     _adjust_value = 0;
+    
+    // The very first time the ADC is read, the first channel seems to have an invalid value. So read it now, 
+    // so when it's read next time as usual, it'll return something sensible.
+    // This is just to stop the channel 1 bar graph briefly (fraction of a second) showing ~50% power on startup
+    read_adc();
 }
 
-void CFrontPanel::interupt (port_exp exp)
+void CFrontPanel::interrupt (port_exp exp)
 {
     _interrupt = true;
     _interrupt_time = time_us_32();
@@ -36,8 +41,11 @@ void CFrontPanel::process(bool always_update)
             //printf("delay=%lu us\n", time_us_32() - _interrupt_time);
             _interrupt = false;
         }
-        else
+        
+        if (always_update)
+        {
             read_adc();
+        }
        
         uint8_t buffer;
         buffer = read_port_expander();
@@ -82,7 +90,7 @@ void CFrontPanel::read_adc()
         return;
     }
 
-    uint8_t buffer[5];
+    uint8_t buffer[5] = {0};
     int retval = i2c_read(__func__, ADC_ADDR, buffer, sizeof(buffer), false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
