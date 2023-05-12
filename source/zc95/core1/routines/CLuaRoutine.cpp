@@ -110,6 +110,7 @@ void CLuaRoutine::load_lua_script_if_required()
             { "SetPower"      , &dispatch<&CLuaRoutine::lua_set_power> },
             { "SetFrequency"  , &dispatch<&CLuaRoutine::lua_set_freq> },
             { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
+            { "AccIoWrite"    , &dispatch<&CLuaRoutine::lua_acc_io_write> },
             { NULL, NULL }
         };
         luaL_register(_lua_state, "zc", zc_regs);
@@ -646,6 +647,29 @@ int CLuaRoutine::lua_set_pulse_width(lua_State *L)
     if (neg < 0 || neg > 255) return 0;
 
     full_channel_set_pulse_width(chan-1, pos, neg);
+    return 1;
+}
+
+// Params:
+// int : Accessory port I/O line (1-3)
+// bool: State - true=High, false=Low
+int CLuaRoutine::lua_acc_io_write(lua_State *L)
+{
+    int io_line = lua_tointeger(L, 1);
+    bool state = lua_toboolean(L, 2);
+
+    ExtInputPort io_port;
+    switch (io_line)
+    {
+        case 1: io_port = ExtInputPort::ACC_IO_1; break;
+        case 2: io_port = ExtInputPort::ACC_IO_2; break;
+        case 3: io_port = ExtInputPort::ACC_IO_3; break;
+        default:
+            return 0;
+    }
+
+    acc_port.set_io_port_state(io_port, state);
+
     return 1;
 }
 

@@ -59,6 +59,7 @@ class CLuaRoutine: public CRoutine
         int lua_set_power(lua_State *L);
         int lua_set_freq(lua_State *L);
         int lua_set_pulse_width(lua_State *L);
+        int lua_acc_io_write(lua_State *L);
               
         lua_State *_lua_state;
         ScriptValid _script_valid = ScriptValid::UNKNOWN;

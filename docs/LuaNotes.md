@@ -14,6 +14,8 @@ There are a few example scripts in `remote_access/lua`, which demonstrate some o
 
 * waves.lua - a waves pattern that is slightly more advanced than the inbuilt one. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
 
+* acc_test.lua - uses the accessory port to cycle between HIGH/LOW on the 3 output lines. See "AccIoWrite" section below for more details. Doesn't produce any estim output, so not really of any practical use, just a demo of how to use the accessory port.
+
 ## toggle.lua
 
 It's probably easier to explain Lua as implemented in the ZC95 by going though one of the example scripts.
@@ -31,9 +33,9 @@ Config = {
             id = 1,
             min = 100,
             max = 2000,
-			increment_step = 100,
+            increment_step = 100,
             uom = "ms",
-			default = _delay_ms
+            default = _delay_ms
          },
          {
             type = "MULTI_CHOICE",
@@ -121,9 +123,9 @@ Config = {
             id = 1,
             min = 100,
             max = 2000,
-			increment_step = 100,
+            increment_step = 100,
             uom = "ms",
-			default = _delay_ms
+            default = _delay_ms
          },
          {
             type = "MULTI_CHOICE",
@@ -274,6 +276,23 @@ Params:
 ```
 Switch off the specified channel.
 
+### AccIoWrite
+```
+Params:
+    * Accessory I/O line number (1-3)
+    * State: true (high) or false (low)
+```
+Controls the 3 I/O lines on the accessory port - allows setting between high (3.3v) and low.
+
+Note that the default state of these 3 lines from power on is HIGH, so bear that in mind when connecting anything.
+These lines can only source a few milliamps safely, so should only be used for signalling, i.e. it's probably best to connect a logic level MOSFET to switch anything more substantial than an LED.
+
+Also worth noting that there is _very_ limited protection on this port, something to be corrected in a possible future hardware revision, so be careful to avoid higher voltages. In particular, there is 12v on pin 7 (in hindsight a poor decision) - connecting this to pretty much any other pin would be bad.
+
+Minimal example for using the accessory port to control 3 LEDs. Can be used with the "acc_test.lua" example LUA script to switch between each LED in turn.
+
+![acc port]
+
 
 ## Special functions
 These are functions that will be automatically called when applicable whilst the Lua script is running. With the exception of `Loop()`, all are optional. 
@@ -299,3 +318,5 @@ Called once when the pattern is started, before `Loop()`. It can be used to do a
 
 ### Loop(time_ms)
 Called periodically for as long as the pattern is running. `time_ms` is how long in milliseconds the box has been powered on.
+
+[acc port]: images/lua_acc_port.png "Accessory port"
