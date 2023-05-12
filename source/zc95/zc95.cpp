@@ -89,12 +89,12 @@ void gpio_callback(uint gpio, uint32_t events)
     else if (gpio == PIN_FP_INT1)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFrontPanel::port_exp::U1);
+            _front_pannel->interrupt(CFrontPanel::port_exp::U1);
     }
     else if (gpio == PIN_FP_INT2)
     {
         if (_front_pannel != NULL)
-            _front_pannel->interupt(CFrontPanel::port_exp::U2);
+            _front_pannel->interrupt(CFrontPanel::port_exp::U2);
     }
 }
 

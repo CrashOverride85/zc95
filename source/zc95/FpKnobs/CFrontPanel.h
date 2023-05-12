@@ -15,7 +15,7 @@ class CFrontPanel
         void process(bool always_update);
         uint16_t get_channel_power_level(uint8_t channel);
         int8_t get_adjust_control_change();
-        void interupt (port_exp exp);
+        void interrupt (port_exp exp);
 
     private:
         void read_adc();

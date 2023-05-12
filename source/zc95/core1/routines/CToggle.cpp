@@ -27,7 +27,7 @@ enum menu_ids
 CToggle::CToggle(uint8_t param)
 {
     printf("CToggle()\n");
-    _speed_setting = 500;
+    _speed_setting = 2000;
 }
 
 CToggle::~CToggle()
@@ -54,7 +54,7 @@ void CToggle::config(struct routine_conf *conf)
     menu_speed.minmax.increment_step = 50; // 3500 (max-min) steps is a bit much, increment by 50 each time to give 70 steps
     menu_speed.minmax.min = 500;
     menu_speed.minmax.max = 4000;
-    menu_speed.minmax.current_value = 500; // start at the slowest speed
+    menu_speed.minmax.current_value = 2000; // start somewhere near the middle
     conf->menu.push_back(menu_speed);
 
     // menu entry 2: "pulse/cont." - pulse each channel, or toggle between each?
@@ -83,6 +83,16 @@ void CToggle::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 
 void CToggle::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 {    
+    // If no change exit
+    if 
+    (
+        (choice_id == 1 &&  _pulse_mode) ||
+        (choice_id == 0 && !_pulse_mode)
+    )
+    {
+        return;
+    }
+
     if (menu_id == menu_ids::PULSE_CONT)
     {
         // Switch off before changing mode
