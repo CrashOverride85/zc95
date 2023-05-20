@@ -17,11 +17,20 @@
 
 SetupWebInterface::SetupWebInterface(CSavedSettings *saved_settings)
 {
+    printf("SetupWebInterface()\n");
     _saved_settings = saved_settings;
 }
 
 SetupWebInterface::~SetupWebInterface()
 {
+    printf("~SetupWebInterface()\n");
+    if (_ap_started)
+    {
+        httpd_close();
+        dhcp_server_deinit(&_dhcp_server);
+        dnserv_free();
+        _ap_started = false;
+    }
 }
 
 bool SetupWebInterface::alreadyConfigured()
@@ -138,6 +147,7 @@ void SetupWebInterface::startAccessPoint()
     while (dnserv_init(IP_ADDR_ANY, 53, dns_query_proc) != ERR_OK);
 
     httpd_init(1);
+    _ap_started = true;
     http_set_ssi_handler(wlanscan_ssi_handler, ssi_tags, LWIP_ARRAYSIZE(ssi_tags));
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));
 

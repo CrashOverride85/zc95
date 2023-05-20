@@ -151,7 +151,7 @@
 #define HTTP_NO_DATA_TO_SEND       0
 
 static uint8_t _ap_mode;
-
+static struct altcp_pcb *_pcb;
 
 typedef struct {
   const char *name;
@@ -2953,8 +2953,8 @@ http_accept(void *arg, struct altcp_pcb *pcb, err_t err)
   return ERR_OK;
 }
 
-static void
-httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
+struct altcp_pcb 
+*httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
 {
   err_t err;
 
@@ -2967,7 +2967,10 @@ httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
     pcb = altcp_listen(pcb);
     LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
     altcp_accept(pcb, http_accept);
+    return pcb;
   }
+
+  return NULL;
 }
 
 /**
@@ -2977,7 +2980,6 @@ httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
 void
 httpd_init(uint8_t ap_mode)
 {
-  struct altcp_pcb *pcb;
   _ap_mode = ap_mode;
 
 #if HTTPD_USE_MEM_POOL
@@ -2990,9 +2992,15 @@ httpd_init(uint8_t ap_mode)
 
   /* LWIP_ASSERT_CORE_LOCKED(); is checked by tcp_new() */
 
-  pcb = altcp_tcp_new_ip_type(IPADDR_TYPE_ANY);
-  LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
-  httpd_init_pcb(pcb, HTTPD_SERVER_PORT);
+  _pcb = altcp_tcp_new_ip_type(IPADDR_TYPE_ANY);
+  LWIP_ASSERT("httpd_init: tcp_new failed", _pcb != NULL);
+  _pcb = httpd_init_pcb(_pcb, HTTPD_SERVER_PORT);
+}
+
+void httpd_close()
+{
+  if (_pcb)
+    tcp_close(_pcb);
 }
 
 #if HTTPD_ENABLE_HTTPS
