@@ -26,8 +26,9 @@ class CMenuApMode : public CMenu
         enum state_t
         {
             INIT             = 0,
-            WIFI_SCAN        = 1,
-            AP_MODE_STARTED  = 2
+            WIFI_SCAN        = 1, // Scan in progress
+            WIFI_SCAN_WAIT   = 2, // Delay between scans
+            AP_MODE_STARTED  = 3
         };
 
         enum display_mode_t
@@ -37,7 +38,14 @@ class CMenuApMode : public CMenu
         };
 
         void show_qr_code(std::string str);
-        void set_button_a_text();
+        void set_button_text();
+        void get_strongest_networks(std::map<std::string, WlanDetails> *input, std::list<std::string> *output, uint8_t count);
+
+        struct network_t
+        {
+            std::string name;
+            int16_t rssi;
+        };
 
         CDisplay* _display;
         CGetButtonState *_buttons;
@@ -46,13 +54,16 @@ class CMenuApMode : public CMenu
         uint8_t _selected_item;
         CWifi *_wifi;
         state_t _state = state_t::INIT;      
-        uint64_t _scan_start_us;  
+        uint64_t _last_scan_finish_us;  
         SetupWebInterface *_setupwebinterface = NULL;
         std::string _qr_code;
         display_mode_t _display_mode = display_mode_t::QR_CODE;
         display_area _disp_area;
         uint8_t _qrcode[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
         bool _qr_code_generated = false;
+        uint8_t _wifi_networks_found_count = 0;
+        std::list<std::string> _strongest_networks;
+        const uint8_t StrongestNetworkDisplayCount = 3;
 };
 
 

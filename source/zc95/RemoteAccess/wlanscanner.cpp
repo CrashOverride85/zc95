@@ -44,6 +44,7 @@ void WlanScanner::addScanResult(const cyw43_ev_scan_result_t *result)
         details.needsUsername = false;
         details.needsPassword = result->auth_mode != CYW43_AUTH_OPEN;
         _ssids[ssid] = details;
+        printf("WlanScanner: Found [%s] (rssi = %d)\n", result->ssid, result->rssi);
     }
 }
 
@@ -52,3 +53,12 @@ std::map<std::string, WlanDetails> *WlanScanner::getSSIDs()
     return &_ssids;
 }
 
+bool WlanScanner::isScanInProgress()
+{
+    return cyw43_wifi_scan_active(&cyw43_state);
+}
+
+void WlanScanner::reset()
+{
+    _ssids.clear();
+}

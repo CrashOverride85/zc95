@@ -31,6 +31,7 @@ CMenuApMode::~CMenuApMode()
     }
 
     _wifi->stop();
+    WlanScanner::instance()->reset();
 }
 
 void CMenuApMode::button_pressed(Button button)
@@ -51,7 +52,7 @@ void CMenuApMode::button_pressed(Button button)
                     else
                         _display_mode =  display_mode_t::QR_CODE;
                     
-                    set_button_a_text();
+                    set_button_text();
                 }
                 break;
 
@@ -60,6 +61,15 @@ void CMenuApMode::button_pressed(Button button)
                 break;
 
             case Button::C:
+                if (_state != state_t::AP_MODE_STARTED && _wifi_networks_found_count > 0)
+                {
+                    printf("CMenuApMode::button_pressed(): start AP mode\n");
+                    _setupwebinterface->startAccessPoint();
+                    _state = state_t::AP_MODE_STARTED;
+                    set_button_text();
+                    _analogueCapture->start();
+                    _qr_code = _setupwebinterface->getQrCode();
+                }
                 break;
 
             case Button::D:
@@ -68,11 +78,20 @@ void CMenuApMode::button_pressed(Button button)
     }
 }
 
-void CMenuApMode::set_button_a_text()
+void CMenuApMode::set_button_text()
 {
+    _display->set_option_b("Back");
+    _display->set_option_c(" ");
+    _display->set_option_d(" ");
+
     if (_state != state_t::AP_MODE_STARTED)
     {
         _display->set_option_a("");
+
+        if (_wifi_networks_found_count > 0)
+        {
+            _display->set_option_c("Start AP");
+        }
     }
     else
     {
@@ -99,7 +118,17 @@ void CMenuApMode::draw()
     
     if (_state != state_t::AP_MODE_STARTED)
     {
-        _display->put_text("Starting... ", _disp_area.x0, _disp_area.y0+((_disp_area.y1-_disp_area.y0)/2), hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Scanning... ", _disp_area.x0, _disp_area.y0+20, hagl_color(0xFF, 0xFF, 0xFF));
+
+        _display->put_text("Strongest " + std::to_string(StrongestNetworkDisplayCount) + " wlans:", _disp_area.x0, _disp_area.y0+40, hagl_color(0x50, 0x50, 0x50));
+        std::list<std::string> ::iterator it_networks;
+        uint8_t y = 10;
+        for (it_networks = _strongest_networks.begin(); it_networks != _strongest_networks.end(); it_networks++)
+        {
+            _display->put_text(*it_networks, _disp_area.x0, _disp_area.y0+((_disp_area.y1-_disp_area.y0)/2) + y, hagl_color(0x50, 0x50, 0x50));
+            y += 10;
+        }
+
     }
     else if (_state == state_t::AP_MODE_STARTED)
     {
@@ -131,10 +160,7 @@ void CMenuApMode::draw()
 
 void CMenuApMode::show()
 {
-    set_button_a_text();
-    _display->set_option_b("Back");
-    _display->set_option_c(" ");
-    _display->set_option_d(" ");
+    set_button_text();
 }
 
 void CMenuApMode::wifi_scan()
@@ -142,28 +168,66 @@ void CMenuApMode::wifi_scan()
     if (_state == state_t::INIT)
     {
          // Something (DMA?) about the analogue capture breaks wifi scanning, and causes a crash.
-         // Get "[CYW43] core not up" and "[CYW43] HT not ready" errors without stoping it.
+         // Get "[CYW43] core not up" and "[CYW43] HT not ready" errors without stopping it.
         _analogueCapture->stop();
 
         printf("CMenuApMode::wifi_scan(): Start scanning for wifi networks\n");
         _wifi->start_ap();
         WlanScanner::instance()->startScanning();
         _state = state_t::WIFI_SCAN;
-        set_button_a_text();
-        _scan_start_us = time_us_64();
-    } 
+        set_button_text();
+    }
+
     else if (_state == state_t::WIFI_SCAN)
     {
-        const int seconds = 3;
-        if (time_us_64() > (_scan_start_us + (1000 * 1000 * seconds)))
+        if (!WlanScanner::instance()->isScanInProgress())
         {
-            printf("CMenuApMode::wifi_scan(): scan finished, start AP mode\n");
-            _setupwebinterface->startAccessPoint();
-            _state = state_t::AP_MODE_STARTED;
-            set_button_a_text();
-            _analogueCapture->start();
-            _qr_code = _setupwebinterface->getQrCode();
+            printf("CMenuApMode::wifi_scan(): scan completed\n");
+            _state = state_t::WIFI_SCAN_WAIT;
+            _last_scan_finish_us = time_us_64();
+
+            std::map<std::string, WlanDetails> *ssids = WlanScanner::instance()->getSSIDs();
+            
+            _wifi_networks_found_count = ssids->size();
+            get_strongest_networks(ssids, &_strongest_networks, StrongestNetworkDisplayCount);
+            set_button_text();
         }
+    }
+
+    else if (_state == state_t::WIFI_SCAN_WAIT)
+    {
+        const int seconds = 2;
+        if (time_us_64() > (_last_scan_finish_us + (1000 * 1000 * seconds)))
+        {
+            printf("CMenuApMode::wifi_scan(): starting next scan\n");
+            WlanScanner::instance()->startScanning();
+            _state = state_t::WIFI_SCAN;
+        }
+    }
+}
+
+void CMenuApMode::get_strongest_networks(std::map<std::string, WlanDetails> *input, std::list<std::string> *output, uint8_t count)
+{
+    std::list<network_t> networks;
+    std::map<std::string, WlanDetails> ::iterator it_input;
+
+    for (it_input = input->begin(); it_input != input->end(); it_input++)
+    {
+        network_t network;
+        network.name = it_input->first;
+        network.rssi = it_input->second.rssi;
+        networks.push_back(network);
+    }
+
+    networks.sort([](const network_t & a, const network_t & b) { return a.rssi > b.rssi; });
+
+    std::list<network_t> ::iterator it_networks;
+
+    uint8_t i = 0;
+    output->clear();
+    for (it_networks = networks.begin(); it_networks != networks.end() && i++ < count; it_networks++)
+    {
+        output->push_back(it_networks->name);
     }
 }
 
@@ -175,7 +239,7 @@ void CMenuApMode::show_qr_code(std::string str)
     if (str == "")
         return;
 
-    // Generating the QR code from a string is slow (ms not us), so only do it once, not everytime we redraw the screen
+    // Generating the QR code from a string is slow (ms not us), so only do it once, not every time we redraw the screen
     if (!_qr_code_generated)
     {
         bool ok = qrcodegen_encodeText(str.c_str(), tempBuffer, _qrcode, qrcodegen_Ecc_MEDIUM,
