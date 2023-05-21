@@ -476,6 +476,26 @@ http_kill_oldest_connection(u8_t ssi_required)
     http_close_or_abort_conn(hs_free_next->next->pcb, hs_free_next->next, 1); /* this also unlinks the http_state from the list */
   }
 }
+
+static void http_kill_all_connections()
+{
+  struct http_state *hs = http_connections;
+  struct http_state *hs_free_next = NULL;
+  while (hs) 
+  {
+    hs_free_next = hs->next;
+    LWIP_ASSERT("broken list", hs != hs->next);
+
+    LWIP_ASSERT("hs != NULL", hs != NULL);
+    LWIP_ASSERT("hs->pcb != NULL", hs->pcb != NULL);
+
+    // printf("http_kill_all_connections: close hs=%d\n", hs);
+    http_close_or_abort_conn(hs->pcb, hs, 1); /* this also unlinks the http_state from the list */
+
+    hs = hs_free_next;
+  }
+}
+
 #else /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
 
 #define http_add_connection(hs)
@@ -2961,6 +2981,7 @@ struct altcp_pcb
   if (pcb) {
     altcp_setprio(pcb, HTTPD_TCP_PRIO);
     /* set SOF_REUSEADDR here to explicitly bind httpd to multiple interfaces */
+    ip_set_option(pcb, SOF_REUSEADDR);
     err = altcp_bind(pcb, IP_ANY_TYPE, port);
     LWIP_UNUSED_ARG(err); /* in case of LWIP_NOASSERT */
     LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
@@ -3000,7 +3021,10 @@ httpd_init(uint8_t ap_mode)
 void httpd_close()
 {
   if (_pcb)
+  {
+    http_kill_all_connections();
     tcp_close(_pcb);
+  }
 }
 
 #if HTTPD_ENABLE_HTTPS

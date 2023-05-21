@@ -84,4 +84,7 @@
 #define HTTPD_USE_CUSTOM_FSDATA         1
 #define HTTPD_FSDATA_FILE               "../../../RemoteAccess/fsdata.c"
 
+#define LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED 1
+#define SO_REUSE 1
+
 #endif
