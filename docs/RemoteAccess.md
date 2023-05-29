@@ -13,7 +13,13 @@ At present, other than the initial WiFi setup, there is no web interface (yet).
 ## Configuring Wifi
 The basic process is use the "Config Wifi/AP mode" option, ideally connect to the ZC95 using a phone, then use the web interface to enter a WiFi SSID/Password. When the "Connect to Wifi" option is next used, these credentials will be used. At present, other than setting the WiFi SSID/password, nothing else can be done in ap mode.
 
-When selecting "Config Wifi/AP mode", after a brief "Starting" message, you should be presented with a screen that looks something like:
+When selecting "Config Wifi/AP mode", a screen showing the strongest networks found is displayed:
+
+![Scanning]
+
+This will continue to scan for networks for as long as the screen is open.
+
+When at least one WiFi network is detected, the "Start AP" soft button (top right) is enabled. Pressing this starts the Access Point mode, and shows a QR code to allow connecting:
 
 ![QrCode]
 
@@ -165,7 +171,7 @@ If started with the ```--debug``` flag, in addition to showing messages sent/rec
 In this case, it's showing a script that's failed on line 112 due to a call to a function that doesn't exist. Any `print()` output from Lua scripts will also appear here, making this mode useful for testing new Lua scripts.
 
 
-
+[Scanning]: images/screen_ra_scanning.jpg "Remote access (AP mode) scanning screen"
 [QrCode]: images/screen_ra_qr.jpg "Remote access (AP mode) screen showing QR code"
 [PhoneConfigWifi]: images/phone_config_wifi.jpg "Configure wifi on iphone"
 [ShowSsidAndPassword]: images/screen_ra_ap.jpg "Screen showing SSID and password for AP mode"
