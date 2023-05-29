@@ -37,4 +37,5 @@ class SetupWebInterface
         dhcp_server_t _dhcp_server;
         CSavedSettings *_saved_settings;
         std::string _ap_ssid;
+        bool _ap_started = false;
 };
