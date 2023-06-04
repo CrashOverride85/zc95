@@ -183,6 +183,14 @@ If any of the I2C devices aren't detected, you should see an error similar to th
 Here, it can't find the two ICs on the front panel (in this case, the IDC cable was unplugged).
 There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel at RS232 levels.
 
+### Clearing saved settings / EEPROM
+So far I've never found it necessary, but the EEPROM can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking if it should be reset, then pressing bottom left button will clear it.
+Once reset, there should be an "EEPROM cleared" message, followed by flashing red lights. Power cycle the box, and it will have been reset to defaults.
+
+Before showing the confirmation screen, the box will have confirmed the EEPROM IC can be detected, but no saved settings will have been used. 
+
+EEPROM is used to store all settings that can be changed via the menus, but it does not store any uploaded Lua scripts - these are stored in flash, and can be wiped by reuploading the firmware. 
+
 ## ZC624 output module
 There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it.
 
@@ -228,7 +236,7 @@ The process for self power-on calibration (for each channel) is:
 
 All this means is that an error like this:
 ```
-calibrate for sm=3 FAILED! final voltage = 0.011279, dac_value = 2600 (expecting 0.075v - 0.090v)
+calibrate for sm=3 FAILED! final voltage = 0.011279, dac_value = 2400 (expecting 0.075v - 0.090v)
 ```
 means that the PFET never switched on (enough) to complete calibration successfully.
 
@@ -239,9 +247,9 @@ calibrate for sm=3 FAILED! final voltage = 1.541235, dac_value = 3400 (expecting
 means the opposite - at the starting value of 3400, the voltage across the sense resistor (and therefore current flow though the PFET & transformer) was already way above what it should be.
 
 Possible causes (not exhaustive!) for calibration to fail:
-* If all channels are showing a similar and very low voltage (~0.01v) at a DAC value of 2600, suspect the 9v supply (and in turn, the 12v supply it's derived from)
+* If all channels are showing a similar and very low voltage (~0.01v) at a DAC value of 2400, suspect the 9v supply (and in turn, the 12v supply it's derived from)
 * Bad/incorrect PFET - e.g. not an IRF9Z24**NPBF**
-* Too low value sense resistor (if DAC value is 2600), or too high (if DAC value is 3400)
+* Too low value sense resistor (if DAC value is 2400), or too high (if DAC value is 3400)
 * Incorrect resistor value in the opamp circuit - likely if the final voltage is wildly off. Also suspect a bad/cracked resistor or poor solder joint if the final voltage keeps changing between power cycles 
 
 
