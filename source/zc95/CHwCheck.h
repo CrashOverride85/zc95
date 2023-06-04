@@ -28,6 +28,8 @@ class CHwCheck
         std::string get_zc624_version();
         bool audio_digipot_found();
         void die(CLedControl *led_control, std::string error_message);
+        bool clear_eeprom_buttons_pressed();
+        void clear_eeprom_if_requested();
         static bool running_on_picow();
 
     private:
