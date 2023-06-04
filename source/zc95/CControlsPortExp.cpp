@@ -24,7 +24,7 @@
 
 /*
  * Deal with port expander U7, which:
- *   - reads input from front pannel buttons A, B, C & D
+ *   - reads input from front panel buttons A, B, C & D
  *   - is connected to IO1/2/3 on expansion header J17 (for optional audio input board)
  *   - controls the LCD backlight
  * 
@@ -50,7 +50,7 @@ void CControlsPortExp::clear_input()
     int retval = i2c_read(__func__, _address, &_last_read, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
-      printf("CControlsPortExp::clear_intput i2c read error!\n");
+      printf("CControlsPortExp::clear_input i2c read error!\n");
     }
 
     _button_states_at_last_check = _last_read;

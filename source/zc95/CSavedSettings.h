@@ -7,7 +7,7 @@
 #define EEPROM_SIZE      512 // EEPROM is 4Kbit
 #define EEPROM_MAGIC_VAL  85 // If this is in setting::EepromInit, assume the eeprom has been initialised
 
-#define EEPROM_CHANNEL_COUNT 10 // Maximum number of configuerd channels that can be saved. Changing this invalidates EEPROM contents
+#define EEPROM_CHANNEL_COUNT 10 // Maximum number of configured channels that can be saved. Changing this invalidates EEPROM contents
 
 class CSavedSettings
 {
@@ -143,8 +143,8 @@ class CSavedSettings
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
 
-
         void eeprom_initialise();
+
     private:
         bool eeprom_initialised();
         
