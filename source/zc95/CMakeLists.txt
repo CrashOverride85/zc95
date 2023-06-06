@@ -125,6 +125,7 @@ add_executable(zc95
   RemoteAccess/CWsConnection.cpp
   RemoteAccess/CLuaLoad.cpp
   RemoteAccess/CRoutineRun.cpp
+  RemoteAccess/CMessageProcessor.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScripts.S
