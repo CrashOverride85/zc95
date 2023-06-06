@@ -99,6 +99,7 @@ add_executable(zc95
   display/CMenuSettingHardware
   display/CMenuRemoteAccess
   display/CMenuRemoteAccessConnectWifi
+  display/CMenuRemoteAccessSerial
   display/CMenuApMode
   display/COptionsList
   display/CHorzBarGraph
@@ -126,6 +127,7 @@ add_executable(zc95
   RemoteAccess/CLuaLoad.cpp
   RemoteAccess/CRoutineRun.cpp
   RemoteAccess/CMessageProcessor.cpp
+  RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScripts.S

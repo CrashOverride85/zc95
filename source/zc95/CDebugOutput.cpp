@@ -7,11 +7,11 @@ void CDebugOutput::set_debug_destination(debug_dest_t destination)
     switch(destination)
     {
         case debug_dest_t::ACC:
-            stdio_uart_init_full(uart1, PICO_DEFAULT_UART_BAUD_RATE, PIN_ACC_UART_TX, PIN_ACC_UART_RX);
+            stdio_uart_init_full(ACC_PORT_UART, PICO_DEFAULT_UART_BAUD_RATE, PIN_ACC_UART_TX, PIN_ACC_UART_RX);
             break;
 
         case debug_dest_t::AUX:
-            stdio_uart_init_full(uart0, PICO_DEFAULT_UART_BAUD_RATE, PIN_AUX_UART_TX, PIN_AUX_UART_RX);
+            stdio_uart_init_full(AUX_PORT_UART, PICO_DEFAULT_UART_BAUD_RATE, PIN_AUX_UART_TX, PIN_AUX_UART_RX);
             break;
 
         case debug_dest_t::OFF:

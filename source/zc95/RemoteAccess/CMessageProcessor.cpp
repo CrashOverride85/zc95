@@ -77,7 +77,7 @@ void CMessageProcessor::message(uint8_t *data, u16_t data_len)
     printf("CMessageProcessor::message()\n");
     std::string message((char*)data, data_len);
 
-    printf("msg = %s\n", message.c_str());
+    printf("msg < %s\n", message.c_str());
     
     if (data_len > MAX_WS_MESSAGE_SIZE) // Check is important: later mempcy into _pending_message_buffer assumes data_len <= MAX_WS_MESSAGE_SIZE
     {
@@ -95,7 +95,7 @@ void CMessageProcessor::message(uint8_t *data, u16_t data_len)
         DeserializationError error = deserializeJson(doc, message.c_str());
         if (error)
         {
-            printf("deserializeJson() failed: %s", error.c_str());
+            printf("deserializeJson() failed: %s\n", error.c_str());
             send_ack("ERROR", -1);
             return;
         }

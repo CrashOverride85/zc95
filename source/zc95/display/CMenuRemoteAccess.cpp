@@ -17,10 +17,19 @@
  */
 
 #include "CMenuRemoteAccess.h"
+#include "CMenuRemoteAccessSerial.h"
 #include "CMenuApMode.h"
 #include "CDisplayMessage.h"
+#include "../CHwCheck.h"
 
-CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output)
+CMenuRemoteAccess::CMenuRemoteAccess(
+    CDisplay* display, 
+    CGetButtonState *buttons, 
+    CSavedSettings *saved_settings, 
+    CWifi *wifi, 
+    CAnalogueCapture *analogueCapture, 
+    CRoutineOutput *routine_output,
+    std::vector<CRoutines::Routine> *routines)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
@@ -29,6 +38,7 @@ CMenuRemoteAccess::CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons
     _wifi = wifi;
     _analogueCapture = analogueCapture;
     _routine_output = routine_output;
+    _routines = routines;
 
     _exit_menu = false;
     _options_list = new COptionsList(display, display->get_display_area());
@@ -103,6 +113,10 @@ void CMenuRemoteAccess::show_selected_setting()
             _saved_settings->save();
             set_active_menu(new CDisplayMessage(_display, _buttons, "New PSK for AP mode will be generated when AP mode next started"));
             break;
+
+        case option_id::SERIAL_ACCESS:
+            set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _analogueCapture, _routines));
+            break;
     }
 }
 
@@ -125,10 +139,14 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI     ,  "Connect to WiFi"));
-    _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE          ,  "Config Wifi/AP mode"));
-    _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
-    _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access (Aux)"));
+    if (CHwCheck::running_on_picow())
+    {
+        _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI     ,  "Connect to WiFi"));
+        _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE          ,  "Config Wifi/AP mode"));
+        _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
+        _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
+    }
     
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)
