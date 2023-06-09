@@ -84,3 +84,5 @@
 #define PIN_ACC_UART_TX 8
 #define PIN_ACC_UART_RX 9
 #define ACC_PORT_UART uart1
+
+#define SERIAL_TX_QUEUE_SIZE 2000 // only used when in remote access/serial mode

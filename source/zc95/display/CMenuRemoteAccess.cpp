@@ -139,7 +139,6 @@ void CMenuRemoteAccess::show()
     _display->set_option_d("Down");
 
     _options.clear();
-    _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access (Aux)"));
     if (CHwCheck::running_on_picow())
     {
         _options.push_back(CMenuRemoteAccess::option(option_id::CONNECT_WIFI     ,  "Connect to WiFi"));
@@ -147,7 +146,9 @@ void CMenuRemoteAccess::show()
         _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
         _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
     }
-    
+    _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access (Aux)"));
+
+
    _options_list->clear_options();
     for (std::vector<CMenuRemoteAccess::option>::iterator it = _options.begin(); it != _options.end(); it++)
     {

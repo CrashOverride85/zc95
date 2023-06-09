@@ -20,6 +20,11 @@
  * Handle serial communication on Aux/Serial port. Messages (in and out) are prefixed with
  * STX and end with ETX. Other than that, the format (JSON) is the same as the websocket
  * interface.
+ * If an EOT is received, this is treated similar to a websocket disconnect - any running
+ * routine is stopped, and state cleared.
+ * 
+ * Note that this class sets up an interrupt handler for the UART passed in, and keeps a static
+ * reference to itself. I.e. creating more than one instance of this class won't work.
  * 
  * Processing of incoming messages is handled by CMessageProcessor.
  */
@@ -29,19 +34,23 @@
 #include "CSerialConnection.h"
 #include "../git_version.h"
 
-CSerialConnection *CSerialConnection::_s_instance;
+extern CSerialConnection *g_SerialConnection;
+CSerialConnection *CSerialConnection::_s_instance = NULL;
 
 CSerialConnection::CSerialConnection(uart_inst_t *uart, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
     printf("CSerialConnection::CSerialConnection()\n");
     _s_instance = this;
     _uart = uart;
+    _analogue_capture = analogue_capture;
+    _routine_output = routine_output;
+    _routines = routines;
 
     _recv_buffer_position = 0;
-    _tx_buffer_position = 0;
     memset(_recv_buffer, 0, sizeof(_recv_buffer));
-    memset(_tx_buffer, 0, sizeof(_tx_buffer));
-    _tx_in_progress = false;
+
+    _reset_connection = false;
+    queue_init(&_tx_queue, sizeof(char), SERIAL_TX_QUEUE_SIZE);
 
     uart_init(_uart, PICO_DEFAULT_UART_BAUD_RATE);
     _uart_irq = _uart == uart0 ? UART0_IRQ : UART1_IRQ;
@@ -49,12 +58,14 @@ CSerialConnection::CSerialConnection(uart_inst_t *uart, CAnalogueCapture *analog
     irq_set_enabled(_uart_irq, true);
     uart_set_irq_enables(_uart, true, true);
 
-    _messageProcessor = new CMessageProcessor(analogue_capture, routine_output, routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+    _messageProcessor = new CMessageProcessor(_analogue_capture, _routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+    g_SerialConnection = this;
 }
 
 CSerialConnection::~CSerialConnection()
 {
     printf("~CSerialConnection()\n");
+    g_SerialConnection = NULL;
     
     uart_set_irq_enables(_uart, false, false);
     irq_set_enabled(_uart_irq, false);
@@ -66,19 +77,19 @@ CSerialConnection::~CSerialConnection()
         delete _messageProcessor;
         _messageProcessor = NULL;
     }
+
+    queue_free(&_tx_queue);
 }
 
 void CSerialConnection::on_uart_irq()
 {
     // Serial transmit
-    while (uart_is_writable(_uart) && _tx_buffer[_tx_buffer_position])
+    while (uart_is_writable(_uart) && !queue_is_empty(&_tx_queue))
     {
-        uart_putc_raw(_uart, _tx_buffer[_tx_buffer_position++]);
-    }
-    
-    if (_tx_buffer[_tx_buffer_position] == NULL)
-    {
-        _tx_in_progress = false;
+        char ch;
+        bool got_entry = queue_try_remove(&_tx_queue, &ch);
+        if (got_entry)
+            uart_putc_raw(_uart, ch);
     }
 
     // Serial receive
@@ -86,32 +97,46 @@ void CSerialConnection::on_uart_irq()
     {
         uint8_t ch = uart_getc(_uart);
 
-        switch (_state)
+        if (ch == EOT)
         {
-            case state_t::IDLE:
-                if (ch == STX)
-                    _state = state_t::RECV;
-                break;
-            
-            case state_t::RECV:
-                if ((_recv_buffer_position > MAX_WS_MESSAGE_SIZE) || (_recv_buffer_position > sizeof(_recv_buffer)+2)) 
-                {
-                    printf("CSerialConnection::on_uart_rx(): max buffer length reached, discarding message\n");
-                    _recv_buffer_position = 0;
-                    memset(_recv_buffer, 0, sizeof(_recv_buffer));
-                    _state = state_t::IDLE;
-                }
-                else
-                {
-                    if (ch == ETX)
+            printf("EOT received, reset connection\n");
+            _reset_connection = true;
+        }
+
+        // If an EOT has been received, ignore (discard) any more incoming data until the connection has been reset
+        if (!_reset_connection)
+        {
+            switch (_state)
+            {
+                case state_t::IDLE:
+                    if (ch == STX)
+                        _state = state_t::RECV;
+                    break;
+                
+                case state_t::RECV:
+                    if ((_recv_buffer_position > MAX_WS_MESSAGE_SIZE) || (_recv_buffer_position > sizeof(_recv_buffer)-2)) 
                     {
-                        printf("Got serial message\n");
-                        _state = state_t::GOT_MESSAGE;
+                        printf("CSerialConnection::on_uart_rx(): max buffer length reached, discarding message\n");
+                        _recv_buffer_position = 0;
+                        memset(_recv_buffer, 0, sizeof(_recv_buffer));
+                        _state = state_t::IDLE;
                     }
                     else
-                        _recv_buffer[_recv_buffer_position++] = ch;
-                }
-                break;
+                    {
+                        if (ch == ETX)
+                        {
+                            printf("Got serial message\n");
+                            _state = state_t::GOT_MESSAGE;
+                        }
+                        else
+                            _recv_buffer[_recv_buffer_position++] = ch;
+                    }
+                    break;
+
+                case state_t::GOT_MESSAGE:
+                case state_t::RESET:
+                    break;
+            }
         }
     }
 
@@ -133,43 +158,56 @@ void CSerialConnection::loop()
         _messageProcessor->message(_recv_buffer, _recv_buffer_position);
         _recv_buffer_position = 0;
         memset(_recv_buffer, 0, sizeof(_recv_buffer_position));
-        _state = state_t::IDLE;
+        
+        if (_reset_connection)
+            _state = state_t::RESET;
+        else
+            _state = state_t::IDLE;
     }
 
     if (_messageProcessor)
         _messageProcessor->loop();
+
+    if (_reset_connection && _state != state_t::GOT_MESSAGE)
+    {
+        printf("CSerialConnection::loop(): start reset\n");
+        // Disable serial interrupts, wait for tx buffer to empty then clear rx buffer
+        uart_set_irq_enables(_uart, false, false);
+        while (!queue_is_empty(&_tx_queue));
+
+        while (uart_is_readable(_uart)) 
+            uart_getc(_uart);
+
+        // Reset message processor - if a routine is running, this will stop it
+        if (_messageProcessor)
+            delete _messageProcessor;
+
+        _messageProcessor = new CMessageProcessor(_analogue_capture, _routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+
+        _state = state_t::IDLE;
+        _reset_connection = false;
+        uart_set_irq_enables(_uart, true, true);
+
+        printf("CSerialConnection::loop(): reset done\n");
+    }
 }
 
 void CSerialConnection::send(std::string message)
 {
-    if (_tx_in_progress)
+    const char *msg_ptr = message.c_str();
+    printf("send > %s\n", message.c_str());
+
+    uint space_in_queue = SERIAL_TX_QUEUE_SIZE - queue_get_level(&_tx_queue);
+    if (message.length() > space_in_queue)
     {
-        printf("CSerialConnection::send() error - transmit already in progress\n");
+        printf("CSerialConnection::send() error - not enough space in queue (%d message size vs space %d)\n", message.length(), space_in_queue);
         return;
     }
 
-    uint16_t max_message_len = sizeof(_tx_buffer)+3;
-    if (message.length() > max_message_len)
-    {
-        printf("CSerialConnection::send() error - message too long (%d vs limit of %d)\n", message.length(), max_message_len);
-        return;
-    }
-    
-    printf("msg > %s\n", message.c_str());
+    queue_add_blocking(&_tx_queue, &STX);
+    while (*msg_ptr)
+        queue_add_blocking(&_tx_queue, msg_ptr++);
+    queue_add_blocking(&_tx_queue, &ETX);
 
-    _tx_buffer_position = 0;
-    memset(_tx_buffer, 0, sizeof(_tx_buffer_position));
-    sprintf((char*)_tx_buffer, "%c%s%c", STX, message.c_str(), ETX);
-
-    // Send as much as possible now (filling tx FIFO buffer)
-    while (uart_is_writable(_uart) && _tx_buffer[_tx_buffer_position])
-    {
-        uart_putc_raw(_uart, _tx_buffer[_tx_buffer_position++]);
-    }
-
-    // If there's any left, will get sent via interrupt 
-    if (_tx_buffer[_tx_buffer_position])
-    {
-        _tx_in_progress = true;
-    }
+    irq_set_pending(_uart_irq);
 }
