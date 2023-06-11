@@ -3,14 +3,17 @@
 ***Warning***: All remote access and Lua stuff is somewhat experimental at this point
 
 ## Summary
-If a Pico-W is used for the MCU on the main board, a "Remote access" menu is available in the config menu.
+The ZC95 can be controlled remotely either using RS232 serial (Aux port) or using WiFi if a Pico-W is used for the MCU on the main board.
+
 The remote access options can be used to:
 * Upload Lua scripts (of which 5 can be stored)
 * Control the box remotely with a Python GUI
 
-At present, other than the initial WiFi setup, there is no web interface (yet).
+## Connecting using WiFi
+If a Pico-W is used, the Config -> Remote Access menu should include options relating to WiFi.
 
-## Configuring Wifi
+At present, other than the initial WiFi setup, there is no web interface (yet) - all control is via python scripts ran on a PC.
+
 The basic process is use the "Config Wifi/AP mode" option, ideally connect to the ZC95 using a phone, then use the web interface to enter a WiFi SSID/Password. When the "Connect to Wifi" option is next used, these credentials will be used. At present, other than setting the WiFi SSID/password, nothing else can be done in ap mode.
 
 When selecting "Config Wifi/AP mode", a screen showing the strongest networks found is displayed:
@@ -41,13 +44,27 @@ If the config page doesn't automatically appear, manually browse to "http://192.
 ### Android
 Untested, but hopefully similar.
 
-## Connecting to Wifi
+### Connecting
 Select the "Connect to WiFi" option, and it should connect to the WiFi network previously configured using the above steps. Once connected, you should see something that looks like:
 
 ![ConnectedToWifi]
 
 At this point, the Python GUI and scripts to list/upload Lua scripts should work if given the IP displayed on screen.
 
+## Serial control
+The ZC95 can also be controlled using RS-232 serial via the Aux port. Pin out:
+
+* Tip = Transmit (ZC95 output)
+* Ring = Receive
+* Sleeve = Ground
+
+Before this mode can be used, the hardware configuration needs to be set to:
+* Debug output = `Accessory port` or `Off`
+* Aux port use = `Serial I/O`
+
+(see Hardware config section in [Operation notes](./Operation.md))
+
+Once selected, and screen is showing "Serial control mode", the Python GUI and scripts to list/upload Lua scripts should work if given the serial port the ZC95 is connected to.
 
 ## Python scripts
 There are a few Python scripts available in the `remote_access` folder for interacting with the ZC95 once it's connected to wifi:
@@ -56,7 +73,9 @@ There are a few Python scripts available in the `remote_access` folder for inter
 * lua_upload.py - uploads a Lua script
 * pattern_gui.py - starts a GUI that starts a pattern and can then be used to control it
 
-(all scripts can be given an optional `--debug` parameter which shows messages being sent/received, and sometimes other extra info)
+For all scripts:
+* Either ``--ip <IP address>`` _or_ ``--serial <serial port>`` must be specified
+* The optional `--debug` parameter can be used to show messages being sent/received, and sometimes other extra info
 
 ### pattern_list.py
 Used to list all pattens on the ZC95 that can be controlled remotely, including any from Lua scripts uploaded. E.g.:
@@ -88,8 +107,8 @@ Finally, the Audio patterns are excluded for the time being as these do not work
 ### lua_manage.py
 Can be used to list and delete Lua scripts on the box, e.g.:
 ```
-$ python3 lua_manage.py --ip 192.168.1.137 --list
-Connecting
+$ python3 lua_manage.py --serial /dev/ttyUSB0 --list
+Opening: /dev/ttyUSB0
 Connection opened
 Script slots on ZC95:
 5 - <empty>
@@ -97,7 +116,7 @@ Script slots on ZC95:
 3 - <empty>
 2 - <empty>
 1 - U:Waves
-Websocket connection closed
+Connection closed
 $
 ```
 When uploading a Lua script, it's the id/index from the above list that needs to be used to specify where to put the script.
