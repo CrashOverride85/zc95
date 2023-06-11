@@ -94,7 +94,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines));
         }
         
         if (button == Button::C) // "Up"

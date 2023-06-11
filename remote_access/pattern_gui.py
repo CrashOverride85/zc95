@@ -8,6 +8,7 @@ import websocket
 import lib.ZcMessages as zc
 import queue
 from lib.ZcWs import ZcWs
+from lib.ZcSerial import ZcSerial
 from lib.MinMaxMenu import MinMaxMenu
 from lib.PowerDisplay import PowerDisplay
 
@@ -196,7 +197,11 @@ class ZcPatternGui:
 
 parser = argparse.ArgumentParser(description='Start and run pattern on ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
-parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
+
+connection_group = parser.add_mutually_exclusive_group(required=True)
+connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
+connection_group.add_argument('--serial', action='store', help='Serial port to use')
+
 parser.add_argument('--index', action='store', required=True, help='Start pattern at specified index')
 
 args = parser.parse_args()
@@ -205,15 +210,20 @@ args = parser.parse_args()
 #if args.debug:
 #  websocket.enableTrace(True)
 
-rcv_queue = queue.Queue() # to allow received web socket messages to be sent to the GUI
+rcv_queue = queue.Queue() # to allow received messages to be sent to the GUI
 
-zcws = ZcWs(args.ip, rcv_queue, args.debug)
+# Connect either using serial or websocket
+if args.serial:
+  zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+else:
+  zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 
-ws_thread = threading.Thread(target=zcws.run_forever)
-ws_thread.start()
-zcws.wait_for_connection()
+conn_thread = threading.Thread(target=zc_connection.run_forever)
+conn_thread.start()
 
-zc_messages = zc.ZcMessages(zcws, args.debug)
+zc_connection.wait_for_connection()
+
+zc_messages = zc.ZcMessages(zc_connection, args.debug)
 pattern = zc_messages.GetPatternDetails(args.index)
 
 root = Tk() 
@@ -225,4 +235,4 @@ zc_messages.PatternStart(args.index)
 
 
 root.mainloop()
-zcws.stop()
+zc_connection.stop()

@@ -36,7 +36,8 @@ CMenuSettings::CMenuSettings(
         CHwCheck *hwCheck, 
         CAudio *audio, 
         CAnalogueCapture *analogueCapture,
-        CWifi *wifi)
+        CWifi *wifi,
+        std::vector<CRoutines::Routine> *routines)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -49,6 +50,7 @@ CMenuSettings::CMenuSettings(
     _audio = audio;
     _analogueCapture = analogueCapture;
     _wifi = wifi;
+    _routines = routines;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -131,7 +133,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output));
+            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines));
             break;
 
         case setting_id::ABOUT:
@@ -160,9 +162,7 @@ void CMenuSettings::show()
 
     _settings.clear();
 
-    if (CHwCheck::running_on_picow())
-        _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
-    
+    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));    
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
     _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));

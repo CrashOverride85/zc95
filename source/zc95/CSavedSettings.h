@@ -80,7 +80,7 @@ class CSavedSettings
         enum class setting_aux_port_use
         {
             AUDIO  = 0, // Aux port is routed to ADC if audio board present (same as SERIAL if not present)
-            SERIAL = 1  // Aux port is routed to uart0
+            SERIAL = 1  // Aux port is routed to AUX_PORT_UART (uart0)
         };
 
         CSavedSettings(CEeprom *eeprom);

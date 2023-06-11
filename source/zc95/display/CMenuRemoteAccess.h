@@ -10,7 +10,15 @@
 class CMenuRemoteAccess : public CMenu
 {
     public:
-        CMenuRemoteAccess(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output);
+        CMenuRemoteAccess(
+            CDisplay* display,
+            CGetButtonState *buttons, 
+            CSavedSettings *saved_settings, 
+            CWifi *wifi, 
+            CAnalogueCapture *analogueCapture, 
+            CRoutineOutput *routine_output,
+            std::vector<CRoutines::Routine> *routines);
+
         ~CMenuRemoteAccess();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -32,13 +40,15 @@ class CMenuRemoteAccess : public CMenu
         };
 
         void show_selected_setting();
+        std::string get_serial_config_error();
 
         enum option_id
         {
             AP_MODE             = 0,
             CONNECT_WIFI        = 1,
             CLEAR_SAVED_CREDS   = 2,
-            REGEN_AP_PSK        = 3
+            REGEN_AP_PSK        = 3,
+            SERIAL_ACCESS       = 4
         };
 
         std::vector<option> _options;
@@ -52,8 +62,5 @@ class CMenuRemoteAccess : public CMenu
         CWifi *_wifi;
         CAnalogueCapture *_analogueCapture;
         CRoutineOutput *_routine_output;
+        std::vector<CRoutines::Routine> *_routines;
 };
-
-
-
-

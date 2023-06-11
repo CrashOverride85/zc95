@@ -22,7 +22,8 @@ class CMenuSettings : public CMenu
             CHwCheck *hwCheck, 
             CAudio *audio, 
             CAnalogueCapture *analogueCapture,
-            CWifi *wifi);
+            CWifi *wifi,
+            std::vector<CRoutines::Routine> *routines);
 
         ~CMenuSettings();
         void button_pressed(Button button);
@@ -72,8 +73,5 @@ class CMenuSettings : public CMenu
         CAudio *_audio;
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
+        std::vector<CRoutines::Routine> *_routines;
 };
-
-
-
-
