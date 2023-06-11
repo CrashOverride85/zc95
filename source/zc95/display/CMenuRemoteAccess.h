@@ -40,6 +40,7 @@ class CMenuRemoteAccess : public CMenu
         };
 
         void show_selected_setting();
+        std::string get_serial_config_error();
 
         enum option_id
         {

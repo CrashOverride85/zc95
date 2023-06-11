@@ -16,14 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// TODO: sanity check config
-//  - audio not enabled
-//  - debug not set to Aux port
-
 #include "CMenuRemoteAccessSerial.h"
 #include "CMenuApMode.h"
-
-
 
 CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CDisplay* display,

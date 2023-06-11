@@ -115,7 +115,11 @@ void CMenuRemoteAccess::show_selected_setting()
             break;
 
         case option_id::SERIAL_ACCESS:
-            set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _analogueCapture, _routines));
+            std::string config_error = get_serial_config_error();
+            if (config_error == "")
+                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _analogueCapture, _routines));
+            else
+                set_active_menu(new CDisplayMessage(_display, _buttons, config_error));
             break;
     }
 }
@@ -163,4 +167,35 @@ void CMenuRemoteAccess::show()
     }
 
     _exit_menu = false;
+}
+
+// Check the hardware configuration makes sense for remote serial control from the Aux port.
+// * The aux port needs to be configured for Serial I/O not Audio; although without an audio
+//   board present, the setting technically doesn't matter. 
+// * Debug output can't be directed to the Aux port. This would interfere/conflict badly.
+// If config is good, returns an empty string, otherwise the string includes an error to
+// be displayed.
+std::string CMenuRemoteAccess::get_serial_config_error()
+{
+    CSavedSettings::setting_aux_port_use aux_setting = _saved_settings->get_aux_port_use();
+    CSavedSettings::setting_debug debug_setting = _saved_settings->get_debug_dest();
+
+    bool serial_disabled = aux_setting    != CSavedSettings::setting_aux_port_use::SERIAL;
+    bool debug_enabled   = debug_setting  == CSavedSettings::setting_debug::AUX_PORT;
+
+    if (serial_disabled || debug_enabled)
+    {
+        std::string message = "Error: Config not valid for serial control. Need to: ";
+
+        int i = 1;
+        if (serial_disabled)
+            message += std::to_string(i++) + ") Set Aux = Serial ";
+
+        if (debug_enabled)
+            message += std::to_string(i++) + ") Set debug != Aux ";
+    
+        return message;
+    }
+
+    return "";
 }

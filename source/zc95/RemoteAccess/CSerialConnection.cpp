@@ -172,8 +172,8 @@ void CSerialConnection::loop()
     {
         printf("CSerialConnection::loop(): start reset\n");
         // Disable serial interrupts, wait for tx buffer to empty then clear rx buffer
-        uart_set_irq_enables(_uart, false, false);
         while (!queue_is_empty(&_tx_queue));
+        uart_set_irq_enables(_uart, false, false);
 
         while (uart_is_readable(_uart)) 
             uart_getc(_uart);
