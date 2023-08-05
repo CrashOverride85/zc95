@@ -95,29 +95,45 @@ class ZcPatternGui:
     pattern_options_frame = Frame(pattern_frame, width=400, height=400)
     pattern_options_frame.grid(row=1, column=0, padx=10, pady=5)
 
-    Label (pattern_options_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
-    soft_button = Button(pattern_options_frame, text=pattern["ButtonA"])
-    soft_button.grid(row=0, column=1, padx=5, pady=5)    
-    soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
-    soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
+    # Only show soft button if text has been set for it
+    if len(pattern["ButtonA"]) > 0:
+      button_frame = Frame(pattern_options_frame, width=200, height=4, highlightbackground="blue", highlightthickness=2)
+      button_frame.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
+
+      Label (button_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
+      soft_button = Button(button_frame, text=pattern["ButtonA"])
+      soft_button.grid(row=0, column=1, padx=5, pady=5)    
+      soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
+      soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
 
     row = 1
     self.var_radio_buttons = {}
     self.progress = {}
     self.min_max_menus = {}
+    menu_row = {}
+
     for menu_item in pattern["MenuItems"]:
-      spacer_frame = Frame(pattern_options_frame, width=400, height=4, highlightbackground="blue", highlightthickness=2)
-      spacer_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
-      row += 1
+      title = menu_item["Title"]
+
+      if "Group" in menu_item:
+        group = menu_item["Group"]
+      else:
+        group = 0
       
-      title = menu_item["Title"] 
+      if group in menu_row:
+        menu_row[group] = menu_row[group] + 1
+      else:
+        menu_row[group] = 0
+      
       if "UoM" in menu_item:
         if len(menu_item["UoM"]) > 0:
           title += " (" + menu_item["UoM"] + ")"
       
-      Label(pattern_options_frame, text=title).grid(row=row, column=0, padx=5, pady=5, sticky=W)
-      self.AddMenuOptions(pattern_options_frame, row, menu_item)
-      row += 1
+      menu_item_frame = Frame(pattern_options_frame, width=400, height=4, highlightbackground="blue", highlightthickness=2)
+      menu_item_frame.grid(row=row+menu_row[group], column=0+group, padx=10, pady=5, sticky="ew")
+      
+      Label(menu_item_frame, text=title).grid(row=row, column=0, padx=5, pady=5, sticky=W)
+      self.AddMenuOptions(menu_item_frame, row, menu_item)
       
   # Stolen from https://tkdocs.com/tutorial/text.html
   def WriteToLog(self, msg, error):
