@@ -93,6 +93,8 @@ Photo of board as it arrived from JLCPCB:
 * Getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
 * Stating the obvious, but put the parts on the side indicated by the silkscreen (LEDs, POTs and rotary encoder one side, the rest the other)
 * J1 should have the cut-out facing towards SW5 (rotary encoder)
+* Pin 1 of the ADC (U1, PCF8591) is the top left (with board orientated with the `ZC95-FrontPanel-Analog(back)` text at the top)
+
 
 Fully assembled board:
 
