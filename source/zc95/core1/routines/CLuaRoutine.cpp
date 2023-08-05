@@ -612,7 +612,7 @@ int CLuaRoutine::lua_set_power(lua_State *L)
     int chan = lua_tointeger(L, 1);
     int power = lua_tointeger(L, 2);
     if (!is_channel_number_valid(chan)) return 0;
-    if (power <= 0 || power > 1000) return 0;
+    if (power < 0 || power > 1000) return 0;
 
     full_channel_set_power(chan-1, power);
     return 1;
