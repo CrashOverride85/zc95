@@ -128,9 +128,9 @@ void CMenuChannelConfig::draw()
 {
     _channel_list->draw();
 
-    color_t rect_colour = hagl_color(0x00, 0x00, 0xFF);
+    hagl_color_t rect_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
-    hagl_fill_rectangle(_channel_choice_area.x0, _channel_choice_area.y0,
+    hagl_fill_rectangle(_display->get_hagl_backed(),_channel_choice_area.x0, _channel_choice_area.y0,
                         _channel_choice_area.x1, _channel_choice_area.y1,
                         rect_colour);
 

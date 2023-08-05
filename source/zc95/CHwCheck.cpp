@@ -195,19 +195,19 @@ bool CHwCheck::audio_digipot_found()
 void CHwCheck::show_error_text_message(int y, std::string message)
 {
     y += 2;
-    put_text(message, 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text(message, 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 }
 
 void CHwCheck::show_error_text_missing(int y)
 {
     y += 2;
-    put_text("Missing:", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Missing:", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
     
     for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
     {
         if (!it->present && !it->optional)
         {
-            put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+            put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
         }
     }    
 }
@@ -215,14 +215,14 @@ void CHwCheck::show_error_text_missing(int y)
 void CHwCheck::die(CLedControl *led_control, std::string error_message)
 {
     int y = 0;
-    hagl_clear_screen();
+    hagl_clear(_hagl_backend);
 
-    put_text("Fatal error", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
-    put_text("===========", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Fatal error", 0, (y++ * 10), hagl_color(_hagl_backend,0xFF, 0xFF, 0xFF));
+    put_text("===========", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
     y++;
-    put_text(error_message, 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text(error_message, 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
-    hagl_flush();
+    hagl_flush(_hagl_backend);
 
     halt(led_control);
 }
@@ -235,16 +235,16 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
 
     if (controls == NULL)
     {  
-        hagl_init();
+        _hagl_backend = hagl_init();
     }
     else
     {
         controls->set_lcd_backlight(true);
     }
 
-    hagl_clear_screen();
+    hagl_clear(_hagl_backend);
 
-    put_text("Hardware check failed", (y++ * 10), 10, hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Hardware check failed", (y++ * 10), 10, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
     switch (casue)
     {
@@ -273,7 +273,7 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
             break;
     }
 
-    hagl_flush();
+    hagl_flush(_hagl_backend);
 
     halt(ledControl);
 }
@@ -336,13 +336,13 @@ std::string CHwCheck::get_zc624_version()
     return _zc624_comms->get_version();
 }
 
-void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)
+void CHwCheck::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color)
 {
     if (text == "")
         text = " ";
 
     std::wstring widestr = std::wstring(text.begin(), text.end());
-    hagl_put_text(widestr.c_str(), x, y, color, font6x9);
+    hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
 }
 
 void CHwCheck::get_battery_readings()
@@ -401,10 +401,10 @@ void CHwCheck::clear_eeprom_if_requested()
     led.set_all_led_colour(LedColour::Blue);
     led.loop();
 
-    hagl_init();
-    put_text("Clear EEPROM?", 0, 0, hagl_color(0xFF, 0xFF, 0xFF));
-    put_text("Yes", 0, (DISPLAY_HEIGHT-1) - 10, hagl_color(0xAA, 0xAA, 0xAA));
-    hagl_flush();
+    _hagl_backend = hagl_init();
+    put_text("Clear EEPROM?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+    put_text("Yes", 0, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    hagl_flush(_hagl_backend);
 
     // Wait for bottom right (B) button to be pressed for ~100ms
     while (1)
@@ -430,9 +430,9 @@ void CHwCheck::clear_eeprom_if_requested()
                 CSavedSettings settings = CSavedSettings(&eeprom);
                 settings.eeprom_initialise();
 
-                hagl_clear_screen();
-                put_text("EEPROM cleared!", 0, 0, hagl_color(0xFF, 0xFF, 0xFF));
-                hagl_flush();
+                hagl_clear(_hagl_backend);
+                put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+                hagl_flush(_hagl_backend);
                 halt(&led);
             }
         }
@@ -442,4 +442,9 @@ void CHwCheck::clear_eeprom_if_requested()
 void CHwCheck::process()
 {
 
+}
+
+void CHwCheck::set_display(CDisplay *display)
+{
+    _hagl_backend = display->get_hagl_backed();
 }

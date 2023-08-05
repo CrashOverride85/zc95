@@ -95,7 +95,7 @@ void CMenuRemoteAccessSerial::adjust_rotary_encoder_change(int8_t change)
 void CMenuRemoteAccessSerial::draw()
 {
         int y = ((_disp_area.y1-_disp_area.y0)/2) - 20;
-        _display->put_text("Serial control mode"  , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Serial control mode"  , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         y += 10;
 
         _serial_connection->loop();

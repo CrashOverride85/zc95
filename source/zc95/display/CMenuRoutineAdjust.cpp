@@ -216,7 +216,7 @@ void CMenuRoutineAdjust::draw()
     {
         case menu_entry_type::MIN_MAX:
         {
-            color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
+            hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
                             
             draw_horz_bar_graph(_area.x0+1, _area.y1*0.66, _area.x1-_area.x0-10, 20, menu_item.minmax.min, menu_item.minmax.max, menu_item.minmax.current_value, menu_item.minmax.UoM, bar_colour);
             break;
@@ -224,9 +224,9 @@ void CMenuRoutineAdjust::draw()
 
         case menu_entry_type::MULTI_CHOICE:
         {
-            color_t rect_colour = hagl_color(0x00, 0x00, 0xFF);
+            hagl_color_t rect_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
-            hagl_fill_rectangle(_area.x0+1, _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11,
+            hagl_fill_rectangle(_display->get_hagl_backed(), _area.x0+1, _area.y0 + (((_area.y1-_area.y0)/3) * 2) - 11,
                                 _area.x1-3, _area.y0 + (((_area.y1-_area.y0)/3) * 2) + 21,
                                     rect_colour);
 
@@ -298,12 +298,12 @@ void CMenuRoutineAdjust::draw()
 
 void CMenuRoutineAdjust::draw_bad_script_screen()
 {
-    color_t colour = hagl_color(0xFF, 0x00, 0x00);
+    hagl_color_t colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00);
 
-    hagl_draw_line(_area.x0, _area.y0, _area.x1, _area.y1, colour);
-    hagl_draw_line(_area.x1, _area.y0, _area.x0, _area.y1, colour);
+    hagl_draw_line(_display->get_hagl_backed(), _area.x0, _area.y0, _area.x1, _area.y1, colour);
+    hagl_draw_line(_display->get_hagl_backed(), _area.x1, _area.y0, _area.x0, _area.y1, colour);
 
-    _display->put_text("Script error", 0, _area.y0 + ((_area.y1 - _area.y0) / 2), hagl_color(0xFF, 0xFF, 0x00));
+    _display->put_text("Script error", 0, _area.y0 + ((_area.y1 - _area.y0) / 2), hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00));
 }
 
 void CMenuRoutineAdjust::show()
@@ -325,7 +325,7 @@ void CMenuRoutineAdjust::show()
     set_options_on_multi_choice_list();
 }
 
-void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, color_t bar_colour)
+void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour)
 {
     if (current_val > max_val)
         current_val = max_val;
@@ -336,23 +336,23 @@ void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width
         return;
 
 
-    hagl_draw_rectangle(x, y, x+width, y+height, hagl_color(0xFF, 0xFF, 0xFF));
+    hagl_draw_rectangle(_display->get_hagl_backed(), x, y, x+width, y+height, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     float current_val_pc = (((float)current_val - (float)min_val) / ((float)max_val-(float)min_val));
     int16_t bar_width = current_val_pc * (float)(width-1);
   
-    hagl_fill_rectangle(x+1, y+1, x+bar_width, y+height-1, bar_colour);
+    hagl_fill_rectangle(_display->get_hagl_backed(), x+1, y+1, x+bar_width, y+height-1, bar_colour);
 
     // min label
-    _display->put_text(std::to_string(min_val), x, y + height+3, hagl_color(0, 0xFF, 0));
+    _display->put_text(std::to_string(min_val), x, y + height+3, hagl_color(_display->get_hagl_backed(), 0, 0xFF, 0));
 
     // max label
-    _display->put_text(std::to_string(max_val), x+width-20, y + height+3, hagl_color(0, 0xFF, 0));
+    _display->put_text(std::to_string(max_val), x+width-20, y + height+3, hagl_color(_display->get_hagl_backed(), 0, 0xFF, 0));
 
     // current value label in middle of bar
     std::string value_str = std::to_string(current_val) + " " + UoM;
     uint16_t current_val_width = value_str.length() * _display->get_font_width();
-    _display->put_text(value_str, x+((width/2)-(current_val_width/2)), y + 1 + (_display->get_font_height()/2), hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text(value_str, x+((width/2)-(current_val_width/2)), y + 1 + (_display->get_font_height()/2), hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 }
 
 void CMenuRoutineAdjust::set_options_on_multi_choice_list()

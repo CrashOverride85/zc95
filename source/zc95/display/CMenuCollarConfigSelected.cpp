@@ -122,7 +122,7 @@ void CMenuCollarConfigSelected::adjust_rotary_encoder_change(int8_t change)
 void CMenuCollarConfigSelected::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("Collar " + std::to_string(_collar_id+1) + " config", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text("Collar " + std::to_string(_collar_id+1) + " config", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     _options_list->draw();
 }

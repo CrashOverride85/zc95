@@ -13,6 +13,7 @@
 #include "CLedControl.h"
 #include "CControlsPortExp.h"
 #include "CBatteryGauge.h"
+#include "display/CDisplay.h"
 #include "core1/output/ZC624Output/CZC624Comms.h"
 
 #define BAT_AVG_COUNT 50
@@ -31,13 +32,14 @@ class CHwCheck
         bool clear_eeprom_buttons_pressed();
         void clear_eeprom_if_requested();
         static bool running_on_picow();
+        void set_display(CDisplay *display);
 
     private:
         enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION};
         void show_error_text_missing(int y);
         void show_error_text_message(int y, std::string message);
         void hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls);
-        void put_text(std::string text, int16_t x, int16_t y, color_t color);
+        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
         void get_battery_readings();
         void halt(CLedControl *led_control);
 
@@ -63,6 +65,7 @@ class CHwCheck
         CZC624Comms *_zc624_comms;
         std::list<device> _devices;
         CBatteryGauge *_batteryGauge;
+        hagl_backend_t *_hagl_backend = NULL;
 };
 
 #endif

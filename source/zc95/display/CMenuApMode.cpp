@@ -118,14 +118,14 @@ void CMenuApMode::draw()
     
     if (_state != state_t::AP_MODE_STARTED)
     {
-        _display->put_text("Scanning... ", _disp_area.x0, _disp_area.y0+20, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Scanning... ", _disp_area.x0, _disp_area.y0+20, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
-        _display->put_text("Strongest " + std::to_string(StrongestNetworkDisplayCount) + " wlans:", _disp_area.x0, _disp_area.y0+40, hagl_color(0x50, 0x50, 0x50));
+        _display->put_text("Strongest " + std::to_string(StrongestNetworkDisplayCount) + " wlans:", _disp_area.x0, _disp_area.y0+40, hagl_color(_display->get_hagl_backed(), 0x50, 0x50, 0x50));
         std::list<std::string> ::iterator it_networks;
         uint8_t y = 10;
         for (it_networks = _strongest_networks.begin(); it_networks != _strongest_networks.end(); it_networks++)
         {
-            _display->put_text(*it_networks, _disp_area.x0, _disp_area.y0+((_disp_area.y1-_disp_area.y0)/2) + y, hagl_color(0x50, 0x50, 0x50));
+            _display->put_text(*it_networks, _disp_area.x0, _disp_area.y0+((_disp_area.y1-_disp_area.y0)/2) + y, hagl_color(_display->get_hagl_backed(), 0x50, 0x50, 0x50));
             y += 10;
         }
 
@@ -139,19 +139,19 @@ void CMenuApMode::draw()
                 break;
 
             case display_mode_t::SSID_PASS:
-                _display->put_text("SSID: ", _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+                _display->put_text("SSID: ", _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
                 y+=10;
-                _display->put_text(_setupwebinterface->getApSsid(), _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+                _display->put_text(_setupwebinterface->getApSsid(), _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
                 y+=20;
 
-                _display->put_text("PASS: ", _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+                _display->put_text("PASS: ", _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
                 y+=10;
-                _display->put_text(_setupwebinterface->getApPsk() , _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+                _display->put_text(_setupwebinterface->getApPsk() , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
                 y+=20;
 
-                _display->put_text("Setup URL: ", _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+                _display->put_text("Setup URL: ", _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
                 y+=10;
-                _display->put_text("http://192.168.4.1/", _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+                _display->put_text("http://192.168.4.1/", _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
 
                 break;
         }
@@ -256,8 +256,8 @@ void CMenuApMode::show_qr_code(std::string str)
         }
     }
 
-    color_t colour_black = hagl_color(0x00, 0x00, 0x00);
-    color_t colour_white = hagl_color(0xFF, 0xFF, 0xFF);
+    hagl_color_t colour_black = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0x00);
+    hagl_color_t colour_white = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF);
 
     int size = qrcodegen_getSize(_qrcode);
 
@@ -277,9 +277,9 @@ void CMenuApMode::show_qr_code(std::string str)
             int disp_y = area.y0 + (y * blocksize) + 2;
 
             if (qrcodegen_getModule(_qrcode, x, y))
-                hagl_fill_rectangle(disp_x, disp_y, disp_x+blocksize, disp_y+blocksize, colour_white);
+                hagl_fill_rectangle(_display->get_hagl_backed(), disp_x, disp_y, disp_x+blocksize, disp_y+blocksize, colour_white);
             else
-                hagl_fill_rectangle(disp_x, disp_y, disp_x+blocksize, disp_y+blocksize, colour_black);
+                hagl_fill_rectangle(_display->get_hagl_backed(), disp_x, disp_y, disp_x+blocksize, disp_y+blocksize, colour_black);
         }
     }
 }

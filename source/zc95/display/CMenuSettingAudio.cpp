@@ -169,7 +169,7 @@ void CMenuSettingAudio::draw()
             float y0 = (float)disp_area.y0+((float)audio_samples_l[x]/scale_factor);
             float y1 = (float)disp_area.y0+((float)audio_samples_l[x+1]/scale_factor);
 
-            hagl_draw_line(x, y0, x+1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+            hagl_draw_line(_display->get_hagl_backed(), x, y0, x+1, y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         }
 
         // right
@@ -180,35 +180,35 @@ void CMenuSettingAudio::draw()
             float y1 = (float)disp_area.y0+((float)audio_samples_r[sample+1] / scale_factor);
             sample++;
 
-            hagl_draw_line(x, y0, x+1, y1, hagl_color(0xFF, 0x00, 0x00));
+            hagl_draw_line(_display->get_hagl_backed(), x, y0, x+1, y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00));
         }
     }
     else
     {
         // If the mic power isn't on when it should be, the mic won't work.
         // Hopefully a different colour wave will make this much easier to spot.
-        color_t colour;
+        hagl_color_t colour;
         if (mic_power_enabled())
-            colour = hagl_color(0xFF, 0x14, 0x93); // Pink, to match pc microphone socket, for electret microphones
+            colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0x14, 0x93); // Pink, to match pc microphone socket, for electret microphones
         else
-            colour = hagl_color(0xFF, 0xFF, 0x00); // Yellow, for dynamic mics (although not really enough gain for them to work well), or externally powered electret mics
+            colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00); // Yellow, for dynamic mics (although not really enough gain for them to work well), or externally powered electret mics
 
         for (int x = 0; x+1 < disp_area.x1; x++)
         {
             float y0 = (float)disp_area.y0+((float)audio_samples_l[x]   / scale_factor);
             float y1 = (float)disp_area.y0+((float)audio_samples_l[x+1] / scale_factor);
 
-            hagl_draw_line(x, y0, x+1, y1, colour);
+            hagl_draw_line(_display->get_hagl_backed(), x, y0, x+1, y1, colour);
         }
     }
 
     // Line in centre of waveform
-    hagl_draw_line(disp_area.x0, y_middle, disp_area.x1, y_middle, 0xAA);
+    hagl_draw_line(_display->get_hagl_backed(), disp_area.x0, y_middle, disp_area.x1, y_middle, 0xAA);
 
     // Only show gain control if audio mode set to AUTO and digipot was found
     if (_audio->get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
     {
-        color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
+        hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
         _bar_graph->draw_horz_bar_graph(_bar_graph_area, 0, 255, _gain, "vol", bar_colour);
     }
 }

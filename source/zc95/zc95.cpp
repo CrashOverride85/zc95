@@ -226,6 +226,7 @@ int main()
     // Configure SPI display
     CDisplay display = CDisplay();
     display.init(); // This takes some time - not far off a second
+    hw_check.set_display(&display);
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
