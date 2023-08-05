@@ -57,7 +57,7 @@ void CClimb::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
 
     // menu entry 1: "Duration" - a min/max entry in seconds 
-    struct menu_entry duration;
+    struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CLIMB_DURATION;
     duration.title = "Duration";
     duration.menu_type = menu_entry_type::MIN_MAX;
@@ -69,7 +69,7 @@ void CClimb::config(struct routine_conf *conf)
     conf->menu.push_back(duration);
 
     // menu entry 2: "Reset after climb" - when reaching full power, start over or not?
-    struct menu_entry reset_after_climb;
+    struct menu_entry reset_after_climb = new_menu_entry();
     reset_after_climb.id = menu_ids::CLIMB_RESET;
     reset_after_climb.title = "Reset after climb";
     reset_after_climb.menu_type = menu_entry_type::MULTI_CHOICE;

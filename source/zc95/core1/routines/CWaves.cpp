@@ -55,7 +55,7 @@ void CWaves::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::FULL);
 
     // menu entry 1: "Speed"
-    struct menu_entry speed;
+    struct menu_entry speed = new_menu_entry();
     speed.id = menu_ids::WAVES_SPEED;
     speed.title = "Speed";
     speed.menu_type = menu_entry_type::MIN_MAX;

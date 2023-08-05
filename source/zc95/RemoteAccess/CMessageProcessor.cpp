@@ -359,7 +359,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
-    StaticJsonDocument<2000> response_message;
+    StaticJsonDocument<2500> response_message;
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
 
@@ -387,6 +387,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
             JsonObject menu_item = menu_items.createNestedObject();
             menu_item["Id"] = it->id;
             menu_item["Title"] = it->title;
+            menu_item["Group"] = it->group_id;
 
             switch (it->menu_type)
             {

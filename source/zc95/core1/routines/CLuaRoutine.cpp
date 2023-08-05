@@ -174,6 +174,7 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
 
             entry.title = get_string_field("title");
             entry.id = get_int_field("id");
+            entry.group_id = get_int_field("group");
             std::string menu_type_str = get_string_field("type");
 
             menu_entry_type menu_type;
