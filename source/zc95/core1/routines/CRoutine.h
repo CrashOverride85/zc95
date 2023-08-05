@@ -81,6 +81,7 @@ struct audio_view
 struct menu_entry
 {
     uint8_t id;
+    uint8_t group_id; // Only relevant for display purposes when running patterns from the python GUI
     menu_entry_type menu_type;
     std::string title;
     struct min_max minmax;
@@ -167,6 +168,16 @@ class CRoutine
              choice.choice_id = choice_id;
              choice.choice_name = choice_name;
              return choice;
+        }
+
+        static struct menu_entry new_menu_entry()
+        {
+            struct menu_entry entry;
+            entry.id = 0;
+            entry.group_id = 0;
+            entry.title = "NOT SET";
+
+            return entry;
         }
 
         void simple_channel_set_power(uint8_t channel, uint16_t power)

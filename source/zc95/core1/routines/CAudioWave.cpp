@@ -48,13 +48,13 @@ void CAudioWave::config(struct routine_conf *conf)
 
     conf->audio_processing_mode = audio_mode_t::AUDIO3;
 
-    struct menu_entry menu_stereo_view;
+    struct menu_entry menu_stereo_view = new_menu_entry();
     menu_stereo_view.id = menu_ids::AUDIO_WAVE;
     menu_stereo_view.title = "Stereo view";
     menu_stereo_view.menu_type = menu_entry_type::AUDIO_VIEW_WAVE;
     conf->menu.push_back(menu_stereo_view);
 
-    struct menu_entry menu_triphase_view;
+    struct menu_entry menu_triphase_view = new_menu_entry();
     menu_triphase_view.id = menu_ids::AUDIO_WAVE;
     menu_triphase_view.title = "Triphase view";
     menu_triphase_view.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;

@@ -65,7 +65,7 @@ void CTriggeredClimb::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // menu entry 1: "Climb duration" - how long (in seconds) it takes to reach maximum power
-    struct menu_entry duration;
+    struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CLIMB_DURATION;
     duration.title = "Climb duration";
     duration.menu_type = menu_entry_type::MIN_MAX;
@@ -77,7 +77,7 @@ void CTriggeredClimb::config(struct routine_conf *conf)
     conf->menu.push_back(duration);
 
     // menu entry 2: "Shock increment" - how much to increment the shock by each time triggered
-    struct menu_entry menu_shock_inc;
+    struct menu_entry menu_shock_inc = new_menu_entry();
     menu_shock_inc.id = menu_ids::SHOCK_INC;
     menu_shock_inc.title = "Shock increment by";
     menu_shock_inc.menu_type = menu_entry_type::MIN_MAX;
@@ -89,7 +89,7 @@ void CTriggeredClimb::config(struct routine_conf *conf)
     conf->menu.push_back(menu_shock_inc);
 
     // menu entry 3: "Shock duration" - how long the shock should last in ms
-    struct menu_entry menu_shock_dur;
+    struct menu_entry menu_shock_dur = new_menu_entry();
     menu_shock_dur.id = menu_ids::SHOCK_DURATION;
     menu_shock_dur.title = "Shock duration";
     menu_shock_dur.menu_type = menu_entry_type::MIN_MAX;

@@ -58,7 +58,7 @@ void CCamTrigger::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // menu entry 1: "Shock Length"
-    struct menu_entry menu_pulse_len;
+    struct menu_entry menu_pulse_len = new_menu_entry();
     menu_pulse_len.id = menu_ids::PULSE_LENGTH;
     menu_pulse_len.title = "Shock Length";
     menu_pulse_len.menu_type = menu_entry_type::MIN_MAX;
@@ -70,7 +70,7 @@ void CCamTrigger::config(struct routine_conf *conf)
     conf->menu.push_back(menu_pulse_len);
 
     // menu entry 2: "Camera delay"
-    struct menu_entry cam_delay;
+    struct menu_entry cam_delay = new_menu_entry();
     cam_delay.id = menu_ids::CAM_DELAY;
     cam_delay.title = "Camera delay";
     cam_delay.menu_type = menu_entry_type::MIN_MAX;

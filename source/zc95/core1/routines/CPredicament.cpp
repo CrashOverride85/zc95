@@ -58,7 +58,7 @@ void CPredicament::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // menu entry 1: "Trigger 1 invert"
-    struct menu_entry menu_trg1_inv;
+    struct menu_entry menu_trg1_inv = new_menu_entry();
     menu_trg1_inv.id = menu_ids::TRG1_INV;
     menu_trg1_inv.title = "Trigger1 invert";
     menu_trg1_inv.menu_type = menu_entry_type::MULTI_CHOICE;
@@ -68,7 +68,7 @@ void CPredicament::config(struct routine_conf *conf)
     conf->menu.push_back(menu_trg1_inv);
 
     // menu entry 2: "Trigger 2 invert"
-    struct menu_entry menu_trg2_inv;
+    struct menu_entry menu_trg2_inv = new_menu_entry();
     menu_trg2_inv.id = menu_ids::TRG2_INV;
     menu_trg2_inv.title = "Trigger2 invert";
     menu_trg2_inv.menu_type = menu_entry_type::MULTI_CHOICE;
@@ -78,7 +78,7 @@ void CPredicament::config(struct routine_conf *conf)
     conf->menu.push_back(menu_trg2_inv);
 
     // menu entry 3: "Logic" : and / or
-    struct menu_entry menu_logic;
+    struct menu_entry menu_logic = new_menu_entry();
     menu_logic.id = menu_ids::LOGIC_MODE;
     menu_logic.title = "Logic";
     menu_logic.menu_type = menu_entry_type::MULTI_CHOICE;
@@ -88,7 +88,7 @@ void CPredicament::config(struct routine_conf *conf)
     conf->menu.push_back(menu_logic);
 
     // menu entry 4 "Output invert" : Yes / No
-    struct menu_entry menu_output_inv;
+    struct menu_entry menu_output_inv = new_menu_entry();
     menu_output_inv.id = menu_ids::OUTPUT_INV;
     menu_output_inv.title = "Output invert";
     menu_output_inv.menu_type = menu_entry_type::MULTI_CHOICE;

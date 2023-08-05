@@ -50,8 +50,8 @@ void CFire::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
     conf->outputs.push_back(output_type::SIMPLE);
 
-    // menu entry 1: "Mode" - pulse for present length, or continous whilst button pressed
-    struct menu_entry menu_mode;
+    // menu entry 1: "Mode" - pulse for present length, or continuous whilst button pressed
+    struct menu_entry menu_mode = new_menu_entry();
     menu_mode.id = menu_ids::MODE;
     menu_mode.title = "Mode";
     menu_mode.menu_type = menu_entry_type::MULTI_CHOICE;
@@ -61,7 +61,7 @@ void CFire::config(struct routine_conf *conf)
     conf->menu.push_back(menu_mode);
 
     // menu entry 2: "Pulse"
-    struct menu_entry menu_pulse_len;
+    struct menu_entry menu_pulse_len = new_menu_entry();
     menu_pulse_len.id = menu_ids::PULSE_LENGTH;
     menu_pulse_len.title = "Pulse length";
     menu_pulse_len.menu_type = menu_entry_type::MIN_MAX;
