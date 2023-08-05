@@ -82,7 +82,7 @@ void CMessageProcessor::message(uint8_t *data, u16_t data_len)
     if (data_len > MAX_WS_MESSAGE_SIZE) // Check is important: later mempcy into _pending_message_buffer assumes data_len <= MAX_WS_MESSAGE_SIZE
     {
         printf("CMessageProcessor::message(): error: message is too large (%d bytes)\n", data_len);
-        send_ack("ERROR", -1);
+        send_ack("ERROR", -1, "Line too long");
         return;
     }
 

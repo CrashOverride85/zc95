@@ -24,7 +24,7 @@
 #define WEBSOCKET_API_VERION_MINOR  0   // Increment non-breaking change
 
 // The maximum length a web socket message can be in bytes
-#define MAX_WS_MESSAGE_SIZE 200
+#define MAX_WS_MESSAGE_SIZE 300
 
 // How many Lua instructions can be run on each Lua call. Protects against infinite loops locking up box.
 #define LUA_MAX_INSTRUCTIONS 10000

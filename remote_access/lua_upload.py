@@ -11,6 +11,12 @@ from lib.ZcSerial import ZcSerial
 def ExitWithError(zcws, error):
   zcws.stop()
   quit(error)
+
+def OutputErrorMessagesReceived(rcv_queue):
+  while not rcv_queue.empty():
+      message = rcv_queue.get_nowait()
+      if message["Result"] == "ERROR" and message["MsgId"] == -1 and message["Error"] != None:
+          print("Got error: " + message["Error"])
  
 parser = argparse.ArgumentParser(description='Upload Lua scripts to ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
@@ -51,13 +57,14 @@ lineNumber = 0
 print("Uploading...")
 for luaLineString in luaFile:
   if zc_messages.SendLuaLine(lineNumber, luaLineString) == None:
-      ExitWithError(zc_connection, "Failed")
+      OutputErrorMessagesReceived(rcv_queue)
+      ExitWithError(zc_connection, "Failed on line " + str(lineNumber+1))
 
   lineNumber += 1
 
 # Finished sending message, send end message. This step may fail if the script is invalid
 if zc_messages.SendLuaEnd() == None:
-  ExitWithError(zc_connection, "Failed")
+    ExitWithError(zc_connection, "Failed")
 
 print("Done!")
 
