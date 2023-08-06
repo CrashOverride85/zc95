@@ -44,8 +44,9 @@ class CSavedSettings
         WifiPSK        = 114, // Password, 64 characters + null
         WiFiConfigured = 179, // Set to EEPROM_MAGIC_VAL if wifi configured. Anything else means not configured.
         WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
-        WifiApPskEnd   = 196  //
-     // <next>         = 197 
+        WifiApPskEnd   = 196, //
+        BluetoothOn    = 197  // Bluetooth enabled yes/no
+     // <next>         = 198 
     };
 
     public:
@@ -142,6 +143,10 @@ class CSavedSettings
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
+
+        // Bluetooth enabled
+        bool get_bluethooth_enabled();
+        void set_bluethooth_enabled(bool setting);
 
         void eeprom_initialise();
 

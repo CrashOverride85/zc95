@@ -18,6 +18,7 @@
 #include "../AudioInput/CAudio.h"
 #include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
+#include "../Bluetooth/CBluetooth.h"
 
 #include <string>
 #include <vector>
@@ -36,7 +37,8 @@ class CMenuRoutineSelection : public CMenu
                 CHwCheck *hwCheck, 
                 CAudio *audio, 
                 CAnalogueCapture *analogueCapture, 
-                CWifi *wifi);
+                CWifi *wifi, 
+                CBluetooth *bluetooth);
 
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
@@ -59,6 +61,7 @@ class CMenuRoutineSelection : public CMenu
         int _last_selection = -1;
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
+        CBluetooth *_bluetooth;
 };
 
 #endif

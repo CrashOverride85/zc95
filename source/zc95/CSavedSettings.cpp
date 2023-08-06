@@ -301,6 +301,16 @@ bool CSavedSettings::set_collar_config(uint8_t collar_id, struct collar_config &
     return true;
 }
 
+bool CSavedSettings::get_bluethooth_enabled()
+{
+    return (_eeprom_contents[(uint8_t)setting::BluetoothOn] != 0);
+}
+
+void CSavedSettings::set_bluethooth_enabled(bool setting)
+{
+    _eeprom_contents[(uint8_t)setting::BluetoothOn] = setting;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

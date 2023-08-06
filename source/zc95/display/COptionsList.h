@@ -19,6 +19,7 @@ class COptionsList
         void set_selected(uint8_t selection);
         uint8_t get_current_selection();
         int get_current_selection_id();
+        uint8_t count();
 
     private:
         class option_t

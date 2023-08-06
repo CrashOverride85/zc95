@@ -152,7 +152,10 @@ void CAnalogueCapture::stop()
         dma_channel_set_irq0_enabled(_s_dma_chan1, false);
         dma_channel_set_irq1_enabled(_s_dma_chan2, false);
 
+        dma_channel_cleanup(_s_dma_chan1);
         dma_channel_unclaim(_s_dma_chan1);
+
+        dma_channel_cleanup(_s_dma_chan2);
         dma_channel_unclaim(_s_dma_chan2);
 
         _running = false;

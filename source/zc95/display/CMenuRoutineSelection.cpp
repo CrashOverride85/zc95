@@ -23,6 +23,7 @@
 #include "../core1/output/CFullChannelAsSimpleChannel.h"
 #include "../core1/CRoutineOutput.h"
 
+
 #include <string.h>
 
 CMenuRoutineSelection::CMenuRoutineSelection(
@@ -34,7 +35,9 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CHwCheck *hwCheck,
     CAudio *audio,
     CAnalogueCapture *analogueCapture,
-    CWifi *wifi)
+    CWifi *wifi,
+    CBluetooth *bluetooth
+    )
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -49,6 +52,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _audio = audio;
     _analogueCapture = analogueCapture;
     _wifi = wifi;
+    _bluetooth = bluetooth;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -94,7 +98,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth));
         }
         
         if (button == Button::C) // "Up"

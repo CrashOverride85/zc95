@@ -10,6 +10,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(PICO_CYW43_SUPPORTED 1)
 
+set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+
 # initalize pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 # set(PICO_SDK_PATH "<path to SDK>")
@@ -44,6 +46,7 @@ add_executable(zc95
   CDebugOutput.cpp
   globals.cpp
   CUtil.cpp
+  CRadio.cpp
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
@@ -101,6 +104,8 @@ add_executable(zc95
   display/CMenuRemoteAccessConnectWifi
   display/CMenuRemoteAccessSerial
   display/CMenuApMode
+  display/CMenuBluetooth
+  display/CMenuBluetoothScan
   display/COptionsList
   display/CHorzBarGraph
   display/CDisplayMessage
@@ -130,6 +135,9 @@ add_executable(zc95
   RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
+  Bluetooth/CBluetooth.cpp
+  Bluetooth/CBluetoothScan.cpp
+
   LuaScripts.S
   )
 
@@ -154,6 +162,8 @@ target_link_libraries(zc95 pico_stdlib)
 # Add any user requested libraries
 target_link_libraries(zc95
         pico_cyw43_arch_lwip_poll
+        pico_btstack_cyw43
+        pico_btstack_ble
         hardware_spi
         hardware_i2c
         hardware_dma

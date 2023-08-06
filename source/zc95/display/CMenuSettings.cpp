@@ -26,6 +26,7 @@
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
 #include "CMenuRemoteAccess.h"
+#include "CMenuBluetooth.h"
 #include "../core1/routines/CRoutine.h"
 
 CMenuSettings::CMenuSettings(
@@ -37,7 +38,8 @@ CMenuSettings::CMenuSettings(
         CAudio *audio, 
         CAnalogueCapture *analogueCapture,
         CWifi *wifi,
-        std::vector<CRoutines::Routine> *routines)
+        std::vector<CRoutines::Routine> *routines,
+        CBluetooth *bluetooth)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -51,6 +53,7 @@ CMenuSettings::CMenuSettings(
     _analogueCapture = analogueCapture;
     _wifi = wifi;
     _routines = routines;
+    _bluetooth = bluetooth;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -139,6 +142,10 @@ void CMenuSettings::show_selected_setting()
         case setting_id::ABOUT:
             set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
             break;
+
+        case setting_id::BLUETOOTH:
+            set_active_menu(new CMenuBluetooth(_display, _saved_settings, _bluetooth));
+            break;
     }
 }
 
@@ -162,11 +169,15 @@ void CMenuSettings::show()
 
     _settings.clear();
 
-    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));    
-    _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
-    _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
-    _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
-    _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
+    _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));
+
+    if (CHwCheck::running_on_picow())
+        _settings.push_back(CMenuSettings::setting(setting_id::BLUETOOTH,  "Bluetooth"          ));
+
+    _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config" ));
+    _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"  ));
+    _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness" ));
+    _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"   ));
     
     if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
