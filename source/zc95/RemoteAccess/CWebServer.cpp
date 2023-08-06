@@ -33,14 +33,12 @@
 #include <queue>
 
 std::map<struct tcp_pcb*, CWsConnection*> CWebServer::_s_ws_connections;
-CAnalogueCapture *CWebServer::_s_analogue_capture;
 CRoutineOutput *CWebServer::_s_routine_output;
 std::vector<CRoutines::Routine> *CWebServer::_s_routines;
 
-CWebServer::CWebServer(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWebServer::CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
     printf("CWebServer()\n");
-    _s_analogue_capture = analogue_capture;
     _s_routine_output = routine_output;
     _s_routines = routines;
 }
@@ -118,7 +116,7 @@ void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     if (!strcmp(uri, "/stream")) 
     {
         printf("request for streaming\n");
-        _s_ws_connections[pcb] = new CWsConnection(pcb, _s_analogue_capture, _s_routine_output, _s_routines);
+        _s_ws_connections[pcb] = new CWsConnection(pcb, _s_routine_output, _s_routines);
     }
 }
 

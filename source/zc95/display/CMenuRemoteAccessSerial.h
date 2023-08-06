@@ -2,7 +2,6 @@
 #include "CDisplay.h"
 #include "COptionsList.h"
 #include "../CSavedSettings.h"
-#include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
 #include "../RemoteAccess/CSerialConnection.h"
 #include "../core1/CRoutineOutput.h"
@@ -19,7 +18,6 @@ class CMenuRemoteAccessSerial : public CMenu
             CGetButtonState *buttons, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
-            CAnalogueCapture *analogue_capture,
             std::vector<CRoutines::Routine> *routines);
         ~CMenuRemoteAccessSerial();
         void button_pressed(Button button);
@@ -34,7 +32,6 @@ class CMenuRemoteAccessSerial : public CMenu
         display_area _disp_area;
         CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
-        CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output;
         CSerialConnection *_serial_connection;
         std::vector<CRoutines::Routine> *_routines;

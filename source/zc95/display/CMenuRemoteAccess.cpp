@@ -117,7 +117,7 @@ void CMenuRemoteAccess::show_selected_setting()
         case option_id::SERIAL_ACCESS:
             std::string config_error = get_serial_config_error();
             if (config_error == "")
-                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _analogueCapture, _routines));
+                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _routines));
             else
                 set_active_menu(new CDisplayMessage(_display, _buttons, config_error));
             break;

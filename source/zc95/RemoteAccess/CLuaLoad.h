@@ -8,17 +8,13 @@
 #include <ArduinoJson.h>
 #include "../CLuaStorage.h"
 #include "../config.h"
-#include "../CAnalogueCapture.h"
-#include "../core1/CRoutineOutput.h"
 
 class CLuaLoad
 {
     public:
         CLuaLoad(
             std::function<void(std::string)> send_function, 
-            std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
-            CAnalogueCapture *analogue_capture, 
-            CRoutineOutput *routine_output);
+            std::function<void(std::string result, int msg_count, std::string error)> send_ack_func);
         ~CLuaLoad();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         bool routines_updated();

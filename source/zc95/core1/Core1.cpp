@@ -233,7 +233,7 @@ void Core1::check_validity_of_lua_script()
 
 void Core1::process_messages()
 {
-    // main FIFO queue - insturctions to start routines, change settings, etc.
+    // main FIFO queue - instructions to start routines, change settings, etc.
     while (multicore_fifo_rvalid())
     {
         message msg;

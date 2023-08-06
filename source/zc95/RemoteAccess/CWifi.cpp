@@ -149,7 +149,7 @@ void CWifi::start_webserver()
 {
     if (!_web_server)
     {
-        _web_server = new CWebServer(_analogue_capture, _routine_output, _routines);
+        _web_server = new CWebServer(_routine_output, _routines);
         _web_server->start();
     }
 }

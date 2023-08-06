@@ -29,12 +29,12 @@
 #include "CWsConnection.h"
 #include "../git_version.h"
 
-CWsConnection::CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWsConnection::CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
     printf("CWsConnection::CWsConnection()\n");
     _pcb = pcb;
     _state = state_t::ACTIVE;
-    _messageProcessor = new CMessageProcessor(analogue_capture, routine_output, routines, std::bind(&CWsConnection::send, this, std::placeholders::_1));
+    _messageProcessor = new CMessageProcessor(routine_output, routines, std::bind(&CWsConnection::send, this, std::placeholders::_1));
 }
 
 CWsConnection::~CWsConnection()

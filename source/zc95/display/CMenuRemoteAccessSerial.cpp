@@ -24,7 +24,6 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CGetButtonState *buttons,
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
-    CAnalogueCapture *analogue_capture,
     std::vector<CRoutines::Routine> *routines)
 {
     printf("CMenuRemoteAccessSerial() \n");
@@ -34,9 +33,8 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     _disp_area = _display->get_display_area();
     _exit_menu = false;
     _routine_output = routine_output;
-    _analogue_capture = analogue_capture;
 
-    _serial_connection = new CSerialConnection(AUX_PORT_UART, analogue_capture, routine_output, routines);
+    _serial_connection = new CSerialConnection(AUX_PORT_UART, routine_output, routines);
 
     _routine_output->enable_remote_power_mode();
 }

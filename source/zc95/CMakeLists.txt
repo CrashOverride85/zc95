@@ -116,6 +116,7 @@ add_executable(zc95
   AudioInput/ESP32_fft.cpp
   CAnalogueCapture.cpp
   CLuaStorage.cpp
+  FlashHelper.cpp
 
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c

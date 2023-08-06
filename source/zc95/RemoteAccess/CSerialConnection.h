@@ -9,14 +9,13 @@
 #include "CRoutineRun.h"
 #include "CMessageProcessor.h"
 #include "../config.h"
-#include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 
 class CSerialConnection
 {
     public:
-        CSerialConnection(uart_inst_t *uart, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CSerialConnection();
         // void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);
@@ -39,7 +38,6 @@ class CSerialConnection
             RESET        // EOT received, reset connection (stopping routine from running if started)
         };
 
-        CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output; 
         std::vector<CRoutines::Routine> *_routines;
 

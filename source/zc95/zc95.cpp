@@ -67,6 +67,7 @@
 
 #include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
+#include "FlashHelper.h"
 
 CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
@@ -261,6 +262,7 @@ int main()
 
     audio.set_routine_output(routine_output);
     wifi = new CWifi(&radio, &analogueCapture, routine_output, &routines);  
+    flash_helper_init(&analogueCapture, routine_output);
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
