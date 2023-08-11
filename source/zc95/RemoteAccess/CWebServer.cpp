@@ -54,6 +54,8 @@ CWebServer::~CWebServer()
             delete it->second;
     }
     _s_ws_connections.clear();
+    stop();
+
 }
 
 void CWebServer::start()
@@ -65,6 +67,18 @@ void CWebServer::start()
 
     websocket_register_callbacks((tWsOpenHandler) websocket_open_cb, (tWsHandler) websocket_cb);
     httpd_init(0);
+    _started = true;
+}
+
+void CWebServer::stop()
+{
+    printf("CWebServer::stop() (_started = %d)\n", _started);
+
+    if (_started)
+    {
+        httpd_close();
+        _started = false;
+    }
 }
 
 void CWebServer::loop()

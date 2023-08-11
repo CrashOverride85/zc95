@@ -16,6 +16,7 @@ class CWebServer
         CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CWebServer();
         void start();
+        void stop();
         void loop();
 
     private:
