@@ -138,6 +138,7 @@ add_executable(zc95
 
   Bluetooth/CBluetooth.cpp
   Bluetooth/CBluetoothScan.cpp
+  Bluetooth/CBluetoothPair.cpp
 
   LuaScripts.S
   )

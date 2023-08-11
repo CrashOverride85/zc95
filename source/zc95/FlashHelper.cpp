@@ -41,6 +41,7 @@ extern struct semaphore g_core1_suspend_sem;
 static CAnalogueCapture *_analogue_capture = NULL;
 static CRoutineOutput *_routine_output = NULL;
 static uint32_t interrupt_state = 0;
+static bool _analogue_capture_running = false;
 
 void flash_helper_init(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output)
 {
@@ -77,7 +78,12 @@ static int enter_safe_zone_timeout_ms(uint32_t timeout_ms)
     _routine_output->suspend_core1(); // should release g_core1_suspend_sem once suspended
     sem_acquire_blocking(&g_core1_suspend_sem);
 
-    _analogue_capture->stop(); // The DMA done by CAnalogueCapture thoroughly breaks flash writing
+    _analogue_capture_running = _analogue_capture->is_running();
+    if (_analogue_capture_running)
+    {
+        _analogue_capture->stop(); // The DMA done by CAnalogueCapture thoroughly breaks flash writing
+    }
+
     interrupt_state = save_and_disable_interrupts();
 
     return PICO_OK;
@@ -93,8 +99,11 @@ static int exit_safe_zone_timeout_ms(uint32_t timeout_ms)
     mutex_exit(&g_core1_suspend_mutex);
     sem_release(&g_core1_suspend_sem);
 
-    printf("flash write done, resume analogue capture\n");
-    _analogue_capture->start();
+    printf("flash write done\n");
+    if (_analogue_capture_running)
+    {
+        _analogue_capture->start();
+    }
 
     return PICO_OK;
 }

@@ -38,6 +38,7 @@ class CAnalogueCapture
         uint64_t get_last_buffer_update_time_us();
         uint64_t get_capture_end_time_us();
         uint32_t get_capture_duration();
+        bool is_running();
 
     private:
         void process_buffer(const uint8_t *capture_buf);

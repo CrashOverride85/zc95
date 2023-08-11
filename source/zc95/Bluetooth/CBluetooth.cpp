@@ -12,6 +12,15 @@ CBluetooth::~CBluetooth()
     printf("~CBluetooth()\n");
 }
 
+void CBluetooth::pair(bd_addr_t address)
+{
+    if (_state != state_t::PAIR)
+    {
+        _cBluetoothPair.set_address(address);
+        set_state(state_t::PAIR);
+    }
+}
+
 void CBluetooth::set_state(state_t new_state)
 {
     if (new_state == _state)
@@ -24,9 +33,16 @@ void CBluetooth::set_state(state_t new_state)
     if (_state == state_t::SCAN)
         _cBluetoothScan.stop();
 
+    if (_state == state_t::PAIR)
+        _cBluetoothPair.stop();
+
+
     // start new mode
     if (new_state == state_t::SCAN)
         _cBluetoothScan.start();
+
+    if (new_state == state_t::PAIR)
+        _cBluetoothPair.start();
 
     
     // Enable/disable bluetooth

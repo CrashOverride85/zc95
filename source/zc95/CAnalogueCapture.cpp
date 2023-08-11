@@ -247,3 +247,8 @@ uint64_t CAnalogueCapture::get_capture_end_time_us()
 {
     return _capture_end_time_time_us;
 }
+
+bool CAnalogueCapture::is_running()
+{
+    return _running;
+}
