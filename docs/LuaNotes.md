@@ -311,7 +311,7 @@ Called when a `MIN_MAX` type pattern option is changed, and is called with the m
 Called when a `MULTI_CHOICE` type pattern option is changed, and is called with the menu ID of the option, and the ID of the selected choice.
 
 ### SoftButton(pushed)
-Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`.
+Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`. The soft button text is set by specifying `soft_button = "<label>"` in the `Config = {}` section. See `fire.lua` script for an example.
 
 ### ExternalTrigger(socket, part, active)
 Called when an external trigger happens.
