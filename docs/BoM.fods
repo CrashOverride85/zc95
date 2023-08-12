@@ -2029,7 +2029,7 @@
       <text:p>1x20 pin sockets (for Pico)</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce26" office:value-type="string" calcext:value-type="string">
-      <text:p>C50984</text:p>
+      <text:p>C124410</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce37" office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>
@@ -2227,7 +2227,7 @@
       <text:p>10uF</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce37" office:value-type="string" calcext:value-type="string">
-      <text:p>C191532</text:p>
+      <text:p>C88739</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce37" office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>
@@ -2677,7 +2677,7 @@
      </table:table-cell>
      <table:table-cell table:style-name="ce37"/>
      <table:table-cell table:style-name="ce37" office:value-type="string" calcext:value-type="string">
-      <text:p>C50984</text:p>
+      <text:p>C124410</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce37" office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>

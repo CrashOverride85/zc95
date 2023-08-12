@@ -162,6 +162,8 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         conf->name = lua_tostring(_lua_state, -1);
         lua_pop(_lua_state, 1);
 
+        conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
+
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
 
