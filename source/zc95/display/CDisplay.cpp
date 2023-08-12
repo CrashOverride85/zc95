@@ -66,9 +66,9 @@ uint8_t CDisplay::get_font_height()
 
  void CDisplay::init()
  {
-    hagl_init();
-    hagl_clear_screen();
-    // hagl_set_clip_window(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    _hagl_backend = hagl_init();
+    hagl_clear(_hagl_backend);
+    // hagl_set_clip_window(0, 0, MIPI_DISPLAY_WIDTH, MIPI_DISPLAY_HEIGHT);
     update();
  }
 
@@ -87,7 +87,7 @@ uint8_t CDisplay::get_font_height()
         
         _update_required = false;
         CTimingTest timing;
-        hagl_clear_screen();
+        hagl_clear(_hagl_backend);
 
         if (_current_menu != NULL)
         {
@@ -100,10 +100,10 @@ uint8_t CDisplay::get_font_height()
         
         draw_status_bar();
   
-        hagl_flush(); // 8us, starts/uses DMA for update
+        _interuptable_section.end();
+        hagl_flush(_hagl_backend); // 8us, starts/uses DMA for update
 
         _last_update = time_us_64();
-        _interuptable_section.end();
     }
  }
 
@@ -188,8 +188,8 @@ struct display_area CDisplay::get_display_area()
     struct display_area area;
     area.x0 = 0;
     area.y0 = menu_bar_height + 1;
-    area.x1 = (DISPLAY_WIDTH-1) - (4*bar_width) - 1;
-    area.y1 = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 1; 
+    area.x1 = (MIPI_DISPLAY_WIDTH-1) - (4*bar_width) - 1;
+    area.y1 = (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 1; 
     return area;
 }
 
@@ -205,29 +205,29 @@ void CDisplay::set_active_pattern(std::string pattern)
 
 void CDisplay::draw_soft_buttons()
 {
-    color_t text_colour = hagl_color(0xFF, 0, 0);
-    color_t line_colour = hagl_color(0xFF, 0, 0);
+    hagl_color_t text_colour = hagl_color(_hagl_backend, 0xFF, 0, 0);
+    hagl_color_t line_colour = hagl_color(_hagl_backend, 0xFF, 0, 0);
 
     // A
     put_text(_option_a, 3, (menu_bar_height/2)-6, text_colour);
-    hagl_draw_rectangle(0, 0, (DISPLAY_WIDTH-1)/2, menu_bar_height, line_colour);
+    hagl_draw_rectangle(_hagl_backend, 0, 0, (MIPI_DISPLAY_WIDTH-1)/2, menu_bar_height, line_colour);
     
     // B
-    put_text(_option_b, 3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
-    hagl_draw_rectangle(0, (DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
+    put_text(_option_b, 3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    hagl_draw_rectangle(_hagl_backend, 0, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 
     // C
-    put_text(_option_c, (DISPLAY_WIDTH/2)+3, (menu_bar_height/2)-6, text_colour);
-    hagl_draw_rectangle((DISPLAY_WIDTH-1)/2, 0, (DISPLAY_WIDTH-1), menu_bar_height, line_colour);
+    put_text(_option_c, (MIPI_DISPLAY_WIDTH/2)+3, (menu_bar_height/2)-6, text_colour);
+    hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, 0, (MIPI_DISPLAY_WIDTH-1), menu_bar_height, line_colour);
 
     // D
-    put_text(_option_d, (DISPLAY_WIDTH/2)+3, (DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
-    hagl_draw_rectangle((DISPLAY_WIDTH-1)/2, (DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (DISPLAY_WIDTH-1), (DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
+    put_text(_option_d, (MIPI_DISPLAY_WIDTH/2)+3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1), (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 }
 
 void CDisplay::draw_bar_graphs()
 {  
-    color_t normal_colour   =  hagl_color(0x00, 0x00, 0xFF);
+    hagl_color_t normal_colour   =  hagl_color(_hagl_backend, 0x00, 0x00, 0xFF);
 
     draw_bar(4, "1", _channel_1_max_power, _channel_1_fp_power, _channel_1_actual_power, normal_colour);
     draw_bar(3, "2", _channel_2_max_power, _channel_2_fp_power, _channel_2_actual_power, normal_colour);
@@ -235,13 +235,13 @@ void CDisplay::draw_bar_graphs()
     draw_bar(1, "4", _channel_4_max_power, _channel_4_fp_power, _channel_4_actual_power, normal_colour);
 }
 
-void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, color_t bar_colour)
+void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, hagl_color_t bar_colour)
 {
-    put_text(label, (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 10, hagl_color(0, 0xFF, 0));
-    hagl_draw_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width), (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(0xFF, 0, 0));
+    put_text(label, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 10, hagl_color(_hagl_backend, 0, 0xFF, 0));
+    hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width), (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(_hagl_backend, 0xFF, 0, 0));
 
     // 0,0 is in the top left. Display area is the bit we can draw in (free of the top and bottom menu bars and the status bar at the bottom)
-    uint8_t bottom_of_display_area = (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
+    uint8_t bottom_of_display_area = (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
     uint8_t top_of_display_area = menu_bar_height + 2;
 
     // When in remote access mode, the front panel control are used to set the power limit, so mark the part of the power bar that can't be
@@ -249,20 +249,20 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
     if (_remote_mode_active)
     {
         float power_limit_bottom = (((1000-front_pannel_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
-        hagl_fill_rectangle(
-            (DISPLAY_WIDTH-1)-(bar_number*bar_width)+2,     // x0
+        hagl_fill_rectangle(_hagl_backend,
+            (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2,     // x0
             top_of_display_area,                            // y0
-            (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-2, // x1
+            (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-2, // x1
             power_limit_bottom,                             // y1
-            hagl_color(0x00, 0xFF, 0x00));
+            hagl_color(_hagl_backend, 0x00, 0xFF, 0x00));
     }
 
     // Blue max power bar
     float max_power_top = (((1000-max_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
-    hagl_fill_rectangle(
-        (DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
-        (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, 
-        (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, 
+    hagl_fill_rectangle(_hagl_backend, 
+        (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
+        (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, 
+        (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1, 
         max_power_top, 
         bar_colour);
         
@@ -273,17 +273,17 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
         fp_power_bottom = 0;
 
     // Blue max power line (main blue bar ramps up to this)
-    hagl_fill_rectangle(
-            (DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
+    hagl_fill_rectangle(_hagl_backend, 
+            (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+1, 
             fp_power_bottom,
-            (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1,
+            (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-1,
             fp_power_top, 
             bar_colour);
 
     // current power
-    color_t current_power_colour   =  hagl_color(0xFF, 0xFF, 0x00);
+    hagl_color_t current_power_colour   =  hagl_color(_hagl_backend, 0xFF, 0xFF, 0x00);
     float current_power_top = (((1000-current_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
-    hagl_fill_rectangle((DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
+    hagl_fill_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
 }
 
 void CDisplay::draw_status_bar()
@@ -297,19 +297,24 @@ void CDisplay::draw_status_bar()
     }
 
     snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
-    put_text(buffer, 0, (DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(0xAA, 0xAA, 0xAA));
+    put_text(buffer, 0, (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
 }
 
-void CDisplay::put_text(std::string text, int16_t x, int16_t y, color_t color)
+void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color)
 {
     if (text == "")
         text = " ";
 
     std::wstring widestr = std::wstring(text.begin(), text.end());
-    hagl_put_text(widestr.c_str(), x, y, color, font6x9);
+    hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
 }
 
 void CDisplay::set_update_required()
 {
     _update_required = true;
+}
+
+hagl_backend_t* CDisplay::get_hagl_backed()
+{
+    return _hagl_backend;
 }

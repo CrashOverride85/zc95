@@ -50,13 +50,13 @@ void CAudioIntensity::config(struct routine_conf *conf)
 
     conf->audio_processing_mode = audio_mode_t::AUDIO_INTENSITY;
 
-    struct menu_entry menu_mono;
+    struct menu_entry menu_mono = new_menu_entry();
     menu_mono.id = menu_ids::AUDIO_INTENSITY_MONO;
     menu_mono.title = "Mono";
     menu_mono.menu_type = menu_entry_type::AUDIO_VIEW_INTENSITY_MONO;
     conf->menu.push_back(menu_mono);
 
-    struct menu_entry menu_stereo;
+    struct menu_entry menu_stereo = new_menu_entry();
     menu_stereo.id = menu_ids::AUDIO_INTENSITY_STEREO;
     menu_stereo.title = "Stereo";
     menu_stereo.menu_type = menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO;

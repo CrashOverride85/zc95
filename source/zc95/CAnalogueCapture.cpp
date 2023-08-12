@@ -85,6 +85,7 @@ void CAnalogueCapture::start()
 
     _s_dma_chan1 = dma_claim_unused_channel(true);
     _s_dma_chan2 = dma_claim_unused_channel(true);
+    printf("CAnalogueCapture: using DMA channels: %d & %d\n", _s_dma_chan1, _s_dma_chan2);
 
     // Chan 1
     dma_channel_config dma_config1 = dma_channel_get_default_config(_s_dma_chan1);
@@ -92,9 +93,9 @@ void CAnalogueCapture::start()
     channel_config_set_read_increment(&dma_config1, false);  // ADC fifo
     channel_config_set_write_increment(&dma_config1, true);  // RAM buffer.
     // channel_config_set_write_increment(&dma_config1, true);
-    // Wrap to begining of buffer. Assuming buffer is well alligned.
+    // Wrap to beginning of buffer. Assuming buffer is well aligned.
     channel_config_set_ring(&dma_config1, true, CAPTURE_RING_BITS);
-    // Paced by ADC genered requests.
+    // Paced by ADC generated requests.
     channel_config_set_dreq(&dma_config1, DREQ_ADC);
     // When done, start the other channel.
     channel_config_set_chain_to(&dma_config1, _s_dma_chan2);

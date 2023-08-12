@@ -162,6 +162,8 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         conf->name = lua_tostring(_lua_state, -1);
         lua_pop(_lua_state, 1);
 
+        conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
+
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
 
@@ -174,6 +176,7 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
 
             entry.title = get_string_field("title");
             entry.id = get_int_field("id");
+            entry.group_id = get_int_field("group");
             std::string menu_type_str = get_string_field("type");
 
             menu_entry_type menu_type;
@@ -612,7 +615,7 @@ int CLuaRoutine::lua_set_power(lua_State *L)
     int chan = lua_tointeger(L, 1);
     int power = lua_tointeger(L, 2);
     if (!is_channel_number_valid(chan)) return 0;
-    if (power <= 0 || power > 1000) return 0;
+    if (power < 0 || power > 1000) return 0;
 
     full_channel_set_power(chan-1, power);
     return 1;

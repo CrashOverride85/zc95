@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2023  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "CHwCheck.h"
 #include "i2c_scan.h"
 #include "config.h"
+#include "CUtil.h"
+#include "ECButtons.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -39,8 +41,8 @@ CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
     _devices.push_front(device(ZC624_ADDR, "ZC624 output board", "ZC624"));
     
     // these two ICs are on the front panel
-    _devices.push_front(device(ADC_ADDR, "Front pannel ADC", "FP ADC U1"));
-    _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front pannel port expander (U2)", "FP Port Exp U2"));
+    _devices.push_front(device(ADC_ADDR, "Front panel ADC", "FP ADC U1"));
+    _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front panel port expander (U2)", "FP Port Exp U2"));
 
     // optional parts
     _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
@@ -122,6 +124,9 @@ void CHwCheck::check_part1()
         led.init();
         hw_check_failed(cause, &led, NULL); // this never returns
     }
+
+    clear_eeprom_if_requested(); // if appropriate button is held down, clears eeprom then halts
+
 }
 
 // The ZC624 output board takes a while to initialize from power on, so check its status much later when it should be ready.
@@ -190,19 +195,19 @@ bool CHwCheck::audio_digipot_found()
 void CHwCheck::show_error_text_message(int y, std::string message)
 {
     y += 2;
-    put_text(message, 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text(message, 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 }
 
 void CHwCheck::show_error_text_missing(int y)
 {
     y += 2;
-    put_text("Missing:", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Missing:", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
     
     for (std::list<device>::iterator it = _devices.begin(); it != _devices.end(); ++it)
     {
         if (!it->present && !it->optional)
         {
-            put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+            put_text("   * " + it->display + "\n", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
         }
     }    
 }
@@ -210,14 +215,14 @@ void CHwCheck::show_error_text_missing(int y)
 void CHwCheck::die(CLedControl *led_control, std::string error_message)
 {
     int y = 0;
-    hagl_clear_screen();
+    hagl_clear(_hagl_backend);
 
-    put_text("Fatal error", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
-    put_text("===========", 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Fatal error", 0, (y++ * 10), hagl_color(_hagl_backend,0xFF, 0xFF, 0xFF));
+    put_text("===========", 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
     y++;
-    put_text(error_message, 0, (y++ * 10), hagl_color(0xFF, 0xFF, 0xFF));
+    put_text(error_message, 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
-    hagl_flush();
+    hagl_flush(_hagl_backend);
 
     halt(led_control);
 }
@@ -230,16 +235,16 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
 
     if (controls == NULL)
     {  
-        hagl_init();
+        _hagl_backend = hagl_init();
     }
     else
     {
         controls->set_lcd_backlight(true);
     }
 
-    hagl_clear_screen();
+    hagl_clear(_hagl_backend);
 
-    put_text("Hardware check failed", (y++ * 10), 10, hagl_color(0xFF, 0xFF, 0xFF));
+    put_text("Hardware check failed", (y++ * 10), 10, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
     switch (casue)
     {
@@ -268,7 +273,7 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
             break;
     }
 
-    hagl_flush();
+    hagl_flush(_hagl_backend);
 
     halt(ledControl);
 }
@@ -331,13 +336,13 @@ std::string CHwCheck::get_zc624_version()
     return _zc624_comms->get_version();
 }
 
-void CHwCheck::put_text(std::string text, int16_t x, int16_t y, color_t color)
+void CHwCheck::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color)
 {
     if (text == "")
         text = " ";
 
     std::wstring widestr = std::wstring(text.begin(), text.end());
-    hagl_put_text(widestr.c_str(), x, y, color, font6x9);
+    hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
 }
 
 void CHwCheck::get_battery_readings()
@@ -358,7 +363,88 @@ void CHwCheck::get_battery_readings()
     _batteryGauge->add_raw_adc_readings(readings, sizeof(readings));
 }
 
+// Returns true if the top right button (C) is pressed, and the bottom left button (B)
+// is NOT pressed. This in case there's some fault causing all buttons to be read as pressed,
+// we don't want to clear the EEPROM by mistake.
+// Should only be ran after inital h/w check has confirmed the port expander 
+// is present.
+bool CHwCheck::clear_eeprom_buttons_pressed()
+{
+    uint8_t pin_states = 0;
+    int retval = i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
+    {
+      printf("CHwCheck::clear_eeprom_buttons_pressed i2c read error!\n");
+      pin_states = 0;
+    }
+
+    bool button_pressed = (pin_states & (1 << (uint8_t)Button::C)) && 
+                         !(pin_states & (1 << (uint8_t)Button::B));
+
+    printf("CHwCheck::clear_eeprom_buttons_pressed(): button pressed = %d (pin state = %x)\n", button_pressed, pin_states);
+    return button_pressed;
+}
+
+// If the top right button is pressed, show a basic screen asking if the eeprom should be cleared.
+// To keep things simple (no need to worry about blocking, partially initialised stuff afterwards, 
+// etc.), once the confirmation screen is displayed, the only way out is a power cycle.
+void CHwCheck::clear_eeprom_if_requested()
+{
+    if (!clear_eeprom_buttons_pressed())
+        return;
+
+    // Ok, button is held down indicating eeprom should be cleared. Show confirmation screen.
+    // From this point on, the only way out is a power-cycle - either with or without
+    // clearing eeprom first
+    CLedControl led = CLedControl(PIN_LED, NULL);
+    led.init();
+    led.set_all_led_colour(LedColour::Blue);
+    led.loop();
+
+    _hagl_backend = hagl_init();
+    put_text("Clear EEPROM?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+    put_text("Yes", 0, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    hagl_flush(_hagl_backend);
+
+    // Wait for bottom right (B) button to be pressed for ~100ms
+    while (1)
+    {
+        uint8_t pin_states = 0;
+        i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+
+        bool button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+        if (button_pressed)
+        {
+            // Do crude debounce; re-read pin after 100ms and if button is still pressed reset EEPROM
+            sleep_ms(100);
+
+            i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+            button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+
+            if (button_pressed)
+            {
+                // Time to reset the EEPROM!
+                printf("Clearing EEPROM at user request\n");
+
+                CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
+                CSavedSettings settings = CSavedSettings(&eeprom);
+                settings.eeprom_initialise();
+
+                hagl_clear(_hagl_backend);
+                put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+                hagl_flush(_hagl_backend);
+                halt(&led);
+            }
+        }
+    }
+}
+
 void CHwCheck::process()
 {
 
+}
+
+void CHwCheck::set_display(CDisplay *display)
+{
+    _hagl_backend = display->get_hagl_backed();
 }

@@ -25,6 +25,8 @@ public:
     void startScanning();
     std::map<std::string, WlanDetails> *getSSIDs();
     void addScanResult(const cyw43_ev_scan_result_t *result);
+    bool isScanInProgress();
+    void reset();
 
 protected:
     static WlanScanner *_wlanscanner;

@@ -8,6 +8,7 @@ import websocket
 import lib.ZcMessages as zc
 import queue
 from lib.ZcWs import ZcWs
+from lib.ZcSerial import ZcSerial
 from lib.MinMaxMenu import MinMaxMenu
 from lib.PowerDisplay import PowerDisplay
 
@@ -94,29 +95,45 @@ class ZcPatternGui:
     pattern_options_frame = Frame(pattern_frame, width=400, height=400)
     pattern_options_frame.grid(row=1, column=0, padx=10, pady=5)
 
-    Label (pattern_options_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
-    soft_button = Button(pattern_options_frame, text=pattern["ButtonA"])
-    soft_button.grid(row=0, column=1, padx=5, pady=5)    
-    soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
-    soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
+    # Only show soft button if text has been set for it
+    if len(pattern["ButtonA"]) > 0:
+      button_frame = Frame(pattern_options_frame, width=200, height=4, highlightbackground="blue", highlightthickness=2)
+      button_frame.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
+
+      Label (button_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
+      soft_button = Button(button_frame, text=pattern["ButtonA"])
+      soft_button.grid(row=0, column=1, padx=5, pady=5)    
+      soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
+      soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
 
     row = 1
     self.var_radio_buttons = {}
     self.progress = {}
     self.min_max_menus = {}
+    menu_row = {}
+
     for menu_item in pattern["MenuItems"]:
-      spacer_frame = Frame(pattern_options_frame, width=400, height=4, highlightbackground="blue", highlightthickness=2)
-      spacer_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
-      row += 1
+      title = menu_item["Title"]
+
+      if "Group" in menu_item:
+        group = menu_item["Group"]
+      else:
+        group = 0
       
-      title = menu_item["Title"] 
+      if group in menu_row:
+        menu_row[group] = menu_row[group] + 1
+      else:
+        menu_row[group] = 0
+      
       if "UoM" in menu_item:
         if len(menu_item["UoM"]) > 0:
           title += " (" + menu_item["UoM"] + ")"
       
-      Label(pattern_options_frame, text=title).grid(row=row, column=0, padx=5, pady=5, sticky=W)
-      self.AddMenuOptions(pattern_options_frame, row, menu_item)
-      row += 1
+      menu_item_frame = Frame(pattern_options_frame, width=400, height=4, highlightbackground="blue", highlightthickness=2)
+      menu_item_frame.grid(row=row+menu_row[group], column=0+group, padx=10, pady=5, sticky="ew")
+      
+      Label(menu_item_frame, text=title).grid(row=row, column=0, padx=5, pady=5, sticky=W)
+      self.AddMenuOptions(menu_item_frame, row, menu_item)
       
   # Stolen from https://tkdocs.com/tutorial/text.html
   def WriteToLog(self, msg, error):
@@ -196,7 +213,11 @@ class ZcPatternGui:
 
 parser = argparse.ArgumentParser(description='Start and run pattern on ZC95')
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
-parser.add_argument('--ip', action='store', required=True, help='IP address of ZC95')
+
+connection_group = parser.add_mutually_exclusive_group(required=True)
+connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
+connection_group.add_argument('--serial', action='store', help='Serial port to use')
+
 parser.add_argument('--index', action='store', required=True, help='Start pattern at specified index')
 
 args = parser.parse_args()
@@ -205,15 +226,20 @@ args = parser.parse_args()
 #if args.debug:
 #  websocket.enableTrace(True)
 
-rcv_queue = queue.Queue() # to allow received web socket messages to be sent to the GUI
+rcv_queue = queue.Queue() # to allow received messages to be sent to the GUI
 
-zcws = ZcWs(args.ip, rcv_queue, args.debug)
+# Connect either using serial or websocket
+if args.serial:
+  zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+else:
+  zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 
-ws_thread = threading.Thread(target=zcws.run_forever)
-ws_thread.start()
-zcws.wait_for_connection()
+conn_thread = threading.Thread(target=zc_connection.run_forever)
+conn_thread.start()
 
-zc_messages = zc.ZcMessages(zcws, args.debug)
+zc_connection.wait_for_connection()
+
+zc_messages = zc.ZcMessages(zc_connection, args.debug)
 pattern = zc_messages.GetPatternDetails(args.index)
 
 root = Tk() 
@@ -225,4 +251,4 @@ zc_messages.PatternStart(args.index)
 
 
 root.mainloop()
-zcws.stop()
+zc_connection.stop()

@@ -1,5 +1,6 @@
 Config = {
-    name = "Fire"
+    name = "Fire",
+    soft_button = "Fire"
 }
 
 function Loop(time_ms)
@@ -31,7 +32,7 @@ function ExternalTrigger(socket, part, active)
 end
 
 function SoftButton(pushed)
-    AllChannels(pushed)    
+    AllChannels(pushed)
 end
 
 function AllChannels(on)

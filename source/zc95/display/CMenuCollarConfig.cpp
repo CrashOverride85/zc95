@@ -81,7 +81,7 @@ void CMenuCollarConfig::adjust_rotary_encoder_change(int8_t change)
 void CMenuCollarConfig::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("Collar config", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text("Collar config", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     _collar_list->draw();
 }

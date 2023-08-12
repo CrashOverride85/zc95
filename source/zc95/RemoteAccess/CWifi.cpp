@@ -142,7 +142,11 @@ void CWifi::connect_to_wifi(std::string ssid, std::string psk)
 
     cyw43_arch_enable_sta_mode();
     cyw43_wifi_pm(&cyw43_state, 0xa11140);
-    cyw43_arch_wifi_connect_async(ssid.c_str(), psk.c_str(), CYW43_AUTH_WPA2_MIXED_PSK);
+    int retval = cyw43_arch_wifi_connect_async(ssid.c_str(), psk.c_str(), CYW43_AUTH_WPA2_MIXED_PSK);
+    if (retval)
+    {
+        printf("CWifi::connect_to_wifi(): error: cyw43_arch_wifi_connect_async returned %d\n", retval);
+    }
     _analogue_capture->start();
 }
 

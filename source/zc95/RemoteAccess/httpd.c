@@ -151,7 +151,7 @@
 #define HTTP_NO_DATA_TO_SEND       0
 
 static uint8_t _ap_mode;
-
+static struct altcp_pcb *_pcb;
 
 typedef struct {
   const char *name;
@@ -476,6 +476,26 @@ http_kill_oldest_connection(u8_t ssi_required)
     http_close_or_abort_conn(hs_free_next->next->pcb, hs_free_next->next, 1); /* this also unlinks the http_state from the list */
   }
 }
+
+static void http_kill_all_connections()
+{
+  struct http_state *hs = http_connections;
+  struct http_state *hs_free_next = NULL;
+  while (hs) 
+  {
+    hs_free_next = hs->next;
+    LWIP_ASSERT("broken list", hs != hs->next);
+
+    LWIP_ASSERT("hs != NULL", hs != NULL);
+    LWIP_ASSERT("hs->pcb != NULL", hs->pcb != NULL);
+
+    // printf("http_kill_all_connections: close hs=%d\n", hs);
+    http_close_or_abort_conn(hs->pcb, hs, 1); /* this also unlinks the http_state from the list */
+
+    hs = hs_free_next;
+  }
+}
+
 #else /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
 
 #define http_add_connection(hs)
@@ -2953,21 +2973,25 @@ http_accept(void *arg, struct altcp_pcb *pcb, err_t err)
   return ERR_OK;
 }
 
-static void
-httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
+struct altcp_pcb 
+*httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
 {
   err_t err;
 
   if (pcb) {
     altcp_setprio(pcb, HTTPD_TCP_PRIO);
     /* set SOF_REUSEADDR here to explicitly bind httpd to multiple interfaces */
+    ip_set_option(pcb, SOF_REUSEADDR);
     err = altcp_bind(pcb, IP_ANY_TYPE, port);
     LWIP_UNUSED_ARG(err); /* in case of LWIP_NOASSERT */
     LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
     pcb = altcp_listen(pcb);
     LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
     altcp_accept(pcb, http_accept);
+    return pcb;
   }
+
+  return NULL;
 }
 
 /**
@@ -2977,7 +3001,6 @@ httpd_init_pcb(struct altcp_pcb *pcb, u16_t port)
 void
 httpd_init(uint8_t ap_mode)
 {
-  struct altcp_pcb *pcb;
   _ap_mode = ap_mode;
 
 #if HTTPD_USE_MEM_POOL
@@ -2990,9 +3013,18 @@ httpd_init(uint8_t ap_mode)
 
   /* LWIP_ASSERT_CORE_LOCKED(); is checked by tcp_new() */
 
-  pcb = altcp_tcp_new_ip_type(IPADDR_TYPE_ANY);
-  LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
-  httpd_init_pcb(pcb, HTTPD_SERVER_PORT);
+  _pcb = altcp_tcp_new_ip_type(IPADDR_TYPE_ANY);
+  LWIP_ASSERT("httpd_init: tcp_new failed", _pcb != NULL);
+  _pcb = httpd_init_pcb(_pcb, HTTPD_SERVER_PORT);
+}
+
+void httpd_close()
+{
+  if (_pcb)
+  {
+    http_kill_all_connections();
+    tcp_close(_pcb);
+  }
 }
 
 #if HTTPD_ENABLE_HTTPS

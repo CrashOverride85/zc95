@@ -310,10 +310,10 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 
     draw_audio_fft_threshold(x0, y0, x1, y1);
 
-    hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+    hagl_draw_rectangle(_display->get_hagl_backed(), x0, y0, x1, y1, hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF));
 
-    color_t colour = hagl_color(0xFF, 0x00, 0x00);
-    hagl_draw_line(x0, y1-_trigger_point, x1, y1-_trigger_point, colour);
+    hagl_color_t colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00);
+    hagl_draw_line(_display->get_hagl_backed(), x0, y1-_trigger_point, x1, y1-_trigger_point, colour);
 
     _interuptable_section.end();
 }
@@ -338,23 +338,23 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
     if (mono)
     {
         _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left);
-        draw_audio_wave_channel(sample_count, sample_buffer_left, x0, y0+2, x1, y1, hagl_color(0xFF, 0xFF, 0xFF));
+        draw_audio_wave_channel(sample_count, sample_buffer_left, x0, y0+2, x1, y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
     }
     else
     {
         _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
         _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
 
-        draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(0xFF, 0xFF, 0xFF));
-        draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(0xFF, 0x00, 0x00));
+        draw_audio_wave_channel(sample_count, sample_buffer_left , x0              , y0+2, x0+((x1-x0)/2)-1, y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+        draw_audio_wave_channel(sample_count, sample_buffer_right, x0+((x1-x0)/2)+1, y0+2, x1              , y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00));
     }
 
-    hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+    hagl_draw_rectangle(_display->get_hagl_backed(), x0, y0, x1, y1, hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF));
 
     // Draw gain setting if digipot found
     if (get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
     {
-        color_t yellow  = hagl_color(0xFF, 0xFF, 0x00);
+        hagl_color_t yellow  = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00);
         bar_graph.draw_horz_bar_graph(bar_graph_area, 0, 255, _gain_l, "", yellow, true);
     }
 
@@ -363,7 +363,7 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
 
 // Draw an audio waveform from the supplied samples in the designated position. 
 // Waveform drawing starts when it crosses zero, which should give a stable waveform display for a periodic signal
-void CAudio::draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t colour)
+void CAudio::draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buffer, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, hagl_color_t colour)
 {
     // Scale factor to scale 0-255 samples to whatever screen space is available
     float scale_factor = (float)255 / (float)((float)y0-(float)y1);
@@ -398,7 +398,7 @@ void CAudio::draw_audio_wave_channel(uint16_t sample_count, uint8_t *sample_buff
         float line_y0 = (float)y1+((float)sample_buffer[start_sample_idx+sample_idx]  / scale_factor);
         float line_y1 = (float)y1+((float)sample_buffer[start_sample_idx+sample_idx+1]/ scale_factor);
 
-        hagl_draw_line(x, line_y0, x+1, line_y1, colour);
+        hagl_draw_line(_display->get_hagl_backed(), x, line_y0, x+1, line_y1, colour);
         sample_idx++;
     }
 }
@@ -430,16 +430,16 @@ void CAudio::draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bo
     uint16_t display_window_width = x1 - x0;
     uint16_t wave_width = display_window_width / 3;
 
-    draw_audio_wave_channel(sample_count, sample_buffer_left , x0+(wave_width * 0), y0+2, x0+(wave_width * 1), y1, hagl_color(0xFF, 0xFF, 0xFF));
-    draw_audio_wave_channel(sample_count, sample_buffer_right, x0+(wave_width * 1), y0+2, x0+(wave_width * 2), y1, hagl_color(0xFF, 0x00, 0x00));
-    draw_audio_wave_channel(sample_count, sample_buffer_virt , x0+(wave_width * 2), y0+2, x0+(wave_width * 3), y1, hagl_color(0xFF, 0xFF, 0x00));
+    draw_audio_wave_channel(sample_count, sample_buffer_left , x0+(wave_width * 0), y0+2, x0+(wave_width * 1), y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    draw_audio_wave_channel(sample_count, sample_buffer_right, x0+(wave_width * 1), y0+2, x0+(wave_width * 2), y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00));
+    draw_audio_wave_channel(sample_count, sample_buffer_virt , x0+(wave_width * 2), y0+2, x0+(wave_width * 3), y1, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00));
 
-    hagl_draw_rectangle(x0, y0, x1, y1, hagl_color(0x00, 0x00, 0xFF));
+    hagl_draw_rectangle(_display->get_hagl_backed(), x0, y0, x1, y1, hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF));
 
     // Draw gain setting if digipot found
     if (get_audio_hardware_state() == audio_hardware_state_t::PRESENT)
     {
-        color_t yellow  = hagl_color(0xFF, 0xFF, 0x00);
+        hagl_color_t yellow  = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00);
         bar_graph.draw_horz_bar_graph(bar_graph_area, 0, 255, _gain_l, "", yellow, true);
     }
 
@@ -450,7 +450,7 @@ void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_
 {
     uint8_t width  = x1 - x0;
 
-    color_t colour = hagl_color(0x00, 0xFF, 0x00);
+    hagl_color_t colour = hagl_color(_display->get_hagl_backed(), 0x00, 0xFF, 0x00);
 
     uint16_t bar_height = 0;
     uint8_t fft_sample = 0;
@@ -458,11 +458,11 @@ void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_
     {
         bar_height = get_bar_height(_fft_output[fft_sample]);
         if (bar_height > _trigger_point)
-            colour = hagl_color(0xFF, 0x00, 0x00);
+            colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00);
         else
-            colour = hagl_color(0x00, 0xFF, 0x00);
+            colour = hagl_color(_display->get_hagl_backed(), 0x00, 0xFF, 0x00);
 
-        hagl_draw_line(x0+x  , y1, x0+x  , y1 - bar_height, colour);
+        hagl_draw_line(_display->get_hagl_backed(), x0+x  , y1, x0+x  , y1 - bar_height, colour);
 
         fft_sample++;
     }

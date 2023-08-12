@@ -142,9 +142,9 @@ void CMenuSettingHardware::draw()
 {
     _settings_list->draw();
 
-    color_t rect_colour = hagl_color(0x00, 0x00, 0xFF);
+    hagl_color_t rect_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
-    hagl_fill_rectangle(_setting_choice_area.x0, _setting_choice_area.y0,
+    hagl_fill_rectangle(_display->get_hagl_backed(), _setting_choice_area.x0, _setting_choice_area.y0,
                         _setting_choice_area.x1, _setting_choice_area.y1,
                         rect_colour);
 

@@ -61,6 +61,7 @@
 #include "core1/CRoutineOutputCore1.h"
 
 #include "RemoteAccess/CWifi.h"
+#include "RemoteAccess/CSerialConnection.h"
 
 #include "FpKnobs/CFrontPanel.h"
 #include "ECButtons.h"
@@ -74,6 +75,7 @@ CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &controls);
 CWifi *wifi = NULL;
+extern CSerialConnection *g_SerialConnection;
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
@@ -224,6 +226,7 @@ int main()
     // Configure SPI display
     CDisplay display = CDisplay();
     display.init(); // This takes some time - not far off a second
+    hw_check.set_display(&display);
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
@@ -331,6 +334,9 @@ int main()
             uint8_t *readings = analogueCapture.get_battery_readings(&readings_count);
             batteryGauge.add_raw_adc_readings(readings, readings_count);
         }
+
+        if (g_SerialConnection)
+            g_SerialConnection->loop();
 
         if (gFatalError)
         {

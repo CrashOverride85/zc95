@@ -269,6 +269,7 @@ err_t websocket_write(struct tcp_pcb *pcb, const uint8_t *data, uint16_t len, ui
 void websocket_register_callbacks(tWsOpenHandler ws_open_cb, tWsHandler ws_cb);
 
 void httpd_init(uint8_t ap_mode);
+void httpd_close();
 
 #if HTTPD_ENABLE_HTTPS
 struct altcp_tls_config;

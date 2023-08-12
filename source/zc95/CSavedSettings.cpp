@@ -25,7 +25,7 @@
  * Manage access and updating of settings saved to EEPROM.
  * Assumes 512byte EEPROM, and loads its contents into memory.
  * A blank EEPROM should be automatically initialized with default values on first 
- * run; a blank EEPROM is detected by the absense of EEPROM_MAGIC_VAL in location 0.
+ * run; a blank EEPROM is detected by the absence of EEPROM_MAGIC_VAL in location 0.
  */
 
 CSavedSettings::CSavedSettings(CEeprom *eeprom)
@@ -320,7 +320,7 @@ void CSavedSettings::eeprom_initialise()
         _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = channel_id;
     }
 
-    // Set any remaing channels to nothing
+    // Set any remaining channels to nothing
     for (int channel_id=4; channel_id < EEPROM_CHANNEL_COUNT; channel_id++)
     {
         _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_NONE;

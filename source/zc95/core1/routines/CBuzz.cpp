@@ -60,7 +60,7 @@ void CBuzz::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // Game length
-    struct menu_entry menu_game_len;
+    struct menu_entry menu_game_len = new_menu_entry();
     menu_game_len.id = menu_ids::GAME_DURATION;
     menu_game_len.title = "Game length";
     menu_game_len.menu_type = menu_entry_type::MIN_MAX;
@@ -71,8 +71,8 @@ void CBuzz::config(struct routine_conf *conf)
     menu_game_len.minmax.current_value = DefaultGameLenghtSec;
     conf->menu.push_back(menu_game_len);
 
-    // Shock increment, pecentage points
-    struct menu_entry menu_shock_increment;
+    // Shock increment, percentage points
+    struct menu_entry menu_shock_increment = new_menu_entry();
     menu_shock_increment.id = menu_ids::SHOCK_INC_PP;
     menu_shock_increment.title = "Shock increment";
     menu_shock_increment.menu_type = menu_entry_type::MIN_MAX;
@@ -84,7 +84,7 @@ void CBuzz::config(struct routine_conf *conf)
     conf->menu.push_back(menu_shock_increment);
 
     // Initial power
-    struct menu_entry menu_inital_power;
+    struct menu_entry menu_inital_power = new_menu_entry();
     menu_inital_power.id = menu_ids::INITAL_POWER;
     menu_inital_power.title = "Inital shock power";
     menu_inital_power.menu_type = menu_entry_type::MIN_MAX;
@@ -96,7 +96,7 @@ void CBuzz::config(struct routine_conf *conf)
     conf->menu.push_back(menu_inital_power);
 
     // Shock length
-    struct menu_entry menu_shock_length;
+    struct menu_entry menu_shock_length = new_menu_entry();
     menu_shock_length.id = menu_ids::SHOCK_LENGTH;
     menu_shock_length.title = "Min shock length";
     menu_shock_length.menu_type = menu_entry_type::MIN_MAX;

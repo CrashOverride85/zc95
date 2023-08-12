@@ -17,6 +17,7 @@ class CWebServer
         CWebServer(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CWebServer();
         void start();
+        void stop();
         void loop();
 
     private:

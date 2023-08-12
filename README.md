@@ -7,7 +7,7 @@
 The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
 Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
 
-If a Pico-W is used for the main MCU, it can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it.
+The box can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it, either using RS232 serial or WiFi if a Pico-W is used for the main MCU.
 
 Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing bluetooth and, _so far_, most of the patterns of the 312. Audio input is possible with an extra/optional board.
 

@@ -149,7 +149,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
         return selected_power;
 }
 
-// Get the maximum power level (power level set on front pannel - 0-1000) that's being ramped up to
+// Get the maximum power level (power level set on front panel - 0-1000) that's being ramped up to
 uint16_t CPowerLevelControl::get_target_max_power_level(uint8_t channel)
 {
     if (channel >= MAX_CHANNELS)

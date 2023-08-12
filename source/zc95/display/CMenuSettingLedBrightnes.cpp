@@ -98,11 +98,11 @@ void CMenuSettingLedBrightnes::adjust_rotary_encoder_change(int8_t change)
 void CMenuSettingLedBrightnes::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("LED Brightness", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text("LED Brightness", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
-    color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
+    hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
-    _bar_graph->draw_horz_bar_graph(_bar_graph_area, 1, 100, _led_brightness, "%", bar_colour);
+    _bar_graph->draw_horz_bar_graph( _bar_graph_area, 1, 100, _led_brightness, "%", bar_colour);
 }
 
 void CMenuSettingLedBrightnes::show()

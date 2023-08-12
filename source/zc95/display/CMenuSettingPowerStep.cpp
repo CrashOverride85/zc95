@@ -113,7 +113,7 @@ void CMenuSettingPowerStep::update_setting()
 void CMenuSettingPowerStep::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("Power levels", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text("Power levels", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     _option_list->draw();
 }

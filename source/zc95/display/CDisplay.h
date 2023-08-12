@@ -37,18 +37,19 @@ class CDisplay
         void set_current_menu(CMenu *menu);
 
         struct display_area get_display_area();
-        void put_text(std::string text, int16_t x, int16_t y, color_t color);
+        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
         uint8_t get_font_width();
         uint8_t get_font_height();
         void set_battery_percentage(uint8_t bat);
         void set_active_pattern(std::string pattern);
         void set_update_required();
+        hagl_backend_t* get_hagl_backed();
 
     private:
         void draw_soft_buttons();
         void draw_status_bar();
         void draw_bar_graphs();
-        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, color_t bar_colour);
+        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, hagl_color_t bar_colour);
         
         // Soft buttons
         std::string _option_a; // top left
@@ -56,7 +57,7 @@ class CDisplay
         std::string _option_c; // top right
         std::string _option_d; // bottom right
 
-        // Front Pannel power levels, all 0-1000
+        // Front Panel power levels, all 0-1000
         int16_t _channel_1_fp_power; 
         int16_t _channel_2_fp_power; 
         int16_t _channel_3_fp_power; 
@@ -90,6 +91,7 @@ class CDisplay
         bool _update_required;
         CInteruptableSection _interuptable_section;
         bool _remote_mode_active;
+        hagl_backend_t *_hagl_backend = NULL;
 };
 
 #endif

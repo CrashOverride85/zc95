@@ -30,6 +30,7 @@ Config = {
         {
             type = "MIN_MAX",
             title = "Delay",
+            group = 0,
             id = 1,
             min = 100,
             max = 2000,
@@ -40,6 +41,7 @@ Config = {
          {
             type = "MULTI_CHOICE",
             title = "Output",
+            group = 0,
             id = 2,
             choices = {
                 {choice_id = 1, description = "Pulse"},
@@ -121,6 +123,7 @@ Config = {
             type = "MIN_MAX",
             title = "Delay",
             id = 1,
+            group = 0,
             min = 100,
             max = 2000,
             increment_step = 100,
@@ -131,6 +134,7 @@ Config = {
             type = "MULTI_CHOICE",
             title = "Output",
             id = 2,
+            group = 0,
             choices = {
                 {choice_id = 1, description = "Pulse"},
                 {choice_id = 2, description = "Constant"}
@@ -141,7 +145,10 @@ Config = {
 ```
 `name = "Toggle"` sets the name for the script - this is prefixed with `U:` then used on the patterns menu.
 
-A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1. There are two types supported:
+A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
+ _Optionally_, each item can be given a `group` number - this only has any affect when ran remotely using the GUI, and allows related options to be group together, instead of appearing in one long list (useful for scripts with many options).
+
+ There are two types supported:
 * `MIN_MAX` - shows a horizontal bar graph that can be changed between the set min/max using the adjust dial. The unit of measure (uom) text is displayed as suffix to the numeric value in the bar chart 
 * `MULTI_CHOICE` - used to show a menu option that allows for one of multiple settings to be picked. Each choice must have a unique id.
 
@@ -304,7 +311,7 @@ Called when a `MIN_MAX` type pattern option is changed, and is called with the m
 Called when a `MULTI_CHOICE` type pattern option is changed, and is called with the menu ID of the option, and the ID of the selected choice.
 
 ### SoftButton(pushed)
-Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`.
+Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`. The soft button text is set by specifying `soft_button = "<label>"` in the `Config = {}` section. See `fire.lua` script for an example.
 
 ### ExternalTrigger(socket, part, active)
 Called when an external trigger happens.

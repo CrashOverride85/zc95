@@ -96,9 +96,9 @@ void CMenuSettingRampUpTime::adjust_rotary_encoder_change(int8_t change)
 void CMenuSettingRampUpTime::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("Ramp up time", disp_area.x0+2, disp_area.y0 + 10, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text("Ramp up time", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
-    color_t bar_colour = hagl_color(0x00, 0x00, 0xFF);
+    hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
     _bar_graph->draw_horz_bar_graph(_bar_graph_area, 1, RAMP_UP_TIME_MAXIMUM_SECS, _ramp_up_time_seconds, "sec", bar_colour);
 }

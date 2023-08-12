@@ -7,7 +7,7 @@
 #define EEPROM_SIZE      512 // EEPROM is 4Kbit
 #define EEPROM_MAGIC_VAL  85 // If this is in setting::EepromInit, assume the eeprom has been initialised
 
-#define EEPROM_CHANNEL_COUNT 10 // Maximum number of configuerd channels that can be saved. Changing this invalidates EEPROM contents
+#define EEPROM_CHANNEL_COUNT 10 // Maximum number of configured channels that can be saved. Changing this invalidates EEPROM contents
 
 class CSavedSettings
 {
@@ -80,7 +80,7 @@ class CSavedSettings
         enum class setting_aux_port_use
         {
             AUDIO  = 0, // Aux port is routed to ADC if audio board present (same as SERIAL if not present)
-            SERIAL = 1  // Aux port is routed to uart0
+            SERIAL = 1  // Aux port is routed to AUX_PORT_UART (uart0)
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -143,8 +143,8 @@ class CSavedSettings
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
 
-
         void eeprom_initialise();
+
     private:
         bool eeprom_initialised();
         

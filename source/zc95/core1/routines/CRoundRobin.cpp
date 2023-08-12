@@ -54,7 +54,7 @@ void CRoundRobin::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // menu entry 1: "Delay" - how long to wait before switching to next channel
-    struct menu_entry menu_speed;
+    struct menu_entry menu_speed = new_menu_entry();
     menu_speed.id = menu_ids::DELAY;
     menu_speed.title = "Delay";
     menu_speed.menu_type = menu_entry_type::MIN_MAX;
@@ -66,7 +66,7 @@ void CRoundRobin::config(struct routine_conf *conf)
     conf->menu.push_back(menu_speed);
 
     // menu entry 2: "pulse/cont." - pulse each channel, or toggle between each?
-    struct menu_entry menu_pulse_cont;
+    struct menu_entry menu_pulse_cont = new_menu_entry();
     menu_pulse_cont.id = menu_ids::PULSE_CONT;
     menu_pulse_cont.title = "Pulse/Cont.";
     menu_pulse_cont.menu_type = menu_entry_type::MULTI_CHOICE;

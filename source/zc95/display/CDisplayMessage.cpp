@@ -88,9 +88,9 @@ void CDisplayMessage::adjust_rotary_encoder_change(int8_t change)
     int text_y0 = display_area_centre - (text_height/2);
     
     if (text_y0 < _disp_area.y0)
-        text_y0 = _disp_area.y0; // this will happen if the message is too long (too many lines).  Probably better to show the begining of the message, than the middle.
+        text_y0 = _disp_area.y0; // this will happen if the message is too long (too many lines).  Probably better to show the beginning of the message, than the middle.
 
-    _display->put_text(_display_string, 0, text_y0, hagl_color(0xFF, 0xFF, 0xFF));
+    _display->put_text(_display_string, 0, text_y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
  }
 
 void CDisplayMessage::show()

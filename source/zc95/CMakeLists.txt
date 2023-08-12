@@ -99,6 +99,7 @@ add_executable(zc95
   display/CMenuSettingHardware
   display/CMenuRemoteAccess
   display/CMenuRemoteAccessConnectWifi
+  display/CMenuRemoteAccessSerial
   display/CMenuApMode
   display/COptionsList
   display/CHorzBarGraph
@@ -125,6 +126,8 @@ add_executable(zc95
   RemoteAccess/CWsConnection.cpp
   RemoteAccess/CLuaLoad.cpp
   RemoteAccess/CRoutineRun.cpp
+  RemoteAccess/CMessageProcessor.cpp
+  RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScripts.S
@@ -202,6 +205,9 @@ target_compile_definitions(zc95 PRIVATE
   MIPI_DISPLAY_PIN_CLK=18
   MIPI_DISPLAY_PIN_MOSI=19
   MIPI_DISPLAY_PIN_MISO=16
+  MIPI_DISPLAY_PIN_POWER=-1
+  MIPI_DISPLAY_PIN_TE=-1
+  MIPI_DISPLAY_SPI_PORT=spi0
   MIPI_DISPLAY_PIXEL_FORMAT=MIPI_DCS_PIXEL_FORMAT_16BIT
   MIPI_DISPLAY_ADDRESS_MODE=MIPI_DCS_ADDRESS_MODE_SWAP_XY|MIPI_DCS_ADDRESS_MODE_MIRROR_Y
   MIPI_DISPLAY_WIDTH=160

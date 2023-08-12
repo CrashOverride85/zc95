@@ -71,19 +71,19 @@ void COptionsList::draw()
     for (int8_t option=-option_count; option <= option_count; option++)
     {
         uint8_t brightness;
-        color_t colour;        
+        hagl_color_t colour;
         
         // Make the currently selected option white
         if (option == 0)
         {
-            colour = hagl_color(0xFF, 0xFF, 0xFF);
+            colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF);
         }
 
         // Make the options either side decrease in brightness the further away from the selected option you get.
         // Also make the drop in brightness from the selected option to the next option either side grater than 
         // the drop between the following options to make it more obvious what's currently selected.
         brightness = 200 / (1 + abs(option));
-        colour = hagl_color(brightness, brightness, brightness);
+        colour = hagl_color(_display->get_hagl_backed(), brightness, brightness, brightness);
 
         // Draw options
         if 

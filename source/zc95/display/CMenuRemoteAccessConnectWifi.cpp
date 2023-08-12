@@ -100,14 +100,14 @@ void CMenuRemoteAccessConnectWifi::draw()
     if (_state == state_t::NOT_CONFIGURED)
     {
         int y = ((_disp_area.y1-_disp_area.y0)/2);
-        _display->put_text("Not configured" , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Not configured" , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
     }
     else if (_state == state_t::CONNECTING)
     {
         int y = ((_disp_area.y1-_disp_area.y0)/2) - 30;
-        _display->put_text("Connecting to:" , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Connecting to:" , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         y += 10;
-        _display->put_text(_ssid            , _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+        _display->put_text(_ssid            , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
         y += 10;
 
         // Show a "..." animation to show we're (trying!) to do something
@@ -120,10 +120,10 @@ void CMenuRemoteAccessConnectWifi::draw()
 
             connecting_dots[_connecting_dot_count] = '\0';
         }
-        _display->put_text(connecting_dots, _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+        _display->put_text(connecting_dots, _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
         y += 10;
        
-        _display->put_text("Status:" , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Status:" , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         y += 10; 
         std::string connection_status;
         if (_wifi->get_connection_status(connection_status))
@@ -131,20 +131,20 @@ void CMenuRemoteAccessConnectWifi::draw()
             _state = state_t::CONNECTED;
             _wifi->start_webserver();
         }
-        _display->put_text(connection_status, _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+        _display->put_text(connection_status, _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
     } 
     else if (_state == state_t::CONNECTED)
     {
         int y = ((_disp_area.y1-_disp_area.y0)/2) - 20;
-        _display->put_text("Connected to:"  , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Connected to:"  , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         y += 10;
-        _display->put_text(_ssid            , _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+        _display->put_text(_ssid            , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
         y += 10;
 
-        _display->put_text("Address:"       , _disp_area.x0, _disp_area.y0+y, hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text("Address:"       , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
         y += 10;
         char *ip_address = ip4addr_ntoa(netif_ip4_addr(netif_list));
-        _display->put_text(ip_address, _disp_area.x0, _disp_area.y0+y, hagl_color(0x70, 0x70, 0x70));
+        _display->put_text(ip_address, _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
 
         // If we've lost the connection, re-display the "Connecting..." screen
         std::string connection_status;

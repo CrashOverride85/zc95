@@ -55,7 +55,7 @@ void CShockChoice::config(struct routine_conf *conf)
     conf->outputs.push_back(output_type::SIMPLE);
 
     // menu entry 1: "Choice frequency" - how often a choice needs to be made
-    struct menu_entry duration;
+    struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CHOICE_FREQUENCY;
     duration.title = "Choice frequency";
     duration.menu_type = menu_entry_type::MIN_MAX;
@@ -67,7 +67,7 @@ void CShockChoice::config(struct routine_conf *conf)
     conf->menu.push_back(duration);
 
     // menu entry 2: "Shock increment" - how much to increment the shock by each time triggered
-    struct menu_entry menu_shock_inc;
+    struct menu_entry menu_shock_inc = new_menu_entry();
     menu_shock_inc.id = menu_ids::SHOCK_INC;
     menu_shock_inc.title = "Shock increment by";
     menu_shock_inc.menu_type = menu_entry_type::MIN_MAX;

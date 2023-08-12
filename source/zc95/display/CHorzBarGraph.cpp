@@ -28,7 +28,7 @@ CHorzBarGraph::CHorzBarGraph(CDisplay *display)
 }
 
 // Draw the bar graph. If minimal = false, don't draw value in graph, or min/max under it
-void CHorzBarGraph::draw_horz_bar_graph(display_area area, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, color_t bar_colour, bool minimal)
+void CHorzBarGraph::draw_horz_bar_graph(display_area area, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour, bool minimal)
 {
     if (current_val > max_val)
         current_val = max_val;
@@ -39,7 +39,7 @@ void CHorzBarGraph::draw_horz_bar_graph(display_area area, int16_t min_val, int1
         return;
 
     if (!minimal)
-        hagl_draw_rectangle(area.x0, area.y0, area.x1, area.y1-_display->get_font_height()-2, hagl_color(0xFF, 0xFF, 0xFF));
+        hagl_draw_rectangle(_display->get_hagl_backed(), area.x0, area.y0, area.x1, area.y1-_display->get_font_height()-2, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     int16_t width = area.x1 - area.x0;
 
@@ -52,19 +52,19 @@ void CHorzBarGraph::draw_horz_bar_graph(display_area area, int16_t min_val, int1
     else
         bar_height = (area.y1-_display->get_font_height()-2) - (area.y0) - 1;
 
-    hagl_fill_rectangle(area.x0+1, area.y0+1, area.x0+bar_width, area.y0+bar_height, bar_colour);
+    hagl_fill_rectangle(_display->get_hagl_backed(), area.x0+1, area.y0+1, area.x0+bar_width, area.y0+bar_height, bar_colour);
 
     if (!minimal)
     {
         // min label
-        _display->put_text(std::to_string(min_val), area.x0, area.y1-_display->get_font_height(), hagl_color(0, 0xFF, 0));
+        _display->put_text(std::to_string(min_val), area.x0, area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0, 0xFF, 0));
 
         // max label
-        _display->put_text(std::to_string(max_val), area.x0+width-20, area.y1-_display->get_font_height(), hagl_color(0, 0xFF, 0));
+        _display->put_text(std::to_string(max_val), area.x0+width-20, area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0, 0xFF, 0));
 
         // current value label in middle of bar
         std::string value_str = std::to_string(current_val) + " " + UoM;
         uint16_t current_val_width = value_str.length() * _display->get_font_width();
-        _display->put_text(value_str, area.x0+((width/2)-(current_val_width/2)), area.y0 + (bar_height/2) - (_display->get_font_height()/2), hagl_color(0xFF, 0xFF, 0xFF));
+        _display->put_text(value_str, area.x0+((width/2)-(current_val_width/2)), area.y0 + (bar_height/2) - (_display->get_font_height()/2), hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
     }
 }

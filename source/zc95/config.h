@@ -5,11 +5,11 @@
 #define PATTERN_TEXT_OUTPUT_QUEUE_LENGTH 4 // Max number of queued text/debug messages from Core1 (so far just lua) to Core0
 
 #define ZC624_ADDR                  0x10
-#define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accesory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
-#define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front pannel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
-#define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front pannel
+#define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accessory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
+#define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front panel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
+#define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front panel
 #define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
-#define ADC_ADDR                    0x48 // ADC on front pannel, used for power control dials
+#define ADC_ADDR                    0x48 // ADC on front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 
 
 
@@ -24,19 +24,19 @@
 #define WEBSOCKET_API_VERION_MINOR  0   // Increment non-breaking change
 
 // The maximum length a web socket message can be in bytes
-#define MAX_WS_MESSAGE_SIZE 200
+#define MAX_WS_MESSAGE_SIZE 300
 
 // How many Lua instructions can be run on each Lua call. Protects against infinite loops locking up box.
 #define LUA_MAX_INSTRUCTIONS 10000
 
 // Other pins
 #define PIN_LED           10 // ws2812 LED chain
-#define PIN_CONTROLS_INT   7 // front pannel controls port expander interrupt pin
+#define PIN_CONTROLS_INT   7 // front panel controls port expander interrupt pin
 #define PIN_EXT_INPUT_INT 21 // external inputs port expander interrupt pin
 #define PIN_433TX          3 // 433Mhz transmitter pin
 
-#define PIN_FP_INT1       11 // front panel interupt 1 (U1) - 4x channel rot encoders
-#define PIN_FP_INT2        6 // front panel interupt 2 (U2) - 5x rot enoder buttons & 1x adjust rot encoer (+ 1x unused line)
+#define PIN_FP_INT1       11 // front panel interrupt 1 (U1) - 4x channel rot encoders
+#define PIN_FP_INT2        6 // front panel interrupt 2 (U2) - 5x rot encoder buttons & 1x adjust rot encoder (+ 1x unused line)
 
 
 // Output board SPI
@@ -79,6 +79,10 @@
 
 #define PIN_AUX_UART_TX 0
 #define PIN_AUX_UART_RX 1
+#define AUX_PORT_UART uart0
 
 #define PIN_ACC_UART_TX 8
 #define PIN_ACC_UART_RX 9
+#define ACC_PORT_UART uart1
+
+#define SERIAL_TX_QUEUE_SIZE 2000 // only used when in remote access/serial mode

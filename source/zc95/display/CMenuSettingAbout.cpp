@@ -63,17 +63,17 @@ void CMenuSettingAbout::draw()
     display_area disp_area = _display->get_display_area();
     std::string zc624_ver = _hwCheck->get_zc624_version();
 
-    put_text_line("Firmware versions:", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
+    put_text_line("Firmware versions:", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
-    put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
-    put_text_line(kGitHash            , disp_area.x0+5, disp_area.y0, line++, hagl_color(0x99, 0x99, 0x99));
+    put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    put_text_line(kGitHash            , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
     
     line++;
-    put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(0xFF, 0xFF, 0xFF));
-    put_text_line(zc624_ver           , disp_area.x0+5, disp_area.y0, line++, hagl_color(0x99, 0x99, 0x99));    
+    put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    put_text_line(zc624_ver           , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
 }
 
-void CMenuSettingAbout::put_text_line(std::string text, int16_t x, int16_t y, uint8_t line, color_t colour)
+void CMenuSettingAbout::put_text_line(std::string text, int16_t x, int16_t y, uint8_t line, hagl_color_t colour)
 {
     _display->put_text(text, x, y + (line * 10), colour);
 }
