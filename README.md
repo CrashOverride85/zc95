@@ -46,6 +46,8 @@ The zc624 output module can also be used standalone and [controlled from an Ardu
 
 ## [Lua scripting notes](docs/LuaNotes.md)
 
+## [Notes on building source](docs/SourceBuildNotes.md)
+
 ## [Credits](docs/Credits.md)
 
 # TODO
