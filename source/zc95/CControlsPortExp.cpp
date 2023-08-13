@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CControlsPortExp.h"
 #include "globals.h"
 #include "CUtil.h"
 #include "hardware/gpio.h"
 #include <string.h>
+#include "CControlsPortExp.h"
 
 /*
  * Deal with port expander U7, which:

@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CAudio3Process.h"
-#include "../globals.h"
 #include <stdlib.h>
+#include "../globals.h"
+#include "CAudio3Process.h"
 #include "pico/util/queue.h"
 
 /* Audio3 mode

@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <string>
 #include <list>
-#include "CAnalogueCapture.h"
 #include "core1/CRoutineOutput.h"
+#include "CAnalogueCapture.h"
 
 extern mutex_t g_core1_suspend_mutex;
 extern struct semaphore g_core1_suspend_sem;
