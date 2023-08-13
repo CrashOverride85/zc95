@@ -84,26 +84,26 @@ add_executable(zc95
 
   display/CMenu.cpp
   display/CDisplay.cpp
-  display/CMainMenu
-  display/CMenuRoutineSelection
-  display/CMenuRoutineAdjust
-  display/CMenuSettings
-  display/CMenuChannelConfig
-  display/CMenuCollarConfig
-  display/CMenuCollarConfigSelected
-  display/CMenuSettingLedBrightnes
-  display/CMenuSettingPowerStep
-  display/CMenuSettingRampUpTime
-  display/CMenuSettingAbout
-  display/CMenuSettingAudio
-  display/CMenuSettingHardware
-  display/CMenuRemoteAccess
-  display/CMenuRemoteAccessConnectWifi
-  display/CMenuRemoteAccessSerial
-  display/CMenuApMode
-  display/COptionsList
-  display/CHorzBarGraph
-  display/CDisplayMessage
+  display/CMainMenu.cpp
+  display/CMenuRoutineSelection.cpp
+  display/CMenuRoutineAdjust.cpp
+  display/CMenuSettings.cpp
+  display/CMenuChannelConfig.cpp
+  display/CMenuCollarConfig.cpp
+  display/CMenuCollarConfigSelected.cpp
+  display/CMenuSettingLedBrightnes.cpp
+  display/CMenuSettingPowerStep.cpp
+  display/CMenuSettingRampUpTime.cpp
+  display/CMenuSettingAbout.cpp
+  display/CMenuSettingAudio.cpp
+  display/CMenuSettingHardware.cpp
+  display/CMenuRemoteAccess.cpp
+  display/CMenuRemoteAccessConnectWifi.cpp
+  display/CMenuRemoteAccessSerial.cpp
+  display/CMenuApMode.cpp
+  display/COptionsList.cpp
+  display/CHorzBarGraph.cpp
+  display/CDisplayMessage.cpp
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
