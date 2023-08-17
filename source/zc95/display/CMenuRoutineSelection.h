@@ -47,7 +47,7 @@ class CMenuRoutineSelection : public CMenu
 
     private:
         bool is_audio_routine(routine_conf conf);
-        COptionsList *_routine_disply_list = NULL;
+        COptionsList *_routine_display_list = NULL;
         struct display_area _area;
         CDisplay* _display;
         std::vector<CRoutines::Routine> *_routines;
