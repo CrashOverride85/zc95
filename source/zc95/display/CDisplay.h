@@ -25,6 +25,7 @@ class CDisplay
 {
     public:
         CDisplay();
+        ~CDisplay();
         void init();
         void update();
         void set_option_a(std::string text);
@@ -32,12 +33,12 @@ class CDisplay
         void set_option_c(std::string text);
         void set_option_d(std::string text);
         
-        void set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
+        void set_power_level(uint8_t channel, int16_t front_panel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
 
         void set_current_menu(CMenu *menu);
 
         struct display_area get_display_area();
-        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
+        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false);
         uint8_t get_font_width();
         uint8_t get_font_height();
         void set_battery_percentage(uint8_t bat);
@@ -49,8 +50,10 @@ class CDisplay
         void draw_soft_buttons();
         void draw_status_bar();
         void draw_bar_graphs();
-        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, hagl_color_t bar_colour);
-        
+        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour);
+        uint8_t hagl_put_char_rotate90(void const *_surface, wchar_t code, int16_t x0, int16_t y0, hagl_color_t color, const uint8_t *font);
+        void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
+
         // Soft buttons
         std::string _option_a; // top left
         std::string _option_b; // bottom left
@@ -92,6 +95,7 @@ class CDisplay
         CInteruptableSection _interuptable_section;
         bool _remote_mode_active;
         hagl_backend_t *_hagl_backend = NULL;
+        uint8_t *_rotate90_buffer = NULL;
 };
 
 #endif
