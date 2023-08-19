@@ -324,6 +324,8 @@ Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shor
 Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 
 
 ### Loop(time_ms)
-Called periodically for as long as the pattern is running. `time_ms` is how long in milliseconds the box has been powered on.
+Called periodically for as long as the pattern is running. `time_ms` is how long in milliseconds the box has been powered on, and since v1.7 is a floating point number with microsecond precision. 
+
+`Loop()` is called as often as possible, but how often will depend enormously on how much work is done in the Loop() function - expect an empty Loop() to be called around every 50us, and a complex loop() to be called closer to every 4000us (or more).
 
 [acc port]: images/lua_acc_port.png "Accessory port"

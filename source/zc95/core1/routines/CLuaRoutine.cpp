@@ -340,11 +340,11 @@ void CLuaRoutine::loop(uint64_t time_us)
     if (!runnable())
         return;
 
-    int32_t time_ms = time_us/1000;
+    double time_ms = (double)time_us/(double)1000;
     lua_getglobal(_lua_state, "Loop");
     if (lua_isfunction(_lua_state, -1))
     {
-        lua_pushinteger(_lua_state, time_ms);
+        lua_pushnumber(_lua_state, time_ms);
         pcall(1, 0, 0);
     }
     else
