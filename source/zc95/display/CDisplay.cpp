@@ -22,6 +22,7 @@
 #include <font5x7.h>
 #include <fontx.h>
 #include <string>
+#include <string.h>
 
 #include "../globals.h"
 #include "../CTimingTest.h"
@@ -35,13 +36,11 @@ const uint8_t menu_bar_height = 18;   // should be even (soft button text)
 const uint8_t status_bar_height = 9;  // battery level + mode at bottom
 const uint8_t bar_width = 10;         // individual power level bar width 
 
+
 CDisplay::CDisplay()
 {
     printf("CDisplay()\n");
-    _channel_1_max_power = 0; 
-    _channel_2_max_power = 0; 
-    _channel_3_max_power = 0; 
-    _channel_4_max_power = 0;
+    memset(_channel_power, 0, sizeof (_channel_power));
 
     _last_update = 0;
     _current_menu = NULL;
@@ -101,15 +100,23 @@ uint8_t CDisplay::get_font_height()
         CTimingTest timing;
         hagl_clear(_hagl_backend);
 
-        if (_current_menu != NULL)
+        // TODO: make configurable 
+        if (_show_power_level_until > time_us_64())
         {
-            _current_menu->update();
+            draw_power_level();
+        }
+        else
+        {
+            if (_current_menu != NULL)
+            {
+                _current_menu->update();
+            }
+
+            draw_soft_buttons(); // 846us
         }
 
-        draw_soft_buttons(); // 846us
-
         draw_bar_graphs(); // 489us
-        
+
         draw_status_bar();
   
         _interuptable_section.end();
@@ -158,34 +165,22 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
     if (maximum_power < 0)
         maximum_power = 0;
 
+    if (channel >= MAX_CHANNELS)
+    {
+        printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
+        return;
+    }
+
     _remote_mode_active = remote_mode_active;
 
-    switch (channel)
+    if (front_panel_power != _channel_power[channel].fp_power)
     {
-        case 0:
-            _channel_1_fp_power = front_panel_power;
-            _channel_1_actual_power = actual_power;
-            _channel_1_max_power = maximum_power;
-            break;
-
-        case 1:
-            _channel_2_fp_power = front_panel_power;
-            _channel_2_actual_power = actual_power;
-            _channel_2_max_power = maximum_power;
-            break;
-
-        case 2:
-            _channel_3_fp_power = front_panel_power;
-            _channel_3_actual_power = actual_power;
-            _channel_3_max_power = maximum_power;
-            break;
-
-        case 3:
-            _channel_4_fp_power = front_panel_power;
-            _channel_4_actual_power = actual_power;
-            _channel_4_max_power = maximum_power;
-            break;
+        _channel_power[channel].fp_power = front_panel_power;
+        _show_power_level_until = time_us_64() + (1000 * 750); // show for 750ms
     }
+    
+    _channel_power[channel].actual_power = actual_power;
+    _channel_power[channel].max_power = maximum_power;
 }
 
 void CDisplay::set_current_menu(CMenu *menu)
@@ -241,16 +236,16 @@ void CDisplay::draw_bar_graphs()
 {  
     hagl_color_t normal_colour   =  hagl_color(_hagl_backend, 0x00, 0x00, 0xFF);
 
-    draw_bar(4, "1", _channel_1_max_power, _channel_1_fp_power, _channel_1_actual_power, normal_colour);
-    draw_bar(3, "2", _channel_2_max_power, _channel_2_fp_power, _channel_2_actual_power, normal_colour);
-    draw_bar(2, "3", _channel_3_max_power, _channel_3_fp_power, _channel_3_actual_power, normal_colour);
-    draw_bar(1, "4", _channel_4_max_power, _channel_4_fp_power, _channel_4_actual_power, normal_colour);
+    draw_bar(4, "1", _channel_power[0].max_power, _channel_power[0].fp_power, _channel_power[0].actual_power, normal_colour);
+    draw_bar(3, "2", _channel_power[1].max_power, _channel_power[1].fp_power, _channel_power[1].actual_power, normal_colour);
+    draw_bar(2, "3", _channel_power[2].max_power, _channel_power[2].fp_power, _channel_power[2].actual_power, normal_colour);
+    draw_bar(1, "4", _channel_power[3].max_power, _channel_power[3].fp_power, _channel_power[3].actual_power, normal_colour);
 }
 
 void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour)
 {
     put_text(label, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 10, hagl_color(_hagl_backend, 0, 0xFF, 0));
-    hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width), (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height+1, hagl_color(_hagl_backend, 0xFF, 0, 0));
+    hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width), (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height- 1, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width), menu_bar_height, hagl_color(_hagl_backend, 0xFF, 0, 0));
 
     // 0,0 is in the top left. Display area is the bit we can draw in (free of the top and bottom menu bars and the status bar at the bottom)
     uint8_t bottom_of_display_area = (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10;
@@ -299,7 +294,6 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
 
     // TODO: make configurable 
     put_text(std::to_string(front_panel_power/10), (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 30, hagl_color(_hagl_backend, 0, 0xFF, 0), true);
-
 }
 
 void CDisplay::draw_status_bar()
@@ -314,6 +308,35 @@ void CDisplay::draw_status_bar()
 
     snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
     put_text(buffer, 0, (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+}
+
+void CDisplay::draw_power_level()
+{
+    const uint8_t scale_factor = 3;
+
+    fontx_glyph_t glyph;
+    fontx_glyph(&glyph, L'0', font6x9);
+
+    char buffer[6] = {0};
+    hagl_bitmap_t bitmap;
+    hagl_color_t tc = hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA);
+
+    for (uint8_t j=0; j<MAX_CHANNELS; j++) 
+    {
+        snprintf(buffer, sizeof(buffer), "%3d", _channel_power[j].fp_power/10);
+        bitmap.buffer = (uint8_t*)calloc(HAGL_CHAR_BUFFER_SIZE, sizeof(uint8_t));
+
+        for (uint8_t i=0; i<3; i++) 
+        {
+            uint8_t scaled_glyph_width  = (glyph.width  * scale_factor);
+            uint8_t scaled_glyph_height = (glyph.height * scale_factor);
+
+            hagl_get_glyph(_hagl_backend, buffer[i], tc, &bitmap, font6x9);
+            hagl_blit_xywh(_hagl_backend, i*scaled_glyph_width, j*scaled_glyph_height, scaled_glyph_width, scaled_glyph_height, &bitmap);
+        }
+
+        free(bitmap.buffer);
+    }
 }
 
 void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90)
