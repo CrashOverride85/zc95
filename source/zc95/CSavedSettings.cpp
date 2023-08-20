@@ -274,6 +274,28 @@ void CSavedSettings::clear_saved_ap_psk()
     memset(&_eeprom_contents[(uint8_t)setting::WifiApPsk], 0, ((uint8_t)setting::WifiApPskEnd - (uint8_t)setting::WifiApPsk) + 1);
 }
 
+CSavedSettings::power_level_show_percent CSavedSettings::get_power_level_display()
+{
+    return (CSavedSettings::power_level_show_percent)_eeprom_contents[(uint8_t)setting::PowerLevelDisp];
+}
+
+bool CSavedSettings::power_level_show_in_bar_graph()
+{
+    return ((_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::IN_BAR_GRAPH) ||
+            (_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
+}
+
+bool CSavedSettings::power_level_show_disappearing_text()
+{
+    return ((_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::DISAPPEARING_TEXT) ||
+            (_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
+}
+
+void CSavedSettings::set_power_level_display(power_level_show_percent setting)
+{
+    _eeprom_contents[(uint8_t)setting::PowerLevelDisp] = (uint8_t)setting;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)
@@ -347,6 +369,8 @@ void CSavedSettings::eeprom_initialise()
 
     _eeprom_contents[(uint8_t)setting::Audio]  = (uint8_t)setting_audio::AUTO;
     _eeprom_contents[(uint8_t)setting::Debug]  = (uint8_t)setting_debug::ACC_PORT;
+
+    _eeprom_contents[(uint8_t)setting::PowerLevelDisp]  = (uint8_t)power_level_show_percent::OFF;
 
     for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
         initialise_collar(collar_id);

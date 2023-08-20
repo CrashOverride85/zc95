@@ -12,6 +12,7 @@
 
 #include "CMenu.h"
 #include "../CUtil.h"
+#include "../config.h"
 
 struct display_area
 {
@@ -25,6 +26,7 @@ class CDisplay
 {
     public:
         CDisplay();
+        ~CDisplay();
         void init();
         void update();
         void set_option_a(std::string text);
@@ -32,12 +34,12 @@ class CDisplay
         void set_option_c(std::string text);
         void set_option_d(std::string text);
         
-        void set_power_level(uint8_t channel, int16_t front_pannel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
+        void set_power_level(uint8_t channel, int16_t front_panel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
 
         void set_current_menu(CMenu *menu);
 
         struct display_area get_display_area();
-        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
+        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false);
         uint8_t get_font_width();
         uint8_t get_font_height();
         void set_battery_percentage(uint8_t bat);
@@ -46,38 +48,29 @@ class CDisplay
         hagl_backend_t* get_hagl_backed();
 
     private:
+        struct power_levels_t
+        {
+            // All power levels are 0 - 1000
+            int16_t fp_power;      // Front panel power - what the front panel is set to
+            int16_t max_power;     // Curent maximum power for the channel (displayed as blue bar)
+            int16_t actual_power;  // Power level currently being output. After inital ramp up, usually the same as max_power (but routines can reduce it)
+        };
+
         void draw_soft_buttons();
         void draw_status_bar();
+        void draw_power_level();
         void draw_bar_graphs();
-        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_pannel_power, uint16_t current_power, hagl_color_t bar_colour);
-        
+        void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour);
+        uint8_t hagl_put_char_rotate90(void const *_surface, wchar_t code, int16_t x0, int16_t y0, hagl_color_t color, const uint8_t *font);
+        void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
+
         // Soft buttons
         std::string _option_a; // top left
         std::string _option_b; // bottom left
         std::string _option_c; // top right
         std::string _option_d; // bottom right
 
-        // Front Panel power levels, all 0-1000
-        int16_t _channel_1_fp_power; 
-        int16_t _channel_2_fp_power; 
-        int16_t _channel_3_fp_power; 
-        int16_t _channel_4_fp_power; 
-
-        // Current maximum power level, 0-1000
-        int16_t _channel_1_max_power; 
-        int16_t _channel_2_max_power; 
-        int16_t _channel_3_max_power; 
-        int16_t _channel_4_max_power; 
-
-        int16_t _channel_1_actual_power = 0; 
-        int16_t _channel_2_actual_power = 0;
-        int16_t _channel_3_actual_power = 0;
-        int16_t _channel_4_actual_power = 0;
-
-        int16_t _channel_1_remote_power = 0; 
-        int16_t _channel_2_remote_power = 0; 
-        int16_t _channel_3_remote_power = 0; 
-        int16_t _channel_4_remote_power = 0; 
+        power_levels_t _channel_power[MAX_CHANNELS]; // Note that _channel_power[0] is channel 1, _channel_power[1] is channel 2, etc.
 
         uint64_t _last_update;
 
@@ -92,6 +85,8 @@ class CDisplay
         CInteruptableSection _interuptable_section;
         bool _remote_mode_active;
         hagl_backend_t *_hagl_backend = NULL;
+        uint8_t *_rotate90_buffer = NULL;
+        uint64_t _show_power_level_until = 0;
 };
 
 #endif
