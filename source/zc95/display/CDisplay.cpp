@@ -173,9 +173,16 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
     _remote_mode_active = remote_mode_active;
 
     if (front_panel_power != _channel_power[channel].fp_power)
-    {
+    {      
+        // Only show power level on screen if the integer percent value will actually be different.
+        // Note: Display is 0-100, ADC is 8-bit (0-255) which is mapped to a "front_panel_power" of 
+        //       0-1000, so small changes won't always change the on screen value
+        if (_channel_power[channel].fp_power/10 != front_panel_power/10)
+        {
+            _show_power_level_until = time_us_64() + (1000 * 750); // show for 750ms
+        }
+
         _channel_power[channel].fp_power = front_panel_power;
-        _show_power_level_until = time_us_64() + (1000 * 750); // show for 750ms
     }
     
     _channel_power[channel].actual_power = actual_power;
