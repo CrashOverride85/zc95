@@ -100,8 +100,7 @@ uint8_t CDisplay::get_font_height()
         CTimingTest timing;
         hagl_clear(_hagl_backend);
 
-        // TODO: make configurable 
-        if (_show_power_level_until > time_us_64())
+        if (g_SavedSettings->power_level_show_disappearing_text() && _show_power_level_until > time_us_64())
         {
             draw_power_level();
         }
@@ -292,8 +291,8 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
     float current_power_top = (((1000-current_power)/(float)1000) * ((float)bottom_of_display_area-(float)top_of_display_area)) + (float)top_of_display_area;
     hagl_fill_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
 
-    // TODO: make configurable 
-    put_text(std::to_string(front_panel_power/10), (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 30, hagl_color(_hagl_backend, 0, 0xFF, 0), true);
+    if (g_SavedSettings->power_level_show_in_bar_graph())
+        put_text(std::to_string(front_panel_power/10), (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 30, hagl_color(_hagl_backend, 0, 0xFF, 0), true);
 }
 
 void CDisplay::draw_status_bar()
@@ -355,7 +354,6 @@ void CDisplay::set_update_required()
 {
     _update_required = true;
 }
-
 
 // Mostly copied from the hagl lib's hagl_put_char.
 // Show a character rotated 90 degrees

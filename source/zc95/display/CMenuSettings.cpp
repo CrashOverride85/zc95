@@ -25,6 +25,7 @@
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
+#include "CMenuSettingDisplayOptions.h"
 #include "CMenuRemoteAccess.h"
 #include "../core1/routines/CRoutine.h"
 
@@ -112,8 +113,8 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuCollarConfig(_display, _buttons, _saved_settings, _routine_output));
             break;
 
-        case setting_id::LED_BRIGHTNESS:
-            set_active_menu(new CMenuSettingLedBrightnes(_display, _buttons, _saved_settings));
+        case setting_id::DISPLAY_OPTIONS:
+            set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings));
             break;
 
         case setting_id::POWER_STEP:
@@ -165,7 +166,7 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));    
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
-    _settings.push_back(CMenuSettings::setting(setting_id::LED_BRIGHTNESS, "LED brightness"));
+    _settings.push_back(CMenuSettings::setting(setting_id::DISPLAY_OPTIONS,"Display options"));
     _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
     
     if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)

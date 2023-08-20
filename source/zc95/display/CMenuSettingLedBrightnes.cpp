@@ -19,11 +19,10 @@
 #include "CMenuSettingLedBrightnes.h"
 
 
-CMenuSettingLedBrightnes::CMenuSettingLedBrightnes(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings)
+CMenuSettingLedBrightnes::CMenuSettingLedBrightnes(CDisplay* display, CSavedSettings *saved_settings)
 {
     printf("CMenuSettingLedBrightnes() \n");
     _display = display;
-    _buttons = buttons;
     _saved_settings = saved_settings;
 
     _bar_graph = new CHorzBarGraph(_display);
