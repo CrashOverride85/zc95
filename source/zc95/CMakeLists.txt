@@ -138,8 +138,8 @@ add_executable(zc95
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
 target_compile_options(zc95 PUBLIC -Wall -Wnull-dereference)
  
-pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
-pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/collar433.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/collar433.pio OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 
 pico_set_program_name(zc95 "zc95")
