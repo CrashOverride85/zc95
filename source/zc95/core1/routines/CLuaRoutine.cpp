@@ -144,10 +144,18 @@ bool CLuaRoutine::is_script_valid()
 
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
+    get_and_validate_config(conf); 
+}
+
+bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
+{
+    bool is_valid = true;
     load_lua_script_if_required();
 
     if (!_lua_state)
-        return;
+    {
+        return false;
+    }
 
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
@@ -163,6 +171,17 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
 
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
+        int loop_freq = get_int_field("loop_freq_hz");
+
+        if (conf->loop_freq_hz < 0 || conf->loop_freq_hz > 400)
+        {
+            print(text_type_t::ERROR, "Configured loop_freq_hz of %d is not valid\n", conf->loop_freq_hz);
+            is_valid = false;
+        }
+        else
+        {
+            conf->loop_freq_hz = loop_freq; 
+        }
 
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
@@ -211,6 +230,8 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
     }
 
     conf->name = "U:" + conf->name;
+
+    return is_valid;
 }
 
 bool CLuaRoutine::runnable()
@@ -317,6 +338,12 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 void CLuaRoutine::start()
 {
     load_lua_script_if_required();
+
+    routine_conf conf;
+    if (!get_and_validate_config(&conf))
+        _script_valid = ScriptValid::INVALID;
+    _loop_freq_hz = conf.loop_freq_hz;
+
     if (!runnable())
         return;
 
@@ -341,6 +368,16 @@ void CLuaRoutine::loop(uint64_t time_us)
         return;
 
     double time_ms = (double)time_us/(double)1000;
+
+    if (_loop_freq_hz)
+    {
+        uint32_t loop_freq = floor(time_ms/((double)1000/(double)_loop_freq_hz));
+        if (loop_freq == _last_loop)
+            return;
+
+        _last_loop = loop_freq;
+    }
+
     lua_getglobal(_lua_state, "Loop");
     if (lua_isfunction(_lua_state, -1))
     {
