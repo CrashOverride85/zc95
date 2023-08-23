@@ -36,7 +36,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine rou
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
 
-    // Use the top half of the display for the list routine paramers that can be adjusted
+    // Use the top half of the display for the list routine parameters that can be adjusted
     area = _area;
     area.y1 = area.y1/2;
     _routine_adjust_display_list = new COptionsList(_display, area);
@@ -310,9 +310,18 @@ void CMenuRoutineAdjust::show()
 {
     _display->set_option_a(_active_routine_conf.button_text[(int)soft_button::BUTTON_A]);
     _display->set_option_b("Back");
-    _display->set_option_c("Up");
-    _display->set_option_d("Down");
 
+    if (_active_routine_conf.menu.size() > 1)
+    {
+        // Only show Up/Down soft button labels if there's more than one parameter available to change
+        _display->set_option_c("Up");
+        _display->set_option_d("Down");
+    }
+    else
+    {
+        _display->set_option_c("");
+        _display->set_option_d("");
+    }
     _exit_menu = false;
 
     _routine_adjust_display_list->clear_options();
