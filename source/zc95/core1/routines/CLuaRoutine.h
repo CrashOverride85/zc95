@@ -15,6 +15,7 @@ class CLuaRoutine: public CRoutine
         ~CLuaRoutine();
         static CRoutine* create(uint8_t param) { return new CLuaRoutine(param); };
         void get_config(struct routine_conf *conf);
+        bool get_and_validate_config(struct routine_conf *conf);
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
         void soft_button_pushed (soft_button button, bool pushed);
@@ -60,7 +61,9 @@ class CLuaRoutine: public CRoutine
         int lua_set_freq(lua_State *L);
         int lua_set_pulse_width(lua_State *L);
         int lua_acc_io_write(lua_State *L);
-              
+        uint16_t _loop_freq_hz = 0;
+        uint32_t _last_loop = 0;
+
         lua_State *_lua_state;
         ScriptValid _script_valid = ScriptValid::UNKNOWN;
         uint64_t _channel_switch_off_at_us[CHANNEL_COUNT] = {0};
