@@ -53,6 +53,38 @@ static bool dns_query_proc(const char *name, ip4_addr_t *addr)
     return true;
 }
 
+static std::string urldecode(const char *in)
+{
+    std::string decoded;
+    while ( *in != '\0')
+    {
+        if ( *in == '+' )
+            decoded += ' ';
+        else if ( *in == '%' && *(in+1) != '\0' && *(in+2) != '\0' )
+        {
+            char c = 0;
+            for ( int i : {1, 2} )
+            {
+            c <<= 4;
+            char tmp = std::tolower(*(in+i));
+            if ( tmp >= 'a' )
+                tmp = tmp - 'a' + 10;
+            else if ( tmp >= '0' )
+                tmp -= '0';
+
+            c |= tmp;
+            }
+            decoded.append(1, c);
+            in += 2;
+        }
+        else
+            decoded.append(1, *in);
+
+        ++in;
+    }
+    return decoded;
+}
+
 u16_t wlanscan_ssi_handler(int iIndex, char *buf, int buflen, u16_t current_tag_part, u16_t *next_tag_part)
 {
     static std::string json_buf;
@@ -105,11 +137,11 @@ static const char *wlanscan_set_wifi_handler(int iIndex, int iNumParams, char *p
     {
         if (strcmp(pcParam[i], "ssid") == 0)
         {
-            ssid = pcValue[i];
+            ssid = urldecode(pcValue[i]);
         }
         else if (strcmp(pcParam[i], "password") == 0)
         {
-            password = pcValue[i];
+            password = urldecode(pcValue[i]);
         }        
     }
 
