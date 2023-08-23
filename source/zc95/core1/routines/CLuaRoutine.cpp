@@ -135,7 +135,13 @@ void CLuaRoutine::load_lua_script_if_required()
 
 bool CLuaRoutine::is_script_valid()
 {
-    load_lua_script_if_required();
+    if (_script_valid == ScriptValid::INVALID)
+        return false;
+
+    routine_conf conf;
+    if (!get_and_validate_config(&conf))
+        return false;
+
     if (!_lua_state)
         return false;
 
@@ -173,9 +179,12 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
         int loop_freq = get_int_field("loop_freq_hz");
 
-        if (conf->loop_freq_hz < 0 || conf->loop_freq_hz > 400)
+        printf("loop_freq = %d\n", loop_freq);
+        if (loop_freq < 0 || loop_freq > 400)
         {
-            print(text_type_t::ERROR, "Configured loop_freq_hz of %d is not valid\n", conf->loop_freq_hz);
+            _last_lua_error = "Configured loop_freq_hz of " +  std::to_string(loop_freq) + " is not valid";
+            printf("%s\n", _last_lua_error.c_str());
+            conf->loop_freq_hz = 0; 
             is_valid = false;
         }
         else
@@ -231,6 +240,8 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
 
     conf->name = "U:" + conf->name;
 
+
+    printf("get_and_validate_config: returning [%d]\n", is_valid);
     return is_valid;
 }
 
