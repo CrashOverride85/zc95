@@ -68,9 +68,15 @@ May do some of this, all of this, or none of this!
    - Maybe a smaller, 3D printed case. Probably keeping the same width/weight though
 
 ## Known issues
-   - Can hang on entering WiFi setup (AP) mode due to bad choice of MOSFET Q1, see ([#25][gh25] & [#46][gh46]). Workarounds:
+   - Can hang on entering WiFi setup (AP) mode due to bad choice of MOSFET Q1 (see [#25][gh25] & [#46][gh46]). 
+     
+     Fix:
+     * Fit a Schottky diode (e.g. 1N5819) in place of Q1 - see build notes
+
+     Workarounds:
      * Power the Pico over USB whilst entering AP mode (power box on first, then connect USB)
      * Directly connect VSYS on the Pico to 5v. Do not connect the box to USB whilst switched on if doing this.
+   
    - Battery gauge is pretty hopeless
    - Depending on the pattern, the LEDs aren't very useful - either Red or Green, with no dimming depending on power
 
