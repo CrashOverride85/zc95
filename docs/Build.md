@@ -47,6 +47,12 @@ Photo of board as it arrived from JLCPCB:
 
 ![main board]
 
+* For Q1 (BS250), fit a 1N5819 diode instead, as shown:
+
+  ![q1]
+
+  (See [#25][gh25] & [#46][gh46] if interested in why)
+
 * Be sure not to mix up U3 (LM2941T, top left) and U6 (LM2576T-5, top middle), these have the same footprint and quite similar names
 * Fit the IC sockets (if ordered) instead of directly soldering the ICs to the board
 * J8 should have jumpers between pins 1+2, 3+4, 7+8, 9+10, like so:
@@ -276,6 +282,7 @@ Possible causes (not exhaustive!) for calibration to fail:
 [zc95 assembled]: images/assembled.jpg "Fully assembled ZC95, minus cover"
 [zc95 powered up]: images/powered_up.jpg "Fully assembled ZC95 powered up"
 [hw check fail]: images/hw_check_fail.jpg "Power up error"
-
-
+[q1]: images/build_Q1.jpg "Use diode for Q1"
+[gh25]: https://github.com/CrashOverride85/zc95/discussions/25
+[gh46]: https://github.com/CrashOverride85/zc95/issues/46
 
