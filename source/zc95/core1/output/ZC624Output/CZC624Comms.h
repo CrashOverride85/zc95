@@ -26,9 +26,10 @@ class CZC624Comms
             PowerDown = 3,
             
             SetFreq = 4,
-            SetPulseWitdh = 5,
+            SetPulseWidth = 5,
             SwitchOn = 6,
-            SwitchOff = 7
+            SwitchOff = 7,
+            NoOp = 8
         };
 
         enum class i2c_reg_t
@@ -70,12 +71,16 @@ class CZC624Comms
         void send_message(message msg);
         bool write_i2c_register(i2c_reg_t reg, uint8_t value);
         bool get_i2c_register(i2c_reg_t reg, uint8_t *value);
+        bool loop(uint8_t channel_id);
 
     private:
         bool get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t size);
+        void set_led_colour(uint8_t channel, uint32_t colour);
 
         spi_inst_t *_spi;
         i2c_inst_t *_i2c;
+        uint8_t _led_state = 0;
+        uint64_t _last_msg_us = 0;
 };
 
 

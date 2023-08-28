@@ -73,18 +73,14 @@ class COutputChannel
             return time_us_64();
         }
 
-        uint32_t _inital_led_colour = LedColour::Black;
+        uint32_t _standby_led_colour = LedColour::Black;
 
         void set_led_colour(uint32_t colour)
         {
             if (_channel_id >= 4)
                 return;
 
-            if (colour == _led_colour)
-                return;
-            else
-                _led_colour = colour;
-
+            _led_colour = colour;
 
             uint8_t blue  =  colour        & 0xFF;
             uint8_t green = (colour >>  8) & 0xFF;
@@ -98,7 +94,7 @@ class COutputChannel
 
             if (multicore_fifo_wready())
             {
-                // printf("core1: LED %d push %d\n", msg.msg8[0], colour );
+                // printf("core1: LED %d push %d\t%d\t%d\n", _channel_id, red, green, blue);
                 multicore_fifo_push_blocking(msg.msg32);
             }
             else

@@ -42,8 +42,8 @@ CCollarChannel::CCollarChannel(
 
     saved_settings->get_collar_config(channel_id, _collar_conf);
 
-    _inital_led_colour = LedColour::Yellow;
-    set_led_colour(_inital_led_colour);
+    _standby_led_colour = LedColour::Yellow;
+    set_led_colour(_standby_led_colour);
 }
 
 CCollarChannel::~CCollarChannel()
