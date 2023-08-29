@@ -149,14 +149,6 @@ void seed_random_from_rosc()
   srand(random);
 } 
 
-bool static s_led_update_timer_callback(repeating_timer_t *rt)
-{
-    static uint8_t counter = 0;
-    CLedControl *led = (CLedControl*)rt->user_data;
-    led->loop(!(counter++));
-    return true;
-}
-
 int main()
 {
     // Serial going to 3.5mm aux socket
@@ -285,9 +277,6 @@ int main()
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 
-    repeating_timer_t led_update_timer;
-    add_repeating_timer_ms(1, s_led_update_timer_callback, &led, &led_update_timer);
-
     while (1) 
     {
         uint64_t loop_start = time_us_64();
@@ -314,6 +303,7 @@ int main()
             start = time_us_64();
             controls.process(true);   // ~215us
             ext_input->process(true); // ~215us
+            led.loop(true); // ~55u
 
             uint64_t timenow = time_us_64();
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();
@@ -329,6 +319,7 @@ int main()
         }
 
         routine_output->loop();
+        led.loop();
         analogueCapture.process();
         audio.process();
 
