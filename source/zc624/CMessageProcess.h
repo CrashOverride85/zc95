@@ -24,11 +24,12 @@ class CMessageProcess
             PowerDown = 3,
 
             SetFreq = 4,
-            SetPulseWitdh = 5,
+            SetPulseWidth = 5,
             SwitchOn = 6,
-            SwitchOff = 7
+            SwitchOff = 7,
+            NoOp = 8
         };
-
+    
         CMessageProcess(COutput *output);
         ~CMessageProcess();
         void init();

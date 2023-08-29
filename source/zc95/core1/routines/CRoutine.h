@@ -281,7 +281,11 @@ class CRoutine
                     _simple_channel[channel]->channel_off();
 
                 if (_full_channel[channel] != NULL)
+                {
                     _full_channel[channel]->off();
+                    _full_channel[channel]->set_freq(DEFAULT_FREQ_HZ);
+                    _full_channel[channel]->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
+                }
             }
         }
 

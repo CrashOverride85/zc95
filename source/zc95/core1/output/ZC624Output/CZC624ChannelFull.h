@@ -29,7 +29,8 @@ class CZC624ChannelFull : public CFullOutputChannel
     private:
         CZC624Comms *_comms;
         uint8_t _channel_id;
-        uint64_t _led_off_time;
+        bool _last_led_state = false;
+        uint64_t _last_led_update_us = 0;
 };
 
 #endif
