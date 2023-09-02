@@ -34,8 +34,8 @@
  *  
  *  - This processing is happening on core0, which deals with the UI and, well, most things. So the delay between these processing 
  *    functions is going to vary a bit. However, we know fairly accurately when then the capture finished, and how long it was. 
- *    So we can use that information to effectively schedule pulses to happen 20ms after the audio event that caused it. The downside 
- *    is that this introduces 20ms of latency.
+ *    So we can use that information to effectively schedule pulses to happen 25ms after the audio event that caused it. The downside 
+ *    is that this introduces 25ms of latency.
  *    These scheduled pulses get picked up by core1 which has almost nothing else to do, so jitter should be kept down.
  */
 
@@ -99,11 +99,14 @@ void CAudio3Process::process_sample(uint64_t time_us, int16_t value)
     // Look for crossing zero
     if (value > 0 && _last_sample_value <= 0)
     {
-        // At most one pulse every 3ms
-        if (time_us - _last_pulse_us > 3000)
+        uint64_t zero_cross_time_us = _last_sample_time_us + get_zero_cross_time(0, _last_sample_value, time_us - _last_sample_time_us, value);
+
+        // At most one pulse every 2.6ms
+        uint64_t pulse_time = zero_cross_time_us + (1000 * 25);  // 25ms in future
+        if (pulse_time - _last_pulse_us > 2666)
         {
             // do pulse
-            pulse_msg.abs_time_us = time_us + (1000 * 20); // 20ms in future
+            pulse_msg.abs_time_us = pulse_time;
             pulse_msg.neg_pulse_us = DEFAULT_PULSE_WIDTH;
             pulse_msg.pos_pulse_us = DEFAULT_PULSE_WIDTH;
 
@@ -112,9 +115,32 @@ void CAudio3Process::process_sample(uint64_t time_us, int16_t value)
                 printf("gPulseQueue FIFO was full for chan %d\n", _output_channel);
             }
 
-            _last_pulse_us = time_us;
+            _last_pulse_us = pulse_time;
         }
     }
 
     _last_sample_value = value;
+    _last_sample_time_us = time_us;
+}
+
+// Use linear interpolation to have a better guess at the zero cross time
+uint64_t CAudio3Process::get_zero_cross_time(uint64_t time0, int16_t value0, uint64_t time1, int16_t value1)
+{
+    if (value0 == 0)
+        return time0;
+
+    if (value1 == 0)
+        return time1;
+
+    if ((value0 > 0 && value1 > 0) || (value0 < 0 && value1 < 0))
+    {
+        // no zero cross!
+        printf("get_zero_cross_time: ERROR - no zero cross. (%llu, %d) => (%llu, %d)\n", time0, value0, time1, value1);
+        return value0;
+    }
+
+    double slope = ((double)value1 - (double)value0) / ((double)time1 - (double)time0);
+    uint64_t zero_crossing_time = time0 - (value0 / slope);
+
+    return zero_crossing_time;
 }
