@@ -26,6 +26,7 @@
 
 #include "CLuaLoad.h"
 #include "globals.h"
+#include "LuaScripts.h"
 #include "../core1/routines/CLuaRoutine.h"
 
 CLuaLoad::CLuaLoad(
@@ -66,6 +67,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     std::string msgType = (*doc)["Type"];
     int msgId = (*doc)["MsgId"];
     bool retval = false;
+    std::string errorMessage = "";
 
     if (msgType == "LuaStart")
     {
@@ -78,20 +80,36 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         }
 
         _index = (*doc)["Index"];
-        int flash_size = _lua_storage->get_lua_flash_size(_index);
-        printf("CLuaLoad: Need %d bytes for lua script index %d\n", flash_size, _index);
 
-        if (flash_size != 0)
+        if (_index >= lua_script_count())
         {
-            _lua_buffer_size = flash_size;
-            _lua_buffer = (uint8_t*)calloc(_lua_buffer_size, sizeof(uint8_t));
-            _lua_buffer_postion = 0;
-        }
-
-        if (_lua_buffer == NULL)
-        {
-            printf("CLuaLoad: NULL lua buffer. Invalid index or out of memory?\n");
+            printf("CLuaLoad: ERROR: Lua script index %d is not valid\n", _index);
+            errorMessage = "Invalid script index";
             retval = true;
+        }
+        else if (!lua_script_is_writable(_index))
+        {
+            printf("CLuaLoad: ERROR: Lua script index %d is not writable\n", _index);
+            errorMessage = "Not writable";
+            retval = true;
+        }
+        else
+        {
+            int flash_size = _lua_storage->get_lua_flash_size(_index);
+            printf("CLuaLoad: Need %d bytes for lua script index %d\n", flash_size, _index);
+
+            if (flash_size != 0)
+            {
+                _lua_buffer_size = flash_size;
+                _lua_buffer = (uint8_t*)calloc(_lua_buffer_size, sizeof(uint8_t));
+                _lua_buffer_postion = 0;
+            }
+
+            if (_lua_buffer == NULL)
+            {
+                printf("CLuaLoad: NULL lua buffer. Invalid index or out of memory?\n");
+                retval = true;
+            }
         }
     }
     else if (msgType == "LuaLine")
@@ -103,6 +121,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             if (_lua_buffer_postion + text.length() + 4 >= _lua_buffer_size)
             {
                 printf("CLuaLoad: Buffer full! Lua script too large\n");
+                errorMessage = "Script too large";
                 retval = true;
             }
             else
@@ -152,7 +171,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     }
 
     if (retval)
-        send_ack("ERROR", msgId);
+        send_ack("ERROR", msgId, errorMessage);
     else
         send_ack("OK", msgId);
 
@@ -164,8 +183,11 @@ bool CLuaLoad::routines_updated()
     return _routines_updated;
 }
 
-void CLuaLoad::send_ack(std::string result, int msg_count)
+void CLuaLoad::send_ack(std::string result, int msg_count, std::string error)
 {
-    _send_ack(result, msg_count, "");
+    if (error == "")
+        _send_ack(result, msg_count, "");
+    else
+        _send_ack(result, msg_count, error);
 }
 

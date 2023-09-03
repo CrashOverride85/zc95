@@ -133,6 +133,7 @@ add_executable(zc95
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
   LuaScripts.S
+  LuaScripts.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)

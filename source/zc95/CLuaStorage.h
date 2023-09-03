@@ -30,7 +30,7 @@ class CLuaStorage
         bool delete_script_at_index(uint8_t index);
 
         static const char* get_script_at_index(uint8_t index);
-        static std::list<CLuaStorage::lua_script_t> get_lua_scripts();
+        static std::list<CLuaStorage::lua_script_t> get_lua_scripts(bool writeable_only = true);
 
     private:
         static uint32_t get_flash_offset(uint8_t script_index);
