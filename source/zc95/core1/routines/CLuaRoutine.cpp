@@ -20,6 +20,7 @@
 
 #include "CLuaRoutine.h"
 #include "../../config.h"
+#include "../../LuaScripts/LuaScripts.h"
 #include <string>
 #include <string.h>
 
@@ -179,7 +180,6 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
         int loop_freq = get_int_field("loop_freq_hz");
 
-        printf("loop_freq = %d\n", loop_freq);
         if (loop_freq < 0 || loop_freq > 400)
         {
             _last_lua_error = "Configured loop_freq_hz of " +  std::to_string(loop_freq) + " is not valid";
@@ -238,8 +238,9 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
     }
 
-    conf->name = "U:" + conf->name;
-
+    // For user uploaded scripts, prefix name with "U:" on pattern list
+    if  ((_script == NULL) && (lua_scripts[_script_index].writeable))
+        conf->name = "U:" + conf->name;
 
     printf("get_and_validate_config: returning [%d]\n", is_valid);
     return is_valid;
