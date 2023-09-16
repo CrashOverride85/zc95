@@ -1,13 +1,35 @@
 # Patterns
 
-**Note**: Any pattern in the list/menu prefixed with `(!)` should not be used above the waist, as channel isolation - where only one channel pulese at the exact same moment - is disabled.
+**Note**: Any pattern in the list/menu prefixed with `(!)` should not be used above the waist, as channel isolation - where only one channel pulses at the exact same moment - is disabled.
 
 ## Waves
-Gradually increasing and decreasing intensity on all channels at different rates, with channel 1 being the slowest and 4 being the fastest. Varying intensity is achieved by altering the gap between pulses rather than changing the power level.
+Gradually increasing and decreasing intensity on all channels at different rates. Varying intensity is achieved by altering the gap between pulses rather than changing the power level.
 Can NOT be used with shock collars.
 
 ### Menu options
-* Speed - controls how fast the intensity increases/decreases. 10-1000, higher is faster.
+* Frequency - controls how fast the intensity increases/decreases. 1-64, lower is faster.
+
+### Extra hardware required?:
+No.
+
+------------------------------------------------------------
+
+## Orgasm
+Pleasurable increasing and decreasing sensation, achieved by varying both pulse width and frequency. A full cycles takes a few minutes.
+
+### Menu options
+* Frequency - controls how fast the intensity increases/decreases. 15-255, lower is faster.
+
+### Extra hardware required?:
+No.
+
+------------------------------------------------------------
+
+## Climb
+Gradually increasing intensity.
+
+### Menu options
+* Frequency - controls how fast the intensity increases/decreases. 15-255, lower is faster.
 
 ### Extra hardware required?:
 No.
@@ -58,22 +80,6 @@ No.
 
 ------------------------------------------------------------
 
-## Climb
-Outputs single (150us) pules, with the gap between each pulse continuously decreasing until the output is near constant. 
-Can NOT be used with shock collars. Note that this achieves increasing intensity by varying the gap between pulses rather than altering the power level.
-
-### Menu options
-* Duration - Approximately how long, in seconds, it takes to reach full power
-* Reset after climb
-  - Yes - once full power is reached, start over
-  - No - once full power is reached, stay there
-* Soft button "Reset" - Reset to beginning of pattern
-
-### Extra hardware required?:
-No.
-
-------------------------------------------------------------
-
 ## Triggered Climb
 Power increases on channels 1+2 until a remote button is pressed, then a pulse is delivered on channels 3+4, and 1+2 is reset. Every time the button is pressed the shock delivered on channels 3+4 is increased.
 Suggest bipolar nipple clamps for channels 3+4, 1-2 anywhere else, then handing the button to the person connected.
@@ -111,7 +117,7 @@ Only available if audio enabled.
 If the volume goes above the level set, triggers the output on all 4 channels. Intended to be used with a microphone.
 
 ### Menu options
-* Audio trigger - Shows mini spectrum analyser, with a horizontal red line that can be moved up/down using the adjust dial. Whenever the volume is loud enough to cross the line, the output is triggered.
+* Audio trigger - Shows mini spectrum analyzer, with a horizontal red line that can be moved up/down using the adjust dial. Whenever the volume is loud enough to cross the line, the output is triggered.
 
 ![Audio Threshold]
 
@@ -201,7 +207,7 @@ No.
 ## Predicament
 Designed for predicament bondage scenarios. I'm finding this difficult to explain, so hopefully some examples will help.
 Requires at least one input, ideally two, connected to the Trigger1 & Trigger2 ports. Based on the settings, delivers a shock
-based on which inputs have been trigged.
+based on which inputs have been triggered.
 For example, if two foot pedals are used, it can deliver a shock unless both are kept pressed (this is the default settings).
 
 ### Menu options
@@ -217,7 +223,7 @@ For example, if two foot pedals are used, it can deliver a shock unless both are
 | No           | No           | And   | Yes        | Default. Shock if either button not pressed
 | No           | No           | And   | No         | Shock if both both buttons pressed
 | No           | No           | Or    | No         | Shock if either button pressed
-| Yes          | Yes          | Or    | No         | Shock if either button not pressed (different way achieving the default behaviour)
+| Yes          | Yes          | Or    | No         | Shock if either button not pressed (different way achieving the default behavior)
 | No           | No           | Or    | Yes        | If only one button connected to trigger1, shock when it is not pressed
 
 
