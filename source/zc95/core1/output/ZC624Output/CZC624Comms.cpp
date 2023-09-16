@@ -29,7 +29,7 @@ CZC624Comms::CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c)
         gpio_set_function(PIN_OUTPUT_BOARD_SPI_CSN, GPIO_FUNC_SPI);
 
         spi_init(_spi, SPI_BAUD_RATE);
-        spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+        spi_set_format(_spi, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
     }
 }
 

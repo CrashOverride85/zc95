@@ -19,7 +19,7 @@ void CMessageProcess::init()
     // SPI initialisation
     spi_init(SPI_PORT, SPI_BAUD_RATE);
 
-	spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 
     spi_set_slave(SPI_PORT, true);
 
