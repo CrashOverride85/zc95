@@ -17,7 +17,7 @@
  */
 
 #include "CLuaStorage.h"
-#include "LuaScripts.h"
+#include "LuaScripts/LuaScripts.h"
 #include "hardware/flash.h"
 #include <string.h>
 #include "core1/routines/CLuaRoutine.h"

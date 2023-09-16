@@ -19,7 +19,7 @@
 #include "CAudioIntensity.h"
 #include "CAudioVirtual3.h"
 #include "CLuaRoutine.h"
-#include "../../LuaScripts.h"
+#include "../../LuaScripts/LuaScripts.h"
 
 class CRoutines
 {
@@ -43,7 +43,7 @@ class CRoutines
             routines->push_back({&(CToggle::create)        , 0});
             routines->push_back({&(CRoundRobin::create)    , 0});
             routines->push_back({&(CTens::create)          , 0});
-            routines->push_back({&(CClimb::create)         , 0});
+        //  routines->push_back({&(CClimb::create)         , 0}); now a lua script
             routines->push_back({&(CTriggeredClimb::create), 0});
             routines->push_back({&(CFire::create)          , 0});
             routines->push_back({&(CAudioThreshold::create), 0});

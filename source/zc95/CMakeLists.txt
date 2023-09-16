@@ -132,7 +132,7 @@ add_executable(zc95
   RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
-  LuaScripts.S
+  LuaScripts/LuaScripts.S
   LuaScripts.cpp
   )
 

@@ -17,6 +17,12 @@ extern uint8_t lua_script_waves_start;
 extern uint8_t lua_script_waves_end;
 extern uint8_t lua_script_orgasm_start;
 extern uint8_t lua_script_orgasm_end;
+extern uint8_t lua_script_climb_start;
+extern uint8_t lua_script_climb_end;
+
+// Lua libraries
+extern uint8_t lua_lib_script_ettot_start;
+extern uint8_t lua_lib_script_ettot_end;
 
 struct lua_script_in_flash_t
 {
@@ -24,6 +30,14 @@ struct lua_script_in_flash_t
   uint32_t end;
   bool writeable; // Safe to rewrite in flash (multiple of 4096 bytes etc)
 };
+
+struct lua_lib_in_flash_t
+{
+  uint32_t start;
+  uint32_t end;
+  const char *name;
+};
+
 
 const lua_script_in_flash_t lua_scripts[] =
 {
@@ -35,10 +49,20 @@ const lua_script_in_flash_t lua_scripts[] =
 
     {((uint32_t)&lua_script_waves_start)    , ((uint32_t)&lua_script_waves_end)     , false},
     {((uint32_t)&lua_script_orgasm_start)   , ((uint32_t)&lua_script_orgasm_end)    , false},
+    {((uint32_t)&lua_script_climb_start)    , ((uint32_t)&lua_script_climb_end)     , false},
+    { 0, 0, 0 }
+};
+
+const lua_lib_in_flash_t lua_libs[] =
+{
+    {((uint32_t)&lua_lib_script_ettot_start), ((uint32_t)&lua_lib_script_ettot_end), "./ettot.lua"},
     { 0, 0, 0 }
 };
 
 uint8_t lua_script_count();
 bool lua_script_is_writable(uint8_t index);
+int get_lib_index_by_name(const char *name);
+const char *get_lib_by_index(uint8_t index);
+int get_lib_length_by_index(uint8_t index);
 
 #endif

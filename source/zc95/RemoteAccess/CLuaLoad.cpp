@@ -26,7 +26,7 @@
 
 #include "CLuaLoad.h"
 #include "globals.h"
-#include "LuaScripts.h"
+#include "LuaScripts/LuaScripts.h"
 #include "../core1/routines/CLuaRoutine.h"
 
 CLuaLoad::CLuaLoad(

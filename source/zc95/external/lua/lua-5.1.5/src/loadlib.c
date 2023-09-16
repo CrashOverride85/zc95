@@ -22,6 +22,8 @@
 #include "lualib.h"
 #include "lrotable.h"
 
+#include "../../../../LuaScripts/LuaScripts.h"
+
 /* prefix for open functions in C libraries */
 #define LUA_POF		"luaopen_"
 
@@ -330,10 +332,15 @@ static int ll_loadlib (lua_State *L) {
 
 
 static int readable (const char *filename) {
-  FILE *f = fopen(filename, "r");  /* try to open file */
-  if (f == NULL) return 0;  /* open failed */
-  fclose(f);
-  return 1;
+  // FILE *f = fopen(filename, "r");  /* try to open file */
+  // if (f == NULL) return 0;  /* open failed */
+  // fclose(f);
+  //return 1;
+
+  if (get_lib_index_by_name(filename) >= 0)
+    return 1; // "file" found
+  else
+    return 0; // not found
 }
 
 
@@ -382,8 +389,20 @@ static int loader_Lua (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   filename = findfile(L, name, "path");
   if (filename == NULL) return 1;  /* library not found in this path */
-  if (luaL_loadfile(L, filename) != 0)
+
+  int lib_index = get_lib_index_by_name(filename);
+  if (lib_index < 0)
+  {
     loaderror(L, filename);
+    return 0;
+  }
+
+  const char *lib_script = get_lib_by_index(lib_index);
+  int lib_script_length = get_lib_length_by_index(lib_index);
+
+  if (luaL_loadbuffer(L, lib_script, lib_script_length, filename) != 0)
+    loaderror(L, filename); 
+  
   return 1;  /* library loaded successfully */
 }
 

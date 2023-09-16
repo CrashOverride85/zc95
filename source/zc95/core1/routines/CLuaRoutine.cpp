@@ -20,7 +20,7 @@
 
 #include "CLuaRoutine.h"
 #include "../../config.h"
-#include "../../LuaScripts.h"
+#include "../../LuaScripts/LuaScripts.h"
 #include <string>
 #include <string.h>
 
