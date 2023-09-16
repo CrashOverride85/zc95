@@ -18,10 +18,8 @@ void CMessageProcess::init()
 {
     // SPI initialisation
     spi_init(SPI_PORT, SPI_BAUD_RATE);
-    
 
-   // spi_set_format(SPI_PORT, 8, SPI_CPOL_1, SPI_CPHA_1,SPI_MSB_FIRST);
-	spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+    spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 
     spi_set_slave(SPI_PORT, true);
 
@@ -35,7 +33,7 @@ void CMessageProcess::loop()
 {
     message msg;
 
-    spi_read_blocking(SPI_PORT, (uint8_t)0x00, (uint8_t*)&msg, 4);
+    spi_read_blocking(SPI_PORT, _output->get_channel_led_state(), (uint8_t*)&msg, 4);
 //printf("command = %d, arg 0=%d, 1=%d, 2=%d\n", msg.command, msg.arg0, msg.arg1, msg.arg2);
     switch ((command)msg.command)
     {
@@ -55,7 +53,7 @@ void CMessageProcess::loop()
             set_freq(msg);
             break;
 
-        case command::SetPulseWitdh:
+        case command::SetPulseWidth:
             set_pulse_width(msg);
             break;
 
@@ -65,6 +63,10 @@ void CMessageProcess::loop()
 
         case command::SwitchOff:
             off(msg);
+            break;
+
+        case command::NoOp:
+            // Sent so we can send LED states 
             break;
 
         default:
@@ -114,7 +116,7 @@ void CMessageProcess::set_freq(message msg)
         _output->set_freq(msg.arg0, freq);
 }
 
-// SetPulseWitdh - set pulse width generated if SwitchOn used
+// SetPulseWidth - set pulse width generated if SwitchOn used
 // Args:
 // 0 = channel (0-3)
 // 1 = pos pulse width (us)

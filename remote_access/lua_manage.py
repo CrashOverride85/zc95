@@ -14,7 +14,7 @@ connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
 
 parser.add_argument('--list', action='store_true', help='List scripts stored on ZC95')
-parser.add_argument('--delete', action='store', type=int, choices=range(1, 6), help='Delete script at slot on ZC95')
+parser.add_argument('--delete', action='store', type=int, choices=range(0, 5), help='Delete script at slot on ZC95')
 
 args = parser.parse_args()
 
@@ -39,7 +39,7 @@ if args.list:
   for script in scripts:
     print(str(script["Index"]) + " - " + script["Name"])
 
-elif args.delete:
+elif args.delete != None:
   if zc_messages.SendDeleteLuaScript(args.delete) == None:
     print("Failed!")
   else:

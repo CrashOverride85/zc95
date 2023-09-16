@@ -21,21 +21,13 @@
 #include "hardware/flash.h"
 #include "pico/flash.h"
 #include <string.h>
-
+#include "LuaScripts/LuaScripts.h"
 #include "core1/routines/CLuaRoutine.h"
 
 /* CLuaStorage
  * Class to manage the saving of lua scripts to flash, and loading from flash.
  */
 
-// These are defined in LuaScripts.S and are empty contiguous blocks of 24k flash that can be used 
-// to put lua scripts in
-extern uint8_t lua_script1_start;  
-extern uint8_t lua_script2_start;
-extern uint8_t lua_script3_start;
-extern uint8_t lua_script4_start;
-extern uint8_t lua_script5_start;
-extern uint8_t lua_script5_end;
 
 CLuaStorage::CLuaStorage()
 {
@@ -50,6 +42,18 @@ CLuaStorage::~CLuaStorage()
 // Store a script. If lua_script == NULL and buffer_size=0, any existing script at specified index is erased without writing anything new
 bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buffer_size)
 {
+    if (index > lua_script_count())
+    {
+        printf("CLuaStorage::store_script: ERROR - invalid index - %d\n", index);
+        return false;
+    }
+
+    if (!lua_scripts[index].writeable)
+    {
+        printf("CLuaStorage::store_script: ERROR - script at index %d is not writeable\n", index);
+        return false;
+    }
+
     uint32_t flash_offset = get_flash_offset(index);
     size_t flash_size = get_lua_flash_size(index);
     printf("CLuaStorage::store_script: index=%d, flash_offset=%lu, flash_size=%d\n", index, flash_offset, flash_size);
@@ -85,7 +89,7 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
 
     return (flash_safe_execute(CLuaStorage::s_do_flash_erase_and_write, &flash_params, UINT32_MAX) == PICO_OK);
 }
-
+    
 void CLuaStorage::s_do_flash_erase_and_write(void *param)
 {
     const flash_write_params_t *params = (const flash_write_params_t *)param;
@@ -103,72 +107,24 @@ bool CLuaStorage::delete_script_at_index(uint8_t index)
 
 uint32_t CLuaStorage::get_flash_offset(uint8_t script_index)
 {
-    uint32_t flash_offset = 0;
-
-    switch (script_index)
+    if (script_index > lua_script_count())
     {
-        case 1:
-            flash_offset = ((uint32_t)&lua_script1_start) - XIP_BASE;
-            break;
-
-        case 2:
-            flash_offset = ((uint32_t)&lua_script2_start) - XIP_BASE;
-            break;
-
-        case 3:
-            flash_offset = ((uint32_t)&lua_script3_start) - XIP_BASE;
-            break;
-
-        case 4:
-            flash_offset = ((uint32_t)&lua_script4_start) - XIP_BASE;
-            break;
-
-        case 5:
-            flash_offset = ((uint32_t)&lua_script5_start) - XIP_BASE;
-            break;
-
-        default:
-            printf("CLuaStorage::get_flash_offset(): Passed invalid lua script index: %d\n", script_index);
-            flash_offset = 0;
-            break;
+        printf("CLuaStorage::get_flash_offset(): Passed invalid lua script index: %d\n", script_index);
+        return 0;
     }
 
-    return flash_offset;
+    return lua_scripts[script_index].start - XIP_BASE;
 }
 
 size_t CLuaStorage::get_lua_flash_size(uint8_t index)
 {
-    size_t flash_size = 0;
-
-    switch (index)
+    if (index > lua_script_count())
     {
-        case 1:
-            flash_size = (uint32_t)&lua_script2_start - (uint32_t)&lua_script1_start;
-            break;
-
-        case 2:
-            flash_size = (uint32_t)&lua_script3_start - (uint32_t)&lua_script2_start;
-            break;
-
-        case 3:
-            flash_size = (uint32_t)&lua_script4_start - (uint32_t)&lua_script3_start;
-            break;
-
-        case 4:
-            flash_size = (uint32_t)&lua_script5_start - (uint32_t)&lua_script4_start;
-            break;
-
-        case 5:
-            flash_size = (uint32_t)&lua_script5_end   - (uint32_t)&lua_script5_start;
-            break;
-
-        default:
-            printf("CLuaStorage::get_lua_flash_size: Passed invalid lua script index: %d\n", index);
-            flash_size = 0;
-            break;
+        printf("CLuaStorage::get_lua_flash_size: Passed invalid lua script index: %d\n", index);
+        return 0;
     }
 
-    return flash_size;
+    return lua_scripts[index].end - lua_scripts[index].start;
 }
 
 const char* CLuaStorage::get_script_at_index(uint8_t index)
@@ -191,12 +147,18 @@ const char* CLuaStorage::get_script_at_index(uint8_t index)
     return script;
 }
 
-std::list<CLuaStorage::lua_script_t> CLuaStorage::get_lua_scripts()
+std::list<CLuaStorage::lua_script_t> CLuaStorage::get_lua_scripts(bool writeable_only)
 {
     std::list<CLuaStorage::lua_script_t> lua_scripts;
 
-    for (uint8_t index=1; index <= 5; index++)
+    for (uint8_t index=0; index < lua_script_count(); index++)
     {
+        if (writeable_only && !lua_script_is_writable(index))
+        {
+            printf("get_lua_scripts: skipping %d as not writeable\n", index);
+            continue;
+        }
+
         CLuaStorage::lua_script_t lua_script;
         lua_script.index = index;
         lua_script.empty = true;

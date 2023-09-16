@@ -314,7 +314,7 @@ int main()
             start = time_us_64();
             controls.process(true);   // ~215us
             ext_input->process(true); // ~215us
-            led.loop(true); // ~55us    
+            led.loop(true); // ~55u
 
             uint64_t timenow = time_us_64();
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();

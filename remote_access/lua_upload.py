@@ -25,7 +25,7 @@ connection_group = parser.add_mutually_exclusive_group(required=True)
 connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
 
-parser.add_argument('--index', action='store', required=True, type=int, choices=range(1, 6), help='Slot/index on ZC95 to upload script to')
+parser.add_argument('--index', action='store', required=True, type=int, choices=range(0, 5), help='Slot/index on ZC95 to upload script to')
 parser.add_argument('--script', action='store', required=True, help='Lua script to upload')
 args = parser.parse_args()
 

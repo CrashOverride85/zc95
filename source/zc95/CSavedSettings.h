@@ -45,8 +45,9 @@ class CSavedSettings
         WiFiConfigured = 179, // Set to EEPROM_MAGIC_VAL if wifi configured. Anything else means not configured.
         WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
         WifiApPskEnd   = 196, //
-        BluetoothOn    = 197  // Bluetooth enabled yes/no
-     // <next>         = 198 
+        PowerLevelDisp = 197, // Power level numeric display 
+        BluetoothOn    = 198  // Bluetooth enabled yes/no
+     // <next>         = 199
     };
 
     public:
@@ -82,6 +83,14 @@ class CSavedSettings
         {
             AUDIO  = 0, // Aux port is routed to ADC if audio board present (same as SERIAL if not present)
             SERIAL = 1  // Aux port is routed to AUX_PORT_UART (uart0)
+        };
+
+        enum class power_level_show_percent
+        {
+            OFF                = 0,   // Do not show numeric power level anywhere
+            DISAPPEARING_TEXT  = 1,   // Show power level on change for a few moments
+            IN_BAR_GRAPH       = 2,   // Always show power level as a number in the bar graph
+            BOTH               = 3    // DISAPPEARING_TEXT & IN_BAR_GRAPH
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -139,6 +148,12 @@ class CSavedSettings
         bool get_wifi_ap_psk(std::string &out_psk);
         bool set_wifi_ap_psk(std::string psk);
         void clear_saved_ap_psk();
+
+        // Numeric power level display
+        power_level_show_percent get_power_level_display();
+        bool power_level_show_in_bar_graph();
+        bool power_level_show_disappearing_text();
+        void set_power_level_display(power_level_show_percent setting);
 
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);

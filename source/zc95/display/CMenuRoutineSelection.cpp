@@ -42,7 +42,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     printf("CMenuRoutineSelection() \n");
     _display = display;
     _area = display->get_display_area();
-    _routine_disply_list = new COptionsList(display, _area);
+    _routine_display_list = new COptionsList(display, _area);
     _routines = routines;
     _buttons = buttons;
     _submenu_active = NULL;
@@ -59,10 +59,10 @@ CMenuRoutineSelection::~CMenuRoutineSelection()
 {
     printf("~CMenuRoutineSelection() \n");
 
-    if (_routine_disply_list != NULL)
+    if (_routine_display_list != NULL)
     {
-        delete _routine_disply_list;
-        _routine_disply_list = NULL;
+        delete _routine_display_list;
+        _routine_display_list = NULL;
     }
 
     if (_submenu_active)
@@ -90,10 +90,11 @@ void CMenuRoutineSelection::button_pressed(Button button)
         {
         if (button == Button::A) // Select
         {
-            CRoutines::Routine routine = (*_routines)[_routine_disply_list->get_current_selection()];
-            _last_selection = _routine_disply_list->get_current_selection();
+            uint8_t routine_id = _routine_display_list->get_current_selection_id();
+            CRoutines::Routine routine = (*_routines)[routine_id];
+            _last_selection = _routine_display_list->get_current_selection();
             set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio));
-            _routine_output->activate_routine(_routine_disply_list->get_current_selection());
+            _routine_output->activate_routine(routine_id);
         }
 
         if (button == Button::B) // "Config"
@@ -103,12 +104,12 @@ void CMenuRoutineSelection::button_pressed(Button button)
         
         if (button == Button::C) // "Up"
         {
-            _routine_disply_list->up();
+            _routine_display_list->up();
         }
 
         if (button == Button::D) // "Down"
         {
-            _routine_disply_list->down();
+            _routine_display_list->down();
         }
     }
 }
@@ -121,7 +122,7 @@ void CMenuRoutineSelection::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuRoutineSelection::draw()
 {
-    _routine_disply_list->draw();
+    _routine_display_list->draw();
 }
 
 void CMenuRoutineSelection::show()
@@ -132,7 +133,7 @@ void CMenuRoutineSelection::show()
     _display->set_option_d("Down");
 
     // Get a list of routines to show
-    _routine_disply_list->clear_options();
+    _routine_display_list->clear_options();
     int index=0;
     for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
     {
@@ -147,16 +148,16 @@ void CMenuRoutineSelection::show()
         else
             name = "(!)" + conf.name;
 
-        // Hide audio routies from menu if audio hardware not present. Show everything else.        
+        // Hide audio routines from menu if audio hardware not present. Show everything else.        
         if (!is_audio_routine(conf))
         {
-            _routine_disply_list->add_option(name, index);
+            _routine_display_list->add_option(name, index);
         }
         else
         {
             if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
             {
-                _routine_disply_list->add_option(name, index);
+                _routine_display_list->add_option(name, index);
             }
         }
 
@@ -168,7 +169,7 @@ void CMenuRoutineSelection::show()
     // of going back to the top of the list
     if (_last_selection > 0)
     {
-        _routine_disply_list->set_selected(_last_selection);
+        _routine_display_list->set_selected(_last_selection);
     }
 }
 

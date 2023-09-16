@@ -20,6 +20,7 @@
 
 #include "CLuaRoutine.h"
 #include "../../config.h"
+#include "../../LuaScripts/LuaScripts.h"
 #include <string>
 #include <string.h>
 
@@ -135,7 +136,13 @@ void CLuaRoutine::load_lua_script_if_required()
 
 bool CLuaRoutine::is_script_valid()
 {
-    load_lua_script_if_required();
+    if (_script_valid == ScriptValid::INVALID)
+        return false;
+
+    routine_conf conf;
+    if (!get_and_validate_config(&conf))
+        return false;
+
     if (!_lua_state)
         return false;
 
@@ -144,10 +151,18 @@ bool CLuaRoutine::is_script_valid()
 
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
+    get_and_validate_config(conf); 
+}
+
+bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
+{
+    bool is_valid = true;
     load_lua_script_if_required();
 
     if (!_lua_state)
-        return;
+    {
+        return false;
+    }
 
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
@@ -163,6 +178,19 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
 
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
+        int loop_freq = get_int_field("loop_freq_hz");
+
+        if (loop_freq < 0 || loop_freq > 400)
+        {
+            _last_lua_error = "Configured loop_freq_hz of " +  std::to_string(loop_freq) + " is not valid";
+            printf("%s\n", _last_lua_error.c_str());
+            conf->loop_freq_hz = 0; 
+            is_valid = false;
+        }
+        else
+        {
+            conf->loop_freq_hz = loop_freq; 
+        }
 
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
@@ -210,7 +238,12 @@ void CLuaRoutine::get_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
     }
 
-    conf->name = "U:" + conf->name;
+    // For user uploaded scripts, prefix name with "U:" on pattern list
+    if  ((_script == NULL) && (lua_scripts[_script_index].writeable))
+        conf->name = "U:" + conf->name;
+
+    printf("get_and_validate_config: returning [%d]\n", is_valid);
+    return is_valid;
 }
 
 bool CLuaRoutine::runnable()
@@ -317,6 +350,12 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 void CLuaRoutine::start()
 {
     load_lua_script_if_required();
+
+    routine_conf conf;
+    if (!get_and_validate_config(&conf))
+        _script_valid = ScriptValid::INVALID;
+    _loop_freq_hz = conf.loop_freq_hz;
+
     if (!runnable())
         return;
 
@@ -340,11 +379,21 @@ void CLuaRoutine::loop(uint64_t time_us)
     if (!runnable())
         return;
 
-    int32_t time_ms = time_us/1000;
+    double time_ms = (double)time_us/(double)1000;
+
+    if (_loop_freq_hz)
+    {
+        uint32_t loop_freq = floor(time_ms/((double)1000/(double)_loop_freq_hz));
+        if (loop_freq == _last_loop)
+            return;
+
+        _last_loop = loop_freq;
+    }
+
     lua_getglobal(_lua_state, "Loop");
     if (lua_isfunction(_lua_state, -1))
     {
-        lua_pushinteger(_lua_state, time_ms);
+        lua_pushnumber(_lua_state, time_ms);
         pcall(1, 0, 0);
     }
     else

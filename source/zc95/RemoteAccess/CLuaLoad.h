@@ -22,7 +22,7 @@ class CLuaLoad
     private:
         std::function<void(std::string)> _send;
         std::function<void(std::string result, int msg_count, std::string error)> _send_ack;
-        void send_ack(std::string result, int msg_count);
+        void send_ack(std::string result, int msg_count, std::string error = "");
 
         uint8_t *_lua_buffer = NULL;
         size_t _lua_buffer_size = 0;

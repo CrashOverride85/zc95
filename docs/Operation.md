@@ -59,7 +59,14 @@ Configuration options so far:
 
 * Collar config - Allows 4x shock collars to be configured. Each shock collar needs to be paired to the box, and the bottom option allows for testing the collar with the current settings. The "Chan." option corresponds to the CH button on the original remote, and it probably makes sense to be left as 1 for all collars, as each will have a unique ID anyway. Note that the mode (shock / vibrate / beep) needs to be set here, and won't change outside of this config screen (for the time being, at least)
 
-* LED brightness - Pretty much what it says. If you value your eyesight, single digit values are good.
+* Display options - sub-menu, with:
+  - LED brightness - Pretty much what it says. If you value your eyesight, single digit values are good.
+
+  - Power level display - where to show the numeric power level as percentage. Options are:
+    - Off (default) - Only show power level as a bar graph
+    - Disappearing - Show in large text on screen for a few moments on change
+    - In bar graph - Show value, rotated 90 degrees, inside the corresponding bar graph
+    - Both - Enable Disappearing text display and in bar graph
 
 * Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 

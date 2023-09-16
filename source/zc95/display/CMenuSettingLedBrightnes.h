@@ -12,7 +12,7 @@
 class CMenuSettingLedBrightnes : public CMenu
 {
     public:
-        CMenuSettingLedBrightnes(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings);
+        CMenuSettingLedBrightnes(CDisplay* display, CSavedSettings *saved_settings);
         ~CMenuSettingLedBrightnes();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -23,7 +23,6 @@ class CMenuSettingLedBrightnes : public CMenu
         CHorzBarGraph *_bar_graph = NULL;
         struct display_area _bar_graph_area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         uint8_t _led_brightness=1;
 };

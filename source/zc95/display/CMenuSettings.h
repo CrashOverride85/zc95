@@ -53,7 +53,7 @@ class CMenuSettings : public CMenu
         {
             CHANNEL_CONFIG = 0,
             COLLAR_CONFIG  = 1,
-            LED_BRIGHTNESS = 2,
+            DISPLAY_OPTIONS= 2,
             POWER_STEP     = 3,
             RAMP_UP_TIME   = 4,
             AUDIO          = 5,

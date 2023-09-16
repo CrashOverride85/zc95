@@ -1,8 +1,11 @@
 #include "../../../config.h"
 #include "../../../globals.h"
 #include "../../../CUtil.h"
+#include "../../../CLedControl.h"
+#include "../../Core1Messages.h"
 #include "CZC624Comms.h"
 
+#include "pico/multicore.h"
 #include "hardware/spi.h"
 #include <stdio.h>
 
@@ -26,7 +29,7 @@ CZC624Comms::CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c)
         gpio_set_function(PIN_OUTPUT_BOARD_SPI_CSN, GPIO_FUNC_SPI);
 
         spi_init(_spi, SPI_BAUD_RATE);
-        spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+        spi_set_format(_spi, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
     }
 }
 
@@ -35,12 +38,30 @@ CZC624Comms::~CZC624Comms()
     printf("~CZC624Comms()\n");
 }
 
+bool CZC624Comms::loop(uint8_t channel_id)
+{
+    if (spi_is_writable(_spi) && (time_us_64() - _last_msg_us > 1000))
+    {
+        message msg = {0};
+        msg.command = (uint8_t)CZC624Comms::spi_command_t::NoOp;
+        send_message(msg);
+    }
+
+    return (_led_state & (1 << channel_id));
+}
+
 void CZC624Comms::send_message(message msg)
 {
+    uint8_t recv[sizeof(msg)];
     if (_spi)
     {
-        uint8_t *ptr = (uint8_t*)&msg;
-        spi_write_blocking(_spi, ptr, sizeof(msg));
+        uint8_t *send_ptr = (uint8_t*)&msg;
+
+        spi_write_read_blocking(_spi, send_ptr, (uint8_t*)&recv, sizeof(msg));
+        _last_msg_us = time_us_64();
+        
+        // Whenever we send a message, we get the desired LED states for each channel in return
+        _led_state = recv[0];
     }
 }
 
@@ -150,3 +171,4 @@ bool CZC624Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
 
     return retval;
 }
+

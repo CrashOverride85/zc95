@@ -25,6 +25,7 @@ class COutput
         void off(uint8_t channel);
         void loop();
         void power_down();
+        uint8_t get_channel_led_state();
 
     private:
         bool is_channel_valid(uint8_t channel);

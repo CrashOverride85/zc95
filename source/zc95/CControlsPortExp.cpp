@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CControlsPortExp.h"
 #include "globals.h"
 #include "CUtil.h"
 #include "hardware/gpio.h"
 #include <string.h>
+#include "CControlsPortExp.h"
 
 /*
  * Deal with port expander U7, which:
@@ -94,7 +94,7 @@ bool CControlsPortExp::has_button_state_changed(enum Button button, bool *new_st
 
   if (button_state_changed)
   {
-    if (time_us_64() - _last_state_change[(uint8_t)button] < (10 * 1000) ) // 10ms
+    if (time_us_64() - _last_state_change[(uint8_t)button] < (25 * 1000) ) // 25ms debounce
       return false;
     else
       _last_state_change[(uint8_t)button] = time_us_64();

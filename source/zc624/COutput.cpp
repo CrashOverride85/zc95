@@ -28,7 +28,7 @@ COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
     _channel[3] = new COutputChannel(PIN_CHAN4_GATE_A, _pio, 3, _pio_program_offset, 1, &_dac, CDac::dac_channel::D, _pulse_queue);
 
     gpio_put(PIN_9V_ENABLE, 1);
-    sleep_ms(100); // wait for 9v suppy to stabalise
+    sleep_ms(100); // wait for 9v supply to stabilize
 
     for (int chan=0; chan < 4; chan++)
         _channel[chan]->calibrate();
@@ -145,12 +145,27 @@ void COutput::loop()
     }
 }
 
+uint8_t COutput::get_channel_led_state()
+{
+    uint8_t state = 0;
+    
+    for (uint8_t chan = 0; chan < CHANNEL_COUNT; chan++)
+    {
+        if (_channel[chan]->get_channel_led())
+        {
+            state |= (1 << chan);
+        }
+    }
+    
+    return state;
+}
+
 void COutput::power_down()
 {
     printf("COutput::power_down()\n");
     gpio_put(PIN_9V_ENABLE, 0);
     
-    // Could probably do with an extra status. But as there's currenly no return 
+    // Could probably do with an extra status. But as there's currently no return 
     // from PowerDown, it's good enough for now
     _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Fault); 
 

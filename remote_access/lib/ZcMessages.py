@@ -30,8 +30,11 @@ class ZcMessages:
 
     if "Result" not in result or result["Result"] != "OK":
       if "Error" in result:
-        print("Got error message: ")
-        print("    " + result["Error"])
+        if result["Error"] == None: 
+          print("Unknown error.")
+        else:
+          print("Got error message: ")
+          print("    " + result["Error"])
       else:
         print("Result not OK")
 

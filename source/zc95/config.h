@@ -1,6 +1,6 @@
 
-#define PULSE_QUEUE_LENGTH 8  // queue size for pules sent from core0 to core1. Only used for audio pattern
-                              // (maybe serial input in the future), where processing happens on core0
+#define PULSE_QUEUE_LENGTH 12  // queue size for pules sent from core0 to core1. Only used for audio pattern
+                               // (maybe serial input in the future), where processing happens on core0
 
 #define PATTERN_TEXT_OUTPUT_QUEUE_LENGTH 4 // Max number of queued text/debug messages from Core1 (so far just lua) to Core0
 
@@ -16,8 +16,8 @@
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
 // Set expected version for zc624 output module
-#define ZC624_REQUIRED_MAJOR_VERION 0
-#define ZC624_MIN_MINOR_VERION      3
+#define ZC624_REQUIRED_MAJOR_VERION 1
+#define ZC624_MIN_MINOR_VERION      0
 
 // Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
 #define WEBSOCKET_API_VERION_MAJOR  1   // Increment on breaking change

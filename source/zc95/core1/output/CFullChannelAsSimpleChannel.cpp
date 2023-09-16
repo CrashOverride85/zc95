@@ -20,7 +20,7 @@
 #include "../config.h"
 
 /*
- * Allow a "full" output channel, e.g. the ZC624 output board (which expects pulse legnths to passed, etc.) to
+ * Allow a "full" output channel, e.g. the ZC624 output board (which expects pulse lengths to passed, etc.) to
  * be treated as a simple channel, which can be turned on/off and pulsed for x milliseconds
  */ 
 
@@ -29,7 +29,7 @@ CFullChannelAsSimpleChannel::CFullChannelAsSimpleChannel(CSavedSettings *saved_s
  CSimpleOutputChannel(saved_settings, power_level_control, channel_number) 
 {
     printf("CFullChannelAsSimpleChannel()\n");
-    _inital_led_colour = LedColour::Green;
+    _standby_led_colour = LedColour::Green;
     _off_time = 0;
     _full_channel = full_channel;
 
@@ -47,13 +47,11 @@ CFullChannelAsSimpleChannel::~CFullChannelAsSimpleChannel()
 
 void CFullChannelAsSimpleChannel::on()
 {
-    _full_channel->set_led_colour(LedColour::Red);
     _full_channel->on();
 }
 
 void CFullChannelAsSimpleChannel::off()
 {
-    _full_channel->set_led_colour(LedColour::Green);
     _full_channel->off();
 }
 
@@ -77,6 +75,8 @@ void CFullChannelAsSimpleChannel::loop(uint64_t time_us)
         off();
         _off_time = 0;
     }
+
+    _full_channel->loop(time_us);
 }
 
 bool CFullChannelAsSimpleChannel::is_internal()

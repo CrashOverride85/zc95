@@ -29,12 +29,14 @@ class COutputChannel
         void do_pulse(uint8_t pos_us, uint8_t neg_us);
         status get_status();
         void diag_run_dac_sweep();
+        bool get_channel_led();
 
     private:
         static int cmpfunc (const void * a, const void * b);
         float get_adc_voltage();
         static bool s_timer_callback(repeating_timer_t *rt);
         bool timer_callback(repeating_timer_t *rt);
+        void channel_led_on();
         
         status _status;
         uint8_t _pin_gate_a;
@@ -53,6 +55,7 @@ class COutputChannel
         uint8_t _pulse_width_pos_us;
         bool _on;
         CPulseQueue *_pulse_queue;
+        volatile uint64_t _channel_led_off_time_us = 0;
 };
 
 #endif
