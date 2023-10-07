@@ -19,11 +19,13 @@ class CMenuBluetoothScan : public CMenu
         void show();
 
     private:
+        void set_button_text();
+
         std::vector<CBluetoothScan::bt_device_t> _devices;
 
         int _last_selection = -1;
         COptionsList *_options_list = NULL;
-        struct display_area _area;
+        display_area _disp_area;
         
         CDisplay* _display;
         CBluetooth *_bluetooth;

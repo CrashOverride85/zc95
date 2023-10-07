@@ -1,6 +1,8 @@
 #ifndef _CSAVEDSETTINGS_H
 #define _CSAVEDSETTINGS_H
 
+#include "bluetooth.h"
+
 #include "CEeprom.h"
 #include "CChannel_types.h"
 
@@ -46,7 +48,9 @@ class CSavedSettings
         WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
         WifiApPskEnd   = 196, //
         PowerLevelDisp = 197, // Power level numeric display 
-        BluetoothOn    = 198  // Bluetooth enabled yes/no
+        BluetoothOn    = 198, // Bluetooth enabled yes/no
+        BTAddrStart    = 199, // Bluetooth address (6 bytes) start. Currently selected / paired device
+        BTAddrEnd      = 204  // Bluetooth address end
      // <next>         = 199
     };
 
@@ -162,6 +166,10 @@ class CSavedSettings
         // Bluetooth enabled
         bool get_bluethooth_enabled();
         void set_bluethooth_enabled(bool setting);
+
+        // Address of paired bluetooth device
+        void get_paired_bt_address(bd_addr_t *address);
+        void set_paired_bt_address(bd_addr_t address);
 
         void eeprom_initialise();
 

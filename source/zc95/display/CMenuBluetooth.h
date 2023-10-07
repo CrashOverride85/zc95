@@ -34,7 +34,8 @@ class CMenuBluetooth : public CMenu
         enum setting_id
         {
             ENABLED     = 0,
-            SCAN        = 1
+            SCAN        = 1,
+            TEST        = 2
         };
 
         std::vector<setting_t> _settings;

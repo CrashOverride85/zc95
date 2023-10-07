@@ -36,13 +36,6 @@ class CBluetoothScan
         std::vector<bt_device_t> _devices_found;
         btstack_packet_callback_registration_t _hci_event_callback_registration;
         bool _started = false;
-       
-
-
-
-
-
-
 };
 
 #endif

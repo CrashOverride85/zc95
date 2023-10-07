@@ -18,6 +18,7 @@
 
 #include "CMenuBluetooth.h"
 #include "CMenuBluetoothScan.h"
+#include "CMenuBluetoothTest.h"
 #include "../CDebugOutput.h"
 #include "../config.h"
 
@@ -75,6 +76,10 @@ void CMenuBluetooth::button_pressed(Button button)
             if (get_current_setting().id ==  CMenuBluetooth::setting_id::SCAN)
             {
                 set_active_menu(new CMenuBluetoothScan(_display, _saved_settings, _bluetooth));
+            }
+            else if (get_current_setting().id ==  CMenuBluetooth::setting_id::TEST)
+            {
+                set_active_menu(new CMenuBluetoothTest(_display, _bluetooth));
             }
         }
 
@@ -171,6 +176,7 @@ void CMenuBluetooth::show()
     _settings.clear();
     _settings.push_back(CMenuBluetooth::setting_t(setting_id::ENABLED, "Enabled"  ));
     _settings.push_back(CMenuBluetooth::setting_t(setting_id::SCAN   , "Scan/Pair"));
+    _settings.push_back(CMenuBluetooth::setting_t(setting_id::TEST   , "Test"));
 
     _settings_list->clear_options();
     for (std::vector<CMenuBluetooth::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)

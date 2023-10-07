@@ -42,6 +42,7 @@ class CHwCheck
         void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
         void get_battery_readings();
         void halt(CLedControl *led_control);
+        int  get_button_press();
 
         class device
         {

@@ -1,5 +1,7 @@
 #include "CBluetoothPair.h"
 #include "CBluetoothPairGatt.h"
+#include "../globals.h"
+
 #include "pico/async_context_poll.h"
 
 static CBluetoothPair *_s_CBluetoothPair;
@@ -7,7 +9,7 @@ static CBluetoothPair *_s_CBluetoothPair;
 CBluetoothPair::CBluetoothPair()
 {
     _s_CBluetoothPair = this;
-    _started = false;
+    _state = bt_pair_state_t::IDLE;
 }
 
 CBluetoothPair::~CBluetoothPair()
@@ -21,12 +23,17 @@ void CBluetoothPair::set_address(bd_addr_t address)
     memcpy(_address, address, BD_ADDR_LEN);
 }
 
+void CBluetoothPair::get_address(bd_addr_t *address)
+{
+    memcpy(address, _address, BD_ADDR_LEN);
+}
+
 void CBluetoothPair::start()
 {
-    if (!_started)
+    if (_state == bt_pair_state_t::IDLE)
     {
         printf("CBluetoothPair::start()\n");
-        _started = true;
+        set_state(bt_pair_state_t::START);
 
         l2cap_init();
         sm_init();
@@ -46,7 +53,7 @@ void CBluetoothPair::start()
 
 void CBluetoothPair::stop()
 {
-    if (_started)
+    if (_state != bt_pair_state_t::IDLE)
     {
         printf("CBluetoothPair::stop()\n");
         
@@ -56,8 +63,26 @@ void CBluetoothPair::stop()
         sm_deinit();
         l2cap_deinit();
 
-        _started = false;
+        set_state(bt_pair_state_t::IDLE);
     }
+}
+
+CBluetoothPair::bt_pair_state_t CBluetoothPair::get_state()
+{
+    return _state;
+}
+
+void CBluetoothPair::set_state(bt_pair_state_t newState)
+{
+    if (_state == newState)
+        return;
+
+    if (newState == bt_pair_state_t::SUCCESS)
+    {
+        g_SavedSettings->set_paired_bt_address(_address);
+    }
+
+    _state = newState;
 }
 
 void CBluetoothPair::s_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
@@ -71,16 +96,17 @@ void CBluetoothPair::packet_handler(uint8_t packet_type, uint16_t channel, uint8
     if (packet_type != HCI_EVENT_PACKET) 
         return;
 
-    /* bd_addr_t address;
-    uint8_t length;
-    const uint8_t *data;*/
+    uint8_t hci_packet_type = hci_event_packet_get_type(packet);
+    printf("got hci packet type = 0x%x\n", hci_packet_type);
 
-    switch (hci_event_packet_get_type(packet)) 
+    switch (hci_packet_type) 
     {
         case HCI_EVENT_LE_META:
             {
                 hci_con_handle_t con_handle;
-                if (hci_event_le_meta_get_subevent_code(packet) != HCI_SUBEVENT_LE_CONNECTION_COMPLETE) break;
+                uint8_t meta_subevent_code = hci_event_le_meta_get_subevent_code(packet);
+                printf("meta_subevent_code = %d\n", meta_subevent_code);
+                if (meta_subevent_code != HCI_SUBEVENT_LE_CONNECTION_COMPLETE) break;
                 con_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
                 printf("CBluetoothPair::packet_handler: connected\n");
                 sm_request_pairing(con_handle);
@@ -101,15 +127,19 @@ void CBluetoothPair::packet_handler(uint8_t packet_type, uint16_t channel, uint8
             {
                 case ERROR_CODE_SUCCESS:
                     printf("Pairing complete, success\n");
+                    set_state(bt_pair_state_t::SUCCESS);
                     break;
                 case ERROR_CODE_CONNECTION_TIMEOUT:
                     printf("Pairing failed, timeout\n");
+                    set_state(bt_pair_state_t::FAILED);
                     break;
                 case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
                     printf("Pairing failed, disconnected\n");
+                    set_state(bt_pair_state_t::FAILED);
                     break;
                 case ERROR_CODE_AUTHENTICATION_FAILURE:
                     printf("Pairing failed, authentication failure with reason = %u\n", sm_event_pairing_complete_get_reason(packet));
+                    set_state(bt_pair_state_t::FAILED);
                     break;
                 default:
                     break;
@@ -134,14 +164,17 @@ void CBluetoothPair::packet_handler(uint8_t packet_type, uint16_t channel, uint8
                 {
                     case ERROR_CODE_SUCCESS:
                         printf("Re-encryption complete, success\n");
+                        set_state(bt_pair_state_t::SUCCESS);
                         break;
 
                     case ERROR_CODE_CONNECTION_TIMEOUT:
                         printf("Re-encryption failed, timeout\n");
+                        set_state(bt_pair_state_t::FAILED);
                         break;
 
                     case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
                         printf("Re-encryption failed, disconnected\n");
+                        set_state(bt_pair_state_t::FAILED);
                         break;
 
                     case ERROR_CODE_PIN_OR_KEY_MISSING:
@@ -152,6 +185,7 @@ void CBluetoothPair::packet_handler(uint8_t packet_type, uint16_t channel, uint8
                         addr_type = (bd_addr_type_t)sm_event_reencryption_started_get_addr_type(packet);
                         gap_delete_bonding(addr_type, addr);
                         sm_request_pairing(sm_event_reencryption_complete_get_handle(packet));
+                        // should be retrying(?), so don't set state to FAILED yet
                         break;
 
                     default:

@@ -17,6 +17,8 @@
  */
 
 #include "hardware/adc.h"
+#include "hardware/flash.h"
+#include "pico/btstack_flash_bank.h"
 
 #include <font6x9.h>
 #include "CHwCheck.h"
@@ -24,6 +26,7 @@
 #include "config.h"
 #include "CUtil.h"
 #include "ECButtons.h"
+#include "LuaScripts/LuaScripts.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -363,8 +366,8 @@ void CHwCheck::get_battery_readings()
     _batteryGauge->add_raw_adc_readings(readings, sizeof(readings));
 }
 
-// Returns true if the top right button (C) is pressed, and the bottom left button (B)
-// is NOT pressed. This in case there's some fault causing all buttons to be read as pressed,
+// Returns true if (only) the top right button (C) is pressed.
+// This in case there's some fault causing all buttons to be read as pressed,
 // we don't want to clear the EEPROM by mistake.
 // Should only be ran after inital h/w check has confirmed the port expander 
 // is present.
@@ -379,7 +382,9 @@ bool CHwCheck::clear_eeprom_buttons_pressed()
     }
 
     bool button_pressed = (pin_states & (1 << (uint8_t)Button::C)) && 
-                         !(pin_states & (1 << (uint8_t)Button::B));
+                         !(pin_states & (1 << (uint8_t)Button::A)) && 
+                         !(pin_states & (1 << (uint8_t)Button::B)) && 
+                         !(pin_states & (1 << (uint8_t)Button::D));
 
     printf("CHwCheck::clear_eeprom_buttons_pressed(): button pressed = %d (pin state = %x)\n", button_pressed, pin_states);
     return button_pressed;
@@ -402,41 +407,85 @@ void CHwCheck::clear_eeprom_if_requested()
     led.loop();
 
     _hagl_backend = hagl_init();
-    put_text("Clear EEPROM?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
-    put_text("Yes", 0, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    put_text("Clear saved settings?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+    put_text("EEPROM", 0                    , (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    put_text("Flash" , MIPI_DISPLAY_WIDTH-40, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
     hagl_flush(_hagl_backend);
 
-    // Wait for bottom right (B) button to be pressed for ~100ms
+    // Wait for bottom left (B) or bottom right (D) button to be pressed for ~100ms
     while (1)
     {
+        int button_pressed = get_button_press();
+        
+        if (button_pressed == (int)Button::B) // clear EEPROM
+        {
+            // Time to reset the EEPROM!
+            printf("Clearing EEPROM at user request\n");
+
+            CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
+            CSavedSettings settings = CSavedSettings(&eeprom);
+            settings.eeprom_initialise();
+
+            hagl_clear(_hagl_backend);
+            put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            hagl_flush(_hagl_backend);
+            halt(&led);
+        }
+        else if (button_pressed == (int)Button::D) // Clear user settings in Flash
+        {
+            printf("Clearing saved settings in flash at user request\n");
+            printf("Clear btstack config\n");
+            flash_range_erase(PICO_FLASH_BANK_STORAGE_OFFSET, PICO_FLASH_BANK_TOTAL_SIZE);
+
+            printf("Clear Lua scripts\n");
+            // Loop through and add all valid lua scripts
+            for (uint8_t index = 0; index < lua_script_count(); index++)
+            {
+                if (lua_scripts[index].writeable)
+                {
+                    printf("Erasing script slot [%d] (%lu to %lu)\n", index, lua_scripts[index].start, lua_scripts[index].end);
+                    flash_range_erase(lua_scripts[index].start - XIP_BASE, lua_scripts[index].end - lua_scripts[index].start);
+                }   
+            }
+
+            hagl_clear(_hagl_backend);
+            put_text("User settings in", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            put_text("flash cleared!"  , 0, 8, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            hagl_flush(_hagl_backend);
+            halt(&led);
+        }
+    }
+}
+
+// Returns Button::B if B pushed, Button::D if D pushed, -1 otherwise.
+int CHwCheck::get_button_press()
+{
         uint8_t pin_states = 0;
         i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
 
-        bool button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+        bool button_pressed = (pin_states & (1 << (uint8_t)Button::B)) || 
+                              (pin_states & (1 << (uint8_t)Button::D));
         if (button_pressed)
         {
             // Do crude debounce; re-read pin after 100ms and if button is still pressed reset EEPROM
             sleep_ms(100);
 
             i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
-            button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+            button_pressed = (pin_states & (1 << (uint8_t)Button::B)) || 
+                             (pin_states & (1 << (uint8_t)Button::D));
 
             if (button_pressed)
             {
-                // Time to reset the EEPROM!
-                printf("Clearing EEPROM at user request\n");
-
-                CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
-                CSavedSettings settings = CSavedSettings(&eeprom);
-                settings.eeprom_initialise();
-
-                hagl_clear(_hagl_backend);
-                put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
-                hagl_flush(_hagl_backend);
-                halt(&led);
+                if (pin_states & (1 << (uint8_t)Button::B))
+                    return (int)Button::B;
+                else if (pin_states & (1 << (uint8_t)Button::D))
+                    return (int)Button::D;
+                else 
+                    return -1;
             }
         }
-    }
+
+    return -1;
 }
 
 void CHwCheck::process()

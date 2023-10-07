@@ -333,6 +333,30 @@ void CSavedSettings::set_bluethooth_enabled(bool setting)
     _eeprom_contents[(uint8_t)setting::BluetoothOn] = setting;
 }
 
+void CSavedSettings::get_paired_bt_address(bd_addr_t *address)
+{
+    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    {
+        // this should never happen!
+        printf("get_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
+        return;
+    }
+
+    memcpy(address, &_eeprom_contents[(uint8_t)setting::BTAddrStart], sizeof(bd_addr_t));
+}
+
+void CSavedSettings::set_paired_bt_address(bd_addr_t address)
+{
+    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    {
+        // this should never happen!
+        printf("set_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
+        return;
+    }
+
+    memcpy(&_eeprom_contents[(uint8_t)setting::BTAddrStart], address, sizeof(bd_addr_t));
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

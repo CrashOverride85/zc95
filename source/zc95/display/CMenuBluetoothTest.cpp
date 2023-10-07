@@ -16,37 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CMenuBluetoothScan.h"
+#include "CMenuBluetoothTest.h"
+#include "../globals.h"
 
-CMenuBluetoothScan::CMenuBluetoothScan(CDisplay* display, CSavedSettings *saved_settings, CBluetooth *bluetooth)
+CMenuBluetoothTest::CMenuBluetoothTest(CDisplay* display, CBluetooth *bluetooth)
 {
-    printf("CMenuBluetoothScan() \n");
+    printf("CMenuBluetoothTest()\n");
     _display = display;
     _bluetooth = bluetooth;
     _exit_menu = false;
     _disp_area = _display->get_display_area();
-    _options_list = new COptionsList(display, _disp_area);
 }
 
-CMenuBluetoothScan::~CMenuBluetoothScan()
+CMenuBluetoothTest::~CMenuBluetoothTest()
 {
-    printf("~CMenuBluetoothScan() \n");
+    printf("~CMenuBluetoothTest()\n");
     if (_submenu_active)
     {
         delete _submenu_active;
         _submenu_active = NULL;
     }
 
-    if (_options_list)
-    {
-        delete _options_list;
-        _options_list = NULL;
-    }
-
     _bluetooth->set_state(CBluetooth::state_t::OFF);
 }
 
-void CMenuBluetoothScan::button_pressed(Button button)
+void CMenuBluetoothTest::button_pressed(Button button)
 {
     if (_submenu_active)
     {
@@ -56,60 +50,33 @@ void CMenuBluetoothScan::button_pressed(Button button)
     {
         switch (button)
         {
-            case Button::A: // "Select"
-                if (_options_list->count() > 0)
-                {
-                    _last_selection = -1;
-                    _bluetooth->pair(_devices[_options_list->get_current_selection()].address);
-                }
+            case Button::A:
                 return;
 
             case Button::B: // "Back"
                 _exit_menu = true;
                 break;
 
-            case Button::C: // "Up"
-                _options_list->up();
+            case Button::C:
                 break;
 
-            case Button::D: // "Down"
-                _options_list->down();
+            case Button::D:
                 break;
         }
-        _last_selection = _options_list->get_current_selection();
     }
 }
 
-void CMenuBluetoothScan::adjust_rotary_encoder_change(int8_t change)
+void CMenuBluetoothTest::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
 }
 
- void CMenuBluetoothScan::draw()
+ void CMenuBluetoothTest::draw()
  {
-    set_button_text();
-    if (_bluetooth->get_state() == CBluetooth::state_t::SCAN)
-    {
-        _bluetooth->scan_get_devices_found(_devices);
 
-        _options_list->clear_options();
-        for (std::vector<CBluetoothScan::bt_device_t>::iterator it = _devices.begin(); it != _devices.end(); it++)
-        {
-            if (_bluetooth->is_paired((*it).address))
-                _options_list->add_option("*" + (*it).name);
-            else
-                _options_list->add_option(" " + (*it).name);
-        }
-
-        if (_last_selection > 0)
-        {
-            _options_list->set_selected(_last_selection);
-        }
-
-        _options_list->draw();
-    }
-    else
+    /*
+ 
     {
         std::string message;
         switch (_bluetooth->get_pair_state())
@@ -138,31 +105,21 @@ void CMenuBluetoothScan::adjust_rotary_encoder_change(int8_t change)
         _display->put_text(message          , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
         y += 10;
     }
+    */
 }
 
-void CMenuBluetoothScan::show()
+void CMenuBluetoothTest::show()
 {
-    set_button_text();
+    _display->set_option_b("Back");
+    _display->set_option_a("");
+    _display->set_option_c("");
+    _display->set_option_d("");
 
-    _bluetooth->set_state(CBluetooth::state_t::SCAN);
+    bd_addr_t paired_addr = {0};
+    g_SavedSettings->get_paired_bt_address(&paired_addr);
+
+    _bluetooth->connect(paired_addr);
 
     _exit_menu = false;
 }
 
-void CMenuBluetoothScan::set_button_text()
-{
-    _display->set_option_b("Back");
-
-    if (_bluetooth->get_state() == CBluetooth::state_t::SCAN)
-    {
-        _display->set_option_a("Pair");
-        _display->set_option_c("Up");
-        _display->set_option_d("Down");
-    }
-    else
-    {
-        _display->set_option_a("");
-        _display->set_option_c("");
-        _display->set_option_d("");
-    }
-}

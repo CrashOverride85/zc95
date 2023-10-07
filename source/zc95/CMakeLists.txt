@@ -108,6 +108,7 @@ add_executable(zc95
   display/CMenuApMode.cpp
   display/CMenuBluetooth.cpp
   display/CMenuBluetoothScan.cpp
+  display/CMenuBluetoothTest.cpp
   display/COptionsList.cpp
   display/CHorzBarGraph.cpp
   display/CDisplayMessage.cpp
@@ -144,6 +145,8 @@ add_executable(zc95
   Bluetooth/CBluetooth.cpp
   Bluetooth/CBluetoothScan.cpp
   Bluetooth/CBluetoothPair.cpp
+  Bluetooth/CBluetoothConnect.cpp
+  Bluetooth/CBluetoothRemote.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
