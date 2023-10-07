@@ -29,7 +29,7 @@ CZC624Comms::CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c)
         gpio_set_function(PIN_OUTPUT_BOARD_SPI_CSN, GPIO_FUNC_SPI);
 
         spi_init(_spi, SPI_BAUD_RATE);
-        spi_set_format(_spi, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+        spi_set_format(_spi, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
 }
 
@@ -61,7 +61,14 @@ void CZC624Comms::send_message(message msg)
         _last_msg_us = time_us_64();
         
         // Whenever we send a message, we get the desired LED states for each channel in return
-        _led_state = recv[0];
+        for (uint n=0; n < sizeof(recv); n++)
+        {
+            if (recv[n])
+            {
+                _led_state = recv[n];
+                break;
+            }
+        }
     }
 }
 

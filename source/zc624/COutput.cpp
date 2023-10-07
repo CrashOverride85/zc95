@@ -156,6 +156,8 @@ uint8_t COutput::get_channel_led_state()
             state |= (1 << chan);
         }
     }
+
+    state |= (1 << 5);
     
     return state;
 }
