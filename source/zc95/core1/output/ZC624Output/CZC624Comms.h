@@ -61,7 +61,7 @@ class CZC624Comms
             Fault     = 0x02
         };
 
-        bool check_zc624();
+        uint8_t check_zc624();
         std::string get_version();
         bool get_major_minor_version(uint8_t *major, uint8_t *minor);
         
@@ -75,7 +75,8 @@ class CZC624Comms
 
     private:
         bool get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t size);
-        void set_led_colour(uint8_t channel, uint32_t colour);
+        bool channel_has_fault(uint8_t channel);
+        std::string status_to_string(status s);
 
         spi_inst_t *_spi;
         i2c_inst_t *_i2c;

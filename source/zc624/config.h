@@ -42,6 +42,7 @@
 
 
 #define PIN_9V_ENABLE   14
+#define PIN_OK_LED      15
 
 #define PIN_CHAN1_GATE_A 6
 #define PIN_CHAN1_GATE_B 7

@@ -166,7 +166,8 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
     if (!error)
     {
         printf("    ZC624 status...");
-        if (!(_zc624_comms->check_zc624()))
+        _zc624_status = _zc624_comms->check_zc624();
+        if (_zc624_status)
         {
             printf("FAULT\n");
             error = true;
@@ -192,10 +193,10 @@ bool CHwCheck::audio_digipot_found()
     return false;
 }
 
-void CHwCheck::show_error_text_message(int y, std::string message)
+void CHwCheck::show_error_text_message(int *y, std::string message)
 {
-    y += 2;
-    put_text(message, 0, (y++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+    *y += 2;
+    put_text(message, 0, ((*y)++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 }
 
 void CHwCheck::show_error_text_missing(int y)
@@ -227,7 +228,7 @@ void CHwCheck::die(CLedControl *led_control, std::string error_message)
     halt(led_control);
 }
 
-void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls)
+void CHwCheck::hw_check_failed(enum Cause cause, CLedControl *ledControl, CControlsPortExp *controls)
 {
     int y = 0;
     ledControl->set_all_led_colour(LedColour::Red);
@@ -246,36 +247,57 @@ void CHwCheck::hw_check_failed(enum Cause casue, CLedControl *ledControl, CContr
 
     put_text("Hardware check failed", (y++ * 10), 10, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
-    switch (casue)
+    switch (cause)
     {
         case Cause::MISSING:
             show_error_text_missing(y);
             break;
 
         case Cause::BATTERY:
-            show_error_text_message(y, "Battery is flat!");
+            show_error_text_message(&y, "Battery is flat!");
             break;
 
         case Cause::ZC624_STATUS:
-            show_error_text_message(y, "ZC624 (output) fault");
+            report_zc624_fault(&y);
             break;
 
         case Cause::ZC624_VERSION:
-            show_error_text_message(y, "ZC624 version mismatch");
+            show_error_text_message(&y, "ZC624 version mismatch");
             break;
 
         case Cause::ZC624_UNKNOWN:
-            show_error_text_message(y, "Unknown ZC624 error");
+            show_error_text_message(&y, "Unknown ZC624 error");
             break;
         
         default:
-            show_error_text_message(y, "Unknown error");
+            show_error_text_message(&y, "Unknown error");
             break;
     }
 
     hagl_flush(_hagl_backend);
 
     halt(ledControl);
+}
+
+void CHwCheck::report_zc624_fault(int *y)
+{
+    std::string chan_state;
+    show_error_text_message(y, "ZC624 (output) fault");
+
+    // If the status is 0xFF, it means we couldn't read the status, so don't output what we don't know
+    if (_zc624_status != 0xFF)
+    {
+        put_text("Overall status: FAULT", 0, ((*y)++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+        for (uint8_t chan = 1; chan <= MAX_CHANNELS; chan++)
+        {
+            if (_zc624_status & 1 << chan)
+                chan_state = "FAULT";
+            else
+                chan_state = "OK";
+
+            put_text("Channel " + std::to_string(chan) + "     : " + chan_state, 0, ((*y)++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+        }
+    }
 }
 
 // Try and determine if running on a Pico or Pico W, based on code from 

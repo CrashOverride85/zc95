@@ -119,13 +119,19 @@ bool CZC624Comms::write_i2c_register(i2c_reg_t reg, uint8_t value)
     return true;
 }
 
-bool CZC624Comms::check_zc624()
+// Returns a bit field, with bits meaning:
+// 0 = overall status 
+// 1 = channel 1 status
+// ...
+// set means fault, clear means ok.
+// A return of 0xFF means failed to read status.
+uint8_t CZC624Comms::check_zc624()
 {
     uint8_t status = 0;
     if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
     {
         printf("Failed to read OverallStatus register from ZC624\n");
-        return false;
+        return 0xFF;
     }
 
     // Wait for upto 2 seconds for ZC624 to become ready
@@ -135,7 +141,7 @@ bool CZC624Comms::check_zc624()
         if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
         {
             printf("Failed to read OverallStatus register from ZC624\n");
-            return false;
+            return 0xFF;
         }
         count++;
 
@@ -149,10 +155,31 @@ bool CZC624Comms::check_zc624()
     if (status != CZC624Comms::status::Ready)
     {
         printf("ZC624 is not ready (status = %d)\n", status);
-        return false;
+
+        uint8_t return_status = 1;
+        for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+        {
+            if (channel_has_fault(chan))
+                return_status |= 1 << (chan+1);
+        }
+
+        return return_status;
     }
 
-    return true;
+    return 0;
+}
+
+bool CZC624Comms::channel_has_fault(uint8_t channel)
+{
+    uint8_t chan_status;
+    if (!get_i2c_register((CZC624Comms::i2c_reg_t)((uint8_t)CZC624Comms::i2c_reg_t::Chan0Status+channel), &chan_status))
+    {
+        printf("Failed to read Channel %d status register from ZC624\n", channel);
+        return true;
+    }
+
+    printf("channel %d status = %d (%s)\n", channel, chan_status, status_to_string((status)chan_status).c_str());
+    return (chan_status != CZC624Comms::status::Ready);
 }
 
 std::string CZC624Comms::get_version()
@@ -177,5 +204,23 @@ bool CZC624Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
     retval &= get_i2c_register(CZC624Comms::i2c_reg_t::VersionMinor, minor);
 
     return retval;
+}
+
+std::string CZC624Comms::status_to_string(status s)
+{
+    switch (s)
+    {
+        case status::Fault:
+            return "Fault";
+
+        case status::Ready:
+            return "Ready";
+
+        case status::Startup:
+            return "Startup";
+
+        default:
+            return "Unknown";
+    }
 }
 

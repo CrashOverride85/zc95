@@ -25,6 +25,7 @@
 
 void i2c_scan();
 void core1_entry();
+void led_flash();
 
 CI2cSlave *i2c_slave;
 
@@ -34,6 +35,11 @@ int main()
     adc_init();
     
     printf("ZC624 startup, firmware version: %s\n", kGitHash);
+
+    gpio_init(PIN_OK_LED);
+    gpio_set_dir(PIN_OK_LED, GPIO_OUT);
+    gpio_put(PIN_OK_LED, 0);
+
     i2c_slave = new CI2cSlave();
 
     // I2C Initialisation as master (connected to DAC). Using it at 400Khz.
@@ -57,6 +63,8 @@ int main()
     uint64_t loop_start = time_us_64();
     uint64_t readable=0;
     uint64_t unreadable=0;
+
+    gpio_put(PIN_OK_LED, 1);
 
     while(1)
     {
@@ -83,11 +91,27 @@ int main()
         if (i2c_slave->get_value(CI2cSlave::reg::OverallStatus) == CI2cSlave::status::Fault)
         {
             printf("HALT.\n");
-            while(1);
+            while(1)
+            {
+                led_flash();
+            }
         } 
     }
 
     return 0;
+}
+
+void led_flash()
+{
+    static uint64_t last_toggle;
+    static bool led_on;
+
+    if (time_us_64() - last_toggle > 1000 * 500)
+    {
+        led_on = !led_on;
+        gpio_put(PIN_OK_LED, led_on);
+        last_toggle = time_us_64();
+    }
 }
 
 void core1_entry() 
