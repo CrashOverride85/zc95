@@ -194,6 +194,8 @@ Before showing the confirmation screen, the box will have confirmed the EEPROM I
 EEPROM is used to store all settings that can be changed via the menus, but it does not store any uploaded Lua scripts - these are stored in flash, and can be wiped by reuploading the firmware. 
 
 ## ZC624 output module
+If the ZC624 passes its self test, the OK LED should light (which should be ~1-2 seconds after power on). If it fails, this light should flash.
+
 There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it.
 
 Connect a 3.3v TTL serial to USB adapter to the pins labelled Tx and GND on the header, connect at 115200 baud, and power it on. 
