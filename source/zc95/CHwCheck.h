@@ -35,7 +35,7 @@ class CHwCheck
         void set_display(CDisplay *display);
 
     private:
-        enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION};
+        enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION, ZC624_NO_SPI};
         void show_error_text_missing(int y);
         void show_error_text_message(int *y, std::string message);
         void hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls);

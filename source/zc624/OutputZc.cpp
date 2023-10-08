@@ -58,7 +58,7 @@ int main()
     COutput output = COutput(pio0, i2c_slave);
 
     // Comms to main board
-    CMessageProcess spi_message_process = CMessageProcess(&output);
+    CMessageProcess spi_message_process = CMessageProcess(&output, i2c_slave);
     spi_message_process.init();
     uint64_t loop_start = time_us_64();
     uint64_t readable=0;

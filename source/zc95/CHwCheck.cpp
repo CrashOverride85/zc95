@@ -32,7 +32,7 @@
  */
 CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
 {
-    _zc624_comms = new CZC624Comms(NULL, I2C_PORT);
+    _zc624_comms = new CZC624Comms(ZC624_SPI_PORT, I2C_PORT);
 
     _devices.push_front(device(EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
     _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
@@ -173,14 +173,32 @@ void CHwCheck::check_part2(CLedControl *ledControl, CControlsPortExp *controls)
             error = true;
             cause = Cause::ZC624_STATUS;
         }
+        else
+        {
+            printf("Ok\n");
+        }
     }
 
+    if (!error)
+    {
+        printf("    ZC624 SPI comms...");
+        if (_zc624_comms->spi_has_comms_fault())
+        {
+            printf("FAULT\n");
+            error = true;
+            cause = Cause::ZC624_NO_SPI;
+        }
+        else
+        {
+            printf("Ok\n");
+        }
+    }
+
+    printf("\n");
     if (error)
     {
         hw_check_failed(cause, ledControl, controls); // this never returns
     }
-
-    printf("Ok\n\n");
 }
 
 bool CHwCheck::audio_digipot_found()
@@ -267,6 +285,10 @@ void CHwCheck::hw_check_failed(enum Cause cause, CLedControl *ledControl, CContr
 
         case Cause::ZC624_UNKNOWN:
             show_error_text_message(&y, "Unknown ZC624 error");
+            break;
+
+        case Cause::ZC624_NO_SPI:
+            show_error_text_message(&y, "SPI comms error with ZC624");
             break;
         
         default:
