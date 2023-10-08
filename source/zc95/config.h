@@ -16,7 +16,7 @@
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
 // Set expected version for zc624 output module
-#define ZC624_REQUIRED_MAJOR_VERION 1
+#define ZC624_REQUIRED_MAJOR_VERION 2
 #define ZC624_MIN_MINOR_VERION      0
 
 // Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
@@ -38,8 +38,8 @@
 #define PIN_FP_INT1       11 // front panel interrupt 1 (U1) - 4x channel rot encoders
 #define PIN_FP_INT2        6 // front panel interrupt 2 (U2) - 5x rot encoder buttons & 1x adjust rot encoder (+ 1x unused line)
 
-
 // Output board SPI
+#define ZC624_SPI_PORT            spi1
 #define PIN_OUTPUT_BOARD_SPI_RX   12
 #define PIN_OUTPUT_BOARD_SPI_SCK  14
 #define PIN_OUTPUT_BOARD_SPI_TX   15
@@ -61,10 +61,7 @@
 #define MAX_POWER_LEVEL 1000
 #define MAX_CHANNELS 4
 
-
-// SPI Defines
-// We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
+// SPI Defines for display
 #define SPI_PORT spi0
 #define PIN_MISO 16
 #define PIN_CS   17

@@ -30,6 +30,8 @@ class CI2cSlave
             VerStrStart    = 0x20,
             VerStrEnd      = 0x34, //  20 character string
 
+            TestVal        = 0x40,
+
             // Read/write
             // starting at 0x80
             ChannelIsolation = 0x80 // Default = true. If false, multiple channels can pulse at the same time (triphase effects)

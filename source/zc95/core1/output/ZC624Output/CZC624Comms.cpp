@@ -206,6 +206,37 @@ bool CZC624Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
     return retval;
 }
 
+// Returns true if something is wrong with the SPI comms to output board. 
+// A return of false means it's probably ok (this is not a thorough check)
+bool CZC624Comms::spi_has_comms_fault()
+{
+    bool retval = false;
+
+    retval |= test_spi_comms(0x12);
+    retval |= test_spi_comms(0x55);
+
+    return retval;
+}
+
+// Returns true if something is wrong with the SPI comms to output board. 
+bool CZC624Comms::test_spi_comms(uint8_t test_val)
+{
+    // Use the SPI SetTestVal command to write a value to the test register in the zc624. Wait
+    // a few moments, then use i2c to read this value back (we've already effectively tested 
+    // i2c to get to this point). If it doesn't match the value we wrote, something's wrong.
+    uint8_t i2c_read_val;
+
+    message msg = {0};
+    msg.command = (uint8_t)CZC624Comms::spi_command_t::SetTestVal;
+    msg.arg0 = test_val;
+    send_message(msg);
+    sleep_ms(10);
+
+    get_i2c_register(CZC624Comms::i2c_reg_t::TestVal, &i2c_read_val);
+
+    return i2c_read_val != msg.arg0;
+}
+
 std::string CZC624Comms::status_to_string(status s)
 {
     switch (s)

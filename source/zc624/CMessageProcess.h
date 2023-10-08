@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "COutput.h"
+#include "CI2cSlave.h"
 
 class CMessageProcess
 {
@@ -18,7 +19,6 @@ class CMessageProcess
 
         enum class command
         {
-            Pulse = 0,
             SetPower = 1,
             Poll = 2,
             PowerDown = 3,
@@ -27,10 +27,12 @@ class CMessageProcess
             SetPulseWidth = 5,
             SwitchOn = 6,
             SwitchOff = 7,
-            NoOp = 8
+            NoOp = 8,
+            SetTestVal = 9,
+            Pulse = 10
         };
     
-        CMessageProcess(COutput *output);
+        CMessageProcess(COutput *output, CI2cSlave *i2c_slave);
         ~CMessageProcess();
         void init();
 
@@ -45,6 +47,8 @@ class CMessageProcess
         void on(message msg);
         void off(message msg);
         void power_down(message msg);
+
+        CI2cSlave *_i2c_slave;
 };
 
 #endif
