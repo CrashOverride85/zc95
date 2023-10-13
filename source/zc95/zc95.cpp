@@ -220,6 +220,10 @@ int main()
     controls.process(true);
 
     // Front pannel
+    gpio_init(PIN_FP_INT1);
+    gpio_init(PIN_FP_INT2);
+    gpio_set_dir(PIN_FP_INT1, GPIO_IN);
+    gpio_set_dir(PIN_FP_INT2, GPIO_IN);
     gpio_set_irq_enabled_with_callback(PIN_FP_INT1, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
