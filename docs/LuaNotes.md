@@ -16,6 +16,8 @@ There are a few example scripts in `remote_access/lua`, which demonstrate some o
 
 * acc_test.lua - uses the accessory port to cycle between HIGH/LOW on the 3 output lines. See "AccIoWrite" section below for more details. Doesn't produce any estim output, so not really of any practical use, just a demo of how to use the accessory port.
 
+The inbuilt Waves, Climb & Orgasm patterns are also written in Lua (contributed by someone who prefers to remain anonymous); the source for these can be found in `source/zc95/LuaScripts/`. Note that these are designed to closely resemble the patterns of the same name from another popular box, so might not be the best example to follow for new scripts.
+
 ## toggle.lua
 
 It's probably easier to explain Lua as implemented in the ZC95 by going though one of the example scripts.
