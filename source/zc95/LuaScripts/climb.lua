@@ -1,3 +1,5 @@
+-- "Climb" - kindly contributed by someone who perfers to remain anonymous
+
 require("ettot")
 
 block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
@@ -34,7 +36,6 @@ function Setup(time_ms)
         zc.SetPower(chan, 1000)
     end
     channels["block"] = block_climb
-    print("call ettot.setupblock(channels)");
     ettot.setupblock(channels)
 end
 

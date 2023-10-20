@@ -1,7 +1,7 @@
+-- "Orgasm" - kindly contributed by someone who perfers to remain anonymous
+
 require("ettot")
 block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
-
--- Orgasm
 
 Config = {
     name = "Orgasm",
