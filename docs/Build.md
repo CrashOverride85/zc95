@@ -1,8 +1,4 @@
-
-
 # Hardware build notes 
-
-*Disclaimer*: These instructions are complete to the best of my knowledge, however I've only built the one so far, and that was over quite some time, so there may be omissions.
 
 There is now an optional audio [input board](./AudioInput-Build.md) too.
 
