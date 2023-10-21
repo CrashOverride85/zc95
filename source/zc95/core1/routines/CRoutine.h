@@ -97,6 +97,7 @@ struct routine_conf
     std::string button_text[(int)soft_button::BUTTON_MAX];
     bool enable_channel_isolation = true;
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
+    uint16_t loop_freq_hz = 0;
 };
 
 class CRoutine;
@@ -280,7 +281,11 @@ class CRoutine
                     _simple_channel[channel]->channel_off();
 
                 if (_full_channel[channel] != NULL)
+                {
                     _full_channel[channel]->off();
+                    _full_channel[channel]->set_freq(DEFAULT_FREQ_HZ);
+                    _full_channel[channel]->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
+                }
             }
         }
 

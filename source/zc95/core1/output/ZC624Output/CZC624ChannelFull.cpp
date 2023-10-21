@@ -8,9 +8,8 @@ CFullOutputChannel(saved_settings, power_level_control, channel_id)
     printf("CZC624ChannelFull(%d)\n", channel_id);
     _comms = comms;
     _channel_id = channel_id;
-    _inital_led_colour = LedColour::Green;
-    _led_off_time = 0;
-    set_led_colour(_inital_led_colour);
+    _standby_led_colour = LedColour::Green;
+    set_led_colour(_standby_led_colour);
 }
 
 CZC624ChannelFull::~CZC624ChannelFull()
@@ -29,8 +28,6 @@ void CZC624ChannelFull::channel_pulse(uint8_t pos_us, uint8_t neg_us)
     msg.arg1 = pos_us;
     msg.arg2 = neg_us;
 
-    set_led_colour(LedColour::Red);
-    _led_off_time = get_time_us() + 10000;
     _comms->send_message(msg);
 }
 
@@ -50,7 +47,7 @@ void CZC624ChannelFull::set_pulse_width(uint8_t pulse_width_pos_us, uint8_t puls
 {
     CZC624Comms::message msg;
 
-    msg.command = (uint8_t)CZC624Comms::spi_command_t::SetPulseWitdh;
+    msg.command = (uint8_t)CZC624Comms::spi_command_t::SetPulseWidth;
     msg.arg0 = _channel_id;
     msg.arg1 = pulse_width_pos_us;
     msg.arg2 = pulse_width_neg_us;
@@ -68,7 +65,6 @@ void CZC624ChannelFull::on()
     msg.arg2 = 0;
 
     _comms->send_message(msg);
-    set_led_colour(LedColour::Red);
 }
 
 void CZC624ChannelFull::off()
@@ -81,7 +77,6 @@ void CZC624ChannelFull::off()
     msg.arg2 = 0;
 
     _comms->send_message(msg);
-    set_led_colour(LedColour::Green);
 }
 
 void CZC624ChannelFull::set_absolute_power(uint16_t power)
@@ -98,11 +93,20 @@ void CZC624ChannelFull::set_absolute_power(uint16_t power)
 }
 
 void CZC624ChannelFull::loop(uint64_t time_us)
-{
-    if (_led_off_time && time_us > _led_off_time)
+{    
+    bool new_led_state = _comms->loop(_channel_id);
+    
+    // Send LED update to core0 whenever the state changes, or every 500ms if no update. This means that 
+    // if an update gets lost (e.g. due to full FIFO queue), "stuck" LEDs get fixed after at most 500 ms
+    if (new_led_state != _last_led_state || time_us_64() - _last_led_update_us > (1000 * 500))
     {
-        set_led_colour(LedColour::Green);
-        _led_off_time = 0;
+        if (new_led_state)
+            set_led_colour(LedColour::Red);
+        else
+            set_led_colour(_standby_led_colour);
+
+        _last_led_state = new_led_state;
+        _last_led_update_us = time_us_64();
     }
 }
 
@@ -111,7 +115,7 @@ bool CZC624ChannelFull::is_internal()
     return true;
 }
 
-// Enable/disable channel isolation. This setting does have some saftey implications, so try and confirm 
+// Enable/disable channel isolation. This setting does have some safety implications, so try and confirm 
 // that it does get set, and shutdown box if it doesn't.
 bool CZC624ChannelFull::set_channel_isolation(bool on)
 {

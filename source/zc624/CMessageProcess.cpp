@@ -3,10 +3,11 @@
 #include "hardware/spi.h"
 #include <stdio.h>
 
-CMessageProcess::CMessageProcess(COutput *output)
+CMessageProcess::CMessageProcess(COutput *output, CI2cSlave *i2c_slave)
 {
     printf("CMessageProcess()\n");
     _output = output;
+    _i2c_slave = i2c_slave;
 }
 
 CMessageProcess::~CMessageProcess()
@@ -18,10 +19,8 @@ void CMessageProcess::init()
 {
     // SPI initialisation
     spi_init(SPI_PORT, SPI_BAUD_RATE);
-    
 
-   // spi_set_format(SPI_PORT, 8, SPI_CPOL_1, SPI_CPHA_1,SPI_MSB_FIRST);
-	spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+    spi_set_format(spi0, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 
     spi_set_slave(SPI_PORT, true);
 
@@ -35,8 +34,8 @@ void CMessageProcess::loop()
 {
     message msg;
 
-    spi_read_blocking(SPI_PORT, (uint8_t)0x00, (uint8_t*)&msg, 4);
-//printf("command = %d, arg 0=%d, 1=%d, 2=%d\n", msg.command, msg.arg0, msg.arg1, msg.arg2);
+    spi_read_blocking(SPI_PORT, _output->get_channel_led_state(), (uint8_t*)&msg, 4);
+// printf("command = %d, arg 0=%d, 1=%d, 2=%d\n", msg.command, msg.arg0, msg.arg1, msg.arg2);
     switch ((command)msg.command)
     {
         case command::Pulse:
@@ -55,7 +54,7 @@ void CMessageProcess::loop()
             set_freq(msg);
             break;
 
-        case command::SetPulseWitdh:
+        case command::SetPulseWidth:
             set_pulse_width(msg);
             break;
 
@@ -65,6 +64,15 @@ void CMessageProcess::loop()
 
         case command::SwitchOff:
             off(msg);
+            break;
+
+        case command::NoOp:
+            // Sent so we can send LED states 
+            break;
+
+        case command::SetTestVal:
+            // Used so zc95 can test that SPI comms are working (at least to some extent) on startup. It'll use i2c to read this value back.
+            _i2c_slave->set_value((uint8_t)CI2cSlave::reg::TestVal, msg.arg0);
             break;
 
         default:
@@ -114,7 +122,7 @@ void CMessageProcess::set_freq(message msg)
         _output->set_freq(msg.arg0, freq);
 }
 
-// SetPulseWitdh - set pulse width generated if SwitchOn used
+// SetPulseWidth - set pulse width generated if SwitchOn used
 // Args:
 // 0 = channel (0-3)
 // 1 = pos pulse width (us)

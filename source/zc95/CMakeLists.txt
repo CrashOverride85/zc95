@@ -84,26 +84,28 @@ add_executable(zc95
 
   display/CMenu.cpp
   display/CDisplay.cpp
-  display/CMainMenu
-  display/CMenuRoutineSelection
-  display/CMenuRoutineAdjust
-  display/CMenuSettings
-  display/CMenuChannelConfig
-  display/CMenuCollarConfig
-  display/CMenuCollarConfigSelected
-  display/CMenuSettingLedBrightnes
-  display/CMenuSettingPowerStep
-  display/CMenuSettingRampUpTime
-  display/CMenuSettingAbout
-  display/CMenuSettingAudio
-  display/CMenuSettingHardware
-  display/CMenuRemoteAccess
-  display/CMenuRemoteAccessConnectWifi
-  display/CMenuRemoteAccessSerial
-  display/CMenuApMode
-  display/COptionsList
-  display/CHorzBarGraph
-  display/CDisplayMessage
+  display/CMainMenu.cpp
+  display/CMenuRoutineSelection.cpp
+  display/CMenuRoutineAdjust.cpp
+  display/CMenuSettings.cpp
+  display/CMenuChannelConfig.cpp
+  display/CMenuCollarConfig.cpp
+  display/CMenuCollarConfigSelected.cpp
+  display/CMenuSettingLedBrightnes.cpp
+  display/CMenuSettingPowerStep.cpp
+  display/CMenuSettingRampUpTime.cpp
+  display/CMenuSettingAbout.cpp
+  display/CMenuSettingAudio.cpp
+  display/CMenuSettingHardware.cpp
+  display/CMenuSettingDisplayOptions.cpp
+  display/CMenuSettingPowerLevelDisplay.cpp
+  display/CMenuRemoteAccess.cpp
+  display/CMenuRemoteAccessConnectWifi.cpp
+  display/CMenuRemoteAccessSerial.cpp
+  display/CMenuApMode.cpp
+  display/COptionsList.cpp
+  display/CHorzBarGraph.cpp
+  display/CDisplayMessage.cpp
 
   AudioInput/CMCP4651.cpp
   AudioInput/CAudio.cpp
@@ -130,14 +132,15 @@ add_executable(zc95
   RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
 
-  LuaScripts.S
+  LuaScripts/LuaScripts.S
+  LuaScripts.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
 target_compile_options(zc95 PUBLIC -Wall -Wnull-dereference)
  
-pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
-pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/collar433.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+pico_generate_pio_header(zc95 ${CMAKE_CURRENT_LIST_DIR}/collar433.pio OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 
 pico_set_program_name(zc95 "zc95")
@@ -201,7 +204,7 @@ target_compile_definitions(zc95 PRIVATE
   MIPI_DISPLAY_PIN_CS=17
   MIPI_DISPLAY_PIN_DC=20
   MIPI_DISPLAY_PIN_RST=2
-  MIPI_DISPLAY_PIN_BL=6
+  MIPI_DISPLAY_PIN_BL=-1
   MIPI_DISPLAY_PIN_CLK=18
   MIPI_DISPLAY_PIN_MOSI=19
   MIPI_DISPLAY_PIN_MISO=16

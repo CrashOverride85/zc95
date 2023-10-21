@@ -239,6 +239,7 @@ void COutputChannel::do_pulse(uint8_t pos_us, uint8_t neg_us)
     if (!pio_sm_is_tx_fifo_full(_pio, _sm))
     {
         pio_sm_put_blocking(_pio, _sm, val);
+        channel_led_on();
     }
     else
     {
@@ -246,13 +247,23 @@ void COutputChannel::do_pulse(uint8_t pos_us, uint8_t neg_us)
     }
 }
 
+void COutputChannel::channel_led_on()
+{
+    _channel_led_off_time_us = time_us_64() + (10 * 1000); // 10ms
+}
+
 COutputChannel::status COutputChannel::get_status()
 {
     return _status;
 }
 
-// test the PFET, by starting from the highist DAC setting which should turn the PFET fully off, and
-// runing through to 0, which should be fully on. Output the ADC reading for each DAC setting in a format
+bool COutputChannel::get_channel_led()
+{
+    return _channel_led_off_time_us > time_us_64();
+}
+
+// test the PFET, by starting from the highest DAC setting which should turn the PFET fully off, and
+// running through to 0, which should be fully on. Output the ADC reading for each DAC setting in a format
 // that can be easily imported into a spreadsheet for graphing. It should be a nice smooth curve starting
 // at around dac=3200 and leveling off around dac=1400
 void COutputChannel::diag_run_dac_sweep()

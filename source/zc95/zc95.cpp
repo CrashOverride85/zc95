@@ -219,7 +219,11 @@ int main()
     controls.clear_input();
     controls.process(true);
 
-    // Front pannel
+    // Front panel
+    gpio_init(PIN_FP_INT1);
+    gpio_init(PIN_FP_INT2);
+    gpio_set_dir(PIN_FP_INT1, GPIO_IN);
+    gpio_set_dir(PIN_FP_INT2, GPIO_IN);
     gpio_set_irq_enabled_with_callback(PIN_FP_INT1, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
@@ -303,7 +307,7 @@ int main()
             start = time_us_64();
             controls.process(true);   // ~215us
             ext_input->process(true); // ~215us
-            led.loop(true); // ~55us    
+            led.loop(true); // ~55u
 
             uint64_t timenow = time_us_64();
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();

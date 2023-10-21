@@ -35,13 +35,14 @@ class CHwCheck
         void set_display(CDisplay *display);
 
     private:
-        enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION};
+        enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION, ZC624_NO_SPI};
         void show_error_text_missing(int y);
-        void show_error_text_message(int y, std::string message);
+        void show_error_text_message(int *y, std::string message);
         void hw_check_failed(enum Cause casue, CLedControl *ledControl, CControlsPortExp *controls);
         void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color);
         void get_battery_readings();
         void halt(CLedControl *led_control);
+        void report_zc624_fault(int *y);
 
         class device
         {
@@ -66,6 +67,7 @@ class CHwCheck
         std::list<device> _devices;
         CBatteryGauge *_batteryGauge;
         hagl_backend_t *_hagl_backend = NULL;
+        uint8_t _zc624_status = 0;
 };
 
 #endif
