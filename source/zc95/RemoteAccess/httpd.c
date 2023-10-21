@@ -487,11 +487,12 @@ static void http_kill_all_connections()
     LWIP_ASSERT("broken list", hs != hs->next);
 
     LWIP_ASSERT("hs != NULL", hs != NULL);
-    LWIP_ASSERT("hs->pcb != NULL", hs->pcb != NULL);
 
-    // printf("http_kill_all_connections: close hs=%d\n", hs);
-    http_close_or_abort_conn(hs->pcb, hs, 1); /* this also unlinks the http_state from the list */
-
+    if (hs->pcb)
+    {
+      // printf("http_kill_all_connections: close hs=%d\n", hs);
+      http_close_or_abort_conn(hs->pcb, hs, 1); /* this also unlinks the http_state from the list */
+    }
     hs = hs_free_next;
   }
 }
