@@ -22,7 +22,7 @@ class CZC624Comms
         {
             SetPower = 1,
             Poll = 2,
-            PowerDown = 3,
+            PowerDown = 3, // If renumbering, also change in globals.cpp
             
             SetFreq = 4,
             SetPulseWidth = 5,
