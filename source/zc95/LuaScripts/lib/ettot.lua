@@ -1,3 +1,4 @@
+-- Library to handle Waves, Orgasm & Climb - code kindly contributed by someone who perfers to remain anonymous
 
 module("ettot", package.seeall)
 

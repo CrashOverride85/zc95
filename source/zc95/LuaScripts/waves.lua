@@ -1,4 +1,4 @@
--- WAVES
+-- "Waves" - kindly contributed by someone who perfers to remain anonymous
 
 Config = {
     name = "Waves",

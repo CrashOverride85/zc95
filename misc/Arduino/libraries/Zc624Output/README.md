@@ -1,5 +1,7 @@
 # Arduino control
 
+**Note:** Use with ZC624 FW version 1.6. _Might_ not work with >=1.7
+
 ## Introduction
 This is a library to control a bare ZC624 output module/PCB directly, without any of the other PCBs, from an Arduino (tested on ESP32). This means that the Arduino is responsible for generating patterns.
 
