@@ -1,7 +1,5 @@
 # Arduino control
 
-**Note:** Use with ZC624 FW version 1.6. _Might_ not work with >=1.7
-
 ## Introduction
 This is a library to control a bare ZC624 output module/PCB directly, without any of the other PCBs, from an Arduino (tested on ESP32). This means that the Arduino is responsible for generating patterns.
 
@@ -77,6 +75,3 @@ This approach is used in the example to enable the 4 channels at different frequ
 
 #### 2. Send individual pulses
 The `pulse(<positive pulse us>, <negative pulse us>)` command can be used to send an individual pulse with the specified positive/negative pulse widths. When using this mode, the module has to be sent a continuous stream of pulses to generate output; this approach is used in the "waves()" section of the example. 
-
-
-
