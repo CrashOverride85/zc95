@@ -95,6 +95,9 @@ bool Zc624::check_zc624(bool wait)
     _utils->debug("Failed to read OverallStatus register from ZC624\n");
     return false;
   }
+  
+  if (!is_version_acceptable())
+    return false;
 
   // Wait for upto 2 seconds for ZC624 to become ready
   uint8_t count = 0;
@@ -120,6 +123,34 @@ bool Zc624::check_zc624(bool wait)
     return false;
   }
 
+  return true;
+}
+
+bool Zc624::is_version_acceptable()
+{
+  uint8_t major_version = 0;
+  uint8_t minor_version = 0;
+  
+  if (!get_major_minor_version(&major_version, &minor_version))
+    return false;
+  
+  return is_version_acceptable(major_version, minor_version);
+}
+
+bool Zc624::is_version_acceptable(uint8_t major, uint8_t minor)
+{
+  if (major != ZC624_EXPECTED_MAJOR_VERSION)
+  {
+    _utils->debug("ZC624 major verion of %d does not match required version of %d\n", major, ZC624_EXPECTED_MAJOR_VERSION);
+    return false;
+  }
+  
+  if (minor < ZC624_MINIMUM_MINOR_VERSION)
+  {
+    _utils->debug("ZC624 minor verion of %d does not match required version of >= %d\n", major, ZC624_MINIMUM_MINOR_VERSION);
+    return false;
+  }  
+  
   return true;
 }
 

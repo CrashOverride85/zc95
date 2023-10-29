@@ -76,12 +76,13 @@ void loop()
     Serial.println("Error getting major/minor version");
   }
 
-  // Check the zc624 module is found, and has passed it's self test.
+  // Check the zc624 module is found, has passed its self test and is 
+  // running a compatible firmware version.
   // Passing wait=true to wait up to 2 seconds for it to become ready.
   bool is_ready = _zc624->check_zc624(true);
   if (!is_ready)
   {
-    Serial.println("ERROR: Zc624 is not ready. stop.");
+    Serial.println("ERROR: Zc624 is not ready / not found / not a compatible version. stop.");
     while (1)
       ;
   }
