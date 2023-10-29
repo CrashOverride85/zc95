@@ -12,7 +12,14 @@ void ZcArduinoUtils::debug(const char *format, ...)
   va_start(args, format);
 
   if (_serial_port)
-    _serial_port->printf(format, args);
+  {
+    // It should be possible to do "_serial_port->vprintf(format, args);", but the 
+    // arduino serial/stream/print library has omitted vprintf for some reason.
+    
+    char buffer[200] = {0};
+    vsnprintf(buffer, sizeof(buffer)-1, format, args);
+    _serial_port->print(buffer);
+  }
 
   va_end(args);
 }
