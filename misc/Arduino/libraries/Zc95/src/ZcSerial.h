@@ -15,11 +15,10 @@ public:
   ZcSerial(HardwareSerial *serial_port, std::queue<std::string> &rcvQueue, bool debug);
   bool connect();
   void disconnect();
-  void wait_for_connection();
   void send(std::string message);
   std::string recv(int msgId);
   void loop();
-  bool is_connected() {return true;}
+  bool is_connected();
 
 private:
   void process_message(std::string message);
@@ -37,6 +36,7 @@ private:
   std::queue<std::string> &_rcvQueue;
   bool _debug;
   bool _connected = false;
+  unsigned long _reset_sent_time = 0;
 };
 
 #endif

@@ -15,7 +15,6 @@ public:
   ZcWs(std::string ip, std::queue<std::string> &rcvQueue, bool debug);
   bool connect();
   void disconnect();
-  void wait_for_connection();
   void send(std::string message);
   std::string recv(int msgId);
   void loop();

@@ -33,6 +33,7 @@ bool ZcControl::connect()
 {
   if (_zc_connection->connect())
   {
+    loop();
     return true;
   }
 
@@ -43,17 +44,7 @@ void ZcControl::loop()
 {
   _zc_connection->loop();
 
-  bool is_connected = _zc_connection->is_connected();
-  if (_connected != is_connected)
-  {
-    // On connection, get a list of available patterns
-    if (is_connected)
-    {
-      populate_patterns_map();
-    }
-
-    _connected = _zc_connection->is_connected();
-  }
+  check_connection_status();
 
   // Process any received messages
   while (!_rcv_queue.empty())
@@ -64,11 +55,32 @@ void ZcControl::loop()
   }
 }
 
+void ZcControl::check_connection_status()
+{
+  connection_status_t new_connection_status;
+  
+  if (_zc_connection->is_connected())
+    new_connection_status = connection_status_t::CONNECTED;
+  else
+    new_connection_status = connection_status_t::DISCONNECTED;
+
+  if (_connection_status != new_connection_status)
+  {
+    // On connection, get a list of available patterns
+    if (new_connection_status == connection_status_t::CONNECTED)
+    {
+      populate_patterns_map();
+    }
+
+    _connection_status = new_connection_status;
+  }
+}
+
 void ZcControl::disconnect() { _zc_connection->disconnect(); }
 
 bool ZcControl::start_pattern(std::string name)
 {
-  if (!_connected)
+  if (_connection_status != connection_status_t::CONNECTED)
   {
     Serial.println("ZcControl::start_pattern(): not connected");
     return false;
@@ -88,7 +100,7 @@ bool ZcControl::start_pattern(std::string name)
 
 bool ZcControl::start_pattern(uint8_t pattern_id)
 {
-  if (!_connected)
+  if (_connection_status != connection_status_t::CONNECTED)
   {
     Serial.println("ZcControl::start_pattern(): not connected");
     return false;
@@ -100,7 +112,7 @@ bool ZcControl::start_pattern(uint8_t pattern_id)
 
 void ZcControl::stop_pattern() { _zc_messaging->SendPatternStopMessage(); }
 
-bool ZcControl::is_connected() { return _connected; }
+bool ZcControl::is_connected() { return _connection_status == connection_status_t::CONNECTED; }
 
 void ZcControl::set_channel_power(uint8_t channel, uint16_t power_level)
 {
@@ -134,6 +146,19 @@ int ZcControl::get_front_panel_power(uint8_t channel)
   }
 
   return _channel_pannel_power[channel - 1];
+}
+
+void ZcControl::wait_for_connection()
+{
+  while(1)
+  {
+    if (_connection_status == connection_status_t::CONNECTED)
+      return;
+    
+    _zc_connection->loop();
+    check_connection_status();
+    delay(100);
+  }
 }
 
 ///////////////////// Private /////////////////////

@@ -8,7 +8,6 @@ class ZcConnection
 public:
   virtual bool connect() = 0;
   virtual void disconnect() = 0;
-  virtual void wait_for_connection() = 0;
   virtual void send(std::string message) = 0;
   virtual std::string recv(int msgId) = 0;
   virtual void loop() = 0;

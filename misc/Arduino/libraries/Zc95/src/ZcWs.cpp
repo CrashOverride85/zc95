@@ -24,17 +24,6 @@ bool ZcWs::connect()
   }
 }
 
-void ZcWs::wait_for_connection()
-{
-  /*
-  while (!_ws.available())
-  {
-    _ws.poll();
-    delay(10);
-  }
-  */
-}
-
 void ZcWs::send(std::string message)
 {
   if (_debug)

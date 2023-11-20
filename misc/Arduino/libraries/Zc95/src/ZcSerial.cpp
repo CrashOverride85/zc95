@@ -12,18 +12,10 @@ ZcSerial::ZcSerial(HardwareSerial *serial_port, std::queue<std::string> &rcvQueu
 bool ZcSerial::connect()
 {
   _serial_port->begin(115200);
+  _serial_port->write('\04'); // EOT - reset ZC95 connection 
+  _reset_sent_time = millis();
+  
   return true;
-}
-
-void ZcSerial::wait_for_connection()
-{
-  /*
-  while (!_ws.available())
-  {
-    _ws.poll();
-    delay(10);
-  }
-  */
 }
 
 void ZcSerial::send(std::string message)
@@ -66,12 +58,25 @@ std::string ZcSerial::recv(int msgId)
 
 void ZcSerial::loop()
 {
-  poll();
+  if (_connected)
+  {
+    poll();
+  }
+  else
+  {
+    // Set connection status to connected 250ms after the reset was sent
+    if (millis() - _reset_sent_time > 250)
+    {
+     _connected = true; 
+    }
+  }
 }
 
 void ZcSerial::disconnect() 
 {
   _serial_port->write('\04'); //   EOT, causes the zc95 to stop a pattern if one is running, and reset the connection (clears any state, etc.)
+  _serial_port->end();
+  _connected = false;
 }
 
 void ZcSerial::process_message(std::string message)
@@ -147,4 +152,7 @@ void ZcSerial::reset_message_buffer()
   _stx_received = false;
 }
 
-
+bool ZcSerial::is_connected()
+{
+  return _connected;
+}

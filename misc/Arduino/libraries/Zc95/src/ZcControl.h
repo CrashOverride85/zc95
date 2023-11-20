@@ -20,6 +20,7 @@ public:
   void loop();
   void disconnect();
   bool is_connected();
+  void wait_for_connection();
 
   bool start_pattern(std::string name);
   bool start_pattern(uint8_t pattern_id);
@@ -31,18 +32,20 @@ public:
   int get_front_panel_power(uint8_t channel);
 
 private:
+  enum connection_status_t {UNKNOWN, CONNECTED, DISCONNECTED};
+  connection_status_t _connection_status = connection_status_t::UNKNOWN;
   ZcConnection *_zc_connection = NULL;
   ZcMessaging *_zc_messaging = NULL;
   std::queue<std::string> _rcv_queue;
   bool _debug;
   std::string _address;
-  bool _connected = false;
   std::map<std::string, uint8_t> _pattern_map;
   uint16_t _channel_power[4] = {0};        // What each channel has been set to via this lib
   uint16_t _channel_pannel_power[4] = {0}; // What each channel is set to on the front pannel of the box (read only). 0-3 => channels 1-4
 
   void populate_patterns_map();
   void process_message(std::string message);
+  void check_connection_status();
 };
 
 #endif
