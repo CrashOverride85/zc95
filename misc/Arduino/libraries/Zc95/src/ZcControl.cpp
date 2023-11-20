@@ -1,9 +1,16 @@
 #include "ZcControl.h"
 #include "ZcWs.h"
+#include "ZcSerial.h"
 
 ZcControl::ZcControl(std::string address, bool debug)
 {
   _zc_connection = new ZcWs(address, _rcv_queue, debug);
+  _zc_messaging = new ZcMessaging(_zc_connection, debug);
+}
+
+ZcControl::ZcControl(HardwareSerial *serial_port,  bool debug)
+{
+  _zc_connection = new ZcSerial(serial_port, _rcv_queue, debug);
   _zc_messaging = new ZcMessaging(_zc_connection, debug);
 }
 

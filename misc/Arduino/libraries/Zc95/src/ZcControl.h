@@ -13,6 +13,7 @@ class ZcControl
 {
 public:
   ZcControl(std::string address, bool debug);
+  ZcControl(HardwareSerial *serial_port, bool debug);
   ~ZcControl();
 
   bool connect();
