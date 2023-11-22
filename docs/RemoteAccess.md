@@ -8,6 +8,7 @@ The ZC95 can be controlled remotely either using RS232 serial (Aux port) or usin
 The remote access options can be used to:
 * Upload Lua scripts (of which 5 can be stored)
 * Control the box remotely with a Python GUI
+* Limited control using an Arduino/ESP32 with the [ZC95 Arduino library][ArduinoLib].
 
 ## Connecting using WiFi
 If a Pico-W is used, the Config -> Remote Access menu should include options relating to WiFi.
@@ -197,3 +198,4 @@ In this case, it's showing a script that's failed on line 112 due to a call to a
 [ConnectedToWifi]: images/screen_ra_connected.jpg "Connected to WiFi screen"
 [Gui]: images/pattern_gui_start.png "Python GUI showing Waves pattern"
 [GuiDebug]: images/gui_debug_window.png "Python GUI showing debug window"
+[ArduinoLib]: ../misc/Arduino/libraries/Zc95/README.md

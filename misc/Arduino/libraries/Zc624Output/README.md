@@ -1,4 +1,4 @@
-# Arduino control
+# Arduino control of ZC624
 
 ## Introduction
 This is a library to control a bare ZC624 output module/PCB directly, without any of the other PCBs, from an Arduino (tested on ESP32). This means that the Arduino is responsible for generating patterns.
