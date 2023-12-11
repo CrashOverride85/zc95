@@ -23,7 +23,10 @@ On the next page, add the BOM and CPL files:
 * [output_bom_jlc.csv](../pcb/OutputModule/output_bom_jlc.csv)
 * [output_cpl_jlc.csv](../pcb/OutputModule/output_cpl_jlc.csv)
 
-The next page should show a list of all parts found / matched. Deselect the SS210 component (D8, D9, D10, D11, D12, D13, D14, D15), these aren't needed and reduce output power.
+The next page should show a list of all parts found / matched. The BoM/CPL file also includes some through hole parts - I'd suggest un-ticking these and soldering them yourself as it's cheaper.
+
+### Transformers
+The ZC624 output board was originally designed and tested with 42TL004 transformers in mind. However, v0.2 is designed so that the larger/more powerful 42TU200 transformers _should_ also fit. Unfortunately, at the time of writing, these are out of stock, so is completely untested. I recommend sticking with the 42TL004's listed in the BoM. 
 
 ### PCB Parts
 All parts required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:
@@ -72,12 +75,10 @@ Photo of board as it arrived from JLCPCB:
 
 ![zc624 smt only]
 
-D8-D15 are populated in this photo, but these should be omitted when ordering the boards (or removed if ordered by mistake), as they reduce output power.
-
 Notes
 * The pin headers J1, J2 & J3 go on the bottom of the board, J4 ("Serial") on the top. I found it easier to plug the board into the main board, then solder J1, J2 & J3 to be sure they were straight / lined up
-* The 4 transformers have the "P" facing inwards (towards each other). Note that the transformers are used "backwards" - the side labelled primary goes to outputs.
-* PFETs Q2, Q5 & Q8 should have the metal back facing towards the bottom (transformer end) of the board. Q11 is the other way round (silkscreen is correct)
+* The 4 transformers have the "P" facing towards the bottom. Note that the transformers are used "backwards" - the side labelled primary goes to outputs.
+* PFETs Q2, Q5, Q8 & Q11 should have the metal back facing towards the left of the board (silkscreen is correct)
 * Solder on both the 1x20 pin sockets for the Pico. The 3 pin header on the right should be unpopulated.
 
 Fully assembled board:
