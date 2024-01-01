@@ -3,18 +3,15 @@
 There is now an optional audio [input board](./AudioInput-Build.md) too.
 
 ## Prerequisites 
-These notes assume a reasonable amount of experience assembling electronic kits. Other than through hole soldering, it also requires:
-* Soldering 1 SMD part on the front panel control board. This is a SOIC-16 package, so fairly large / easy to solder
-* Creating an IDC cable
-* Crimping connectors for Molex KK style (well, clones in this case) connectors. Other 2.54mm connectors could be substituted.
+These notes assume a reasonable amount of experience assembling electronic kits. I suggest having a read though these notes before ordering anything.
 
 ## PCB + Parts ordering
 ### PCBs
-For these 3 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
+For these 2 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
 * [Front panel](../pcb/FrontPanel.zip). Suggest ordering in black
-* [Front panel controls](../pcb/FrontPanelControls.zip). Set "Remove Order Number" to "Specify a location" (location is already specified on the back of this board)
 * [Main board](../pcb/MainBoard.zip)
 
+#### Output board
 The output board ("ZC624 Output module") has been designed with the JLCPCB SMT assembly service in mind, although the footprints are the hand-solder versions where applicable, and some (through hole) parts still need hand assembly.
 Order the board using [these gerbers](../pcb/OutputModule/OutputBoard-gerbers.zip) and the default options as per the other boards.
 
@@ -24,6 +21,18 @@ On the next page, add the BOM and CPL files:
 * [output_cpl_jlc.csv](../pcb/OutputModule/output_cpl_jlc.csv)
 
 The next page should show a list of all parts found / matched. The BoM/CPL file also includes some through hole parts - I'd suggest un-ticking these and soldering them yourself as it's cheaper.
+
+#### Front panel controls
+v0.2 of this board is also designed with the JLCPCB assembly service in mind, with a few though hole parts also requiring hand assembly
+
+Order the board using [these gerbers](../pcb/FrontPanelControls-v0.2/GERBER-PanelControls.zip) and the default options as per the other boards.
+
+Select the "SMT Assembly" option again at the bottom - pick "Assemble **BOTTOM** side" (this is _not_ the default) and Tooling holes "Added by JLCPCB". 
+On the next page, add the BOM and CPL files:
+* [output_bom_jlc.csv](../pcb/FrontPanelControls-v0.2/BOM-PanelControls.csv)
+* [output_cpl_jlc.csv](../pcb/FrontPanelControls-v0.2/CPL-PanelControls.csv)
+
+The next page should show a list of all parts found / matched. The BoM/CPL file also includes the through hole part J5 - I'd suggest un-ticking it and soldering it yourself as it's cheaper.
 
 ### Transformers
 The ZC624 output board was originally designed and tested with 42TL004 transformers in mind. However, v0.2 is designed so that the larger/more powerful 42TU200 transformers _should_ also fit. Unfortunately, at the time of writing, these are out of stock, so is completely untested. I recommend sticking with the 42TL004's listed in the BoM. 

@@ -62,7 +62,7 @@
       (mirror false)
       (drillshape 0)
       (scaleselection 1)
-      (outputdirectory "gerber/FP/")
+      (outputdirectory "FAB/")
     )
   )
 
