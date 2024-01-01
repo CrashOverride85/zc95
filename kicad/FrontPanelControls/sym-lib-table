@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name PanelControls-rescue)(type Legacy)(uri ${KIPRJMOD}/PanelControls-rescue.lib)(options "")(descr ""))
-)
