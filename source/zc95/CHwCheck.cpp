@@ -42,7 +42,7 @@ CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
     
     // these two ICs are on the front panel
     _devices.push_front(device(ADC_ADDR, "Front panel ADC", "FP ADC U1"));
-    _devices.push_front(device(FP_ANALOG_PORT_EXP_2_ADDR, "Front panel port expander (U2)", "FP Port Exp U2"));
+    _devices.push_front(device(FP_0_1_PORT_EXP_ADDR, "Front panel port expander (U2)", "FP Port Exp U2"));
 
     // optional parts
     _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
@@ -106,7 +106,7 @@ void CHwCheck::check_part1()
             }
             else
             {
-                printf("NOT FOUND! (expected on address %d)\n", it->address);
+                printf("NOT FOUND! (expected on address 0x%x)\n", it->address);
                 cause = Cause::MISSING;
                 ok = false;
             }

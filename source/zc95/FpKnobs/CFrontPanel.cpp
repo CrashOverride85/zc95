@@ -123,7 +123,7 @@ uint8_t CFrontPanel::read_port_expander()
 {
     uint8_t buffer[1];
     
-    int retval = i2c_read(__func__, FP_ANALOG_PORT_EXP_2_ADDR, buffer, 1, false);
+    int retval = i2c_read(__func__, FP_0_1_PORT_EXP_ADDR, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFrontPanel::read_port_expander i2c read error!\n");

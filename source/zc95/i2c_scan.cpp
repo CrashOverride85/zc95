@@ -1,4 +1,5 @@
 #include "i2c_scan.h"
+#include "config.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
 
@@ -29,7 +30,20 @@ void i2c_scan::scan(i2c_inst_t *i2c)
         if (reserved_addr(addr))
             ret = PICO_ERROR_GENERIC;
         else
-            ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
+        {
+            if (addr == FP_0_2_PORT_EXP_ADDR)
+            {
+                // The TCA9534 I/O expander used on the front panel is weird in that it 
+                // ignores reads unless there's a write first.
+                // So we need a special case to detect it.
+                rxdata = 0;
+                ret = i2c_write_blocking(i2c, addr, &rxdata, 1, false);
+            }
+            else
+            {
+                ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
+            }
+        }
 
         printf(ret < 0 ? "." : "@");
         printf(addr % 16 == 15 ? "\n" : "  ");
