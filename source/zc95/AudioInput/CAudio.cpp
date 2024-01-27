@@ -27,7 +27,7 @@
 
 #include "ESP32_fft.h"
 
-CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls)
+CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CMainBoardPortExp *controls)
 {
     printf("CAudio()\n");
     _analogueCapture = analogueCapture;

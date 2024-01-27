@@ -1,14 +1,14 @@
-#ifndef _CCONTROLSPORTEXP_H
-#define _CCONTROLSPORTEXP_H
+#ifndef _CMAINBOARDPORTEXP_H
+#define _CMAINBOARDPORTEXP_H
 
 #include <stdio.h>
 #include "CGetButtonState.h"
 #include "ECButtons.h"
 
-class CControlsPortExp : public CGetButtonState
+class CMainBoardPortExp : public CGetButtonState
 {
     public:
-        CControlsPortExp(uint8_t address);
+        CMainBoardPortExp(uint8_t address);
         void process(bool always_update);
         bool button_state(enum Button button);
         bool has_button_state_changed(enum Button button, bool *new_state);
@@ -18,7 +18,6 @@ class CControlsPortExp : public CGetButtonState
         void audio_input_enable(bool enable);
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
-
     
     private:
         int set_pin_state(uint8_t pin, bool state);
@@ -30,8 +29,6 @@ class CControlsPortExp : public CGetButtonState
         volatile bool _interrupt;
 
         uint8_t _data_out = 0xFF;
-
-
 };
 
 #endif

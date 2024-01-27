@@ -39,10 +39,8 @@ void i2c_scan::scan(i2c_inst_t *i2c)
                 rxdata = 0;
                 ret = i2c_write_blocking(i2c, addr, &rxdata, 1, false);
             }
-            else
-            {
-                ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
-            }
+            
+            ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
         }
 
         printf(ret < 0 ? "." : "@");

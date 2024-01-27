@@ -32,7 +32,7 @@ add_executable(zc95
   zc95.cpp 
   CLedControl.cpp 
   CLedControl.h 
-  CControlsPortExp.cpp 
+  CMainBoardPortExp.cpp 
   CExtInputPortExp.cpp
   CEeprom.cpp
   CSavedSettings.cpp
@@ -80,9 +80,11 @@ add_executable(zc95
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
   
-  FpKnobs/CRotEnc.cpp
-  FpKnobs/CFrontPanel.cpp
-
+  FrontPanel/CRotEnc.cpp
+  FrontPanel/CFrontPanelV01.cpp
+  FrontPanel/CFrontPanelV02.cpp
+  FrontPanel/CButtonLeds.cpp  
+  
   display/CMenu.cpp
   display/CDisplay.cpp
   display/CMainMenu.cpp

@@ -10,7 +10,9 @@
 #define FP_0_1_PORT_EXP_ADDR        0x26 // Port expander (U2) on v0.1 of the front panel
 #define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
 #define FP_0_2_PORT_EXP_ADDR        0x38 // Address of port expander used on >= v0.2 of the front panel
-#define ADC_ADDR                    0x48 // ADC on front panel, used for power control dials
+#define FP_0_2_BUTTON_LED_DRV_ADDR  0x41 // LED driver for the LED's in the buttons of the v0.2 front panel
+#define FP_0_1_ADC_ADDR             0x48 // ADC on v0.1 of front panel, used for power control dials
+#define FP_0_2_ADC_ADDR             0x49 // ADC on v0.2 of front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 
 
 
