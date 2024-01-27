@@ -37,7 +37,7 @@ const uint8_t status_bar_height = 9;  // battery level + mode at bottom
 const uint8_t bar_width = 10;         // individual power level bar width 
 
 
-CDisplay::CDisplay()
+CDisplay::CDisplay(CFrontPanel *front_panel)
 {
     printf("CDisplay()\n");
     memset(_channel_power, 0, sizeof (_channel_power));
@@ -54,6 +54,7 @@ CDisplay::CDisplay()
     _battery_percentage = 0;
     _active_pattern = "";
     _remote_mode_active = false;
+    _front_panel = front_panel;
 }
 
 CDisplay::~CDisplay()
@@ -236,6 +237,11 @@ void CDisplay::draw_soft_buttons()
     // D
     put_text(_option_d, (MIPI_DISPLAY_WIDTH/2)+3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
     hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1), (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
+
+    _front_panel->set_button_in_use(Button::A, _option_a.length() > 0);
+    _front_panel->set_button_in_use(Button::B, _option_b.length() > 0);
+    _front_panel->set_button_in_use(Button::C, _option_c.length() > 0);
+    _front_panel->set_button_in_use(Button::D, _option_d.length() > 0);
 }
 
 void CDisplay::draw_bar_graphs()

@@ -101,6 +101,14 @@ void CFrontPanelV02::adc_select_next_input()
     write_adc_register(adc_reg_t::CONFIG, _adc_config_reg);
 }
 
+void CFrontPanelV02::set_button_in_use(enum Button button, bool in_use) 
+{
+    _buttons_in_use &= ~(1 << (uint8_t)button); // clear bit
+    
+    if (in_use)
+        _buttons_in_use |= (1 << (uint8_t)button); // set
+}
+
 void CFrontPanelV02::write_led_register(led_reg_t reg, uint8_t value)
 {
     uint8_t buf[2];
@@ -109,13 +117,51 @@ void CFrontPanelV02::write_led_register(led_reg_t reg, uint8_t value)
     i2c_write(__func__, FP_0_2_BUTTON_LED_DRV_ADDR, buf, sizeof(buf), false);
 }
 
+void CFrontPanelV02::update_button_led_states()
+{
+    static uint8_t button_states = 0;
+
+    if (button_states != _buttons_in_use)
+    {
+        update_button_led_state(Button::A, button_states, _buttons_in_use, led_reg_t::PWM0);
+        update_button_led_state(Button::B, button_states, _buttons_in_use, led_reg_t::PWM1);
+        update_button_led_state(Button::C, button_states, _buttons_in_use, led_reg_t::PWM2);
+        update_button_led_state(Button::D, button_states, _buttons_in_use, led_reg_t::PWM3);
+
+        button_states = _buttons_in_use;
+    }
+}
+
+void CFrontPanelV02::update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg)
+{
+    bool button_active_old = old_state & (1 << (uint8_t)button);
+    bool button_active_new = new_state & (1 << (uint8_t)button);
+
+    if (button_active_old != button_active_new)
+    {
+        if (button_active_new)
+        {
+            write_led_register(reg, 10);
+        }
+        else
+        {
+            write_led_register(reg, 0);
+        }
+    }
+}
+
 void CFrontPanelV02::interrupt(interrupt_t i)
 {
-    _interrupt = true;
-    _interrupt_time = time_us_32();
+    // The INT1 pin on front panel v0.2 isn't connected to anything, so we 
+    // shouldn't be getting any INT1 interrupts, but if we do, ignore them
+    if (i == interrupt_t::INT2)
+    {
+        _interrupt = true;
+        _interrupt_time = time_us_32();
 
-    if (gInteruptable)
-        process(false);
+        if (gInteruptable)
+            process(false);
+    }
 }
 
 void CFrontPanelV02::process(bool always_update)
@@ -146,6 +192,8 @@ void CFrontPanelV02::process(bool always_update)
             _last_port_exp_read = buffer;
         }
     }
+
+    update_button_led_states();
 }
 
 uint16_t CFrontPanelV02::get_channel_power_level(uint8_t channel)
@@ -169,6 +217,14 @@ void CFrontPanelV02::read_adc()
     uint16_t val;
     if (!read_adc_register(adc_reg_t::CONVERSION, &val))
     {
+        // Failing to read from the ADC (having successfully read it during the hw check at power on) might
+        // suggest a loose connection. It's probably best to stop because a poor connection could lead 
+        // unexpected power levels being set. 
+
+        printf("Error reading front panel ADC\n");
+        gErrorString = "Front panel fault, \nerror reading ADC.";
+        gFatalError = true;
+
         return;
     }
 
@@ -254,7 +310,6 @@ void CFrontPanelV02::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, u
     _rot_encoder.process(a, b);
 }
 
-
 bool CFrontPanelV02::has_button_state_changed(enum Button button, bool *new_state)
 {
   bool button_state_changed;
@@ -281,5 +336,5 @@ bool CFrontPanelV02::has_button_state_changed(enum Button button, bool *new_stat
 
 bool CFrontPanelV02::button_state(enum Button button)
 {
-    return (_last_port_exp_read & (1 << (uint8_t)button));
+    return !(_last_port_exp_read & (1 << (uint8_t)button));
 }

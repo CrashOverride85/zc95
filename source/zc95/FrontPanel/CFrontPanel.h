@@ -20,6 +20,7 @@ class CFrontPanel : CGetButtonState
         virtual int8_t get_adjust_control_change() = 0;
         virtual bool has_button_state_changed(enum Button button, bool *new_state) = 0;
         virtual void interrupt (interrupt_t i) = 0;
+        virtual void set_button_in_use(enum Button button, bool in_use) {};
 };
 
 #endif

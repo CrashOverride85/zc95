@@ -13,6 +13,7 @@ class CFrontPanelV02 : public CFrontPanel
         void interrupt (interrupt_t i);
         bool button_state(enum Button button);
         bool has_button_state_changed(enum Button button, bool *new_state);
+        void set_button_in_use(enum Button button, bool in_use);
 
     private:
         enum adc_reg_t
@@ -80,6 +81,8 @@ class CFrontPanelV02 : public CFrontPanel
         bool read_adc_register(adc_reg_t reg, uint16_t *value);
 
         void write_led_register(led_reg_t reg, uint8_t value);
+        void update_button_led_states();
+        void update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg);
 
         uint8_t _last_port_exp_read;
         int16_t _power_level[MAX_CHANNELS];
@@ -95,4 +98,5 @@ class CFrontPanelV02 : public CFrontPanel
         
         uint64_t _last_state_change[MAX_BUTTON_IDX];
         uint8_t _button_states_at_last_check;
+        uint8_t _buttons_in_use = 0;
 };

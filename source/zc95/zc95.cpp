@@ -101,7 +101,7 @@ void gpio_callback(uint gpio, uint32_t events)
     }
 }
 
-void check_button(CMainBoardPortExp *controls, CMenu *current_menu, Button button) // FIXME
+void check_button(CMenu *current_menu, Button button)
 {
     bool new_state = false;
     if (_front_panel->has_button_state_changed(button, &new_state))
@@ -115,10 +115,10 @@ void check_button(CMainBoardPortExp *controls, CMenu *current_menu, Button butto
 
 void process_front_panel_input(CMainBoardPortExp *port_expander, CMenu *current_menu)
 {
-    check_button(port_expander, current_menu, Button::A);
-    check_button(port_expander, current_menu, Button::B);
-    check_button(port_expander, current_menu, Button::C);
-    check_button(port_expander, current_menu, Button::D);
+    check_button(current_menu, Button::A);
+    check_button(current_menu, Button::B);
+    check_button(current_menu, Button::C);
+    check_button(current_menu, Button::D);
 }
 
 void update_power_levels_from_front_panel(CRoutineOutput *routine_output)
@@ -232,7 +232,7 @@ int main()
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
     // Configure SPI display
-    CDisplay display = CDisplay();
+    CDisplay display = CDisplay(_front_panel);
     display.init(); // This takes some time - not far off a second
     hw_check.set_display(&display);
 
