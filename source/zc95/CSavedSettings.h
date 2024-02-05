@@ -46,7 +46,8 @@ class CSavedSettings
         WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
         WifiApPskEnd   = 196, //
         PowerLevelDisp = 197, // Power level numeric display 
-     // <next>         = 198
+        ButtonLedBright= 198, // Brightness of illuminated LED buttons 
+     // <next>         = 199
     };
 
     public:
@@ -153,6 +154,10 @@ class CSavedSettings
         bool power_level_show_in_bar_graph();
         bool power_level_show_disappearing_text();
         void set_power_level_display(power_level_show_percent setting);
+
+        // Illuminated button brightness        
+        uint8_t get_button_brightness();
+        void set_button_brightness(uint8_t button_brightness_byte);
 
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);

@@ -82,8 +82,9 @@ class CFrontPanelV02 : public CFrontPanel
 
         void write_led_register(led_reg_t reg, uint8_t value);
         void update_button_led_states();
-        void update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg);
+        void update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg, bool always_update);
 
+        CSavedSettings *_saved_settings;
         uint8_t _last_port_exp_read;
         int16_t _power_level[MAX_CHANNELS];
         CRotEnc _rot_encoder;

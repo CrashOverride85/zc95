@@ -101,6 +101,7 @@ add_executable(zc95
   display/CMenuSettingAudio.cpp
   display/CMenuSettingHardware.cpp
   display/CMenuSettingDisplayOptions.cpp
+  display/CMenuSettingButtonBrightness.cpp
   display/CMenuSettingPowerLevelDisplay.cpp
   display/CMenuRemoteAccess.cpp
   display/CMenuRemoteAccessConnectWifi.cpp

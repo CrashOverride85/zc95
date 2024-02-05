@@ -18,6 +18,7 @@ CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
     _last_port_exp_read = 0;
     _adjust_value = 0;
     _button_states_at_last_check = 0;
+    _saved_settings = saved_settings;
     memset(_last_state_change, 0, sizeof(_last_state_change));
 
     init_adc();
@@ -120,28 +121,32 @@ void CFrontPanelV02::write_led_register(led_reg_t reg, uint8_t value)
 void CFrontPanelV02::update_button_led_states()
 {
     static uint8_t button_states = 0;
+    static uint8_t brightness = 0;
 
-    if (button_states != _buttons_in_use)
+    bool brightness_changed = brightness != _saved_settings->get_button_brightness();
+
+    if (button_states != _buttons_in_use || brightness_changed)
     {
-        update_button_led_state(Button::A, button_states, _buttons_in_use, led_reg_t::PWM0);
-        update_button_led_state(Button::B, button_states, _buttons_in_use, led_reg_t::PWM1);
-        update_button_led_state(Button::C, button_states, _buttons_in_use, led_reg_t::PWM2);
-        update_button_led_state(Button::D, button_states, _buttons_in_use, led_reg_t::PWM3);
+        update_button_led_state(Button::A, button_states, _buttons_in_use, led_reg_t::PWM0, brightness_changed);
+        update_button_led_state(Button::B, button_states, _buttons_in_use, led_reg_t::PWM1, brightness_changed);
+        update_button_led_state(Button::C, button_states, _buttons_in_use, led_reg_t::PWM2, brightness_changed);
+        update_button_led_state(Button::D, button_states, _buttons_in_use, led_reg_t::PWM3, brightness_changed);
 
         button_states = _buttons_in_use;
+        brightness = _saved_settings->get_button_brightness();
     }
 }
 
-void CFrontPanelV02::update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg)
+void CFrontPanelV02::update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg, bool always_update)
 {
     bool button_active_old = old_state & (1 << (uint8_t)button);
     bool button_active_new = new_state & (1 << (uint8_t)button);
 
-    if (button_active_old != button_active_new)
+    if (button_active_old != button_active_new || always_update)
     {
         if (button_active_new)
         {
-            write_led_register(reg, 10);
+            write_led_register(reg, _saved_settings->get_button_brightness());
         }
         else
         {
