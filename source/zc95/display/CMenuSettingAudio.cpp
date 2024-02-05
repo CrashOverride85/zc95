@@ -216,7 +216,7 @@ void CMenuSettingAudio::draw()
 void CMenuSettingAudio::show()
 {
     _display->set_option_b("Back");
-    _display->set_option_d(" ");
+    _display->set_option_d("");
 
     set_menu_labels();
 
@@ -256,7 +256,7 @@ void CMenuSettingAudio::set_menu_labels()
     else
     {
         _display->set_option_a("Enbl mic pre");
-        _display->set_option_c(" ");
+        _display->set_option_c("");
     }
 }
 

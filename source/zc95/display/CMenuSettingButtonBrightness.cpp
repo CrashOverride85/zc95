@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2024  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CMenuSettingLedBrightnes.h"
+#include "CMenuSettingButtonBrightness.h"
 
+/* Allow the brightness of the illuminated buttons to be adjusted from the menu:
+ *      Config -> Display options -> Button brightness 
+ */
 
-CMenuSettingLedBrightnes::CMenuSettingLedBrightnes(CDisplay* display, CSavedSettings *saved_settings)
+CMenuSettingButtonBrightness::CMenuSettingButtonBrightness(CDisplay* display, CSavedSettings *saved_settings)
 {
-    printf("CMenuSettingLedBrightnes() \n");
+    printf("CMenuSettingButtonBrightness() \n");
     _display = display;
     _saved_settings = saved_settings;
 
@@ -33,12 +36,12 @@ CMenuSettingLedBrightnes::CMenuSettingLedBrightnes(CDisplay* display, CSavedSett
     _bar_graph_area.y0 = disp_area.y1 - ((disp_area.y1 - disp_area.y0)/2);
     _bar_graph_area.y1 = disp_area.y1;
 
-    _led_brightness = _saved_settings->get_led_brightness();
+    _led_brightness = _saved_settings->get_button_brightness();
 }
 
-CMenuSettingLedBrightnes::~CMenuSettingLedBrightnes()
+CMenuSettingButtonBrightness::~CMenuSettingButtonBrightness()
 {
-    printf("~CMenuSettingLedBrightnes() \n");
+    printf("~CMenuSettingButtonBrightness() \n");
     if (_bar_graph)
     {
         delete _bar_graph;
@@ -46,7 +49,7 @@ CMenuSettingLedBrightnes::~CMenuSettingLedBrightnes()
     }
 }
 
-void CMenuSettingLedBrightnes::button_pressed(Button button)
+void CMenuSettingButtonBrightness::button_pressed(Button button)
 {
     if (_submenu_active)
     {
@@ -67,7 +70,7 @@ void CMenuSettingLedBrightnes::button_pressed(Button button)
     }
 }
 
-void CMenuSettingLedBrightnes::adjust_rotary_encoder_change(int8_t change)
+void CMenuSettingButtonBrightness::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
     {
@@ -90,21 +93,21 @@ void CMenuSettingLedBrightnes::adjust_rotary_encoder_change(int8_t change)
             }
         }
         
-        _saved_settings->set_led_brightness(_led_brightness);
+        _saved_settings->set_button_brightness(_led_brightness);
     }
 }
 
-void CMenuSettingLedBrightnes::draw()
+void CMenuSettingButtonBrightness::draw()
 {
     display_area disp_area = _display->get_display_area();
-    _display->put_text("LED Brightness", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    _display->put_text("Button Brightness", disp_area.x0+2, disp_area.y0 + 10, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
 
     hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
 
     _bar_graph->draw_horz_bar_graph( _bar_graph_area, 1, 100, _led_brightness, "%", bar_colour);
 }
 
-void CMenuSettingLedBrightnes::show()
+void CMenuSettingButtonBrightness::show()
 {
     _display->set_option_a("");
     _display->set_option_b("Back");
@@ -113,5 +116,3 @@ void CMenuSettingLedBrightnes::show()
 
     _exit_menu = false;
 }
-
-
