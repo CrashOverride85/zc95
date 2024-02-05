@@ -101,16 +101,11 @@ Photo of board as it arrived from JLCPCB:
 ![front panel controls-bottom]
 ![front panel controls-top]
 
-* All resistors are 10k, with the exception of R29 which is 100R (R29 is also the only resistor with its value labelled)
 * Getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
-* Stating the obvious, but put the parts on the side indicated by the silkscreen (LEDs, POTs and rotary encoder one side, the rest the other)
-* J1 should have the cut-out facing towards SW5 (rotary encoder)
-* Pin 1 of the ADC (U1, PCF8591) is the top left (with board orientated with the `ZC95-FrontPanel-Analog(back)` text at the top)
-
+* Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen one side
 
 Fully assembled board:
 
-![front panel controls-bottom-populated]
 ![front panel controls-top-populated]
 
 ### Front panel
@@ -118,20 +113,27 @@ Photo of board as it arrived from JLCPCB:
 
 ![front panel]
 
-* Perhaps the most annoying part of the whole build is creating a cable for the 4 buttons. The buttons are named like so:
+Perhaps the most annoying part of the whole build is wiring the 4 buttons to the front panel. The buttons should be attached to the corresponding position on the front panel controls PCB:
 
 ![front panel buttons]
 
-Wire each button back to a connector in the position that matches the silkscreen (first two positions are button A, next two button B, etc.)
-Then attach the buttons to the front panel.
+If using the illuminated LP1OA1Ax buttons, there are 4 wires per button - 2x for switch contacts and 2x for the LED. The LED part of the buttons should be connected like this:
 
-* Attach connector to back of LCD, then LCD to the front panel with M2, 12mm bolts
+![button connections]
 
-The board should look something like this:
+The pin marked with the white dot is the LED cathode, the opposite pin is the anode, the other two pins are the switch contacts.
+
+Once connected, it should look something like:
+
+![front panel buttons connected]
+
+Use the M2 nuts & 20mm bolts to attach the board to the front panel, then screw on the washers & nuts for the potentiometers. 
+
+Attach connector to back of LCD, then LCD to the front panel with M2 nuts, 12mm bolts.
+
+The assembled front panel should look something like this:
 
 ![front panel back]
-
-Finally, attach the front panel controls board using 20mm bolts. The completed assembly should look something like:
 
 ![front panel assembled]
 
@@ -278,9 +280,10 @@ Possible causes (not exhaustive!) for calibration to fail:
 [zc624 populated]: images/zc624_populated.jpg "Fully populated ZC624"
 [front panel controls-bottom]: images/fpc_bottom.jpg "Unpopulated front panel controls board - bottom"
 [front panel controls-top]: images/fpc_top.jpg "Unpopulated front panel controls board - top"
-[front panel controls-bottom-populated]: images/fpc_bottom_populated.jpg "Populated front panel controls board - bottom"
 [front panel controls-top-populated]: images/fpc_top_populated.jpg "Populated front panel controls board - top"
 [front panel]: images/fp.jpg "Front panel"
+[front panel buttons connected]: images/fpc_buttons.jpg "Front panel with buttons attached"
+[button connections]: images/button_connection.png "Front panel buttons to fpc board connection"
 [front panel buttons]: images/fp-abcd.jpg "Front panel with buttons labelled"
 [front panel back]: images/fp_back.jpg "Back of front panel with LCD and buttons attached"
 [front panel assembled]: images/fp_assembled.jpg "Front panel with LCD, buttons and controls attached"
