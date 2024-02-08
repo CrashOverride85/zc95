@@ -72,6 +72,7 @@ Photo of board as it arrived from JLCPCB:
 * R14 & D4 (top middle) don't need to be populated. It's for a power LED that has no place on the front panel.
 * J20 (I2C header, bottom left) is for future expansion and doesn't need to be populated
 * J17 (just below battery, to the right) is for the optional audio input board; if building that, fit a 2.54mm pin header, otherwise leave unpopulated
+* J16 "FP-BUTTONS" (below the battery, towards the centre) is no longer used (was used for v0.1 of the front panel), and can be left unpopulated
 
 Then (optionally) plug a 433MHz transmitter into J11
 
