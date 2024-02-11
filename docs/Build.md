@@ -3,18 +3,15 @@
 There is now an optional audio [input board](./AudioInput-Build.md) too.
 
 ## Prerequisites 
-These notes assume a reasonable amount of experience assembling electronic kits. Other than through hole soldering, it also requires:
-* Soldering 1 SMD part on the front panel control board. This is a SOIC-16 package, so fairly large / easy to solder
-* Creating an IDC cable
-* Crimping connectors for Molex KK style (well, clones in this case) connectors. Other 2.54mm connectors could be substituted.
+These notes assume a reasonable amount of experience assembling electronic kits. I suggest having a read though these notes before ordering anything.
 
 ## PCB + Parts ordering
 ### PCBs
-For these 3 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
+For these 2 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
 * [Front panel](../pcb/FrontPanel.zip). Suggest ordering in black
-* [Front panel controls](../pcb/FrontPanelControls.zip). Set "Remove Order Number" to "Specify a location" (location is already specified on the back of this board)
 * [Main board](../pcb/MainBoard.zip)
 
+#### Output board
 The output board ("ZC624 Output module") has been designed with the JLCPCB SMT assembly service in mind, although the footprints are the hand-solder versions where applicable, and some (through hole) parts still need hand assembly.
 Order the board using [these gerbers](../pcb/OutputModule/OutputBoard-gerbers.zip) and the default options as per the other boards.
 
@@ -24,6 +21,18 @@ On the next page, add the BOM and CPL files:
 * [output_cpl_jlc.csv](../pcb/OutputModule/output_cpl_jlc.csv)
 
 The next page should show a list of all parts found / matched. The BoM/CPL file also includes some through hole parts - I'd suggest un-ticking these and soldering them yourself as it's cheaper.
+
+#### Front panel controls
+v0.2 of this board is also designed with the JLCPCB assembly service in mind, with a few though hole parts also requiring hand assembly
+
+Order the board using [these gerbers](../pcb/FrontPanelControls-v0.2/GERBER-PanelControls.zip) and the default options as per the other boards.
+
+Select the "SMT Assembly" option again at the bottom - pick "Assemble **BOTTOM** side" (this is _not_ the default) and Tooling holes "Added by JLCPCB". 
+On the next page, add the BOM and CPL files:
+* [output_bom_jlc.csv](../pcb/FrontPanelControls-v0.2/BOM-PanelControls.csv)
+* [output_cpl_jlc.csv](../pcb/FrontPanelControls-v0.2/CPL-PanelControls.csv)
+
+The next page should show a list of all parts found / matched. The BoM/CPL file also includes the through hole part J5 - I'd suggest un-ticking it and soldering it yourself as it's cheaper.
 
 ### Transformers
 The ZC624 output board was originally designed and tested with 42TL004 transformers in mind. However, v0.2 is designed so that the larger/more powerful 42TU200 transformers _should_ also fit. Unfortunately, at the time of writing, these are out of stock, so is completely untested. I recommend sticking with the 42TL004's listed in the BoM. 
@@ -63,6 +72,7 @@ Photo of board as it arrived from JLCPCB:
 * R14 & D4 (top middle) don't need to be populated. It's for a power LED that has no place on the front panel.
 * J20 (I2C header, bottom left) is for future expansion and doesn't need to be populated
 * J17 (just below battery, to the right) is for the optional audio input board; if building that, fit a 2.54mm pin header, otherwise leave unpopulated
+* J16 "FP-BUTTONS" (below the battery, towards the centre) is no longer used (was used for v0.1 of the front panel), and can be left unpopulated
 
 Then (optionally) plug a 433MHz transmitter into J11
 
@@ -92,16 +102,11 @@ Photo of board as it arrived from JLCPCB:
 ![front panel controls-bottom]
 ![front panel controls-top]
 
-* All resistors are 10k, with the exception of R29 which is 100R (R29 is also the only resistor with its value labelled)
 * Getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
-* Stating the obvious, but put the parts on the side indicated by the silkscreen (LEDs, POTs and rotary encoder one side, the rest the other)
-* J1 should have the cut-out facing towards SW5 (rotary encoder)
-* Pin 1 of the ADC (U1, PCF8591) is the top left (with board orientated with the `ZC95-FrontPanel-Analog(back)` text at the top)
-
+* Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen one side
 
 Fully assembled board:
 
-![front panel controls-bottom-populated]
 ![front panel controls-top-populated]
 
 ### Front panel
@@ -109,20 +114,27 @@ Photo of board as it arrived from JLCPCB:
 
 ![front panel]
 
-* Perhaps the most annoying part of the whole build is creating a cable for the 4 buttons. The buttons are named like so:
+Perhaps the most annoying part of the whole build is wiring the 4 buttons to the front panel. The buttons should be attached to the corresponding position on the front panel controls PCB:
 
 ![front panel buttons]
 
-Wire each button back to a connector in the position that matches the silkscreen (first two positions are button A, next two button B, etc.)
-Then attach the buttons to the front panel.
+If using the illuminated LP1OA1Ax buttons, there are 4 wires per button - 2x for switch contacts and 2x for the LED. The LED part of the buttons should be connected like this:
 
-* Attach connector to back of LCD, then LCD to the front panel with M2, 12mm bolts
+![button connections]
 
-The board should look something like this:
+The pin marked with the white dot is the LED cathode, the opposite pin is the anode, the other two pins are the switch contacts.
+
+Once connected, it should look something like:
+
+![front panel buttons connected]
+
+Use the M2 nuts & 20mm bolts to attach the board to the front panel, then screw on the washers & nuts for the potentiometers. 
+
+Attach connector to back of LCD, then LCD to the front panel with M2 nuts, 12mm bolts.
+
+The assembled front panel should look something like this:
 
 ![front panel back]
-
-Finally, attach the front panel controls board using 20mm bolts. The completed assembly should look something like:
 
 ![front panel assembled]
 
@@ -269,9 +281,10 @@ Possible causes (not exhaustive!) for calibration to fail:
 [zc624 populated]: images/zc624_populated.jpg "Fully populated ZC624"
 [front panel controls-bottom]: images/fpc_bottom.jpg "Unpopulated front panel controls board - bottom"
 [front panel controls-top]: images/fpc_top.jpg "Unpopulated front panel controls board - top"
-[front panel controls-bottom-populated]: images/fpc_bottom_populated.jpg "Populated front panel controls board - bottom"
 [front panel controls-top-populated]: images/fpc_top_populated.jpg "Populated front panel controls board - top"
 [front panel]: images/fp.jpg "Front panel"
+[front panel buttons connected]: images/fpc_buttons.jpg "Front panel with buttons attached"
+[button connections]: images/button_connection.png "Front panel buttons to fpc board connection"
 [front panel buttons]: images/fp-abcd.jpg "Front panel with buttons labelled"
 [front panel back]: images/fp_back.jpg "Back of front panel with LCD and buttons attached"
 [front panel assembled]: images/fp_assembled.jpg "Front panel with LCD, buttons and controls attached"

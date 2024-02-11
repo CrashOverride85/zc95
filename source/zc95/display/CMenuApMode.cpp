@@ -81,8 +81,8 @@ void CMenuApMode::button_pressed(Button button)
 void CMenuApMode::set_button_text()
 {
     _display->set_option_b("Back");
-    _display->set_option_c(" ");
-    _display->set_option_d(" ");
+    _display->set_option_c("");
+    _display->set_option_d("");
 
     if (_state != state_t::AP_MODE_STARTED)
     {

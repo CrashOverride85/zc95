@@ -68,6 +68,8 @@ Configuration options so far:
     - In bar graph - Show value, rotated 90 degrees, inside the corresponding bar graph
     - Both - Enable Disappearing text display and in bar graph
 
+  - Button brightness - controls how bright the LEDs in the 4 front panel buttons are
+
 * Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 
 * Audio input - Displayed if audio board present by default, depends on "Hardware config > Audio" setting. See [Audio Input](./AudioInput-Operation.md)

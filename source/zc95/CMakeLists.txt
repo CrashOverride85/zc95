@@ -32,7 +32,7 @@ add_executable(zc95
   zc95.cpp 
   CLedControl.cpp 
   CLedControl.h 
-  CControlsPortExp.cpp 
+  CMainBoardPortExp.cpp 
   CExtInputPortExp.cpp
   CEeprom.cpp
   CSavedSettings.cpp
@@ -49,6 +49,7 @@ add_executable(zc95
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
   core1/CRoutineOutputCore1.cpp
+  core1/CRoutineOutput.cpp
 
   core1/output/CChannelConfig.cpp
   core1/output/CFullChannelAsSimpleChannel.cpp
@@ -79,9 +80,10 @@ add_executable(zc95
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
   
-  FpKnobs/CRotEnc.cpp
-  FpKnobs/CFrontPanel.cpp
-
+  FrontPanel/CRotEnc.cpp
+  FrontPanel/CFrontPanelV01.cpp
+  FrontPanel/CFrontPanelV02.cpp
+    
   display/CMenu.cpp
   display/CDisplay.cpp
   display/CMainMenu.cpp
@@ -98,6 +100,7 @@ add_executable(zc95
   display/CMenuSettingAudio.cpp
   display/CMenuSettingHardware.cpp
   display/CMenuSettingDisplayOptions.cpp
+  display/CMenuSettingButtonBrightness.cpp
   display/CMenuSettingPowerLevelDisplay.cpp
   display/CMenuRemoteAccess.cpp
   display/CMenuRemoteAccessConnectWifi.cpp

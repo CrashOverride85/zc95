@@ -80,10 +80,10 @@ void CMenuSettingAbout::put_text_line(std::string text, int16_t x, int16_t y, ui
 
 void CMenuSettingAbout::show()
 {
-    _display->set_option_a(" ");
+    _display->set_option_a("");
     _display->set_option_b("Back");
-    _display->set_option_c(" ");
-    _display->set_option_d(" ");
+    _display->set_option_c("");
+    _display->set_option_d("");
 
     _exit_menu = false;
 }
