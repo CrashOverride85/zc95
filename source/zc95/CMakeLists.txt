@@ -83,8 +83,7 @@ add_executable(zc95
   FrontPanel/CRotEnc.cpp
   FrontPanel/CFrontPanelV01.cpp
   FrontPanel/CFrontPanelV02.cpp
-  FrontPanel/CButtonLeds.cpp  
-  
+    
   display/CMenu.cpp
   display/CDisplay.cpp
   display/CMainMenu.cpp
