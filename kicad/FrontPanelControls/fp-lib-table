@@ -1,4 +1,4 @@
 (fp_lib_table
   (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/Library.pretty")(options "")(descr ""))
-  (lib (name "ProjLib")(type "KiCad")(uri "/bulk/Dropbox/main/proj/oper-game-PUB/zc95/kicad/MainBoard/ProjLib.pretty")(options "")(descr ""))
+  (lib (name "ProjLib")(type "KiCad")(uri "../MainBoard/ProjLib.pretty")(options "")(descr ""))
 )

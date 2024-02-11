@@ -1,6 +1,6 @@
 (export (version "E")
   (design
-    (source "/bulk/Dropbox/main/proj/oper-game-PUB/zc95/kicad/AudioInput/AudioInput/AudioInput.kicad_sch")
+    (source "AudioInput.kicad_sch")
     (date "Tue 05 Jul 2022 19:21:15 BST")
     (tool "Eeschema 6.0.4+dfsg-1~bpo11+1")
     (sheet (number "1") (name "/") (tstamps "/")
@@ -748,7 +748,7 @@
     (library (logical "Analog_Switch")
       (uri "/usr/share/kicad/symbols//Analog_Switch.kicad_sym"))
     (library (logical "AudioIn")
-      (uri "/bulk/Dropbox/main/proj/oper-game-PUB/zc95/kicad/AudioInput/AudioInput/AudioIn.kicad_sym"))
+      (uri "AudioIn.kicad_sym"))
     (library (logical "Connector")
       (uri "/usr/share/kicad/symbols//Connector.kicad_sym"))
     (library (logical "Connector_Generic")
