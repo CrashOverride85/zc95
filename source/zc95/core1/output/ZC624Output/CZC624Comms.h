@@ -20,16 +20,17 @@ class CZC624Comms
 
         enum class spi_command_t
         {
-            Pulse = 0,
             SetPower = 1,
             Poll = 2,
-            PowerDown = 3,
+            PowerDown = 3, // If renumbering, also change in globals.cpp
             
             SetFreq = 4,
             SetPulseWidth = 5,
             SwitchOn = 6,
             SwitchOff = 7,
-            NoOp = 8
+            NoOp = 8,
+            SetTestVal = 9,
+            Pulse = 10
         };
 
         enum class i2c_reg_t
@@ -49,6 +50,8 @@ class CZC624Comms
             VerStrStart      = 0x20,
             VerStrEnd        = 0x34, //  20 character string
 
+            TestVal          = 0x40,
+
             // Read/write
             // starting at 0x80
             ChannelIsolation = 0x80
@@ -61,9 +64,10 @@ class CZC624Comms
             Fault     = 0x02
         };
 
-        bool check_zc624();
+        uint8_t check_zc624();
         std::string get_version();
         bool get_major_minor_version(uint8_t *major, uint8_t *minor);
+        bool spi_has_comms_fault();
         
         CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c);
         ~CZC624Comms();
@@ -75,7 +79,9 @@ class CZC624Comms
 
     private:
         bool get_i2c_register_range(i2c_reg_t reg, uint8_t *buffer, uint8_t size);
-        void set_led_colour(uint8_t channel, uint32_t colour);
+        bool channel_has_fault(uint8_t channel);
+        std::string status_to_string(status s);
+        bool test_spi_comms(uint8_t test_val);
 
         spi_inst_t *_spi;
         i2c_inst_t *_i2c;

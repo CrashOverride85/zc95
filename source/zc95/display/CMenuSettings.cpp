@@ -117,7 +117,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::DISPLAY_OPTIONS:
-            set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings));
+            set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings, _hwCheck));
             break;
 
         case setting_id::POWER_STEP:

@@ -34,7 +34,7 @@ add_executable(zc95
   zc95.cpp 
   CLedControl.cpp 
   CLedControl.h 
-  CControlsPortExp.cpp 
+  CMainBoardPortExp.cpp 
   CExtInputPortExp.cpp
   CEeprom.cpp
   CSavedSettings.cpp
@@ -52,6 +52,7 @@ add_executable(zc95
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
   core1/CRoutineOutputCore1.cpp
+  core1/CRoutineOutput.cpp
 
   core1/output/CChannelConfig.cpp
   core1/output/CFullChannelAsSimpleChannel.cpp
@@ -82,9 +83,10 @@ add_executable(zc95
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
   
-  FpKnobs/CRotEnc.cpp
-  FpKnobs/CFrontPanel.cpp
-
+  FrontPanel/CRotEnc.cpp
+  FrontPanel/CFrontPanelV01.cpp
+  FrontPanel/CFrontPanelV02.cpp
+    
   display/CMenu.cpp
   display/CDisplay.cpp
   display/CMainMenu.cpp
@@ -101,6 +103,7 @@ add_executable(zc95
   display/CMenuSettingAudio.cpp
   display/CMenuSettingHardware.cpp
   display/CMenuSettingDisplayOptions.cpp
+  display/CMenuSettingButtonBrightness.cpp
   display/CMenuSettingPowerLevelDisplay.cpp
   display/CMenuRemoteAccess.cpp
   display/CMenuRemoteAccessConnectWifi.cpp
@@ -219,7 +222,7 @@ target_compile_definitions(zc95 PRIVATE
   MIPI_DISPLAY_PIN_CS=17
   MIPI_DISPLAY_PIN_DC=20
   MIPI_DISPLAY_PIN_RST=2
-  MIPI_DISPLAY_PIN_BL=6
+  MIPI_DISPLAY_PIN_BL=-1
   MIPI_DISPLAY_PIN_CLK=18
   MIPI_DISPLAY_PIN_MOSI=19
   MIPI_DISPLAY_PIN_MISO=16

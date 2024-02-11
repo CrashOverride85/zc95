@@ -106,10 +106,10 @@ void CMenuSettingLedBrightnes::draw()
 
 void CMenuSettingLedBrightnes::show()
 {
-    _display->set_option_a(" ");
+    _display->set_option_a("");
     _display->set_option_b("Back");
-    _display->set_option_c(" ");
-    _display->set_option_d(" ");
+    _display->set_option_c("");
+    _display->set_option_d("");
 
     _exit_menu = false;
 }

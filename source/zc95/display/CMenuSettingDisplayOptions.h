@@ -2,13 +2,15 @@
 #include "CDisplay.h"
 #include "COptionsList.h"
 #include "../CSavedSettings.h"
+#include "../CHwCheck.h"
 
 class CMenuSettingDisplayOptions : public CMenu
 {
     public:
         CMenuSettingDisplayOptions(
             CDisplay* display, 
-            CSavedSettings *saved_settings);
+            CSavedSettings *saved_settings,
+            CHwCheck *hw_check);
 
         ~CMenuSettingDisplayOptions();
         void button_pressed(Button button);
@@ -35,7 +37,8 @@ class CMenuSettingDisplayOptions : public CMenu
         enum setting_id
         {
             LED_BRIGHTNESS = 0,
-            POWER_LEVEL_DISPLAY = 1            
+            POWER_LEVEL_DISPLAY = 1,
+            BUTTON_BRIGHTNESS = 2      
         };
 
         std::vector<setting> _settings;
@@ -45,4 +48,5 @@ class CMenuSettingDisplayOptions : public CMenu
         
         CDisplay* _display;
         CSavedSettings *_saved_settings;
+        CHwCheck *_hw_check;
 };

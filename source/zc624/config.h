@@ -35,13 +35,14 @@
 
 
 #define DEVICE_TYPE   624
-#define VERSION_MAJOR   1
+#define VERSION_MAJOR   2
 #define VERSION_MINOR   0
 
 
 
 
 #define PIN_9V_ENABLE   14
+#define PIN_OK_LED      15
 
 #define PIN_CHAN1_GATE_A 6
 #define PIN_CHAN1_GATE_B 7

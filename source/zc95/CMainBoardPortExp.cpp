@@ -20,12 +20,16 @@
 #include "CUtil.h"
 #include "hardware/gpio.h"
 #include <string.h>
-#include "CControlsPortExp.h"
+#include "CMainBoardPortExp.h"
 
 /*
- * Deal with port expander U7, which:
- *   - reads input from front panel buttons A, B, C & D
+ * Deal with port expander U7 on the main board, which:
+ *   - V0.1 front panel only: reads input from front panel buttons A, B, C & D.
+ *     For front panels >= v0.2, p0-p3 are unused, and the buttons are connected 
+ *     to a separate I/O expander on the front panel itself
+ * 
  *   - is connected to IO1/2/3 on expansion header J17 (for optional audio input board)
+ * 
  *   - controls the LCD backlight
  * 
  *  P4 - EXPAN_I03 - Mic pre-amp
@@ -34,7 +38,7 @@
  *  P7 - LCD back light
  */
 
-CControlsPortExp::CControlsPortExp(uint8_t address)
+CMainBoardPortExp::CMainBoardPortExp(uint8_t address)
 {
     _address = address;
     _old_state = 3;
@@ -45,7 +49,7 @@ CControlsPortExp::CControlsPortExp(uint8_t address)
 
 // Clear any pending input. has_button_been_pressed, etc., should return false after this has been called.
 // Can't do this in the constructor as i2c won't have been initialised 
-void CControlsPortExp::clear_input()
+void CMainBoardPortExp::clear_input()
 {
     int retval = i2c_read(__func__, _address, &_last_read, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
@@ -56,12 +60,12 @@ void CControlsPortExp::clear_input()
     _button_states_at_last_check = _last_read;
 }
 
-void CControlsPortExp::interrupt()
+void CMainBoardPortExp::interrupt()
 {
   _interrupt = true;
 }
 
-void CControlsPortExp::process(bool always_update)
+void CMainBoardPortExp::process(bool always_update)
 {
   if (_interrupt || always_update)
   {
@@ -79,12 +83,12 @@ void CControlsPortExp::process(bool always_update)
   }
 }
 
-bool CControlsPortExp::button_state(enum Button button)
+bool CMainBoardPortExp::button_state(enum Button button)
 {
     return (_last_read & (1 << (uint8_t)button));
 }
 
-bool CControlsPortExp::has_button_state_changed(enum Button button, bool *new_state)
+bool CMainBoardPortExp::has_button_state_changed(enum Button button, bool *new_state)
 {
   bool button_state_changed;
   bool last_button_state = (_button_states_at_last_check & (1 << (uint8_t)button));
@@ -112,7 +116,7 @@ bool CControlsPortExp::has_button_state_changed(enum Button button, bool *new_st
  * Enable microphone pre-amp on audio input board. Massively increases gain. 
  * Also results in mono input only as there is only one mic preamp
  */
-void CControlsPortExp::mic_preamp_enable(bool enable)
+void CMainBoardPortExp::mic_preamp_enable(bool enable)
 {
     const int MicPreampEnablePin = 4;
     set_pin_state(MicPreampEnablePin, enable);
@@ -122,7 +126,7 @@ void CControlsPortExp::mic_preamp_enable(bool enable)
  * When enabled and audio_input (below) is also enabled, ~3v is supplied via a current 
  * limiting resistor to the ring of the 3.5mm socket to power electret microphones
  */
-void CControlsPortExp::mic_power_enable(bool enable)
+void CMainBoardPortExp::mic_power_enable(bool enable)
 {
     const int MicPowerDisablePin = 5;
     set_pin_state(MicPowerDisablePin, !enable);
@@ -132,7 +136,7 @@ void CControlsPortExp::mic_power_enable(bool enable)
  * Enabled  = 3.5mm socket used for Audio input
  * Disabled = 3.5mm socket used for RS232 serial
  */
-void CControlsPortExp::audio_input_enable(bool enable)
+void CMainBoardPortExp::audio_input_enable(bool enable)
 {
     if (enable)
       printf("Enabling audio input\n");
@@ -143,13 +147,13 @@ void CControlsPortExp::audio_input_enable(bool enable)
     set_pin_state(AudioInputEnablePin, enable);
 }
 
-void CControlsPortExp::set_lcd_backlight(bool on)
+void CMainBoardPortExp::set_lcd_backlight(bool on)
 {
     const int BackLightPin = 7;
     set_pin_state(BackLightPin, on);
 }
 
-int CControlsPortExp::set_pin_state(uint8_t pin, bool state)
+int CMainBoardPortExp::set_pin_state(uint8_t pin, bool state)
 {
     if (state)
         _data_out |= (1 << pin);

@@ -7,7 +7,7 @@
 
 #include "CMCP4651.h"
 #include "CAudio3Process.h"
-#include "../CControlsPortExp.h"
+#include "../CMainBoardPortExp.h"
 #include "../CAnalogueCapture.h"
 #include "../CSavedSettings.h"
 #include "../CUtil.h"
@@ -20,7 +20,7 @@
 class CAudio
 {
     public:
-        CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CControlsPortExp *controls);
+        CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CMainBoardPortExp *controls);
         ~CAudio();
         void set_audio_digipot_found(bool found);
         void init(CSavedSettings *saved_settings, CDisplay *display);
@@ -77,7 +77,7 @@ class CAudio
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain
-        CControlsPortExp *_controlsPortExp; // Port expander used to (amongst other things) enable/disable microphone power and preamp
+        CMainBoardPortExp *_controlsPortExp; // Port expander used to (amongst other things) enable/disable microphone power and preamp
         CDisplay *_display;
 
 };

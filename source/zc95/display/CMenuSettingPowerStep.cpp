@@ -120,7 +120,7 @@ void CMenuSettingPowerStep::draw()
 
 void CMenuSettingPowerStep::show()
 {
-    _display->set_option_a(" ");
+    _display->set_option_a("");
     _display->set_option_b("Back");
     _display->set_option_c("Up");
     _display->set_option_d("Down");

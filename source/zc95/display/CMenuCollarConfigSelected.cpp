@@ -179,7 +179,7 @@ void CMenuCollarConfigSelected::set_button_a_text()
             break;
         
         default:
-            _display->set_option_a(" ");
+            _display->set_option_a("");
             break;
     }
 }

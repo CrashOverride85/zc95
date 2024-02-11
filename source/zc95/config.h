@@ -7,16 +7,19 @@
 #define ZC624_ADDR                  0x10
 #define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accessory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
 #define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front panel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
-#define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front panel
+#define FP_0_1_PORT_EXP_ADDR        0x26 // Port expander (U2) on v0.1 of the front panel
 #define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
-#define ADC_ADDR                    0x48 // ADC on front panel, used for power control dials
+#define FP_0_2_PORT_EXP_ADDR        0x38 // Address of port expander used on >= v0.2 of the front panel
+#define FP_0_2_BUTTON_LED_DRV_ADDR  0x41 // LED driver for the LED's in the buttons of the v0.2 front panel
+#define FP_0_1_ADC_ADDR             0x48 // ADC on v0.1 of front panel, used for power control dials
+#define FP_0_2_ADC_ADDR             0x49 // ADC on v0.2 of front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 
 
 
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
 // Set expected version for zc624 output module
-#define ZC624_REQUIRED_MAJOR_VERION 1
+#define ZC624_REQUIRED_MAJOR_VERION 2
 #define ZC624_MIN_MINOR_VERION      0
 
 // Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
@@ -38,8 +41,8 @@
 #define PIN_FP_INT1       11 // front panel interrupt 1 (U1) - 4x channel rot encoders
 #define PIN_FP_INT2        6 // front panel interrupt 2 (U2) - 5x rot encoder buttons & 1x adjust rot encoder (+ 1x unused line)
 
-
 // Output board SPI
+#define ZC624_SPI_PORT            spi1
 #define PIN_OUTPUT_BOARD_SPI_RX   12
 #define PIN_OUTPUT_BOARD_SPI_SCK  14
 #define PIN_OUTPUT_BOARD_SPI_TX   15
@@ -61,10 +64,7 @@
 #define MAX_POWER_LEVEL 1000
 #define MAX_CHANNELS 4
 
-
-// SPI Defines
-// We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
+// SPI Defines for display
 #define SPI_PORT spi0
 #define PIN_MISO 16
 #define PIN_CS   17

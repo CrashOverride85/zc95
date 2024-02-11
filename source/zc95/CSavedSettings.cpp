@@ -296,6 +296,16 @@ void CSavedSettings::set_power_level_display(power_level_show_percent setting)
     _eeprom_contents[(uint8_t)setting::PowerLevelDisp] = (uint8_t)setting;
 }
 
+uint8_t CSavedSettings::get_button_brightness()
+{
+    return _eeprom_contents[(uint8_t)setting::ButtonLedBright];
+}
+
+void CSavedSettings::set_button_brightness(uint8_t button_brightness_byte)
+{
+    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = button_brightness_byte;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)
@@ -408,6 +418,8 @@ void CSavedSettings::eeprom_initialise()
 
     for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
         initialise_collar(collar_id);
+
+    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
 
     // Save changes
     save();

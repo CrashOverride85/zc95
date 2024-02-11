@@ -29,7 +29,7 @@ CZC624Comms::CZC624Comms(spi_inst_t *spi, i2c_inst_t *i2c)
         gpio_set_function(PIN_OUTPUT_BOARD_SPI_CSN, GPIO_FUNC_SPI);
 
         spi_init(_spi, SPI_BAUD_RATE);
-        spi_set_format(_spi, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+        spi_set_format(_spi, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
 }
 
@@ -61,7 +61,14 @@ void CZC624Comms::send_message(message msg)
         _last_msg_us = time_us_64();
         
         // Whenever we send a message, we get the desired LED states for each channel in return
-        _led_state = recv[0];
+        for (uint n=0; n < sizeof(recv); n++)
+        {
+            if (recv[n])
+            {
+                _led_state = recv[n];
+                break;
+            }
+        }
     }
 }
 
@@ -112,13 +119,19 @@ bool CZC624Comms::write_i2c_register(i2c_reg_t reg, uint8_t value)
     return true;
 }
 
-bool CZC624Comms::check_zc624()
+// Returns a bit field, with bits meaning:
+// 0 = overall status 
+// 1 = channel 1 status
+// ...
+// set means fault, clear means ok.
+// A return of 0xFF means failed to read status.
+uint8_t CZC624Comms::check_zc624()
 {
     uint8_t status = 0;
     if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
     {
         printf("Failed to read OverallStatus register from ZC624\n");
-        return false;
+        return 0xFF;
     }
 
     // Wait for upto 2 seconds for ZC624 to become ready
@@ -128,7 +141,7 @@ bool CZC624Comms::check_zc624()
         if (!get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &status))
         {
             printf("Failed to read OverallStatus register from ZC624\n");
-            return false;
+            return 0xFF;
         }
         count++;
 
@@ -142,10 +155,31 @@ bool CZC624Comms::check_zc624()
     if (status != CZC624Comms::status::Ready)
     {
         printf("ZC624 is not ready (status = %d)\n", status);
-        return false;
+
+        uint8_t return_status = 1;
+        for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+        {
+            if (channel_has_fault(chan))
+                return_status |= 1 << (chan+1);
+        }
+
+        return return_status;
     }
 
-    return true;
+    return 0;
+}
+
+bool CZC624Comms::channel_has_fault(uint8_t channel)
+{
+    uint8_t chan_status;
+    if (!get_i2c_register((CZC624Comms::i2c_reg_t)((uint8_t)CZC624Comms::i2c_reg_t::Chan0Status+channel), &chan_status))
+    {
+        printf("Failed to read Channel %d status register from ZC624\n", channel);
+        return true;
+    }
+
+    printf("channel %d status = %d (%s)\n", channel, chan_status, status_to_string((status)chan_status).c_str());
+    return (chan_status != CZC624Comms::status::Ready);
 }
 
 std::string CZC624Comms::get_version()
@@ -170,5 +204,54 @@ bool CZC624Comms::get_major_minor_version(uint8_t *major, uint8_t *minor)
     retval &= get_i2c_register(CZC624Comms::i2c_reg_t::VersionMinor, minor);
 
     return retval;
+}
+
+// Returns true if something is wrong with the SPI comms to output board. 
+// A return of false means it's probably ok (this is not a thorough check)
+bool CZC624Comms::spi_has_comms_fault()
+{
+    bool retval = false;
+
+    retval |= test_spi_comms(0x12);
+    retval |= test_spi_comms(0x55);
+
+    return retval;
+}
+
+// Returns true if something is wrong with the SPI comms to output board. 
+bool CZC624Comms::test_spi_comms(uint8_t test_val)
+{
+    // Use the SPI SetTestVal command to write a value to the test register in the zc624. Wait
+    // a few moments, then use i2c to read this value back (we've already effectively tested 
+    // i2c to get to this point). If it doesn't match the value we wrote, something's wrong.
+    uint8_t i2c_read_val;
+
+    message msg = {0};
+    msg.command = (uint8_t)CZC624Comms::spi_command_t::SetTestVal;
+    msg.arg0 = test_val;
+    send_message(msg);
+    sleep_ms(10);
+
+    get_i2c_register(CZC624Comms::i2c_reg_t::TestVal, &i2c_read_val);
+
+    return i2c_read_val != msg.arg0;
+}
+
+std::string CZC624Comms::status_to_string(status s)
+{
+    switch (s)
+    {
+        case status::Fault:
+            return "Fault";
+
+        case status::Ready:
+            return "Ready";
+
+        case status::Startup:
+            return "Startup";
+
+        default:
+            return "Unknown";
+    }
 }
 

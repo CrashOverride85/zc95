@@ -13,6 +13,7 @@
 #include "CMenu.h"
 #include "../CUtil.h"
 #include "../config.h"
+#include "../FrontPanel/CFrontPanel.h"
 
 struct display_area
 {
@@ -25,7 +26,7 @@ struct display_area
 class CDisplay
 {
     public:
-        CDisplay();
+        CDisplay(CFrontPanel *front_panel);
         ~CDisplay();
         void init();
         void update();
@@ -87,6 +88,7 @@ class CDisplay
         hagl_backend_t *_hagl_backend = NULL;
         uint8_t *_rotate90_buffer = NULL;
         uint64_t _show_power_level_until = 0;
+        CFrontPanel *_front_panel;
 };
 
 #endif

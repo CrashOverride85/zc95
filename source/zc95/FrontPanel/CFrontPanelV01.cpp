@@ -1,4 +1,4 @@
-#include "CFrontPanel.h"
+#include "CFrontPanelV01.h"
 #include <string.h>
 #include "../globals.h"
 #include "../CUtil.h"
@@ -8,11 +8,13 @@
 
 /*
  * Front panel which has 4x potentiometers connected to an I2C ADC, 
- * and 1x rotary encoder connected to an I2C port expander
+ * and 1x rotary encoder connected to an I2C port expander.
+ * The 4 buttons are connected to a port expander on the main board.
  */
 
-CFrontPanel::CFrontPanel(CSavedSettings *saved_settings)
+CFrontPanelV01::CFrontPanelV01(CSavedSettings *saved_settings, CMainBoardPortExp *main_board_port_exp)
 {
+    _main_board_port_exp = main_board_port_exp;
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0;
     _adjust_value = 0;
@@ -23,7 +25,7 @@ CFrontPanel::CFrontPanel(CSavedSettings *saved_settings)
     read_adc();
 }
 
-void CFrontPanel::interrupt (port_exp exp)
+void CFrontPanelV01::interrupt (interrupt_t i)
 {
     _interrupt = true;
     _interrupt_time = time_us_32();
@@ -32,7 +34,7 @@ void CFrontPanel::interrupt (port_exp exp)
         process(false);
 }
 
-void CFrontPanel::process(bool always_update)
+void CFrontPanelV01::process(bool always_update)
 {
     if (_interrupt || always_update)
     {
@@ -62,7 +64,7 @@ void CFrontPanel::process(bool always_update)
     }
 }
 
-uint16_t CFrontPanel::get_channel_power_level(uint8_t channel)
+uint16_t CFrontPanelV01::get_channel_power_level(uint8_t channel)
 {
     if (channel >= MAX_CHANNELS)
         return 0;
@@ -71,7 +73,7 @@ uint16_t CFrontPanel::get_channel_power_level(uint8_t channel)
 }
 
 
-int8_t CFrontPanel::get_adjust_control_change()
+int8_t CFrontPanelV01::get_adjust_control_change()
 {
     int8_t retval = _adjust_value;
     _adjust_value = 0;
@@ -79,11 +81,11 @@ int8_t CFrontPanel::get_adjust_control_change()
 }
 
  
-void CFrontPanel::read_adc()
+void CFrontPanelV01::read_adc()
 {
     uint8_t command = 0x04;
 
-    int bytes_written = i2c_write(__func__, ADC_ADDR, &command, 1, false);
+    int bytes_written = i2c_write(__func__, FP_0_1_ADC_ADDR, &command, 1, false);
     if (bytes_written != 1)
     {
         printf("CFrontPanel::read_adc() write failed! i2c bytes_written = %d\n", bytes_written);
@@ -91,7 +93,7 @@ void CFrontPanel::read_adc()
     }
 
     uint8_t buffer[5] = {0};
-    int retval = i2c_read(__func__, ADC_ADDR, buffer, sizeof(buffer), false);
+    int retval = i2c_read(__func__, FP_0_1_ADC_ADDR, buffer, sizeof(buffer), false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFrontPanel::read_adc() i2c read error!\n");
@@ -111,7 +113,7 @@ void CFrontPanel::read_adc()
     _power_level[3] = (float)1000 - (float)buffer[2] * 3.91;
 }
 
-void CFrontPanel::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint8_t b_pos)
+void CFrontPanelV01::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint8_t b_pos)
 {
     uint8_t a = (port_exp_read & (1 << a_pos) ? 1 : 0);
     uint8_t b = (port_exp_read & (1 << b_pos ) ? 1 : 0);
@@ -119,11 +121,11 @@ void CFrontPanel::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, uint
     _rot_encoder.process(a, b);
 }
 
-uint8_t CFrontPanel::read_port_expander()
+uint8_t CFrontPanelV01::read_port_expander()
 {
     uint8_t buffer[1];
     
-    int retval = i2c_read(__func__, FP_ANALOG_PORT_EXP_2_ADDR, buffer, 1, false);
+    int retval = i2c_read(__func__, FP_0_1_PORT_EXP_ADDR, buffer, 1, false);
     if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
     {
       printf("CFrontPanel::read_port_expander i2c read error!\n");
@@ -131,4 +133,16 @@ uint8_t CFrontPanel::read_port_expander()
     }
 
     return buffer[0];
+}
+
+// On v0.1 of the front panel, the 4 buttons are connected to the port expander
+// on the main board, not the port expander on the front panel.
+bool CFrontPanelV01::button_state(enum Button button)
+{
+    return _main_board_port_exp->button_state(button);
+}
+
+bool CFrontPanelV01::has_button_state_changed(enum Button button, bool *new_state)
+{
+    return _main_board_port_exp->has_button_state_changed(button, new_state);
 }

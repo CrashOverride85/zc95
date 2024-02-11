@@ -59,7 +59,6 @@ COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
         printf("One or more chanel failed calibration, not enabling power.\n");
         _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Fault);
         gpio_put(PIN_9V_ENABLE, 0);
-        
     }
 }
 
@@ -156,6 +155,8 @@ uint8_t COutput::get_channel_led_state()
             state |= (1 << chan);
         }
     }
+
+    state |= (1 << 5);
     
     return state;
 }

@@ -6,6 +6,11 @@
 
 #define ZC624_ADDR 0x10
 
+// Expected API version of ZC624. E.g. Major=2, Minor=0 corresponds to FW1.7 (and possibly some later versions).
+// This to avoid the version check failing when there isn't an exact match, but the F/W verion is still compatible.
+#define ZC624_EXPECTED_MAJOR_VERSION 2
+#define ZC624_MINIMUM_MINOR_VERSION  0
+
 class Zc624
 {
 public:
@@ -24,6 +29,8 @@ public:
   bool get_major_minor_version(uint8_t *major, uint8_t *minor);
   bool check_zc624(bool wait);
   bool set_channel_isolation(bool on);
+  bool is_version_acceptable();
+  bool is_version_acceptable(uint8_t major, uint8_t minor);
 
   void pulse(zc624_channel channel, uint8_t pos_us, uint8_t neg_us);
   void set_freq(zc624_channel channel, uint16_t freq_hz);
@@ -50,6 +57,8 @@ private:
     VerStrStart = 0x20,
     VerStrEnd = 0x34, //  20 character string
 
+    TestVal = 0x40,
+
     // Read/write
     // starting at 0x80
     ChannelIsolation = 0x80
@@ -65,15 +74,17 @@ private:
 
   enum class spi_command_t
   {
-    Pulse = 0,
     SetPower = 1,
     Poll = 2,
     PowerDown = 3,
-
+    
     SetFreq = 4,
     SetPulseWidth = 5,
     SwitchOn = 6,
-    SwitchOff = 7
+    SwitchOff = 7,
+    NoOp = 8,
+    SetTestVal = 9,
+    Pulse = 10
   };
 
   enum zc624_status
