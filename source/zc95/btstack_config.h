@@ -20,7 +20,7 @@
 #define ENABLE_PRINTF_HEXDUMP
 // #define ENABLE_SCO_OVER_HCI
 
-// #define WANT_HCI_DUMP 1 // CO85
+#define WANT_HCI_DUMP 1 // CO85
 
 
 // BTstack configuration. buffers, sizes, ...

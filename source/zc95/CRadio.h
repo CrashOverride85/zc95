@@ -2,13 +2,14 @@
 #define _CRADIO_H
 
 #include <inttypes.h>
-
 #include "pico/cyw43_arch.h"
+
+#include "CAnalogueCapture.h"
 
 class CRadio
 {
     public:
-        CRadio();
+        CRadio(CAnalogueCapture *analogue_capture);
         ~CRadio();
 
         bool bluetooth(bool required);
@@ -16,6 +17,8 @@ class CRadio
         void loop();
 
     private:
+        CAnalogueCapture *_analogue_capture;
+
         void set_radio();
 
         bool _radio_active = false;

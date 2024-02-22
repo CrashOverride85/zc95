@@ -79,7 +79,7 @@ CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &port_expander);
 CWifi *wifi = NULL;
-CRadio radio;
+CRadio *radio = NULL;
 extern CSerialConnection *g_SerialConnection;
 
 void gpio_callback(uint gpio, uint32_t events) 
@@ -220,7 +220,8 @@ int main()
     led.set_all_led_colour(LedColour::Purple);
     led.loop();
 
-    CBluetooth bluetooth = CBluetooth(&radio);
+    radio = new CRadio(&analogueCapture);
+    CBluetooth bluetooth = CBluetooth(radio);
 
     // front panel push buttons on controls port expander
     gpio_init(PIN_CONTROLS_INT);
@@ -259,7 +260,9 @@ int main()
     // Load/set gain, mic preamp, etc., from eeprom
     audio.init(&settings, &display);
 
-    analogueCapture.start();
+    // **********************************************************************************************************************************************************
+  //  analogueCapture.start(); //FIXME
+    // **********************************************************************************************************************************************************
 
     led.set_all_led_colour(LedColour::Black);
 
@@ -269,7 +272,8 @@ int main()
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
-    wifi = new CWifi(&radio, &analogueCapture, routine_output, &routines);
+    wifi = new CWifi(radio, &analogueCapture, routine_output, &routines);
+    flash_helper_init(&analogueCapture, routine_output);
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
@@ -294,6 +298,7 @@ int main()
     while (1) 
     {
         uint64_t loop_start = time_us_64();
+        radio->loop();
         wifi->loop();
 
         display.update();

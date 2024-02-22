@@ -68,7 +68,7 @@ void CBluetooth::set_state(state_t new_state)
         else
         {
             // TODO: error screen
-            printf("CMenuBluetoothTest: ERROR - not paired to anything\n");
+            printf("CBluetooth::set_state(): ERROR - not paired to anything\n");
         }        
     }
     
@@ -108,7 +108,10 @@ bool CBluetooth::is_paired(bd_addr_t search_address)
 
     // Does it match the address in EEPROM?
     if (memcmp(search_address, paired_addr, sizeof(bd_addr_t)))
+    {
+        printf("CBluetooth::is_paired(): false - doesn't match EEPROM\n");
         return false;
+    }
 
     // Does btstack know about it? (not 100% sure this is right)
     // It might be in eeprom but not btstack if flash was cleared but not EEPROM
@@ -127,6 +130,7 @@ bool CBluetooth::is_paired(bd_addr_t search_address)
             return true;
         }
     }
+    printf("CBluetooth::is_paired(): false - no match found in btstack flash\n");
 
     return false;
 }

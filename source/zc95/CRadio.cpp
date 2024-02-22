@@ -1,7 +1,8 @@
 #include "CRadio.h"
 
-CRadio::CRadio()
+CRadio::CRadio(CAnalogueCapture *analogue_capture)
 {
+    _analogue_capture = analogue_capture;
 }
 
 CRadio::~CRadio()
@@ -36,6 +37,11 @@ void CRadio::set_radio()
     // init radio if required
     if ((_bluetooth || _wifi) && !_radio_active)
     {
+        bool is_analogue_capture_running = _analogue_capture->is_running();
+
+    //    if (is_analogue_capture_running)
+    //        _analogue_capture->stop();
+
         if (cyw43_arch_init())
         {
             printf("CRadio::set_radio(): Failed to init cyw43\n");
@@ -45,6 +51,9 @@ void CRadio::set_radio()
             printf("CRadio::set_radio(): cyw43 init success\n");
             _radio_active = true;
         }
+
+      //  if (is_analogue_capture_running)
+      //      _analogue_capture->start();
     }
 
     // deinit radio if no longer required
