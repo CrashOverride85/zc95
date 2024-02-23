@@ -24,7 +24,12 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
             process_button_page(usage, value);
             break;
 
+        case HID_USAGE_PAGE_DIGITIZER:
+            process_digitizer_page(usage, value);
+            break;
+
         default:
+            printf("CBluetoothRemote::process_input(): Unexpected usage page: %d\n", usage_page);
             break;
     }
 
@@ -32,6 +37,22 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
 
 void CBluetoothRemote::process_desktop_page(uint16_t usage, int32_t value)
 {
+    switch(usage)
+    {
+        case HID_USAGE_GENERIC_DESKTOP_X:
+            printf("HID_USAGE_GENERIC_DESKTOP_X:            %ld\n", value);
+            break;
+
+        case HID_USAGE_GENERIC_DESKTOP_Y:
+            printf("HID_USAGE_GENERIC_DESKTOP_Y:            %ld\n", value);
+            break;
+
+        default:
+            printf("generic desktop: %x = %ld\n", usage, value);
+            break;
+    }
+
+/*
     if (usage == HID_USAGE_GENERIC_DESKTOP_X)
     {
         _current_x = value;
@@ -40,10 +61,24 @@ void CBluetoothRemote::process_desktop_page(uint16_t usage, int32_t value)
     {
         _current_y = value;
     }
+    */
 }
 
 void CBluetoothRemote::process_button_page(uint16_t usage, int32_t value)
 {
+
+    switch(usage)
+    {
+        case HID_USAGE_BUTTON_PRIMARY:
+            printf("HID_USAGE_BUTTON_PRIMARY:               %ld\n", value);
+            break;
+
+        default:
+            printf("button page: %x = %ld\n", usage, value);
+            break;
+    }
+
+    /*
     if (usage == HID_USAGE_BUTTON_PRIMARY)
     {
         if (_pressed && value == 0)
@@ -57,6 +92,33 @@ void CBluetoothRemote::process_button_page(uint16_t usage, int32_t value)
             _pressed = true;
             report_keypress();
         }
+    }
+    */
+}
+
+void CBluetoothRemote::process_digitizer_page(uint16_t usage, int32_t value)
+{
+    switch(usage)
+    {
+        case HID_USAGE_DIGITIZER_IN_RANGE:
+            printf("HID_USAGE_DIGITIZER_IN_RANGE:           %ld\n", value);
+            break;
+
+        case HID_USAGE_DIGITIZER_TIP_SWITCH:
+            printf("HID_USAGE_DIGITIZER_TIP_SWITCH:         %ld\n", value);
+            break;
+
+        case HID_USAGE_DIGITIZER_CONTACT_IDENTIFIER:
+            printf("HID_USAGE_DIGITIZER_CONTACT_IDENTIFIER: %ld\n", value);
+            break;
+
+        case HID_USAGE_DIGITIZER_CONTACT_COUNT:
+            printf("HID_USAGE_DIGITIZER_CONTACT_COUNT:      %ld\n", value);
+            break;
+
+        default:
+            printf("digitizer: %x = %ld\n", usage, value);
+            break;
     }
 }
 

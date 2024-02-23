@@ -14,6 +14,17 @@ bool CRadio::bluetooth(bool required)
     if (_bluetooth != required)
     {
         _bluetooth = required;
+
+        // Something about analogue capture seems to break bluetooth - or at least
+        // make it really flaky. Often get HCI hardware errors in the log with it on,
+        // which never happens when off. For WiFi, just disabling it during connection
+        // is enough, but apparently not for bluetooth (although the bt errors are less
+        // catastrophic as they don't cause a lockup).
+        if (required)
+            _analogue_capture->stop();
+        else
+            _analogue_capture->start();
+
         set_radio();
     }
 
@@ -39,8 +50,8 @@ void CRadio::set_radio()
     {
         bool is_analogue_capture_running = _analogue_capture->is_running();
 
-    //    if (is_analogue_capture_running)
-    //        _analogue_capture->stop();
+        if (is_analogue_capture_running)
+            _analogue_capture->stop();
 
         if (cyw43_arch_init())
         {
@@ -52,8 +63,8 @@ void CRadio::set_radio()
             _radio_active = true;
         }
 
-      //  if (is_analogue_capture_running)
-      //      _analogue_capture->start();
+        if (is_analogue_capture_running)
+            _analogue_capture->start();
     }
 
     // deinit radio if no longer required

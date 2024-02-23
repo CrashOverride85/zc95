@@ -11,7 +11,7 @@
 #define ENABLE_L2CAP_LE_CREDIT_BASED_FLOW_CONTROL_MODE
 #endif
 
-#define ENABLE_LOG_DEBUG // CO85
+// #define ENABLE_LOG_DEBUG // CO85
 
 #define ENABLE_LE_SECURE_CONNECTIONS // CO85
 
@@ -20,7 +20,7 @@
 #define ENABLE_PRINTF_HEXDUMP
 // #define ENABLE_SCO_OVER_HCI
 
-#define WANT_HCI_DUMP 1 // CO85
+// #define WANT_HCI_DUMP 1 // CO85
 
 
 // BTstack configuration. buffers, sizes, ...

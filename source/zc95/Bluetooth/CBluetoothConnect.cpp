@@ -162,8 +162,8 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         _bluetooth_remote.process_input(usage_page, usage, value);
     }
 
-    _bluetooth_remote.end_of_input();
-  //  printf("--------------------------------- \n");
+  //  _bluetooth_remote.end_of_input();
+    printf("--------------------------------- \n");
 }
 
 void CBluetoothConnect::set_address(bd_addr_t address)
