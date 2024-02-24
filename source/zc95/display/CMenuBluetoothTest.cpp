@@ -26,11 +26,17 @@ CMenuBluetoothTest::CMenuBluetoothTest(CDisplay* display, CBluetooth *bluetooth)
     _bluetooth = bluetooth;
     _exit_menu = false;
     _disp_area = _display->get_display_area();
+
+    queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
+    _bluetooth->set_keypress_queue(&_bt_keypress_queue);
 }
 
 CMenuBluetoothTest::~CMenuBluetoothTest()
 {
     printf("~CMenuBluetoothTest()\n");
+    _bluetooth->set_keypress_queue(NULL);
+    queue_free(&_bt_keypress_queue);
+
     if (_submenu_active)
     {
         delete _submenu_active;
@@ -74,38 +80,26 @@ void CMenuBluetoothTest::adjust_rotary_encoder_change(int8_t change)
 
  void CMenuBluetoothTest::draw()
  {
-
-    /*
- 
+    CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
+    while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
     {
-        std::string message;
-        switch (_bluetooth->get_pair_state())
-        {
-            case CBluetoothPair::bt_pair_state_t::SUCCESS:
-                message = "Success!";
-                break;
-
-            case CBluetoothPair::bt_pair_state_t::START:
-                message = "In progress...";
-                break;
-
-            case CBluetoothPair::bt_pair_state_t::FAILED:
-                message = "Failed!";
-                break;
-            break;
-
-            default: // Unknown & IDLE
-                message = "ERROR";
-                break;
-        }
-
-        int y = ((_disp_area.y1-_disp_area.y0)/2) - 30;
-        _display->put_text("Paring status:" , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-        y += 10;
-        _display->put_text(message          , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
-        y += 10;
+        _message = CBluetoothRemote::s_get_keypress_string(queue_entry.key);
+        _keypress_displayed_us = time_us_64();
     }
-    */
+
+    // If the keypress was received in the last 100ms, make the text yellow, otherwise stick to white
+    hagl_color_t text_colour; 
+    if (time_us_64() - _keypress_displayed_us < 1000 * 100)
+        text_colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00);
+    else
+        text_colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF);
+
+    _display->put_text(_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2) , text_colour);
+
+
+    _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();
+    _display->put_text(CBluetoothConnect::s_state_to_string(connect_state), _disp_area.x0, _disp_area.y0+8, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
 }
 
 void CMenuBluetoothTest::show()

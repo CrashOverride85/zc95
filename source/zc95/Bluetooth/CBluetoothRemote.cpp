@@ -4,11 +4,18 @@ CBluetoothRemote::CBluetoothRemote()
 {
     printf("CBluetoothRemote()\n");
     _movement_started = false;
+    _bt_keypress_queue = NULL;
 }
 
 CBluetoothRemote::~CBluetoothRemote()
 {
     printf("~CBluetoothRemote()\n");
+    _bt_keypress_queue = NULL;
+}
+
+void CBluetoothRemote::set_keypress_queue(queue_t *bt_keypress_queue)
+{
+    _bt_keypress_queue = bt_keypress_queue;
 }
 
 void CBluetoothRemote::reset_dimension(dimension_t &dimension)
@@ -16,7 +23,6 @@ void CBluetoothRemote::reset_dimension(dimension_t &dimension)
     dimension.prev_val = 0;
     dimension.most_recent = 0;
     dimension.received_count = 0;
-    dimension.initial_val = 0;
 }
 
 void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_t value)
@@ -32,45 +38,61 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
 
         case HID_USAGE_PAGE_BUTTON:
             if (debug) print_button_page(usage, value);
-            process_button_page(usage, value);
             break;
 
         case HID_USAGE_PAGE_DIGITIZER:
             if (debug) print_digitizer_page(usage, value);
-            process_digitizer_page(usage, value);
             break;
 
         case HID_USAGE_PAGE_CONSUMER:
             if (debug) print_consumer_page(usage, value);
-            process_consumer_page(usage, value);
             break;
 
         default:
-            printf("CBluetoothRemote::process_input(): Unexpected usage page: 0x%X\n", usage_page);
+            printf("CBluetoothRemote::process_input(): Unexpected usage page: 0x%X (usage = %d, value = %ld)\n", 
+                usage_page, usage, value);
             break;
     }
 
+    if (is_shutter_button(usage_page, usage, value))
+    {
+        keypress_t key = keypress_t::KEY_SHUTTER;
+        printf("%s\n", s_get_keypress_string(key).c_str());
+        send_keypress(key);
+    }
 
-    if (is_movement_start(usage_page, usage, value))
+    else if (is_movement_start(usage_page, usage, value))
     {
         _movement_started = true;
-
-        _x.initial_val = _x.most_recent;
-        _y.initial_val = _y.most_recent;
         
         _x.received_count = 0;
         _y.received_count = 0;
     }
+
     else if (is_movement_end(usage_page, usage, value))
     {
         _movement_started = false;
-        keypress_t key = get_last_button_pressed();
-        print_keypress(key);
-        printf("\n");
+        keypress_t key = get_last_direction_button_pressed();
+        printf("%s\n", s_get_keypress_string(key).c_str());
+        send_keypress(key);
     }
-
 }
 
+void CBluetoothRemote::send_keypress(keypress_t key)
+{
+    // If we've had a keypress in the last 150ms, it's really unlikely to be another one,
+    // we're far more likely to detecting the same button press as two different things.
+    if (time_us_64() - _last_button_event < 1000 * 150)
+        return;
+    
+    _last_button_event = time_us_64();
+    if (_bt_keypress_queue)
+    {
+        bt_keypress_queue_entry_t q;
+        q.key = key;
+        queue_try_add(_bt_keypress_queue, &q);
+    }
+}
 
 bool CBluetoothRemote::is_movement_start(uint16_t usage_page, uint16_t usage, int32_t value)
 {
@@ -100,11 +122,20 @@ bool CBluetoothRemote::is_movement_event(uint16_t usage_page, uint16_t usage)
     return false;
 }
 
+bool CBluetoothRemote::is_shutter_button(uint16_t usage_page, uint16_t usage, int32_t value)
+{
+    if (value != 1)
+        return false;
+
+    return
+    (
+        (usage_page == HID_USAGE_PAGE_CONSUMER) &&
+        (usage == HID_USAGE_CONSUMER_VOL_DEC || usage == HID_USAGE_CONSUMER_VOL_INC)
+    );
+}
+
 void CBluetoothRemote::process_desktop_page(uint16_t usage, int32_t value)
 {
- //   if (!_movement_started)
- //       return;
-
     if (usage == HID_USAGE_GENERIC_DESKTOP_X)
     {
         _x.received_count++;
@@ -119,46 +150,13 @@ void CBluetoothRemote::process_desktop_page(uint16_t usage, int32_t value)
     }
 }
 
-void CBluetoothRemote::process_button_page(uint16_t usage, int32_t value)
-{
-
-    /*
-    if (usage == HID_USAGE_BUTTON_PRIMARY)
-    {
-        if (_pressed && value == 0)
-        {
-            _pressed = false;
-            report_keypress();
-        }
-
-        if (!_pressed && value == 1)
-        {
-            _pressed = true;
-            report_keypress();
-        }
-    }
-    */
-}
-
-void CBluetoothRemote::process_digitizer_page(uint16_t usage, int32_t value)
-{
-
-}
-
-void CBluetoothRemote::process_consumer_page(uint16_t usage, int32_t value)
-{
-   
-}
-
-
-CBluetoothRemote::keypress_t CBluetoothRemote::get_last_button_pressed()
+CBluetoothRemote::keypress_t CBluetoothRemote::get_last_direction_button_pressed()
 {
     int32_t x_move = 0;
     int32_t y_move = 0;
 
     if (_x.received_count < 2 && _y.received_count < 2 )
-        return keypress_t::KEY_NONE;
-
+        return keypress_t::KEY_BUTTON;
 
     // For remotes that are doing something sensible: movement start, 2 
     // or more x/y updates (hopefully with only one changing), movement end.
@@ -175,7 +173,7 @@ CBluetoothRemote::keypress_t CBluetoothRemote::get_last_button_pressed()
 
         if ((_x.most_recent == 0 && _y.most_recent == 0) || 
             (_x.most_recent != 0 && _y.most_recent != 0))
-            return keypress_t::KEY_NONE; // give up
+            return keypress_t::KEY_UNKNOWN; // give up, it's probably motion, but can't figure out what
 
         if (_x.most_recent > 0)
             return keypress_t::KEY_LEFT;
@@ -186,8 +184,8 @@ CBluetoothRemote::keypress_t CBluetoothRemote::get_last_button_pressed()
         else if (_y.most_recent < 0)
             return keypress_t::KEY_DOWN;
         else
-            return keypress_t::KEY_NONE;
-    }
+            return keypress_t::KEY_UNKNOWN; 
+    } 
 
     // Try and determine which direction the button is trying to move in most. 
     // Ideally, either X or Y move would be 0 making it obvious.
@@ -209,107 +207,44 @@ CBluetoothRemote::keypress_t CBluetoothRemote::get_last_button_pressed()
     }
 }
 
-void CBluetoothRemote::end_of_input()
-{
-
-    /*
-    bool location_updated = false;
-    int x_diff = 0;
-    int y_diff = 0;
-
-    if (_current_x != _last_x)
-    {
-        if (_current_x < _last_x)
-            _direction = direction_t::DIR_LEFT;
-        else
-            _direction = direction_t::DIR_RIGHT;
-    
-        x_diff = _last_x - _current_x;
-        _last_x = _current_x;
-        location_updated = true;
-    }
-
-    if (_current_y != _last_y)
-    {
-        if (_current_y < _last_y)
-            _direction = direction_t::DIR_DOWN;
-        else
-            _direction = direction_t::DIR_UP;
-
-        y_diff = _last_y - _current_y;
-        _last_y = _current_y;
-        location_updated = true;
-    }
-
-    if (location_updated)
-        printf("\t\t%li\t%li\t\t\t(%d\t%d)\n", _last_x, _last_y, x_diff, y_diff);
-        */
-}
-
-void CBluetoothRemote::report_keypress()
-{
-    switch(_direction)
-    {
-        case DIR_UP:
-            printf("KEYPRESS: UP ");
-            break;
-
-        case DIR_DOWN:
-            printf("KEYPRESS: DOWN ");
-            break;
-
-        case DIR_LEFT:
-            printf("KEYPRESS: LEFT ");
-            break;
-
-        case DIR_RIGHT:
-            printf("KEYPRESS: RIGHT ");
-            break;
-    }
-
-    if (_movement_started)
-        printf("(pressed)\n");
-    else
-        printf("(released)\n");
-}
-
-
 //////////////////
 // Debug output //
 //////////////////
-
-void CBluetoothRemote::print_keypress(keypress_t key)
+std::string CBluetoothRemote::s_get_keypress_string(keypress_t key)
 {
+    std::string key_string = "<UNKNOWN>";
     switch(key)
     {
-        case keypress_t::KEY_NONE:
-            printf("NONE");
+        case keypress_t::KEY_BUTTON:
+            key_string = "KEY_BUTTON";
             break;
 
         case keypress_t::KEY_UP:
-            printf("KEY_UP");
+            key_string = "KEY_UP";
             break;
 
         case keypress_t::KEY_DOWN:
-            printf("KEY_DOWN");
+            key_string = "KEY_DOWN";
             break;
 
         case keypress_t::KEY_LEFT:
-            printf("KEY_LEFT");
+            key_string = "KEY_LEFT";
             break;
 
         case keypress_t::KEY_RIGHT:
-            printf("KEY_RIGHT");
+            key_string = "KEY_RIGHT";
             break;
 
-        case keypress_t::KEY_OK:
-            printf("KEY_OK");
+        case keypress_t::KEY_UNKNOWN:
+            key_string = "KEY_UNKNOWN";
             break;
 
         case keypress_t::KEY_SHUTTER:
-            printf("KEY_SHUTTER");
+            key_string = "KEY_SHUTTER";
             break;            
     }
+
+    return key_string;
 }
 
 void CBluetoothRemote::print_desktop_page(uint16_t usage, int32_t value)

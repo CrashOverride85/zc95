@@ -8,6 +8,7 @@
 
 #include "CBluetoothRemote.h"
 
+#include "pico/util/queue.h"
 #include "pico/cyw43_arch.h"
 #include "btstack.h"
 
@@ -32,8 +33,13 @@ class CBluetoothConnect
         void set_address(bd_addr_t address);
         void get_address(bd_addr_t *address);
 
+        bt_connect_state_t get_state();
+        
+        void set_keypress_queue(queue_t *bt_keypress_queue);
+
         static void s_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
         static void s_loop(btstack_timer_source_t *ts);
+        static std::string s_state_to_string(bt_connect_state_t state);
         
     private:
         void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
@@ -53,7 +59,6 @@ class CBluetoothConnect
         uint16_t _hids_cid;
         btstack_timer_source_t _timer;
         CBluetoothRemote _bluetooth_remote;
-        
 };
 
 #endif

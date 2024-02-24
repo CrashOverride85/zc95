@@ -6,6 +6,7 @@
 #include <string>
 #include <inttypes.h>
 
+#include "pico/util/queue.h"
 #include "pico/cyw43_arch.h"
 #include "btstack.h"
 
@@ -31,15 +32,13 @@ class CBluetooth
         void set_state(state_t state);
         state_t get_state();
         CBluetoothPair::bt_pair_state_t get_pair_state();
+        CBluetoothConnect::bt_connect_state_t get_connect_state();
 
         void scan_get_devices_found(std::vector<CBluetoothScan::bt_device_t>& devices);
+        void set_keypress_queue(queue_t *bt_keypress_queue);
         void pair(bd_addr_t address);
         void connect(bd_addr_t address);
         bool is_paired(bd_addr_t address);
-        
-//        static void s_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
-        
-
 
     private:
         CRadio *_radio;
@@ -47,8 +46,6 @@ class CBluetooth
         CBluetoothScan      _cBluetoothScan;
         CBluetoothPair      _cBluetoothPair;
         CBluetoothConnect   _cBluetoothConnect;
-        // void connect(bd_addr_t address);
-
 };
 
 #endif

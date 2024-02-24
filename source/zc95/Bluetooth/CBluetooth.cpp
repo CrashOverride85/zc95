@@ -79,10 +79,18 @@ void CBluetooth::set_state(state_t new_state)
         _radio->bluetooth(false);
     }
     
-    if (new_state != state_t::OFF)
+    if (new_state != state_t::OFF && _state == state_t::OFF)
+    {
+        _radio->bluetooth(true);
         hci_power_control(HCI_POWER_ON);
+    }
 
     _state = new_state;
+}
+
+void CBluetooth::set_keypress_queue(queue_t *bt_keypress_queue)
+{
+    _cBluetoothConnect.set_keypress_queue(bt_keypress_queue);
 }
 
 CBluetooth::state_t CBluetooth::get_state()
@@ -93,6 +101,11 @@ CBluetooth::state_t CBluetooth::get_state()
 CBluetoothPair::bt_pair_state_t CBluetooth::get_pair_state()
 {
     return _cBluetoothPair.get_state();
+}
+
+CBluetoothConnect::bt_connect_state_t CBluetooth::get_connect_state()
+{
+    return _cBluetoothConnect.get_state();
 }
 
 void CBluetooth::scan_get_devices_found(std::vector<CBluetoothScan::bt_device_t>& devices)

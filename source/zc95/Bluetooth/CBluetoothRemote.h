@@ -3,6 +3,7 @@
 
 #include <string>
 #include <inttypes.h>
+#include "pico/util/queue.h"
 
 // I'm not sure where these are supposed to come from for bluetooth, but these are from:
 // HID Usage Tables
@@ -19,16 +20,14 @@
 #define HID_USAGE_PAGE_CONSUMER         0x0C
 #define HID_USAGE_PAGE_DIGITIZER        0x0D
 
-
 // PAGE_GENERIC_DESKTOP
 #define HID_USAGE_GENERIC_DESKTOP_X     0x30
 #define HID_USAGE_GENERIC_DESKTOP_Y     0x31
 #define HID_USAGE_GENERIC_DESKTOP_WHEEL 0x38 // Why would a BT button use this!? but some do! (and always pass the value as 0)
 
-
 // PAGE_BUTTON
-#define HID_USAGE_BUTTON_NONE       0x00
-#define HID_USAGE_BUTTON_PRIMARY    0x01
+#define HID_USAGE_BUTTON_NONE           0x00
+#define HID_USAGE_BUTTON_PRIMARY        0x01
 
 // PAGE_DIGITIZER 
 #define HID_USAGE_DIGITIZER_IN_RANGE            0x32 // (MC)
@@ -40,14 +39,14 @@
 // PAGE_CONSUMER
 // I've seen phone/shutter remotes that send all of these, and some point I just gave up commenting them.
 // Most are always sent with 0 value, so seem pretty pointless
-#define HID_USAGE_CONSUMER_UNDEFINED        0x00
-#define HID_USAGE_CONSUMER_POWER            0x30 // "Controls the application-specific power state"
-#define HID_USAGE_CONSUMER_SCAN_PREV_TRACK  0xB6 // ""
+#define HID_USAGE_CONSUMER_UNDEFINED        0x00  // Why would you ever send this!
+#define HID_USAGE_CONSUMER_POWER            0x30  // "Controls the application-specific power state"
+#define HID_USAGE_CONSUMER_SCAN_PREV_TRACK  0xB6
 #define HID_USAGE_CONSUMER_EJECT            0xB8
 #define HID_USAGE_CONSUMER_PLAY_PAUSE       0xCD
-#define HID_USAGE_CONSUMER_VOL_INC          0xE9  // Common shutter button
+#define HID_USAGE_CONSUMER_VOL_INC          0xE9  // Common shutter button, as the camera app in iOS will take a photo when getting vol up or vol down
 #define HID_USAGE_CONSUMER_VOL_DEC          0xEA 
-#define HID_USAGE_CONSUMER_MUTE             0xE2  // ""
+#define HID_USAGE_CONSUMER_MUTE             0xE2 
 #define HID_USAGE_CONSUMER_AL_KEY_LAYOUT    0x1AE // "Launch Keyboard Layout Management application"
 #define HID_USAGE_CONSUMER_AL_SCREEN_SAVER  0x1B1 
 #define HID_USAGE_CONSUMER_AC_SEARCH        0x221
@@ -56,70 +55,58 @@
 
 class CBluetoothRemote
 {
-    public:
-        enum direction_t
-        {
-            DIR_UP,
-            DIR_DOWN,
-            DIR_LEFT,
-            DIR_RIGHT
-        };
-        
+    public:       
         enum keypress_t
         {
-            KEY_NONE,
+            KEY_BUTTON,
             KEY_UP,
             KEY_DOWN,
             KEY_LEFT,
             KEY_RIGHT,
-            KEY_OK,
-            KEY_SHUTTER
+            KEY_SHUTTER,
+            KEY_UNKNOWN
+        };
+
+        struct bt_keypress_queue_entry_t
+        {
+            CBluetoothRemote::keypress_t key;
         };
 
         CBluetoothRemote();
         ~CBluetoothRemote();
 
-        void process_input(uint16_t usage_page, uint16_t usage, int32_t value);
-        void end_of_input();
+        void set_keypress_queue(queue_t *bt_keypress_queue);
 
-    private:
-   /*     int32_t _last_x;
-        int32_t _last_y;
-        int32_t _current_x;
-        int32_t _current_y;
-    */
-        direction_t _direction;
-        
+        void process_input(uint16_t usage_page, uint16_t usage, int32_t value);
+        static std::string s_get_keypress_string(keypress_t key);
+
+    private:       
         struct dimension_t
         {
             uint8_t received_count; // how many received since last movement started event
-            int32_t initial_val;    // before movement started event
             int32_t prev_val;       // 2nd most recent value received
             int32_t most_recent;    // most recent value received
         };
         
+        queue_t *_bt_keypress_queue = NULL;
         bool _movement_started;
         dimension_t _x;
         dimension_t _y;
+        uint64_t _last_button_event = 0;
 
 
-        void report_keypress();
         void process_desktop_page(uint16_t usage, int32_t value);
-        void process_button_page(uint16_t usage, int32_t value);
-        void process_digitizer_page(uint16_t usage, int32_t value);
-        void process_consumer_page(uint16_t usage, int32_t value);
-
         bool is_movement_start(uint16_t usage_page, uint16_t usage, int32_t value);
         bool is_movement_end  (uint16_t usage_page, uint16_t usage, int32_t value);
         bool is_movement_event(uint16_t usage_page, uint16_t usage);
+        bool is_shutter_button(uint16_t usage_page, uint16_t usage, int32_t value);
         
         void reset_dimension(dimension_t &dimension);
 
-        keypress_t get_last_button_pressed();
-
+        keypress_t get_last_direction_button_pressed();
+        void send_keypress(keypress_t key);
 
         // debug output functions
-        void print_keypress(keypress_t key);
         void print_desktop_page(uint16_t usage, int32_t value);
         void print_button_page(uint16_t usage, int32_t value);
         void print_digitizer_page(uint16_t usage, int32_t value);

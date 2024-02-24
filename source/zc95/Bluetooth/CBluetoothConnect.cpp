@@ -17,6 +17,11 @@ CBluetoothConnect::~CBluetoothConnect()
     _s_CBluetoothConnect = NULL;
 }
 
+void CBluetoothConnect::set_keypress_queue(queue_t *bt_keypress_queue)
+{
+    _bluetooth_remote.set_keypress_queue(bt_keypress_queue);
+}
+
 void CBluetoothConnect::start()
 {
     if (_state == bt_connect_state_t::STOPPED)
@@ -46,6 +51,8 @@ void CBluetoothConnect::stop()
     if (_state != bt_connect_state_t::STOPPED)
     {
         printf("bt: CBluetoothConnect::stop()\n");
+        hids_client_disconnect(_hids_cid);
+        hids_client_deinit();
         hci_remove_event_handler(&_event_callback_registration);
         sm_remove_event_handler(&_event_callback_registration);
         _connection_handle = HCI_CON_HANDLE_INVALID;
@@ -82,9 +89,8 @@ void CBluetoothConnect::packet_handler(uint8_t packet_type, uint16_t channel, ui
 
         case HCI_EVENT_LE_META:
         {
-            printf("bt: HCI_EVENT_LE_META\n");
             uint8_t meta_subevent_code = hci_event_le_meta_get_subevent_code(packet);
-            printf("meta_subevent_code = %d\n", meta_subevent_code);
+           // printf("meta_subevent_code = %d\n", meta_subevent_code);
             
             if (meta_subevent_code != HCI_SUBEVENT_LE_CONNECTION_COMPLETE) break;
 
@@ -103,7 +109,15 @@ void CBluetoothConnect::packet_handler(uint8_t packet_type, uint16_t channel, ui
             {
                 case ERROR_CODE_SUCCESS:
                     printf("bt: Re-encryption complete, success\n");
-                    hids_client_connect(_connection_handle, &CBluetoothConnect::s_packet_handler, HID_PROTOCOL_MODE_REPORT, &_hids_cid);
+                    uint8_t hid_ret = hids_client_connect(_connection_handle, &CBluetoothConnect::s_packet_handler, HID_PROTOCOL_MODE_REPORT, &_hids_cid);
+                    if (hid_ret == ERROR_CODE_COMMAND_DISALLOWED)
+                    {
+                        // This means that there's already a HID client connected, which almost certainly means this was a 
+                        // reconnection, so we're good to go without needing to wait for GATTSERVICE_SUBEVENT_HID_SERVICE_CONNECTED.
+                        printf("bt: HID client already connected, setting state to CONNECTED\n");
+                        set_state(bt_connect_state_t::CONNECTED);
+                    }
+
             }
             break;
 
@@ -143,7 +157,6 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
 {
     if (report_len < 1) return;
 
-//    printf("---- hid_handle_input_report ---- \n");
     btstack_hid_parser_t parser;
 
     btstack_hid_parser_init(&parser, 
@@ -162,7 +175,6 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         _bluetooth_remote.process_input(usage_page, usage, value);
     }
 
-  //  _bluetooth_remote.end_of_input();
     printf("--------------------------------- \n");
 }
 
@@ -174,6 +186,11 @@ void CBluetoothConnect::set_address(bd_addr_t address)
 void CBluetoothConnect::get_address(bd_addr_t *address)
 {
     memcpy(address, _address, BD_ADDR_LEN);
+}
+
+CBluetoothConnect::bt_connect_state_t CBluetoothConnect::get_state()
+{
+    return _state;
 }
 
 void CBluetoothConnect::connect()
@@ -224,4 +241,37 @@ void CBluetoothConnect::set_state(bt_connect_state_t new_state)
         _last_state_change = time_us_64();
         _state = new_state;
     }
+}
+
+std::string CBluetoothConnect::s_state_to_string(bt_connect_state_t state)
+{
+    std::string str_state;
+    switch (state)
+    {
+        case bt_connect_state_t::CONNECTED:
+            str_state = "Connected";
+            break;
+
+        case bt_connect_state_t::CONNECTING:
+            str_state = "Connecting";
+            break;
+
+        case bt_connect_state_t::DISCONNECTED:
+            str_state = "Disconnected";
+            break;
+
+        case bt_connect_state_t::IDLE:
+            str_state = "Idle";
+            break;
+
+        case bt_connect_state_t::STOPPED:
+            str_state = "Stopped";
+            break;
+
+        default:
+            str_state = "<UNKNOWN>";
+            break;
+    }
+
+    return str_state;
 }

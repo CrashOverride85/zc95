@@ -4,6 +4,8 @@
 #include "../CSavedSettings.h"
 #include "../Bluetooth/CBluetooth.h"
 
+#include "pico/util/queue.h"
+
 class CMenuBluetoothTest : public CMenu
 {
     public:
@@ -17,6 +19,9 @@ class CMenuBluetoothTest : public CMenu
 
     private:
         display_area _disp_area;
+        queue_t _bt_keypress_queue = {0};
+        std::string _message;
+        uint64_t _keypress_displayed_us;
         
         CDisplay* _display;
         CBluetooth *_bluetooth;
