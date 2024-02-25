@@ -41,7 +41,7 @@ class CDisplay
         void set_current_menu(CMenu *menu);
 
         struct display_area get_display_area();
-        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false);
+        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false, const uint8_t *font = NULL);
         uint8_t get_font_width();
         uint8_t get_font_height();
         void set_battery_percentage(uint8_t bat);
@@ -67,6 +67,7 @@ class CDisplay
         void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
         void draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour);
         void draw_bt_logo_if_required(int16_t x, int16_t y);
+        void draw_battery_icon(int16_t x, int16_t y);
 
         // Soft buttons
         std::string _option_a; // top left
@@ -94,7 +95,17 @@ class CDisplay
         CFrontPanel *_front_panel;
         CBluetooth *_bluetooth;
 
+        // Bluetooth icon
         const uint8_t _bt_logo[9] = {0x18, 0x94, 0x52, 0x34, 0x18, 0x34, 0x52, 0x94, 0x18}; // height = 9, width = 8
+        
+        // Battery icon
+        const uint8_t _bat_logo[3][9] =  // height = 9, width = 8*3=24
+        {
+            {0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0xFF},
+            {0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+            {0xFE, 0x02, 0x02, 0x03, 0x03, 0x03, 0x02, 0x02, 0xFE}
+        };
+
 };
 
 #endif

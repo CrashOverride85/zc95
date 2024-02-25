@@ -320,11 +320,31 @@ void CDisplay::draw_status_bar()
     }
 
     uint16_t y = (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2;
-    snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
-    put_text(buffer, 0, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    snprintf(buffer, sizeof(buffer), "%d   %s", _battery_percentage, current_mode.c_str());
+    put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
+
+    draw_battery_icon(0, y);
+
 
     uint16_t x = MIPI_DISPLAY_WIDTH - 8;
     draw_bt_logo_if_required(x, y-1);
+}
+
+void CDisplay::draw_battery_icon(int16_t x, int16_t y)
+{
+    hagl_color_t colour;
+    if (_battery_percentage >= 65)
+        colour = hagl_color(_hagl_backend, 0x00, 0x70, 0x00); // Green
+    else if (_battery_percentage >= 20)
+        colour = hagl_color(_hagl_backend, 0xFF, 0xFB, 0x00); // Amber
+    else
+        colour = hagl_color(_hagl_backend, 0xAA, 0x00, 0x00); // Red
+
+    // Battery icon is split into three 8x9 (WxH) sections
+    for (uint8_t sec = 0; sec < 3; sec++)
+    {
+        draw_logo(_bat_logo[sec], x + (sec * 8), y-1, colour);
+    }
 }
 
 void CDisplay::draw_bt_logo_if_required(int16_t x, int16_t y)
@@ -388,16 +408,20 @@ void CDisplay::draw_power_level()
     }
 }
 
-void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90)
+void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90, const uint8_t *font)
 {
+    const uint8_t *fn = font;
     if (text == "")
         text = " ";
 
+    if (font == NULL)
+        fn = font6x9;
+
     std::wstring widestr = std::wstring(text.begin(), text.end());
     if (rotate90)
-        hagl_put_text_rotate90(_hagl_backend, widestr.c_str(), x, y, color, font5x7);
+        hagl_put_text_rotate90(_hagl_backend, widestr.c_str(), x, y, color, fn);
     else
-        hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
+        hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, fn);
 }
 
 void CDisplay::set_update_required()
@@ -471,10 +495,10 @@ void CDisplay::draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_col
 {
     for (uint8_t y = 0; y < 9; y++)
     {
-        for (int8_t x = 7; x >= 0; x--)
+        for (int8_t x = 0; x < 8; x++)
         {
             if (logo[y] & (1 << x ))
-                hagl_put_pixel(_hagl_backend, x0+x, y0+y, colour);
+                hagl_put_pixel(_hagl_backend, x0+(7-x), y0+y, colour);
         }
     }
 }
