@@ -73,7 +73,7 @@ class CAudio
         CAudio3Process *_audio3_process[3]; // Left, right & virtual
         uint8_t _gain_l = 0;
         uint8_t _gain_r = 0;
-        CInteruptableSection _interuptable_section;
+        CInteruptableSection _interruptable_section;
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain

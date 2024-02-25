@@ -239,7 +239,7 @@ int main()
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
     // Configure SPI display
-    CDisplay display = CDisplay(_front_panel);
+    CDisplay display = CDisplay(_front_panel, &bluetooth);
     display.init(); // This takes some time - not far off a second
     hw_check.set_display(&display);
 

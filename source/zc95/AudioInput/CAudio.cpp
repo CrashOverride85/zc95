@@ -276,7 +276,7 @@ uint16_t CAudio::get_bar_height(float sample)
 void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
 {
     // The FFT logic is slow, and as it's essentially just number crunching (no I/O), it's safe to interrupt
-    _interuptable_section.start();
+    _interruptable_section.start();
    
     // These are too big to put on the stack, especially with the recursion used by ESP_fft
     //float fft_input[FFT_N];
@@ -297,12 +297,12 @@ void CAudio::do_fft(uint16_t sample_count, uint8_t *buffer)
     _fundamental_freq = FFT.majorPeakFreq();
 
     free(fft_input);
-    _interuptable_section.end();
+    _interruptable_section.end();
 }
 
 void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
-    _interuptable_section.start();
+    _interruptable_section.start();
 
     _max_trigger_point = y1 - y0;
     if (_trigger_point > _max_trigger_point)
@@ -315,7 +315,7 @@ void CAudio::draw_audio_view(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
     hagl_color_t colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0x00, 0x00);
     hagl_draw_line(_display->get_hagl_backed(), x0, y1-_trigger_point, x1, y1-_trigger_point, colour);
 
-    _interuptable_section.end();
+    _interruptable_section.end();
 }
 
 void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool include_gain, bool mono)
@@ -333,7 +333,7 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
         .y1 = y1
     };
 
-    _interuptable_section.start();
+    _interruptable_section.start();
 
     if (mono)
     {
@@ -358,7 +358,7 @@ void CAudio::draw_audio_wave(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, boo
         bar_graph.draw_horz_bar_graph(bar_graph_area, 0, 255, _gain_l, "", yellow, true);
     }
 
-    _interuptable_section.end();
+    _interruptable_section.end();
 }
 
 // Draw an audio waveform from the supplied samples in the designated position. 
@@ -419,7 +419,7 @@ void CAudio::draw_audio_virt3(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bo
         .y1 = y1
     };
 
-    _interuptable_section.start();
+    _interruptable_section.start();
 
     _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::LEFT,  &sample_count, &sample_buffer_left );
     _analogueCapture->get_audio_buffer(CAnalogueCapture::channel::RIGHT, &sample_count, &sample_buffer_right);
@@ -477,7 +477,7 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     uint8_t intensity_right = 0;
     uint8_t intensity_virt  = 0;
 
-    _interuptable_section.start();
+    _interruptable_section.start();
 
     // generate 3rd channel
     uint8_t *sample_buffer_virt = get_virtual_channel(sample_count, sample_buffer_left, sample_buffer_right);
@@ -512,12 +512,12 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     }
 
     free(sample_buffer_virt);
-    _interuptable_section.end();
+    _interruptable_section.end();
 }
 
 void CAudio::audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
 {
-    _interuptable_section.start();
+    _interruptable_section.start();
     static uint8_t last_intensity_left  = 0;
     static uint8_t last_intensity_right = 0;
     uint8_t intensity_left;
@@ -546,7 +546,7 @@ void CAudio::audio_intensity(uint16_t sample_count, uint8_t *sample_buffer_left,
         }
     }
 
-    _interuptable_section.end();
+    _interruptable_section.end();
 }
 
 void CAudio::get_intensity(uint16_t sample_count, uint8_t *buffer, uint8_t *out_intensity)

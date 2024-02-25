@@ -37,7 +37,7 @@ const uint8_t status_bar_height = 9;  // battery level + mode at bottom
 const uint8_t bar_width = 10;         // individual power level bar width 
 
 
-CDisplay::CDisplay(CFrontPanel *front_panel)
+CDisplay::CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth)
 {
     printf("CDisplay()\n");
     memset(_channel_power, 0, sizeof (_channel_power));
@@ -55,6 +55,7 @@ CDisplay::CDisplay(CFrontPanel *front_panel)
     _active_pattern = "";
     _remote_mode_active = false;
     _front_panel = front_panel;
+    _bluetooth = bluetooth;
 }
 
 CDisplay::~CDisplay()
@@ -95,7 +96,7 @@ uint8_t CDisplay::get_font_height()
         (time_us_64() - _last_update > (18*1000)) 
        )
     {
-        _interuptable_section.start();
+        _interruptable_section.start();
         
         _update_required = false;
         CTimingTest timing;
@@ -119,7 +120,7 @@ uint8_t CDisplay::get_font_height()
 
         draw_status_bar();
   
-        _interuptable_section.end();
+        _interruptable_section.end();
         hagl_flush(_hagl_backend); // 8us, starts/uses DMA for update
 
         _last_update = time_us_64();
@@ -318,8 +319,44 @@ void CDisplay::draw_status_bar()
         current_mode = _current_menu->get_title();
     }
 
+    uint16_t y = (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2;
     snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
-    put_text(buffer, 0, (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    put_text(buffer, 0, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+
+    uint16_t x = MIPI_DISPLAY_WIDTH - 8;
+    draw_bt_logo_if_required(x, y-1);
+}
+
+void CDisplay::draw_bt_logo_if_required(int16_t x, int16_t y)
+{
+    if (_bluetooth->get_state() == CBluetooth::state_t::OFF)
+        return;
+
+    hagl_color_t colour; 
+
+    switch (_bluetooth->get_connect_state())
+    {
+        case CBluetoothConnect::bt_connect_state_t::CONNECTED:
+            colour = hagl_color(_hagl_backend, 0x2E, 0x67, 0xF8); // "lightsaber blue"
+            break;
+
+        case CBluetoothConnect::bt_connect_state_t::CONNECTING:
+            colour = hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF); // white
+            break;
+
+        case CBluetoothConnect::bt_connect_state_t::DISCONNECTED:
+            colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00); // red
+            break;
+
+        // These cases shouldn't happen normally - BT radio is on, but not connected or trying to connect to anything
+        case CBluetoothConnect::bt_connect_state_t::IDLE:
+        case CBluetoothConnect::bt_connect_state_t::STOPPED:
+        default:
+            colour = hagl_color(_hagl_backend, 0x70, 0x70, 0x70); // grey
+            break;
+    }
+ 
+    draw_logo(_bt_logo, x, y-1, colour);
 }
 
 void CDisplay::draw_power_level()
@@ -430,3 +467,14 @@ hagl_backend_t* CDisplay::get_hagl_backed()
     return _hagl_backend;
 }
 
+void CDisplay::draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour)
+{
+    for (uint8_t y = 0; y < 9; y++)
+    {
+        for (int8_t x = 7; x >= 0; x--)
+        {
+            if (logo[y] & (1 << x ))
+                hagl_put_pixel(_hagl_backend, x0+x, y0+y, colour);
+        }
+    }
+}

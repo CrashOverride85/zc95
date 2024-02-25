@@ -14,6 +14,7 @@
 #include "../CUtil.h"
 #include "../config.h"
 #include "../FrontPanel/CFrontPanel.h"
+#include "../Bluetooth/CBluetooth.h"
 
 struct display_area
 {
@@ -26,7 +27,7 @@ struct display_area
 class CDisplay
 {
     public:
-        CDisplay(CFrontPanel *front_panel);
+        CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth);
         ~CDisplay();
         void init();
         void update();
@@ -64,6 +65,8 @@ class CDisplay
         void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour);
         uint8_t hagl_put_char_rotate90(void const *_surface, wchar_t code, int16_t x0, int16_t y0, hagl_color_t color, const uint8_t *font);
         void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
+        void draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour);
+        void draw_bt_logo_if_required(int16_t x, int16_t y);
 
         // Soft buttons
         std::string _option_a; // top left
@@ -83,12 +86,15 @@ class CDisplay
         uint8_t _battery_percentage;
         std::string _active_pattern;
         bool _update_required;
-        CInteruptableSection _interuptable_section;
+        CInteruptableSection _interruptable_section;
         bool _remote_mode_active;
         hagl_backend_t *_hagl_backend = NULL;
         uint8_t *_rotate90_buffer = NULL;
         uint64_t _show_power_level_until = 0;
         CFrontPanel *_front_panel;
+        CBluetooth *_bluetooth;
+
+        const uint8_t _bt_logo[9] = {0x18, 0x94, 0x52, 0x34, 0x18, 0x34, 0x52, 0x94, 0x18}; // height = 9, width = 8
 };
 
 #endif
