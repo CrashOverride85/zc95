@@ -1,3 +1,39 @@
+/*
+ * ZC95
+ * Copyright (C) 2024  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+/* 
+ * Deal with input from a small bluetooth remotes - the kind often sold as 
+ * shutter remotes for phones. Some of them have a D-Pad plus a couple of
+ * extra buttons, some just have a shutter button.
+ * 
+ * Unfortunately, the directional buttons don't just send a simple keypress -
+ * they try to simulate motion on a touch screen. So instead of "left button",
+ * you get something to indicate the start (in range, tip switch or primary 
+ * button pressed), then some x/y position updates in the appropriate direction,
+ * then reverse of the start event (i.e. same thing, but with value = 0).
+ * 
+ * The "shutter button" is the simplest, it sends vol up or vol down as that 
+ * triggers the shutter in the iOS camera app (and presumably Android too).
+ * 
+ * Whenever something is interpreted as a keypress, put it on the keypress 
+ * queue.
+ */
+ 
 #include "CBluetoothRemote.h"
 
 CBluetoothRemote::CBluetoothRemote()
