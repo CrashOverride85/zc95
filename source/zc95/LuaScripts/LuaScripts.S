@@ -24,7 +24,7 @@
 
 lua_script1_start:
 .balign 4096
-.fill 24576, 1, 0x00 /* 24k */
+.fill 49152, 1, 0x00 /* 48k */
 
 lua_script2_start:
 .balign 4096
