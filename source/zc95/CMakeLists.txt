@@ -49,7 +49,8 @@ add_executable(zc95
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
   core1/CRoutineOutputCore1.cpp
-
+  core1/CRoutineOutput.cpp
+  
   core1/output/CChannelConfig.cpp
   core1/output/CFullChannelAsSimpleChannel.cpp
 
