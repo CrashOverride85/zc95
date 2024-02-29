@@ -96,7 +96,7 @@ class ZcSerial:
     self.__waiting_for_msgId = msgId
     self.__recv_waiting = True
     
-    if self.__recv_event.wait(timeout=2): # timeout is seconds
+    if self.__recv_event.wait(timeout=6): # timeout is seconds
       retval = self.__pending_recv_message
     else:
       retval = None
