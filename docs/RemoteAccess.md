@@ -68,7 +68,10 @@ Before this mode can be used, the hardware configuration needs to be set to:
 Once selected, and screen is showing "Serial control mode", the Python GUI and scripts to list/upload Lua scripts should work if given the serial port the ZC95 is connected to.
 
 ## Python scripts
-There are a few Python scripts available in the `remote_access` folder for interacting with the ZC95 once it's connected to wifi:
+The python scripts can be used to upload and manage up to 5 scripts (stored in slots 0-4) on the ZC95.
+Scripts in slots 1-4 can be up to 24k, slot 0 is larger and the script can be up to 48k.
+
+There are a few Python scripts available in the `remote_access` folder for interacting with the ZC95 once it's connected to wifi, or via serial:
 * pattern_list.py - lists all patterns available remotely, along with the ID number (excludes Audio patterns)
 * lua_manage.py - lists uploaded Lua scripts, and allows for them to be deleted
 * lua_upload.py - uploads a Lua script
@@ -112,11 +115,11 @@ $ python3 lua_manage.py --serial /dev/ttyUSB0 --list
 Opening: /dev/ttyUSB0
 Connection opened
 Script slots on ZC95:
-5 - <empty>
 4 - <empty>
 3 - <empty>
 2 - <empty>
-1 - U:Waves
+1 - <empty>
+0 - U:Waves
 Connection closed
 $
 ```
@@ -127,7 +130,7 @@ A script can be deleted by running `lua_manage.py --ip 192.168.1.137 --delete <i
 ### lua_upload.py
 Uploads a Lua script to the designated slot/index on the ZC95, e.g.:
 ```
-$ python3 lua_upload.py --script ./lua/waves.lua --ip 192.168.1.137 --index 1
+$ python3 lua_upload.py --script ./lua/waves.lua --ip 192.168.1.137 --index 0
 Connecting
 Connection opened
 Uploading...
