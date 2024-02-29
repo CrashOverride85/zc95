@@ -112,6 +112,7 @@ add_executable(zc95
   display/CMenuBluetooth.cpp
   display/CMenuBluetoothScan.cpp
   display/CMenuBluetoothTest.cpp
+  display/CMenuBluetoothMap.cpp
   display/COptionsList.cpp
   display/CHorzBarGraph.cpp
   display/CDisplayMessage.cpp

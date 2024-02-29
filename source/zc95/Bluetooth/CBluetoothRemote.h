@@ -37,8 +37,8 @@
 #define HID_USAGE_DIGITIZER_CONTACT_COUNT       0x54 // (DV) "The current number of contacts the digitizer detects and is reporting."
 
 // PAGE_CONSUMER
-// I've seen phone/shutter remotes that send all of these, and some point I just gave up commenting them.
-// Most are always sent with 0 value, so seem pretty pointless
+// I've seen phone/shutter remotes that send all of these, and at some point I just gave up commenting them.
+// Most are always sent with a 0 value, so seem pretty pointless
 #define HID_USAGE_CONSUMER_UNDEFINED        0x00  // Why would you ever send this!
 #define HID_USAGE_CONSUMER_POWER            0x30  // "Controls the application-specific power state"
 #define HID_USAGE_CONSUMER_SCAN_PREV_TRACK  0xB6
@@ -65,6 +65,21 @@ class CBluetoothRemote
             KEY_RIGHT,
             KEY_SHUTTER,
             KEY_UNKNOWN
+        };
+
+        enum keypress_action_t
+        {
+            NONE,
+            BUT_A,
+            BUT_B,
+            BUT_C,
+            BUT_D,    
+            ROT_LEFT,
+            ROT_RIGHT,
+            TRIGGER1_A,
+            TRIGGER1_B,
+            TRIGGER2_A,
+            TRIGGER2_B
         };
 
         struct bt_keypress_queue_entry_t
