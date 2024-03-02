@@ -30,24 +30,13 @@ class CMenuBluetoothMap : public CMenu
                 std::string text;
         };
 
-     //   void show_selected_setting();
-
-      /*  enum bt_keypress_t
-        {
-            ENABLED     = 0,
-            SCAN        = 1,
-            TEST        = 2
-        }; */
-
-        std::vector<setting_t> _settings;
+        std::vector<setting_t> _remote_keypress;
         COptionsList *_keypress_list = NULL;
 
-        std::vector<setting_t> _setting_choices;
+        std::vector<setting_t> _keypress_action;
         COptionsList *_keypress_action_list = NULL;
         
-        void set_options_on_multi_choice_list(uint8_t setting_id);
-        void save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index);
-        setting_t get_current_setting();
+        void set_actions_on_bottom_list(CBluetoothRemote::keypress_action_t current_action);
 
         struct display_area _area;
         CDisplay* _display;

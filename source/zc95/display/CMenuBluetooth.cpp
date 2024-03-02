@@ -150,7 +150,7 @@ void CMenuBluetooth::draw()
     switch (setting.id)
     {
         case setting_id::ENABLED:
-            _display->set_option_a(" ");
+            _display->set_option_a("");
             choice_list_required = true;
             break;
 
@@ -173,7 +173,7 @@ void CMenuBluetooth::draw()
 
 void CMenuBluetooth::show()
 {
-    _display->set_option_a(" ");
+    _display->set_option_a("");
     _display->set_option_b("Back");
     _display->set_option_c("Up");
     _display->set_option_d("Down");
