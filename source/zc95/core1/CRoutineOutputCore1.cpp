@@ -125,6 +125,9 @@ void CRoutineOutputCore1::enable_remote_power_mode()
 
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = true;
+
+    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+        _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
 void CRoutineOutputCore1::disable_remote_power_mode()
@@ -135,6 +138,9 @@ void CRoutineOutputCore1::disable_remote_power_mode()
 
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = false;
+
+    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+        _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
 void CRoutineOutputCore1::update_display(uint8_t channel)
