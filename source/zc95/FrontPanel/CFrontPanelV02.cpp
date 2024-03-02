@@ -15,7 +15,7 @@
 CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
 {
     memset(_power_level, 0, sizeof(_power_level));
-    _last_port_exp_read = 0;
+    _last_port_exp_read = 0xFF; // Assume buttons aren't pressed to start with
     _adjust_value = 0;
     _button_states_at_last_check = 0;
     _saved_settings = saved_settings;
