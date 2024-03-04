@@ -20,6 +20,7 @@
 #define MESSAGE_CORE1_SUSPEND                13
 #define MESSAGE_SET_REMOTE_ACCESS_POWER      14
 #define MESSAGE_SET_REMOTE_ACCESS_MODE       15
+#define MESSAGE_BLUETOOTH_REMOTE_KEYPRESS    16
 
 // messages from core1 to core0
 #define MESSAGE_SET_POWER                   100

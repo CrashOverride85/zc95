@@ -78,8 +78,8 @@ void CMenuBluetoothTest::adjust_rotary_encoder_change(int8_t change)
         _submenu_active->adjust_rotary_encoder_change(change);
 }
 
- void CMenuBluetoothTest::draw()
- {
+void CMenuBluetoothTest::draw()
+{
     CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
     while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
     {

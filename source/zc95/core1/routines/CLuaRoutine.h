@@ -20,6 +20,7 @@ class CLuaRoutine: public CRoutine
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
         void soft_button_pushed (soft_button button, bool pushed);
         void trigger(trigger_socket socket, trigger_part part, bool active);
+        void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
         void start();
         void loop(uint64_t time_us);
         void stop();
@@ -44,6 +45,7 @@ class CLuaRoutine: public CRoutine
         void get_min_max_entry(struct menu_entry *entry);
         int get_int_field(const char *field_name);
         std::string get_string_field(const char *field_name);
+        bool get_bool_field(const char *field_name);
         bool is_channel_number_valid(int channel_number);
         bool runnable();
         int pcall (int nargs, int nresults, int errfunc);

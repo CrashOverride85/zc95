@@ -63,7 +63,7 @@ void CBluetoothRemote::reset_dimension(dimension_t &dimension)
 
 void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_t value)
 {
-    bool debug = true;
+    bool debug = false;
 
     switch(usage_page)
     {
@@ -93,7 +93,7 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
     if (is_shutter_button(usage_page, usage, value))
     {
         keypress_t key = keypress_t::KEY_SHUTTER;
-        printf("%s\n", s_get_keypress_string(key).c_str());
+        printf("CBluetoothRemote: %s\n", s_get_keypress_string(key).c_str());
         send_keypress(key);
     }
 
@@ -109,7 +109,7 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
     {
         _movement_started = false;
         keypress_t key = get_last_direction_button_pressed();
-        printf("%s\n", s_get_keypress_string(key).c_str());
+        printf("CBluetoothRemote: %s\n", s_get_keypress_string(key).c_str());
         send_keypress(key);
     }
 }

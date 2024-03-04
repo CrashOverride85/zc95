@@ -93,7 +93,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
             CRoutines::Routine routine = (*_routines)[routine_id];
             _last_selection = _routine_display_list->get_current_selection();
-            set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio, _bluetooth, _settings));
             _routine_output->activate_routine(routine_id);
         }
 

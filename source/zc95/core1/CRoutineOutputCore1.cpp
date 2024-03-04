@@ -200,6 +200,15 @@ void CRoutineOutputCore1::soft_button_pressed(soft_button button, bool pressed)
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::bluetooth_remote_passthrough(CBluetoothRemote::keypress_t key)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_BLUETOOTH_REMOTE_KEYPRESS;
+    msg.msg8[1] = (uint8_t)key;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::loop()
 {
     // Process inbound messages from Core1
