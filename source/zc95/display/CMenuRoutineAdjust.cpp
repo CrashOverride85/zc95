@@ -39,17 +39,19 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     _saved_settings = saved_settings;
     _routine_output = routine_output;
 
-    _bt_enabled = _saved_settings->get_bluethooth_enabled();
+    // get routine config
+    CRoutine* routine_ptr = routine.routine_maker(routine.param);
+    routine_ptr->get_config(&_active_routine_conf);
+    delete routine_ptr;
+
+    // Bluetooth doesn't work well with analogue capture for audio running, so for now, don't allow bluetooth 
+    // and audio at the same time.
+    _bt_enabled = _saved_settings->get_bluethooth_enabled() && _active_routine_conf.audio_processing_mode == audio_mode_t::OFF;
     if (_bt_enabled)
     {
         queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
         _bluetooth->set_keypress_queue(&_bt_keypress_queue);
     }
-
-    // get routine config
-    CRoutine* routine_ptr = routine.routine_maker(routine.param);
-    routine_ptr->get_config(&_active_routine_conf);
-    delete routine_ptr;
 
     // Use the top half of the display for the list routine parameters that can be adjusted
     area = _area;

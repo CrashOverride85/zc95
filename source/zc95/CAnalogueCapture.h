@@ -42,6 +42,7 @@ class CAnalogueCapture
 
     private:
         void process_buffer(const uint8_t *capture_buf);
+        void get_battery_readings_when_stopped();
 
         static void s_dma_handler1();
         static void s_dma_handler2();
@@ -71,6 +72,7 @@ class CAnalogueCapture
         uint64_t _last_buffer_update_time_us;
         uint64_t _capture_end_time_time_us;
         bool _running = false;
+        uint64_t _last_battery_reading_without_dma = 0; // only used when analogue capture isn't running
 };
 
 #endif

@@ -20,6 +20,7 @@
 #include "string.h"
 #include "config.h"
 #include "core1/output/collar/CCollarComms.h"
+#include "CHwCheck.h"
 
 /*
  * Manage access and updating of settings saved to EEPROM.
@@ -335,7 +336,7 @@ bool CSavedSettings::set_collar_config(uint8_t collar_id, struct collar_config &
 
 bool CSavedSettings::get_bluethooth_enabled()
 {
-    return (_eeprom_contents[(uint8_t)setting::BluetoothOn] != 0);
+    return (_eeprom_contents[(uint8_t)setting::BluetoothOn] != 0) && CHwCheck::running_on_picow();
 }
 
 void CSavedSettings::set_bluethooth_enabled(bool setting)

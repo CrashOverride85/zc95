@@ -165,27 +165,55 @@ void CAnalogueCapture::stop()
 
 void CAnalogueCapture::process()
 {
-    if (lastc1 != _s_irq_counter1 || lastc2 != _s_irq_counter2)
+    if (_running)
     {
-        time_last_print = time_us_64();
-
-        lastc1 = _s_irq_counter1;
-        lastc2 = _s_irq_counter2;
-
-        if (_s_buf1_ready)
+        if (lastc1 != _s_irq_counter1 || lastc2 != _s_irq_counter2)
         {
-            _s_buf1_ready = false;
-            process_buffer(capture_buf1);
-            _capture_end_time_time_us = _capture_buf1_end_time_us;
-        }
+            time_last_print = time_us_64();
 
-        if (_s_buf2_ready)
-        {
-            _s_buf2_ready = false;
-            process_buffer(capture_buf2);
-            _capture_end_time_time_us = _capture_buf2_end_time_us;
+            lastc1 = _s_irq_counter1;
+            lastc2 = _s_irq_counter2;
+
+            if (_s_buf1_ready)
+            {
+                _s_buf1_ready = false;
+                process_buffer(capture_buf1);
+                _capture_end_time_time_us = _capture_buf1_end_time_us;
+            }
+
+            if (_s_buf2_ready)
+            {
+                _s_buf2_ready = false;
+                process_buffer(capture_buf2);
+                _capture_end_time_time_us = _capture_buf2_end_time_us;
+            }
         }
     }
+    else
+    {
+        // With analogue capture not running, still want to get battery readings every few seconds
+        get_battery_readings_when_stopped();
+    }
+}
+
+void CAnalogueCapture::get_battery_readings_when_stopped()
+{
+    if (time_us_64() - _last_battery_reading_without_dma < 1000000) // only read if it's been more than 1 second
+        return;
+    
+    adc_init();
+    adc_gpio_init(26);
+    adc_select_input(0);
+
+    // get readings
+    for (uint8_t reading_count=0; reading_count < BATTERY_ADC_READINGS; reading_count++)
+    {
+        uint16_t reading = adc_read();
+        _battery_adc_readings[reading_count] =  reading >> 4; // Convert 12bit ADC reading to 8bit, as this is what reads via DMA are 8bit, so need to be consistant)
+    }
+
+    _new_battery_readings = true;
+    _last_battery_reading_without_dma = time_us_64();
 }
 
 void CAnalogueCapture::process_buffer(const uint8_t *capture_buf)
