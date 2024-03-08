@@ -92,10 +92,10 @@ void CMenuBluetoothTest::draw()
     if (time_us_64() - _keypress_displayed_us < 1000 * 100)
         text_colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0x00);
     else
-        text_colour = hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF);
+        text_colour = hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70);
 
-    _display->put_text(_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2) , text_colour);
-
+    _display->put_text("Key:"  , _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)-10 , hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    _display->put_text(_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)    , text_colour);
 
     _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
     CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();

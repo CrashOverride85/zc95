@@ -169,6 +169,12 @@ void CMenuBluetooth::draw()
                             _setting_choice_area.x1, _setting_choice_area.y1, rect_colour);
         _settings_choice_list->draw();
     }
+    else
+    {
+        hagl_color_t rect_colour = hagl_color(_display->get_hagl_backed(), 0x10, 0x10, 0x10);
+        hagl_fill_rectangle(_display->get_hagl_backed(), _setting_choice_area.x0, _setting_choice_area.y0,
+                            _setting_choice_area.x1, _setting_choice_area.y1, rect_colour);
+    }
 }
 
 void CMenuBluetooth::show()
