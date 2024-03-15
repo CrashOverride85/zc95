@@ -9,7 +9,7 @@ Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA
 
 The box can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it, either using RS232 serial or WiFi if a Pico-W is used for the main MCU.
 
-Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It is missing bluetooth and, _so far_, most of the patterns of the 312. Audio input is possible with an extra/optional board.
+Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It has limited [bluetooth support](docs/Bluetooth.md) (remotes only) and, _so far_, is missing most of the patterns of the 312. Audio input is possible with an extra/optional board.
 
 Additionally, if a 433MHz transmitter is fitted it can be used to control certain types of shock collars from some patterns.
 
@@ -30,7 +30,7 @@ The ZC95 consists of 4-5 PCBs:
 
 The primary reason for having separate PCBs for the main and output board is for future flexibility - most of the time & expense is the firmware, case, display, controls, etc., so being able to test new output designs whilst being able to keep all of that should be an advantage. I'm well aware the output design currently used is known to have flaws, mostly stemming from its lack of feedback (which applies equally to the 312b it was taken from). A challenge for another day.
 
-The zc624 output module can also be used standalone and [controlled from an Arduino](misc/Arduino/libraries) (tested with an ESP32), but this is not ideal for a few reasons, and not the focus of this project.
+The zc624 output module can also be used standalone and [controlled from an Arduino](./misc/Arduino/libraries/Zc624Output/README.md) (tested with an ESP32), but this is not ideal for a few reasons, and not the focus of this project.
 
 ## [Build guide](docs/Build.md)
 

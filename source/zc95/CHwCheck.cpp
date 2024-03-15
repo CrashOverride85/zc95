@@ -17,6 +17,8 @@
  */
 
 #include "hardware/adc.h"
+#include "hardware/flash.h"
+#include "pico/btstack_flash_bank.h"
 
 #include <font6x9.h>
 #include "CHwCheck.h"
@@ -24,6 +26,7 @@
 #include "config.h"
 #include "CUtil.h"
 #include "ECButtons.h"
+#include "LuaScripts/LuaScripts.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
@@ -153,7 +156,7 @@ void CHwCheck::check_part1()
         hw_check_failed(cause, &led, NULL); // this never returns
     }
 
-    clear_eeprom_if_requested(); // if appropriate button is held down, clears eeprom then halts
+    clear_eeprom_if_requested(fp_version); // if appropriate button is held down, clears eeprom then halts
 
 }
 
@@ -442,34 +445,31 @@ void CHwCheck::get_battery_readings()
     _batteryGauge->add_raw_adc_readings(readings, sizeof(readings));
 }
 
-// Returns true if the top right button (C) is pressed, and the bottom left button (B)
-// is NOT pressed. This in case there's some fault causing all buttons to be read as pressed,
+// Returns true if (only) the top right button (C) is pressed.
+// This in case there's some fault causing all buttons to be read as pressed,
 // we don't want to clear the EEPROM by mistake.
 // Should only be ran after inital h/w check has confirmed the port expander 
 // is present.
-bool CHwCheck::clear_eeprom_buttons_pressed()
+bool CHwCheck::clear_eeprom_buttons_pressed(front_panel_version_t fp_version)
 {
-    uint8_t pin_states = 0;
-    int retval = i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-      printf("CHwCheck::clear_eeprom_buttons_pressed i2c read error!\n");
-      pin_states = 0;
-    }
+    uint8_t button_states = 0;
+    button_states = get_button_states_from_port_expander(fp_version);
 
-    bool button_pressed = (pin_states & (1 << (uint8_t)Button::C)) && 
-                         !(pin_states & (1 << (uint8_t)Button::B));
+    bool button_pressed = (button_states & (1 << (uint8_t)Button::C)) && 
+                         !(button_states & (1 << (uint8_t)Button::A)) && 
+                         !(button_states & (1 << (uint8_t)Button::B)) && 
+                         !(button_states & (1 << (uint8_t)Button::D));
 
-    printf("CHwCheck::clear_eeprom_buttons_pressed(): button pressed = %d (pin state = %x)\n", button_pressed, pin_states);
+    printf("CHwCheck::clear_eeprom_buttons_pressed(): button pressed = %d (pin state = 0x%X)\n", button_pressed, button_states);
     return button_pressed;
 }
 
 // If the top right button is pressed, show a basic screen asking if the eeprom should be cleared.
 // To keep things simple (no need to worry about blocking, partially initialised stuff afterwards, 
 // etc.), once the confirmation screen is displayed, the only way out is a power cycle.
-void CHwCheck::clear_eeprom_if_requested()
+void CHwCheck::clear_eeprom_if_requested(front_panel_version_t fp_version)
 {
-    if (!clear_eeprom_buttons_pressed())
+    if (!clear_eeprom_buttons_pressed(fp_version))
         return;
 
     // Ok, button is held down indicating eeprom should be cleared. Show confirmation screen.
@@ -481,40 +481,126 @@ void CHwCheck::clear_eeprom_if_requested()
     led.loop();
 
     _hagl_backend = hagl_init();
-    put_text("Clear EEPROM?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
-    put_text("Yes", 0, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    put_text("Clear saved settings?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+    put_text("EEPROM", 0                    , (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    put_text("Flash" , MIPI_DISPLAY_WIDTH-40, (MIPI_DISPLAY_HEIGHT-1) - 10, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
     hagl_flush(_hagl_backend);
 
-    // Wait for bottom right (B) button to be pressed for ~100ms
+    // Wait for bottom left (B) or bottom right (D) button to be pressed for ~100ms
     while (1)
     {
-        uint8_t pin_states = 0;
-        i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+        int button_pressed = get_button_press(fp_version);
+        
+        if (button_pressed == (int)Button::B) // clear EEPROM
+        {
+            // Time to reset the EEPROM!
+            printf("Clearing EEPROM at user request\n");
 
-        bool button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+            CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
+            CSavedSettings settings = CSavedSettings(&eeprom);
+            settings.eeprom_initialise();
+
+            hagl_clear(_hagl_backend);
+            put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            hagl_flush(_hagl_backend);
+            halt(&led);
+        }
+        else if (button_pressed == (int)Button::D) // Clear user settings in Flash
+        {
+            printf("Clearing saved settings in flash at user request\n");
+            printf("Clear btstack config\n");
+            flash_range_erase(PICO_FLASH_BANK_STORAGE_OFFSET, PICO_FLASH_BANK_TOTAL_SIZE);
+
+            printf("Clear Lua scripts\n");
+            // Loop through and add all valid lua scripts
+            for (uint8_t index = 0; index < lua_script_count(); index++)
+            {
+                if (lua_scripts[index].writeable)
+                {
+                    printf("Erasing script slot [%d] (%lu to %lu)\n", index, lua_scripts[index].start, lua_scripts[index].end);
+                    flash_range_erase(lua_scripts[index].start - XIP_BASE, lua_scripts[index].end - lua_scripts[index].start);
+                }   
+            }
+
+            hagl_clear(_hagl_backend);
+            put_text("User settings in", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            put_text("flash cleared!"  , 0, 8, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
+            hagl_flush(_hagl_backend);
+            halt(&led);
+        }
+    }
+}
+
+// Returns Button::B if B pushed, Button::D if D pushed, -1 otherwise.
+int CHwCheck::get_button_press(front_panel_version_t fp_version)
+{
+        uint8_t button_states = get_button_states_from_port_expander(fp_version);
+
+        bool button_pressed = (button_states & (1 << (uint8_t)Button::B)) || 
+                              (button_states & (1 << (uint8_t)Button::D));
         if (button_pressed)
         {
             // Do crude debounce; re-read pin after 100ms and if button is still pressed reset EEPROM
             sleep_ms(100);
 
-            i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
-            button_pressed = (pin_states & (1 << (uint8_t)Button::B));
+            button_states = get_button_states_from_port_expander(fp_version);
+            button_pressed = (button_states & (1 << (uint8_t)Button::B)) || 
+                             (button_states & (1 << (uint8_t)Button::D));
 
             if (button_pressed)
             {
-                // Time to reset the EEPROM!
-                printf("Clearing EEPROM at user request\n");
-
-                CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
-                CSavedSettings settings = CSavedSettings(&eeprom);
-                settings.eeprom_initialise();
-
-                hagl_clear(_hagl_backend);
-                put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
-                hagl_flush(_hagl_backend);
-                halt(&led);
+                if (button_states & (1 << (uint8_t)Button::B))
+                    return (int)Button::B;
+                else if (button_states & (1 << (uint8_t)Button::D))
+                    return (int)Button::D;
+                else 
+                    return -1;
             }
         }
+
+    return -1;
+}
+
+uint8_t CHwCheck::get_button_states_from_port_expander(front_panel_version_t fp_version)
+{
+    uint8_t retval = 0;
+
+    // For both v0.1 and v0.2 front panels, the buttons A->D are attached to I/O pins 0->3
+
+    if (fp_version == front_panel_version_t::v0_1)
+    {
+        uint8_t pin_states = 0;
+        retval = i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+        if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
+        {
+            printf("CHwCheck::get_button_states_from_port_expander i2c read error!\n");
+            pin_states = 0;
+        }
+
+        return pin_states & 0xF;
+    }
+    
+    else if (fp_version == front_panel_version_t::v0_2)
+    {
+        uint8_t buffer[1] = {0};
+        
+        buffer[0] = 0; // port_exp_reg_t::INPUT_PORT;
+        i2c_write(__func__, FP_0_2_PORT_EXP_ADDR, buffer, 1, false);
+        retval = i2c_read (__func__, FP_0_2_PORT_EXP_ADDR, buffer, 1, false);
+
+        if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
+        {
+            printf("CHwCheck::get_button_states_from_port_expander i2c read error!\n");
+            buffer[0] = 0xFF;
+        }
+
+        return (~buffer[0]) & 0xF; // bit is low if button pushed, high if not pushed. Opposite to v0.1 front panel
+    }
+    
+    else
+    {
+        printf("CHwCheck::get_button_states_from_port_expander(): ERROR - unexpected fp_version: [%d]\n", (uint8_t)fp_version);
+        return 0;
     }
 }
 

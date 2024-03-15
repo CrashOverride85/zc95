@@ -17,9 +17,11 @@
  */
 
 #include "CLuaStorage.h"
-#include "LuaScripts/LuaScripts.h"
+#include "FlashHelper.h"
 #include "hardware/flash.h"
+#include "pico/flash.h"
 #include <string.h>
+#include "LuaScripts/LuaScripts.h"
 #include "core1/routines/CLuaRoutine.h"
 
 /* CLuaStorage
@@ -27,11 +29,9 @@
  */
 
 
-CLuaStorage::CLuaStorage(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output)
+CLuaStorage::CLuaStorage()
 {
     printf("CLuaStorage::CLuaStorage()\n");
-    _routine_output = routine_output;
-    _analogue_capture = analogue_capture;
 }
 
 CLuaStorage::~CLuaStorage()
@@ -42,13 +42,6 @@ CLuaStorage::~CLuaStorage()
 // Store a script. If lua_script == NULL and buffer_size=0, any existing script at specified index is erased without writing anything new
 bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buffer_size)
 {
-    if (!_routine_output)
-    {
-        // This shouldn't happen...
-        printf("CLuaStorage::store_script(): ERROR - _routine_output is NULL\n");
-        return false;
-    }
-
     if (index > lua_script_count())
     {
         printf("CLuaStorage::store_script: ERROR - invalid index - %d\n", index);
@@ -86,30 +79,25 @@ bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buf
         return false;
     }    
 
-    mutex_enter_blocking(&g_core1_suspend_mutex);
-    sem_acquire_blocking(&g_core1_suspend_sem);
+    flash_write_params_t flash_params = 
+    {
+        .flash_offset = flash_offset,
+        .flash_size = flash_size,
+        .buffer_size = buffer_size,
+        .lua_script = lua_script
+    };
 
-    _routine_output->suspend_core1(); // should release g_core1_suspend_sem once suspended
-    sem_acquire_blocking(&g_core1_suspend_sem);
+    return (flash_safe_execute(CLuaStorage::s_do_flash_erase_and_write, &flash_params, UINT32_MAX) == PICO_OK);
+}
     
-    _analogue_capture->stop(); // The DMA done by CAnalogueCapture thoroughly breaks flash writing
-    uint32_t save = save_and_disable_interrupts();
+void CLuaStorage::s_do_flash_erase_and_write(void *param)
+{
+    const flash_write_params_t *params = (const flash_write_params_t *)param;
 
-    // core1 suspended: write flash
-    flash_range_erase(flash_offset, flash_size);
+    flash_range_erase(params->flash_offset, params->flash_size);
 
-    if (lua_script != NULL && buffer_size != 0)
-        flash_range_program(flash_offset, (const uint8_t*)lua_script, flash_size);
-
-    // restore everything
-    restore_interrupts(save);
-
-    mutex_exit(&g_core1_suspend_mutex);
-    sem_release(&g_core1_suspend_sem);
-
-    printf("flash write done, resume analogue capture\n");
-    _analogue_capture->start();
-    return true;
+    if (params->lua_script != NULL && params->buffer_size != 0)
+        flash_range_program(params->flash_offset, (const uint8_t*)(params->lua_script), params->flash_size);
 }
 
 bool CLuaStorage::delete_script_at_index(uint8_t index)

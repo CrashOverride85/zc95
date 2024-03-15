@@ -45,6 +45,8 @@
 #include "CAnalogueCapture.h"
 #include "CBatteryGauge.h"
 #include "CDebugOutput.h"
+#include "CRadio.h"
+#include "Bluetooth/CBluetooth.h"
 
 #include "AudioInput/CMCP4651.h"
 #include "AudioInput/CAudio.h"
@@ -66,6 +68,7 @@
 #include "FrontPanel/CFrontPanelV01.h"
 #include "FrontPanel/CFrontPanelV02.h"
 #include "ECButtons.h"
+#include "FlashHelper.h"
 
 CMainBoardPortExp port_expander = CMainBoardPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
@@ -76,6 +79,7 @@ CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
 CAudio audio(&analogueCapture, &audio_gain, &port_expander);
 CWifi *wifi = NULL;
+CRadio *radio = NULL;
 extern CSerialConnection *g_SerialConnection;
 
 void gpio_callback(uint gpio, uint32_t events) 
@@ -216,6 +220,9 @@ int main()
     led.set_all_led_colour(LedColour::Purple);
     led.loop();
 
+    radio = new CRadio(&analogueCapture);
+    CBluetooth bluetooth = CBluetooth(radio);
+
     // front panel push buttons on controls port expander
     gpio_init(PIN_CONTROLS_INT);
     gpio_set_dir(PIN_CONTROLS_INT, GPIO_IN);
@@ -232,7 +239,7 @@ int main()
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
     // Configure SPI display
-    CDisplay display = CDisplay(_front_panel);
+    CDisplay display = CDisplay(_front_panel, &bluetooth);
     display.init(); // This takes some time - not far off a second
     hw_check.set_display(&display);
 
@@ -263,7 +270,8 @@ int main()
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
-    wifi = new CWifi(&analogueCapture, routine_output, &routines);  
+    wifi = new CWifi(radio, &analogueCapture, routine_output, &routines);
+    flash_helper_init(&analogueCapture, routine_output);
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
@@ -274,7 +282,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &port_expander, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &port_expander, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi, &bluetooth);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -288,6 +296,7 @@ int main()
     while (1) 
     {
         uint64_t loop_start = time_us_64();
+        radio->loop();
         wifi->loop();
 
         display.update();

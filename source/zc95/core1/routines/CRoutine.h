@@ -98,6 +98,7 @@ struct routine_conf
     bool enable_channel_isolation = true;
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
     uint16_t loop_freq_hz = 0;
+    bool bluetooth_remote_passthrough = false; // If true, pass bt remote keypresses (e.g. "KEY_LEFT") straight through, without mapping to an action
 };
 
 class CRoutine;
@@ -122,6 +123,7 @@ class CRoutine
         virtual void menu_selected(uint8_t menu_id) {};
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) {};
         virtual void soft_button_pushed (soft_button button, bool pushed) {}; // pushed: true=pushed, false=released
+        virtual void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key) {};
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
         virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};

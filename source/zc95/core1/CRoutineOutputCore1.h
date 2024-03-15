@@ -30,6 +30,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void menu_selected(uint8_t menu_id);
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void soft_button_pressed(soft_button button, bool pressed);
+        void bluetooth_remote_passthrough(CBluetoothRemote::keypress_t key);
         void loop();
 
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);

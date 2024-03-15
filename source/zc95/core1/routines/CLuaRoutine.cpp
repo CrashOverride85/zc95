@@ -178,6 +178,7 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         lua_pop(_lua_state, 1);
 
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
+        conf->bluetooth_remote_passthrough = get_bool_field("bluetooth_remote_passthrough");
         int loop_freq = get_int_field("loop_freq_hz");
 
         if (loop_freq < 0 || loop_freq > 400)
@@ -344,6 +345,18 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
         lua_pushstring(_lua_state, str_part.c_str());
         lua_pushboolean(_lua_state, active);
         pcall(3, 0, 0);
+    }
+}
+
+void CLuaRoutine::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
+{
+    std::string keypress = CBluetoothRemote::s_get_keypress_string(key);
+
+    lua_getglobal(_lua_state, "BluetoothRemoteKeypress");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        lua_pushstring(_lua_state, keypress.c_str());
+        pcall(1, 0, 0);
     }
 }
 
@@ -573,6 +586,20 @@ std::string CLuaRoutine::get_string_field(const char *field_name)
     str = lua_tostring(_lua_state, -1);
     lua_pop(_lua_state, 1);
     return str;
+}
+
+bool CLuaRoutine::get_bool_field(const char *field_name)
+{
+    bool ret = false;
+    lua_getfield(_lua_state, -1, field_name);
+
+    if (lua_isboolean(_lua_state, -1))
+    {
+        ret = lua_toboolean(_lua_state, -1);
+    }
+
+    lua_pop(_lua_state, 1);
+    return ret;
 }
 
 bool CLuaRoutine::is_channel_number_valid(int channel_number)

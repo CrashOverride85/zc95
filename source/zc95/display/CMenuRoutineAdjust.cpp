@@ -19,7 +19,14 @@
 #include "CMenuRoutineAdjust.h"
 
 
-CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine routine, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio)
+CMenuRoutineAdjust::CMenuRoutineAdjust(
+                CDisplay* display, 
+                CRoutines::Routine routine, 
+                CGetButtonState *buttons, 
+                CRoutineOutput *routine_output, 
+                CAudio *audio, 
+                CBluetooth *bluetooth,
+                CSavedSettings *saved_settings)
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -28,13 +35,23 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine rou
     _exit_menu = false;
     _area = display->get_display_area();
     _audio = audio;
-
+    _bluetooth = bluetooth;
+    _saved_settings = saved_settings;
     _routine_output = routine_output;
 
     // get routine config
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
+
+    // Bluetooth doesn't work well with analogue capture for audio running, so for now, don't allow bluetooth 
+    // and audio at the same time.
+    _bt_enabled = _saved_settings->get_bluethooth_enabled() && _active_routine_conf.audio_processing_mode == audio_mode_t::OFF;
+    if (_bt_enabled)
+    {
+        queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
+        _bluetooth->set_keypress_queue(&_bt_keypress_queue);
+    }
 
     // Use the top half of the display for the list routine parameters that can be adjusted
     area = _area;
@@ -55,7 +72,15 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine rou
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
 {
-    printf("~CMenuRoutineAdjust() \n");
+    printf("~CMenuRoutineAdjust()\n");
+
+    if (_bt_enabled)
+    {
+        _bluetooth->set_keypress_queue(NULL);
+        queue_free(&_bt_keypress_queue);
+        _bluetooth->set_state(CBluetooth::state_t::OFF);
+    }
+
     if (_routine_adjust_display_list)
     {
         delete _routine_adjust_display_list;
@@ -294,6 +319,83 @@ void CMenuRoutineAdjust::draw()
             break;
         }
     }
+
+    // Process input from bluetooth remote, if enabled
+    if (_bt_enabled)
+    {
+        CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
+        while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
+        {
+            if (_active_routine_conf.bluetooth_remote_passthrough)
+                _routine_output->bluetooth_remote_passthrough(queue_entry.key);
+            else
+                process_bluetooth_remote_keypress(queue_entry.key);
+        }
+    }
+}
+
+void CMenuRoutineAdjust::process_bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
+{
+    CBluetoothRemote::keypress_action_t action = _saved_settings->get_bt_keypress_action(key);
+    switch (action)
+    {
+        case CBluetoothRemote::keypress_action_t::BUT_A:
+            button_pressed(Button::A);
+            button_released(Button::A);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::BUT_B:
+            button_pressed(Button::B);
+            button_released(Button::B);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::BUT_C:
+            button_pressed(Button::C);
+            button_released(Button::C);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::BUT_D:
+            button_pressed(Button::D);
+            button_released(Button::D);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::ROT_LEFT:
+            adjust_rotary_encoder_change(-1);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::ROT_RIGHT:
+            adjust_rotary_encoder_change(1);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::TRIGGER1_A:
+            _routine_output->trigger(trigger_socket::Trigger1, trigger_part::A, true);
+            _routine_output->trigger(trigger_socket::Trigger1, trigger_part::A, false);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::TRIGGER1_B:
+            _routine_output->trigger(trigger_socket::Trigger1, trigger_part::B, true);
+            _routine_output->trigger(trigger_socket::Trigger1, trigger_part::B, false);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::TRIGGER2_A:
+            _routine_output->trigger(trigger_socket::Trigger2, trigger_part::A, true);
+            _routine_output->trigger(trigger_socket::Trigger2, trigger_part::A, false);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::TRIGGER2_B:
+            _routine_output->trigger(trigger_socket::Trigger2, trigger_part::B, true);
+            _routine_output->trigger(trigger_socket::Trigger2, trigger_part::B, false);
+            break;
+
+        case CBluetoothRemote::keypress_action_t::NONE:
+            printf("CMenuRoutineAdjust: No configured action for [%s]\n", CBluetoothRemote::s_get_keypress_string(key).c_str());
+            break;
+        
+        default:
+            // If this is reached, there's a bug somewhere
+            printf("CMenuRoutineAdjust: Unexpected bluetooth action: 0x%X\n", key);
+            break;
+    }
 }
 
 void CMenuRoutineAdjust::draw_bad_script_screen()
@@ -332,6 +434,14 @@ void CMenuRoutineAdjust::show()
     }
 
     set_options_on_multi_choice_list();
+
+    if (_bt_enabled)
+    {
+        bd_addr_t paired_addr = {0};
+        _saved_settings->get_paired_bt_address(&paired_addr);
+        _bluetooth->connect(paired_addr);
+    }
+
 }
 
 void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour)

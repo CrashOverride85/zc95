@@ -26,19 +26,20 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-CWifi::CWifi(CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWifi::CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
+    printf("CWifi()\n");
     _analogue_capture = analogueCapture;
     _routine_output = routine_output;
     _routines = routines;
+    _radio = radio;
 }
+
 
 void CWifi::loop()
 {
     if (!_wifi_init)
         return;
-    
-    cyw43_arch_poll();
 
     if (_web_server)
     {
@@ -103,29 +104,27 @@ void CWifi::stop()
     stop_webserver();
     if (_wifi_init)
     {
-        printf("CWifi::stop(): Deinit wifi\n");
-        cyw43_arch_deinit();
+        _radio->wifi(false);
         _wifi_init = false;
     }
 }
 
 bool CWifi::init()
 {
+    printf("CWifi::init()\n");
     if (_wifi_init)
     {
         return true;
     }
 
-    if (cyw43_arch_init())
+    if (_radio->wifi(true))
     {
-        printf("CWifi::init(): Failed to init wifi/cyw43\n");
-        return false;
+        _wifi_init = true;
+        return true;
     }
     else
     {
-        printf("CWifi::init(): wifi/cyw43 init success\n");
-        _wifi_init = true;
-        return true;
+        return false;
     }
 }
 
@@ -154,7 +153,7 @@ void CWifi::start_webserver()
 {
     if (!_web_server)
     {
-        _web_server = new CWebServer(_analogue_capture, _routine_output, _routines);
+        _web_server = new CWebServer(_routine_output, _routines);
         _web_server->start();
     }
 }

@@ -8,7 +8,6 @@
 #include "CLuaLoad.h"
 #include "CRoutineRun.h"
 #include "../config.h"
-#include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 
@@ -16,7 +15,6 @@ class CMessageProcessor
 {
     public:
         CMessageProcessor(
-                CAnalogueCapture *analogue_capture, 
                 CRoutineOutput *routine_output, 
                 std::vector<CRoutines::Routine> *routines, 
                 std::function<void(std::string)> send_function
@@ -44,7 +42,6 @@ class CMessageProcessor
 
         std::function<void(std::string)> _send;
 
-        CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> *_routines;
 

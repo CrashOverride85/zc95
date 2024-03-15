@@ -37,12 +37,11 @@
 extern CSerialConnection *g_SerialConnection;
 CSerialConnection *CSerialConnection::_s_instance = NULL;
 
-CSerialConnection::CSerialConnection(uart_inst_t *uart, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
 {
     printf("CSerialConnection::CSerialConnection()\n");
     _s_instance = this;
     _uart = uart;
-    _analogue_capture = analogue_capture;
     _routine_output = routine_output;
     _routines = routines;
 
@@ -58,7 +57,7 @@ CSerialConnection::CSerialConnection(uart_inst_t *uart, CAnalogueCapture *analog
     irq_set_enabled(_uart_irq, true);
     uart_set_irq_enables(_uart, true, true);
 
-    _messageProcessor = new CMessageProcessor(_analogue_capture, _routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+    _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
     g_SerialConnection = this;
 }
 
@@ -182,7 +181,7 @@ void CSerialConnection::loop()
         if (_messageProcessor)
             delete _messageProcessor;
 
-        _messageProcessor = new CMessageProcessor(_analogue_capture, _routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+        _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
 
         _state = state_t::IDLE;
         _reset_connection = false;

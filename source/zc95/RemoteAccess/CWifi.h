@@ -6,12 +6,13 @@
 #include <string>
 #include "CWebServer.h"
 #include "../CAnalogueCapture.h"
+#include "../CRadio.h"
 #include "../core1/routines/CRoutines.h"
 
 class CWifi
 {
     public:
-        CWifi(CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         void loop();
 
         void start_ap();
@@ -24,6 +25,7 @@ class CWifi
     private:
         bool init();
         bool _wifi_init = false;
+        CRadio *_radio;
         CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output;
         CWebServer *_web_server = NULL;

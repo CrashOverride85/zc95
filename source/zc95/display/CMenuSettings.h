@@ -10,6 +10,7 @@
 #include "../core1/output/COutputChannel.h"
 #include "../core1/output/CChannelConfig.h"
 #include "../core1/routines/CRoutine.h"
+#include "../Bluetooth/CBluetooth.h"
 
 class CMenuSettings : public CMenu
 {
@@ -23,7 +24,8 @@ class CMenuSettings : public CMenu
             CAudio *audio, 
             CAnalogueCapture *analogueCapture,
             CWifi *wifi,
-            std::vector<CRoutines::Routine> *routines);
+            std::vector<CRoutines::Routine> *routines,
+            CBluetooth *bluetooth);
 
         ~CMenuSettings();
         void button_pressed(Button button);
@@ -57,7 +59,8 @@ class CMenuSettings : public CMenu
             AUDIO          = 5,
             HARDWARE       = 6,
             REMOTE_ACCESS  = 7,
-            ABOUT          = 8
+            ABOUT          = 8,
+            BLUETOOTH      = 9
         };
 
         std::vector<setting> _settings;
@@ -74,4 +77,5 @@ class CMenuSettings : public CMenu
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
         std::vector<CRoutines::Routine> *_routines;
+        CBluetooth *_bluetooth;
 };

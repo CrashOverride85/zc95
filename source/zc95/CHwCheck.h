@@ -36,8 +36,8 @@ class CHwCheck
         std::string get_zc624_version();
         bool audio_digipot_found();
         void die(CLedControl *led_control, std::string error_message);
-        bool clear_eeprom_buttons_pressed();
-        void clear_eeprom_if_requested();
+        bool clear_eeprom_buttons_pressed(front_panel_version_t fp_version);
+        void clear_eeprom_if_requested(front_panel_version_t fp_version);
         static bool running_on_picow();
         void set_display(CDisplay *display);    
         CHwCheck::front_panel_version_t get_front_panel_version();
@@ -54,6 +54,8 @@ class CHwCheck
         front_panel_version_t determine_front_panel_version();
         void set_expected_devices(front_panel_version_t ver);
         void init_v0_2_front_panel();
+        int  get_button_press(front_panel_version_t fp_version);
+        uint8_t get_button_states_from_port_expander(front_panel_version_t fp_version);
 
         class device
         {

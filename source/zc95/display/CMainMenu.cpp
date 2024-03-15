@@ -29,7 +29,8 @@ CMainMenu::CMainMenu(
     CHwCheck *hwCheck,
     CAudio *audio,
     CAnalogueCapture *analogueCapture,
-    CWifi *wifi
+    CWifi *wifi,
+    CBluetooth *bluetooth
 )
 {
     printf("CMainMenu() \n");
@@ -37,8 +38,9 @@ CMainMenu::CMainMenu(
     _routines = routines;
     _buttons = buttons;
     _settings = settings;
+    _bluetooth = bluetooth;
 
-    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck, audio, analogueCapture, wifi);
+    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck, audio, analogueCapture, wifi, bluetooth);
     _submenu_active->show();
 }
 
