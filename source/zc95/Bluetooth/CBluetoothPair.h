@@ -31,10 +31,8 @@ class CBluetoothPair
         void stop();
         bt_pair_state_t get_state();
         static void s_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
-        //void get_devices_found(std::vector<CBluetoothPair::bt_device_t>& devices);
         
     private:
-        //void process_advertising_report(const uint8_t * adv_data, uint8_t adv_size, bd_addr_t address);
         void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
         void set_state(bt_pair_state_t newState);
 

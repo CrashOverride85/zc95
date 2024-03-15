@@ -22,7 +22,6 @@
 
 // #define WANT_HCI_DUMP 1 // CO85
 
-
 // BTstack configuration. buffers, sizes, ...
 #define HCI_OUTGOING_PRE_BUFFER_SIZE 4
 #define HCI_ACL_PAYLOAD_SIZE (1691 + 4)

@@ -17,7 +17,7 @@
  */
 
 /* 
- * Deal with input from a small bluetooth remotes - the kind often sold as 
+ * Deal with input from small bluetooth remotes - the kind often sold as 
  * shutter remotes for phones. Some of them have a D-Pad plus a couple of
  * extra buttons, some just have a shutter button.
  * 
@@ -93,7 +93,6 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
     if (is_shutter_button(usage_page, usage, value))
     {
         keypress_t key = keypress_t::KEY_SHUTTER;
-        printf("CBluetoothRemote: %s\n", s_get_keypress_string(key).c_str());
         send_keypress(key);
     }
 
@@ -109,7 +108,6 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
     {
         _movement_started = false;
         keypress_t key = get_last_direction_button_pressed();
-        printf("CBluetoothRemote: %s\n", s_get_keypress_string(key).c_str());
         send_keypress(key);
     }
 }
@@ -121,6 +119,8 @@ void CBluetoothRemote::send_keypress(keypress_t key)
     if (time_us_64() - _last_button_event < 1000 * 150)
         return;
     
+    printf("CBluetoothRemote: %s\n", s_get_keypress_string(key).c_str());
+
     _last_button_event = time_us_64();
     if (_bt_keypress_queue)
     {
@@ -243,9 +243,6 @@ CBluetoothRemote::keypress_t CBluetoothRemote::get_last_direction_button_pressed
     }
 }
 
-//////////////////
-// Debug output //
-//////////////////
 std::string CBluetoothRemote::s_get_keypress_string(keypress_t key)
 {
     std::string key_string = "<UNKNOWN>";
@@ -282,6 +279,10 @@ std::string CBluetoothRemote::s_get_keypress_string(keypress_t key)
 
     return key_string;
 }
+
+//////////////////
+// Debug output //
+//////////////////
 
 void CBluetoothRemote::print_desktop_page(uint16_t usage, int32_t value)
 {

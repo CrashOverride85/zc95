@@ -23,6 +23,7 @@ CMenuBluetoothScan::CMenuBluetoothScan(CDisplay* display, CSavedSettings *saved_
     printf("CMenuBluetoothScan() \n");
     _display = display;
     _bluetooth = bluetooth;
+    _saved_settings = saved_settings;
     _exit_menu = false;
     _disp_area = _display->get_display_area();
     _options_list = new COptionsList(display, _disp_area);
@@ -116,6 +117,13 @@ void CMenuBluetoothScan::adjust_rotary_encoder_change(int8_t change)
         {
             case CBluetoothPair::bt_pair_state_t::SUCCESS:
                 message = "Success!";
+
+                if (!_settings_saved)
+                {
+                    _saved_settings->save();
+                    _settings_saved = true;
+                }
+
                 break;
 
             case CBluetoothPair::bt_pair_state_t::START:

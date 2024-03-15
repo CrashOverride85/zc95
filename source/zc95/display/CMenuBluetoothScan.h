@@ -24,9 +24,11 @@ class CMenuBluetoothScan : public CMenu
         std::vector<CBluetoothScan::bt_device_t> _devices;
 
         int _last_selection = -1;
+        bool _settings_saved = false;
         COptionsList *_options_list = NULL;
         display_area _disp_area;
         
         CDisplay* _display;
         CBluetooth *_bluetooth;
+        CSavedSettings *_saved_settings;
 };

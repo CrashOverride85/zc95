@@ -122,7 +122,7 @@ bool CBluetooth::is_paired(bd_addr_t search_address)
     // Does it match the address in EEPROM?
     if (memcmp(search_address, paired_addr, sizeof(bd_addr_t)))
     {
-        printf("CBluetooth::is_paired(): false - doesn't match EEPROM\n");
+        // printf("CBluetooth::is_paired(): false - doesn't match EEPROM\n");
         return false;
     }
 
@@ -143,7 +143,7 @@ bool CBluetooth::is_paired(bd_addr_t search_address)
             return true;
         }
     }
-    printf("CBluetooth::is_paired(): false - no match found in btstack flash\n");
+    // printf("CBluetooth::is_paired(): false - no match found in btstack flash\n");
 
     return false;
 }
