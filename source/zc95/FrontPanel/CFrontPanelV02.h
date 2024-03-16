@@ -45,7 +45,13 @@ class CFrontPanelV02 : public CFrontPanel
             GRPPWM,
             GRPFREQ,
             LEDOUT0,
-            LEDOUT1
+            LEDOUT1,
+            SUBADR1,
+            SUBADR2,
+            SUBADR3,
+            ALLCALLADR,
+            IREF,
+            EFLAG
         };
 
         enum port_exp_reg_t

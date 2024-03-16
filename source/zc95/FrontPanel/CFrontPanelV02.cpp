@@ -24,6 +24,10 @@ CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
     init_adc();
     init_port_exp();
 
+    // Reduce brightness of all buttons a bit. Means that when set 
+    // to the lowest in the menu, it's suitably dim
+    write_led_register(led_reg_t::GRPPWM, 0x20); 
+
     // Enable LED outputs 0-3 (only ones connected), and allow dimming via PWM registers
     write_led_register(led_reg_t::LEDOUT0, 0xFF); 
 
@@ -31,7 +35,6 @@ CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
     write_led_register(led_reg_t::PWM1, 10);
     write_led_register(led_reg_t::PWM2, 10);
     write_led_register(led_reg_t::PWM3, 10);
-
 }
 
 void CFrontPanelV02::init_adc()
