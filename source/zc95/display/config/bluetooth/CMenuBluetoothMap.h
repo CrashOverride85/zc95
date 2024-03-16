@@ -1,10 +1,10 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
-#include "../core1/CRoutineOutput.h"
-#include "../Bluetooth/CBluetooth.h"
-#include "../Bluetooth/CBluetoothRemote.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
+#include "../../../core1/CRoutineOutput.h"
+#include "../../../Bluetooth/CBluetooth.h"
+#include "../../../Bluetooth/CBluetoothRemote.h"
 
 class CMenuBluetoothMap : public CMenu
 {

@@ -21,7 +21,7 @@
  */
 
 #include "CDisplayMessage.h"
-#include "CMenuApMode.h"
+#include <algorithm>
 
 CDisplayMessage::CDisplayMessage(CDisplay* display, CGetButtonState *buttons, std::string message)
 {

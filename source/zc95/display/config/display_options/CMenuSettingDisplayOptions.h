@@ -1,8 +1,8 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
-#include "../CHwCheck.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
+#include "../../../CHwCheck.h"
 
 class CMenuSettingDisplayOptions : public CMenu
 {

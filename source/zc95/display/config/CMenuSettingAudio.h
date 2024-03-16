@@ -1,9 +1,9 @@
 #ifndef _CMENUSETTINGAUDIO_H
 #define _CMENUSETTINGAUDIO_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "CHorzBarGraph.h"
+#include "../CMenu.h"
+#include "../CDisplay.h"
+#include "../CHorzBarGraph.h"
 #include "../CSavedSettings.h"
 #include "../AudioInput/CAudio.h"
 

@@ -1,8 +1,8 @@
 #ifndef _CMENUSETTINGABOUT_H
 #define _CMENUSETTINGABOUT_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
+#include "../CMenu.h"
+#include "../CDisplay.h"
 #include "../CHwCheck.h"
 
 class CMenuSettingAbout : public CMenu

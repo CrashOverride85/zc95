@@ -1,14 +1,14 @@
 #ifndef _CMENUAPMODE_H
 #define _CMENUAPMODE_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../RemoteAccess/CWifi.h"
-#include "../RemoteAccess/setupwebinterface.h"
-#include "../RemoteAccess/QR-Code-generator/c/qrcodegen.h"
-#include "../CSavedSettings.h"
-#include "../CAnalogueCapture.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../RemoteAccess/CWifi.h"
+#include "../../../RemoteAccess/setupwebinterface.h"
+#include "../../../RemoteAccess/QR-Code-generator/c/qrcodegen.h"
+#include "../../../CSavedSettings.h"
+#include "../../../CAnalogueCapture.h"
 
 class CMenuApMode : public CMenu
 {

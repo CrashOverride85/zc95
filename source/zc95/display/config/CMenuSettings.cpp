@@ -17,17 +17,18 @@
  */
 
 #include "CMenuSettings.h"
-#include "CMenuChannelConfig.h"
-#include "CMenuCollarConfig.h"
-#include "CMenuSettingLedBrightnes.h"
+#include "bluetooth/CMenuBluetooth.h"
+#include "channel_config/CMenuChannelConfig.h"
+#include "channel_config/CMenuCollarConfig.h"
+#include "display_options/CMenuSettingLedBrightnes.h"
+#include "display_options/CMenuSettingDisplayOptions.h"
+#include "remote_access/CMenuRemoteAccess.h"
 #include "CMenuSettingPowerStep.h"
 #include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
-#include "CMenuSettingDisplayOptions.h"
-#include "CMenuRemoteAccess.h"
-#include "CMenuBluetooth.h"
+
 #include "../core1/routines/CRoutine.h"
 
 CMenuSettings::CMenuSettings(
