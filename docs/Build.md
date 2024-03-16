@@ -103,7 +103,7 @@ Photo of board as it arrived from JLCPCB:
 ![front panel controls-top]
 
 * Getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
-* Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen one side
+* Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen
 
 Fully assembled board:
 
@@ -201,12 +201,13 @@ Here, it can't find the two ICs on the front panel (in this case, the IDC cable 
 There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel at RS232 levels.
 
 ### Clearing saved settings / EEPROM
-So far I've never found it necessary, but the EEPROM can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking if it should be reset, then pressing bottom left button will clear it.
-Once reset, there should be an "EEPROM cleared" message, followed by flashing red lights. Power cycle the box, and it will have been reset to defaults.
+So far I've never found it necessary, but the EEPROM and user settings in flash can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking what should be reset:
+* EEPROM - reset to defaults all settings that can be changed via the menus
+* Flash  - clear any uploaded Lua scripts along with a section used by the btstack library for some bluetooth pairing data
+
+Once reset, there should be a confirmation message, followed by flashing red lights. Power cycle the box, and the flash or EEPROM will have been reset to defaults.
 
 Before showing the confirmation screen, the box will have confirmed the EEPROM IC can be detected, but no saved settings will have been used. 
-
-EEPROM is used to store all settings that can be changed via the menus, but it does not store any uploaded Lua scripts - these are stored in flash, and can be wiped by reuploading the firmware. 
 
 ## ZC624 output module
 If the ZC624 passes its self test, the OK LED should light (which should be ~1-2 seconds after power on). If it fails, this light should flash.
