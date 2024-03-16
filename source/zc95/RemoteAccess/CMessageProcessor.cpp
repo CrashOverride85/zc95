@@ -33,7 +33,6 @@
 #include "../git_version.h"
 
 CMessageProcessor::CMessageProcessor(
-    CAnalogueCapture *analogue_capture, 
     CRoutineOutput *routine_output, 
     std::vector<CRoutines::Routine> *routines,
     std::function<void(std::string)> send_function)
@@ -41,7 +40,6 @@ CMessageProcessor::CMessageProcessor(
     printf("CMessageProcessor::CMessageProcessor()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
     _pending_message = false;
-    _analogue_capture = analogue_capture;
     _routine_output = routine_output;
     _routines = routines;
     _send = send_function;
@@ -126,9 +124,7 @@ void CMessageProcessor::set_state(state_t new_state)
             if (_lua_load == NULL) // this should always be true
                 _lua_load = new CLuaLoad(
                         _send,
-                        std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-                        _analogue_capture,
-                        _routine_output);
+                        std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             break;
 
         case state_t::ROUTINE_RUN:
@@ -308,7 +304,7 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
 {
     int msg_count = (*doc)["MsgId"];
     int index = (*doc)["Index"];
-    CLuaStorage lua_storage = CLuaStorage(_analogue_capture, _routine_output);
+    CLuaStorage lua_storage = CLuaStorage();
     
     if (lua_storage.delete_script_at_index(index))
         send_ack("OK", msg_count);

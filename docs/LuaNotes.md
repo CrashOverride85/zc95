@@ -12,7 +12,9 @@ There are a few example scripts in `remote_access/lua`, which demonstrate some o
 
 * toggle.lua - switches between channel 1+2 & 3+4 at a speed that can be set via the menu. If the channels are switched on constant or just pulsed can also be set from the menu
 
-* waves.lua - a waves pattern that is slightly more advanced than the inbuilt one. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
+* waves.lua - a basic waves pattern. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
+
+* bluetooth_fire.lua - uses Left/Up/Down/Right buttons on a bluetooth remote to trigger chanel's 1 to 4 respectively for a configurable pulse duration
 
 * acc_test.lua - uses the accessory port to cycle between HIGH/LOW on the 3 output lines. See "AccIoWrite" section below for more details. Doesn't produce any estim output, so not really of any practical use, just a demo of how to use the accessory port.
 
@@ -321,6 +323,22 @@ Called when an external trigger happens.
 Socket: can be either "`TRIGGER1`" or "`TRIGGER2`" for the Trigger1 and Trigger2 sockets respectively. 
 
 Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `True`, when released it will be `False`.
+
+### BluetoothRemoteKeypress (key)
+See bluetooth_fire.lua for an example of this.
+
+If `bluetooth_remote_passthrough = true` is present in the config section, key presses from a [connected bluetooth remote](./Bluetooth.md) are passed through to this function, instead of using the mappings configured in the bluetooth menu. Key will be one of:
+* "`KEY_BUTTON`"
+* "`KEY_UP`"
+* "`KEY_DOWN`"
+* "`KEY_LEFT`"
+* "`KEY_RIGHT`"
+* "`KEY_SHUTTER`"
+* "`KEY_UNKNOWN`"
+
+Note that unlike `SoftButton` and `ExternalTrigger`, there is only a single event, i.e. not pressed followed by released.
+
+If `bluetooth_remote_passthrough = false` (or is absent), this function is never called, and key presses from a connected bluetooth remote are interpreted according to the configured mappings. E.g. if SHUTTER is mapped to "`Top left soft`", pressing the shutter button will cause `SoftButton(true)` immediately followed by `SoftButton(false)` to be called.
 
 ### Setup
 Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 

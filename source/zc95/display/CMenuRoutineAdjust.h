@@ -4,7 +4,6 @@
 #include "CMenu.h"
 #include "CDisplay.h"
 #include "COptionsList.h"
-
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
@@ -12,6 +11,7 @@
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
 #include "../AudioInput/CAudio.h"
+#include "../Bluetooth/CBluetooth.h"
 
 #include <string>
 #include <vector>
@@ -19,7 +19,14 @@
 class CMenuRoutineAdjust : public CMenu
 {
     public:
-        CMenuRoutineAdjust(CDisplay* display, CRoutines::Routine routine, CGetButtonState *buttons, CRoutineOutput *routine_output, CAudio *audio);
+        CMenuRoutineAdjust(
+                CDisplay* display, 
+                CRoutines::Routine routine, 
+                CGetButtonState *buttons, 
+                CRoutineOutput *routine_output, 
+                CAudio *audio, 
+                CBluetooth *bluetooth,
+                CSavedSettings *saved_settings);
         ~CMenuRoutineAdjust();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -34,15 +41,20 @@ class CMenuRoutineAdjust : public CMenu
         void increment_gain(uint8_t by);
         void decrement_gain(uint8_t by);
         void draw_bad_script_screen();
+        void process_bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
 
         COptionsList *_routine_adjust_display_list = NULL;
         COptionsList *_routine_multi_choice_list = NULL;
         struct display_area _area;
         CDisplay* _display;
         struct routine_conf _active_routine_conf;
+        bool _bt_enabled = false;
+        queue_t _bt_keypress_queue = {0};
         CGetButtonState *_buttons;
         CRoutineOutput *_routine_output;
         CAudio *_audio;
+        CBluetooth *_bluetooth = NULL;
+        CSavedSettings *_saved_settings;
 };
 
 #endif

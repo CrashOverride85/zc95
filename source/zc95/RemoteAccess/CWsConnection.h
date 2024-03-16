@@ -9,14 +9,13 @@
 #include "CRoutineRun.h"
 #include "CMessageProcessor.h"
 #include "../config.h"
-#include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 
 class CWsConnection
 {
     public:
-        CWsConnection(struct tcp_pcb *pcb, CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CWsConnection();
         void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);

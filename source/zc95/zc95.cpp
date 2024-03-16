@@ -36,7 +36,7 @@
 
 #include "i2c_scan.h"
 #include "CLedControl.h"
-#include "CControlsPortExp.h"
+#include "CMainBoardPortExp.h"
 #include "CExtInputPortExp.h"
 #include "CEeprom.h"
 #include "CSavedSettings.h"
@@ -45,13 +45,15 @@
 #include "CAnalogueCapture.h"
 #include "CBatteryGauge.h"
 #include "CDebugOutput.h"
+#include "CRadio.h"
+#include "Bluetooth/CBluetooth.h"
 
 #include "AudioInput/CMCP4651.h"
 #include "AudioInput/CAudio.h"
 
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
-#include "display/CMenuApMode.h"
+#include "display/config/remote_access/CMenuApMode.h"
 
 #include "core1/Core1.h"
 #include "core1/Core1Messages.h"
@@ -63,25 +65,28 @@
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
 
-#include "FpKnobs/CFrontPanel.h"
+#include "FrontPanel/CFrontPanelV01.h"
+#include "FrontPanel/CFrontPanelV02.h"
 #include "ECButtons.h"
+#include "FlashHelper.h"
 
-CControlsPortExp controls = CControlsPortExp(CONTROLS_PORT_EXP_ADDR);
+CMainBoardPortExp port_expander = CMainBoardPortExp(CONTROLS_PORT_EXP_ADDR);
 CExtInputPortExp *ext_input = NULL;
 CEeprom eeprom = CEeprom(I2C_PORT, EEPROM_ADDR);
-CFrontPanel *_front_pannel = NULL;
+CFrontPanel *_front_panel = NULL;
 CAnalogueCapture analogueCapture;
 CBatteryGauge batteryGauge;
 CMCP4651 audio_gain;
-CAudio audio(&analogueCapture, &audio_gain, &controls);
+CAudio audio(&analogueCapture, &audio_gain, &port_expander);
 CWifi *wifi = NULL;
+CRadio *radio = NULL;
 extern CSerialConnection *g_SerialConnection;
 
 void gpio_callback(uint gpio, uint32_t events) 
 {
     if (gpio == PIN_CONTROLS_INT)
     {
-        controls.interrupt();
+        port_expander.interrupt();
     }
     else if (gpio == PIN_EXT_INPUT_INT)
     {
@@ -90,20 +95,20 @@ void gpio_callback(uint gpio, uint32_t events)
     }
     else if (gpio == PIN_FP_INT1)
     {
-        if (_front_pannel != NULL)
-            _front_pannel->interrupt(CFrontPanel::port_exp::U1);
+        if (_front_panel != NULL)
+            _front_panel->interrupt(CFrontPanel::interrupt_t::INT1);
     }
     else if (gpio == PIN_FP_INT2)
     {
-        if (_front_pannel != NULL)
-            _front_pannel->interrupt(CFrontPanel::port_exp::U2);
+        if (_front_panel != NULL)
+            _front_panel->interrupt(CFrontPanel::interrupt_t::INT2);
     }
 }
 
-void check_button(CControlsPortExp *controls, CMenu *current_menu, Button button)
+void check_button(CMenu *current_menu, Button button)
 {
     bool new_state = false;
-    if (controls->has_button_state_changed(button, &new_state))
+    if (_front_panel->has_button_state_changed(button, &new_state))
     {
         if (new_state)
             current_menu->button_pressed(button);
@@ -112,19 +117,19 @@ void check_button(CControlsPortExp *controls, CMenu *current_menu, Button button
     }
 }
 
-void process_front_pannel_input(CControlsPortExp *controls, CMenu *current_menu)
+void process_front_panel_input(CMainBoardPortExp *port_expander, CMenu *current_menu)
 {
-    check_button(controls, current_menu, Button::A);
-    check_button(controls, current_menu, Button::B);
-    check_button(controls, current_menu, Button::C);
-    check_button(controls, current_menu, Button::D);
+    check_button(current_menu, Button::A);
+    check_button(current_menu, Button::B);
+    check_button(current_menu, Button::C);
+    check_button(current_menu, Button::D);
 }
 
-void update_power_levels_from_front_pannel(CRoutineOutput *routine_output)
+void update_power_levels_from_front_panel(CRoutineOutput *routine_output)
 {
     for (int chan=0; chan < MAX_CHANNELS; chan++)
     {
-        uint16_t fp_power = _front_pannel->get_channel_power_level(chan);
+        uint16_t fp_power = _front_panel->get_channel_power_level(chan);
         routine_output->set_front_panel_power(chan, fp_power);   
     }
 }
@@ -181,7 +186,7 @@ int main()
     audio.set_audio_digipot_found(hw_check.audio_digipot_found());
     
     // switch off backlight until init done
-    controls.set_lcd_backlight(false);
+    port_expander.set_lcd_backlight(false);
 
     // Make sure there is some semi-random-ish data available
     seed_random_from_rosc();
@@ -195,29 +200,35 @@ int main()
     if (settings.get_aux_port_use() == CSavedSettings::setting_aux_port_use::AUDIO)
     {
         //sleep_ms(100); // wait for eeprom to be ready
-        controls.audio_input_enable(true);
+        port_expander.audio_input_enable(true);
     }
     else
     {
-        controls.audio_input_enable(false);
+        port_expander.audio_input_enable(false);
     }
 
     CDebugOutput::set_debug_destination_from_settings(&settings);
 
-    _front_pannel = new CFrontPanel(&settings);
+    if (hw_check.get_front_panel_version() == CHwCheck::front_panel_version_t::v0_2)
+        _front_panel = new CFrontPanelV02(&settings);
+    else
+        _front_panel = new CFrontPanelV01(&settings, &port_expander);
 
-    // Front pannel LEDs - give some feedback we're powering up (display takes almost second to appear)
+    // Front panel LEDs - give some feedback we're powering up (display takes almost second to appear)
     CLedControl led = CLedControl(PIN_LED, &settings);
     led.init();
     led.set_all_led_colour(LedColour::Purple);
     led.loop();
 
+    radio = new CRadio(&analogueCapture);
+    CBluetooth bluetooth = CBluetooth(radio);
+
     // front panel push buttons on controls port expander
     gpio_init(PIN_CONTROLS_INT);
     gpio_set_dir(PIN_CONTROLS_INT, GPIO_IN);
     gpio_set_irq_enabled_with_callback(PIN_CONTROLS_INT, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    controls.clear_input();
-    controls.process(true);
+    port_expander.clear_input();
+    port_expander.process(true);
 
     // Front panel
     gpio_init(PIN_FP_INT1);
@@ -228,7 +239,7 @@ int main()
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
   
     // Configure SPI display
-    CDisplay display = CDisplay();
+    CDisplay display = CDisplay(_front_panel, &bluetooth);
     display.init(); // This takes some time - not far off a second
     hw_check.set_display(&display);
 
@@ -236,7 +247,7 @@ int main()
     std::vector<CRoutines::Routine> routines;
     CRoutines::get_routines(&routines);
    
-    hw_check.check_part2(&led, &controls); // If a fault is found, this never returns
+    hw_check.check_part2(&led, &port_expander); // If a fault is found, this never returns
 
     // Queue used for pulses from audio processing on core0 being sent to core1 for output
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
@@ -259,7 +270,8 @@ int main()
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
-    wifi = new CWifi(&analogueCapture, routine_output, &routines);  
+    wifi = new CWifi(radio, &analogueCapture, routine_output, &routines);
+    flash_helper_init(&analogueCapture, routine_output);
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
     ext_input = new CExtInputPortExp(EXT_INPUT_PORT_EXP_ADDR, &led, routine_output);
@@ -270,26 +282,27 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &controls, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi);
+    CMainMenu routine_selection = CMainMenu(&display, &routines, &port_expander, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi, &bluetooth);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
 
     uint64_t start = time_us_64();
     led.loop();
-    controls.set_lcd_backlight(true);
+    port_expander.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 
     while (1) 
     {
         uint64_t loop_start = time_us_64();
+        radio->loop();
         wifi->loop();
 
         display.update();
-        process_front_pannel_input(&controls, current_menu);
+        process_front_panel_input(&port_expander, current_menu);
 
-        int8_t adj = _front_pannel->get_adjust_control_change();
+        int8_t adj = _front_panel->get_adjust_control_change();
         if (adj && current_menu)
         {
             current_menu->adjust_rotary_encoder_change(adj);
@@ -297,15 +310,15 @@ int main()
 
         if (time_us_64() > last_analog_check + 50000)
         {
-            _front_pannel->process(true);
+            _front_panel->process(true);
             last_analog_check = time_us_64();
         }
     
-        update_power_levels_from_front_pannel(routine_output);
+        update_power_levels_from_front_panel(routine_output);
         if (time_us_64() - start > 1000000) // every second
         {
             start = time_us_64();
-            controls.process(true);   // ~215us
+            port_expander.process(true);   // ~215us
             ext_input->process(true); // ~215us
             led.loop(true); // ~55u
 
@@ -317,8 +330,8 @@ int main()
         else
         {
             ext_input->process(false);
-            controls.process(false);
-            _front_pannel->process(false);     
+            port_expander.process(false);
+            _front_panel->process(false);     
          //   hw_check.process();
         }
 

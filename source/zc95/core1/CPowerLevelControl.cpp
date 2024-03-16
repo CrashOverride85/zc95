@@ -25,11 +25,11 @@
  * Deal with everything relating to the output power.
  * Includes:
  *   - routine_requested_power - Power level (0-1000) that a routine has requested. It will usually be 1000.
- *   - front_panel_power       - Power level (0-1000) as set on the front pannel. Due to the ADC, there are only 255 discrete values possible 
+ *   - front_panel_power       - Power level (0-1000) as set on the front panel. For v0.1 of the front panel, there are only 255 discrete values possible
  *   - remote_access_power     - Power level (0-1000) set by remote UI. If in remote access mode, this largely takes the place of front_panel_power,
  *                               with front_panel_power serving as a power limit
- *   - max_power_level         - The maximum power level currenly possible - always <= front_panel_power. This takes into account ramp up 
- *                             - time, so for the first few seconds this will increase (assuming the front pannel isn't set to 0)
+ *   - max_power_level         - The maximum power level currently possible - always <= front_panel_power. This takes into account ramp up 
+ *                             - time, so for the first few seconds this will increase (assuming the front panel isn't set to 0)
  *   - output_power_level      - The power level to be sent to output chanel after combining all the above
  */
 

@@ -7,14 +7,13 @@
 #include <bits/stdc++.h>
 #include "httpd.h"
 #include "CWsConnection.h"
-#include "../CAnalogueCapture.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 
 class CWebServer
 {
     public:
-        CWebServer(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
         ~CWebServer();
         void start();
         void stop();
@@ -28,7 +27,6 @@ class CWebServer
         bool _started = false;
         static std::vector<CRoutines::Routine> *_s_routines;
         static std::map<struct tcp_pcb*, CWsConnection*> _s_ws_connections;
-        static CAnalogueCapture *_s_analogue_capture;
         static CRoutineOutput *_s_routine_output;
 };
 

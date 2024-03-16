@@ -5,16 +5,11 @@
 #include <stdio.h>
 #include <string>
 #include <list>
-#include "core1/CRoutineOutput.h"
-#include "CAnalogueCapture.h"
-
-extern mutex_t g_core1_suspend_mutex;
-extern struct semaphore g_core1_suspend_sem;
 
 class CLuaStorage
 {
     public:
-        CLuaStorage(CAnalogueCapture *analogue_capture, CRoutineOutput *routine_output);
+        CLuaStorage();
         ~CLuaStorage();
 
         struct lua_script_t
@@ -25,6 +20,14 @@ class CLuaStorage
             std::string name;
         };
 
+        struct flash_write_params_t
+        {
+            uint32_t flash_offset;
+            size_t flash_size;
+            size_t buffer_size;
+            const char* lua_script;
+        };
+
         static size_t get_lua_flash_size(uint8_t index);
         bool store_script(uint8_t index, const char* lua_script, size_t buffer_size);
         bool delete_script_at_index(uint8_t index);
@@ -32,12 +35,10 @@ class CLuaStorage
         static const char* get_script_at_index(uint8_t index);
         static std::list<CLuaStorage::lua_script_t> get_lua_scripts(bool writeable_only = true);
 
+        static void s_do_flash_erase_and_write(void *param);
+
     private:
         static uint32_t get_flash_offset(uint8_t script_index);
-        
-        CAnalogueCapture *_analogue_capture;
-        CRoutineOutput *_routine_output;
-
 };
 
 #endif

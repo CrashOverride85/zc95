@@ -31,15 +31,13 @@
 
 CLuaLoad::CLuaLoad(
         std::function<void(std::string)> send_function, 
-        std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
-        CAnalogueCapture *analogue_capture, 
-        CRoutineOutput *routine_output
+        std::function<void(std::string result, int msg_count, std::string error)> send_ack_func
 )
 {
     printf("CLuaLoad::CLuaLoad()\n");
     _send = send_function;
     _send_ack = send_ack_func;
-    _lua_storage = new CLuaStorage(analogue_capture, routine_output);
+    _lua_storage = new CLuaStorage();
 }
 
 CLuaLoad::~CLuaLoad()

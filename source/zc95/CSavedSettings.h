@@ -1,6 +1,9 @@
 #ifndef _CSAVEDSETTINGS_H
 #define _CSAVEDSETTINGS_H
 
+#include "bluetooth.h"
+#include "Bluetooth/CBluetoothRemote.h"
+
 #include "CEeprom.h"
 #include "CChannel_types.h"
 
@@ -46,7 +49,20 @@ class CSavedSettings
         WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
         WifiApPskEnd   = 196, //
         PowerLevelDisp = 197, // Power level numeric display 
-     // <next>         = 198
+        ButtonLedBright= 198, // Brightness of illuminated LED buttons 
+        BluetoothOn    = 199, // Bluetooth enabled yes/no
+        BTAddrStart    = 200, // Bluetooth address (6 bytes) start. Currently selected / paired device
+        BTAddrEnd      = 205, // Bluetooth address end
+
+        // These map keypress_t::* to a keypress_action_t::*, e.g. KEY_LEFT => ROT_LEFT
+        BTButtonAction = 206, // KEY_BUTTON
+        BTUpAction     = 207, // KEY_UP
+        BTDownAction   = 208, // KEY_DOWN
+        BTLeftAction   = 209, // KEY_LEFT
+        BTRightAction  = 210, // KEY_RIGHT
+        BTShutterAction= 211, // KEY_SHUTTER
+        BTUnknownAction= 212  // KEY_UNKNOWN
+     // <next>         = 213
     };
 
     public:
@@ -154,9 +170,25 @@ class CSavedSettings
         bool power_level_show_disappearing_text();
         void set_power_level_display(power_level_show_percent setting);
 
+        // Illuminated button brightness        
+        uint8_t get_button_brightness();
+        void set_button_brightness(uint8_t button_brightness_byte);
+
         // Collar
         bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
         bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
+
+        // Bluetooth enabled
+        bool get_bluethooth_enabled();
+        void set_bluethooth_enabled(bool setting);
+
+        // Address of paired bluetooth device
+        void get_paired_bt_address(bd_addr_t *address);
+        void set_paired_bt_address(bd_addr_t address);
+
+        // Bluetooth remote button to action mappings
+        CBluetoothRemote::keypress_action_t get_bt_keypress_action(CBluetoothRemote::keypress_t key);
+        void set_bt_keypress_action(CBluetoothRemote::keypress_t key, CBluetoothRemote::keypress_action_t action);
 
         void eeprom_initialise();
 

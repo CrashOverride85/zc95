@@ -233,7 +233,7 @@ void Core1::check_validity_of_lua_script()
 
 void Core1::process_messages()
 {
-    // main FIFO queue - insturctions to start routines, change settings, etc.
+    // main FIFO queue - instructions to start routines, change settings, etc.
     while (multicore_fifo_rvalid())
     {
         message msg;
@@ -375,6 +375,13 @@ void Core1::process_message(message msg)
 
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
                 update_channel_power(channel);
+            break;
+        }
+
+    case MESSAGE_BLUETOOTH_REMOTE_KEYPRESS:
+        {
+            CBluetoothRemote::keypress_t button = (CBluetoothRemote::keypress_t)msg.msg8[1];
+            bluetooth_remote_keypress(button);
             break;
         }
     }
@@ -626,4 +633,12 @@ void Core1::collar_transmit(uint16_t id, CCollarComms::collar_channel channel, C
     msg.power = power;
 
     collar_comms->transmit(msg);
+}
+
+void Core1::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
+{
+    if (_active_routine != NULL)
+    {
+        _active_routine->bluetooth_remote_keypress(key);
+    }
 }

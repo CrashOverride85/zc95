@@ -20,6 +20,7 @@
 #include "string.h"
 #include "config.h"
 #include "core1/output/collar/CCollarComms.h"
+#include "CHwCheck.h"
 
 /*
  * Manage access and updating of settings saved to EEPROM.
@@ -296,6 +297,16 @@ void CSavedSettings::set_power_level_display(power_level_show_percent setting)
     _eeprom_contents[(uint8_t)setting::PowerLevelDisp] = (uint8_t)setting;
 }
 
+uint8_t CSavedSettings::get_button_brightness()
+{
+    return _eeprom_contents[(uint8_t)setting::ButtonLedBright];
+}
+
+void CSavedSettings::set_button_brightness(uint8_t button_brightness_byte)
+{
+    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = button_brightness_byte;
+}
+
 bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
 {
     if (collar_id > 9)
@@ -321,6 +332,121 @@ bool CSavedSettings::set_collar_config(uint8_t collar_id, struct collar_config &
     _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] = collar_conf.id >> 8;
 
     return true;
+}
+
+bool CSavedSettings::get_bluethooth_enabled()
+{
+    return (_eeprom_contents[(uint8_t)setting::BluetoothOn] != 0) && CHwCheck::running_on_picow();
+}
+
+void CSavedSettings::set_bluethooth_enabled(bool setting)
+{
+    _eeprom_contents[(uint8_t)setting::BluetoothOn] = setting;
+}
+
+void CSavedSettings::get_paired_bt_address(bd_addr_t *address)
+{
+    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    {
+        // this should never happen!
+        printf("get_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
+        return;
+    }
+
+    memcpy(address, &_eeprom_contents[(uint8_t)setting::BTAddrStart], sizeof(bd_addr_t));
+}
+
+void CSavedSettings::set_paired_bt_address(bd_addr_t address)
+{
+    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    {
+        // this should never happen!
+        printf("set_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
+        return;
+    }
+
+    memcpy(&_eeprom_contents[(uint8_t)setting::BTAddrStart], address, sizeof(bd_addr_t));
+}
+
+CBluetoothRemote::keypress_action_t CSavedSettings::get_bt_keypress_action(CBluetoothRemote::keypress_t key)
+{
+    uint8_t action = 0;
+
+    switch(key)
+    {
+        case CBluetoothRemote::keypress_t::KEY_BUTTON:
+            action = _eeprom_contents[(uint8_t)setting::BTButtonAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_UP:
+            action = _eeprom_contents[(uint8_t)setting::BTUpAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_DOWN:
+            action = _eeprom_contents[(uint8_t)setting::BTDownAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_LEFT:
+            action = _eeprom_contents[(uint8_t)setting::BTLeftAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_RIGHT:
+            action = _eeprom_contents[(uint8_t)setting::BTRightAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_SHUTTER:
+            action = _eeprom_contents[(uint8_t)setting::BTShutterAction];
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_UNKNOWN:
+            action = _eeprom_contents[(uint8_t)setting::BTUnknownAction];
+            break;
+
+        default:
+            printf("get_bt_keypress_action: Error - request for unknown keypress type [0x%X]\n", (int)key);
+            action = (uint8_t)CBluetoothRemote::keypress_action_t::NONE;
+            break;
+    }
+
+    return (CBluetoothRemote::keypress_action_t)action;
+}
+
+void CSavedSettings::set_bt_keypress_action(CBluetoothRemote::keypress_t key, CBluetoothRemote::keypress_action_t action)
+{
+    switch(key)
+    {
+        case CBluetoothRemote::keypress_t::KEY_BUTTON:
+            _eeprom_contents[(uint8_t)setting::BTButtonAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_UP:
+            _eeprom_contents[(uint8_t)setting::BTUpAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_DOWN:
+            _eeprom_contents[(uint8_t)setting::BTDownAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_LEFT:
+            _eeprom_contents[(uint8_t)setting::BTLeftAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_RIGHT:
+            _eeprom_contents[(uint8_t)setting::BTRightAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_SHUTTER:
+            _eeprom_contents[(uint8_t)setting::BTShutterAction] = action;
+            break;
+
+        case CBluetoothRemote::keypress_t::KEY_UNKNOWN:
+            _eeprom_contents[(uint8_t)setting::BTUnknownAction] = action;
+            break;
+
+        default:
+            printf("set_bt_keypress_action: Error - unknown keypress type [0x%X]\n", (int)key);
+            break;
+    }
 }
 
 bool CSavedSettings::eeprom_initialised()
@@ -374,6 +500,8 @@ void CSavedSettings::eeprom_initialise()
 
     for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
         initialise_collar(collar_id);
+
+    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
 
     // Save changes
     save();

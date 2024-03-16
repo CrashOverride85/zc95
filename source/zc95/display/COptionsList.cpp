@@ -118,3 +118,8 @@ int COptionsList::get_current_selection_id()
 {
     return _options[_current_selection].Id();
 }
+
+uint8_t COptionsList::count()
+{
+    return _options.size();
+}

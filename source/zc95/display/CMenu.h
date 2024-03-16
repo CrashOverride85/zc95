@@ -2,7 +2,7 @@
 #define _CMENU_H
 
 #include <string>
-#include "../CControlsPortExp.h"
+#include "../CMainBoardPortExp.h"
 #include "../ECButtons.h"
 
 class CMenu

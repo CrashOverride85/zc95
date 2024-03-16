@@ -125,6 +125,9 @@ void CRoutineOutputCore1::enable_remote_power_mode()
 
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = true;
+
+    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+        _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
 void CRoutineOutputCore1::disable_remote_power_mode()
@@ -135,6 +138,9 @@ void CRoutineOutputCore1::disable_remote_power_mode()
 
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = false;
+
+    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+        _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
 void CRoutineOutputCore1::update_display(uint8_t channel)
@@ -190,6 +196,15 @@ void CRoutineOutputCore1::soft_button_pressed(soft_button button, bool pressed)
     msg.msg8[0] = MESSAGE_ROUTINE_SOFT_BUTTON_PUSHED;
     msg.msg8[1] = (uint8_t)button;
     msg.msg8[2] = pressed; // 1=pressed, 0=released
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
+void CRoutineOutputCore1::bluetooth_remote_passthrough(CBluetoothRemote::keypress_t key)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_BLUETOOTH_REMOTE_KEYPRESS;
+    msg.msg8[1] = (uint8_t)key;
 
     multicore_fifo_push_blocking(msg.msg32);
 }

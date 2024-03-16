@@ -1,0 +1,1 @@
+For hardware change log, see [readme in PCB folder](../pcb/Readme.md)

@@ -53,7 +53,9 @@ On first power up, the box shows a menu of available patterns. Either the highli
 ## Config
 Configuration options so far:
 
-* Remote access - Only visible if running on a Pico-W. Allows for remote access to the ZC95 over WiFi, for the purpose of either remotely controlling it or uploading Lua scripts. See [Remote Access](./RemoteAccess.md) 
+* Remote access - Allows for remote access to the ZC95 over WiFi (if running on a Pico-W) and serial, for the purpose of either remotely controlling it or uploading Lua scripts. See [Remote Access](./RemoteAccess.md) 
+
+* Bluetooth - Only visible if running on a Pico-W. For configuring bluetooth remotes; see [Bluetooth page](./Bluetooth.md)
 
 * Channel config - For each channel 1-4, picks if either the internal output (on the 2.5mm connector) should be used, or if a shock collar should be triggered
 
@@ -67,6 +69,8 @@ Configuration options so far:
     - Disappearing - Show in large text on screen for a few moments on change
     - In bar graph - Show value, rotated 90 degrees, inside the corresponding bar graph
     - Both - Enable Disappearing text display and in bar graph
+
+  - Button brightness - controls how bright the LEDs in the 4 front panel buttons are
 
 * Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 

@@ -37,7 +37,7 @@ const uint8_t status_bar_height = 9;  // battery level + mode at bottom
 const uint8_t bar_width = 10;         // individual power level bar width 
 
 
-CDisplay::CDisplay()
+CDisplay::CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth)
 {
     printf("CDisplay()\n");
     memset(_channel_power, 0, sizeof (_channel_power));
@@ -54,6 +54,8 @@ CDisplay::CDisplay()
     _battery_percentage = 0;
     _active_pattern = "";
     _remote_mode_active = false;
+    _front_panel = front_panel;
+    _bluetooth = bluetooth;
 }
 
 CDisplay::~CDisplay()
@@ -94,7 +96,7 @@ uint8_t CDisplay::get_font_height()
         (time_us_64() - _last_update > (18*1000)) 
        )
     {
-        _interuptable_section.start();
+        _interruptable_section.start();
         
         _update_required = false;
         CTimingTest timing;
@@ -118,7 +120,7 @@ uint8_t CDisplay::get_font_height()
 
         draw_status_bar();
   
-        _interuptable_section.end();
+        _interruptable_section.end();
         hagl_flush(_hagl_backend); // 8us, starts/uses DMA for update
 
         _last_update = time_us_64();
@@ -236,6 +238,11 @@ void CDisplay::draw_soft_buttons()
     // D
     put_text(_option_d, (MIPI_DISPLAY_WIDTH/2)+3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
     hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1), (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
+
+    _front_panel->set_button_in_use(Button::A, _option_a.length() > 0);
+    _front_panel->set_button_in_use(Button::B, _option_b.length() > 0);
+    _front_panel->set_button_in_use(Button::C, _option_c.length() > 0);
+    _front_panel->set_button_in_use(Button::D, _option_d.length() > 0);
 }
 
 void CDisplay::draw_bar_graphs()
@@ -299,7 +306,7 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
     hagl_fill_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+4, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 2 - 10, (MIPI_DISPLAY_WIDTH-1)-((bar_number-1)*bar_width)-4, current_power_top, current_power_colour);
 
     if (g_SavedSettings->power_level_show_in_bar_graph())
-        put_text(std::to_string(front_panel_power/10), (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 30, hagl_color(_hagl_backend, 0, 0xFF, 0), true);
+        put_text(std::to_string(front_panel_power/10), (MIPI_DISPLAY_WIDTH-1)-(bar_number*bar_width)+2, (MIPI_DISPLAY_HEIGHT-1) - menu_bar_height - status_bar_height - 30, hagl_color(_hagl_backend, 0, 0xFF, 0), true, font5x7);
 }
 
 void CDisplay::draw_status_bar()
@@ -312,8 +319,64 @@ void CDisplay::draw_status_bar()
         current_mode = _current_menu->get_title();
     }
 
-    snprintf(buffer, sizeof(buffer), "BAT: %d%%  %s", _battery_percentage, current_mode.c_str());
-    put_text(buffer, 0, (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA));
+    // Draw battery percent with icon, and name of currently running pattern (if any)
+    uint16_t y = (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2;
+    snprintf(buffer, sizeof(buffer)-1, "%d   %s", _battery_percentage, current_mode.c_str());
+    put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
+    draw_battery_icon(0, y);
+
+    // If bluetooth is on, show bt symbol in bottom right of screen
+    uint16_t x = MIPI_DISPLAY_WIDTH - 8;
+    draw_bt_logo_if_required(x, y-1);
+}
+
+void CDisplay::draw_battery_icon(int16_t x, int16_t y)
+{
+    hagl_color_t colour;
+    if (_battery_percentage >= 65)
+        colour = hagl_color(_hagl_backend, 0x00, 0x70, 0x00); // Green
+    else if (_battery_percentage >= 20)
+        colour = hagl_color(_hagl_backend, 0xFF, 0xFB, 0x00); // Amber
+    else
+        colour = hagl_color(_hagl_backend, 0xAA, 0x00, 0x00); // Red
+
+    // Battery icon is split into three 8x9 (WxH) sections
+    for (uint8_t sec = 0; sec < 3; sec++)
+    {
+        draw_logo(_bat_logo[sec], x + (sec * 8), y-1, colour);
+    }
+}
+
+void CDisplay::draw_bt_logo_if_required(int16_t x, int16_t y)
+{
+    if (_bluetooth->get_state() == CBluetooth::state_t::OFF)
+        return;
+
+    hagl_color_t colour; 
+
+    switch (_bluetooth->get_connect_state())
+    {
+        case CBluetoothConnect::bt_connect_state_t::CONNECTED:
+            colour = hagl_color(_hagl_backend, 0x2E, 0x67, 0xF8); // "lightsaber blue"
+            break;
+
+        case CBluetoothConnect::bt_connect_state_t::CONNECTING:
+            colour = hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF); // white
+            break;
+
+        case CBluetoothConnect::bt_connect_state_t::DISCONNECTED:
+            colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00); // red
+            break;
+
+        // These cases shouldn't happen normally - BT radio is on, but not connected or trying to connect to anything
+        case CBluetoothConnect::bt_connect_state_t::IDLE:
+        case CBluetoothConnect::bt_connect_state_t::STOPPED:
+        default:
+            colour = hagl_color(_hagl_backend, 0x70, 0x70, 0x70); // grey
+            break;
+    }
+ 
+    draw_logo(_bt_logo, x, y-1, colour);
 }
 
 void CDisplay::draw_power_level()
@@ -345,16 +408,20 @@ void CDisplay::draw_power_level()
     }
 }
 
-void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90)
+void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90, const uint8_t *font)
 {
+    const uint8_t *fn = font;
     if (text == "")
         text = " ";
 
+    if (font == NULL)
+        fn = font6x9;
+
     std::wstring widestr = std::wstring(text.begin(), text.end());
     if (rotate90)
-        hagl_put_text_rotate90(_hagl_backend, widestr.c_str(), x, y, color, font5x7);
+        hagl_put_text_rotate90(_hagl_backend, widestr.c_str(), x, y, color, fn);
     else
-        hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
+        hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, fn);
 }
 
 void CDisplay::set_update_required()
@@ -424,3 +491,14 @@ hagl_backend_t* CDisplay::get_hagl_backed()
     return _hagl_backend;
 }
 
+void CDisplay::draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour)
+{
+    for (uint8_t y = 0; y < 9; y++)
+    {
+        for (int8_t x = 0; x < 8; x++)
+        {
+            if (logo[y] & (1 << x ))
+                hagl_put_pixel(_hagl_backend, x0+(7-x), y0+y, colour);
+        }
+    }
+}

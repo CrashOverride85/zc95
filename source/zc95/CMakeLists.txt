@@ -10,6 +10,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(PICO_CYW43_SUPPORTED 1)
 
+set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+
 # initalize pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 # set(PICO_SDK_PATH "<path to SDK>")
@@ -29,26 +31,42 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
-  zc95.cpp 
+  CAnalogueCapture.cpp
+  CBatteryGauge.cpp
+  CChannel_types.cpp
+  CDebugOutput.cpp
+  CEeprom.cpp
+  CExtInputPortExp.cpp
+  CHwCheck.cpp 
   CLedControl.cpp 
   CLedControl.h 
-  CControlsPortExp.cpp 
-  CExtInputPortExp.cpp
-  CEeprom.cpp
+  CLuaStorage.cpp
+  CMainBoardPortExp.cpp 
+  CRadio.cpp
   CSavedSettings.cpp
-  CChannel_types.cpp
-  i2c_scan.cpp
   CTimingTest.cpp
-  CHwCheck.cpp 
-  CBatteryGauge.cpp
-  CDebugOutput.cpp
-  globals.cpp
   CUtil.cpp
+  FlashHelper.cpp
+  globals.cpp
+  i2c_scan.cpp
+  zc95.cpp
+
+  AudioInput/CMCP4651.cpp
+  AudioInput/CAudio.cpp
+  AudioInput/CAudio3Process.cpp
+  AudioInput/ESP32_fft.cpp
+
+  Bluetooth/CBluetooth.cpp
+  Bluetooth/CBluetoothScan.cpp
+  Bluetooth/CBluetoothPair.cpp
+  Bluetooth/CBluetoothConnect.cpp
+  Bluetooth/CBluetoothRemote.cpp
 
   core1/Core1.cpp
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
   core1/CRoutineOutputCore1.cpp
+  core1/CRoutineOutput.cpp
 
   core1/output/CChannelConfig.cpp
   core1/output/CFullChannelAsSimpleChannel.cpp
@@ -79,40 +97,48 @@ add_executable(zc95
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
   
-  FpKnobs/CRotEnc.cpp
-  FpKnobs/CFrontPanel.cpp
-
   display/CMenu.cpp
   display/CDisplay.cpp
   display/CMainMenu.cpp
   display/CMenuRoutineSelection.cpp
   display/CMenuRoutineAdjust.cpp
-  display/CMenuSettings.cpp
-  display/CMenuChannelConfig.cpp
-  display/CMenuCollarConfig.cpp
-  display/CMenuCollarConfigSelected.cpp
-  display/CMenuSettingLedBrightnes.cpp
-  display/CMenuSettingPowerStep.cpp
-  display/CMenuSettingRampUpTime.cpp
-  display/CMenuSettingAbout.cpp
-  display/CMenuSettingAudio.cpp
-  display/CMenuSettingHardware.cpp
-  display/CMenuSettingDisplayOptions.cpp
-  display/CMenuSettingPowerLevelDisplay.cpp
-  display/CMenuRemoteAccess.cpp
-  display/CMenuRemoteAccessConnectWifi.cpp
-  display/CMenuRemoteAccessSerial.cpp
-  display/CMenuApMode.cpp
+
   display/COptionsList.cpp
   display/CHorzBarGraph.cpp
   display/CDisplayMessage.cpp
 
-  AudioInput/CMCP4651.cpp
-  AudioInput/CAudio.cpp
-  AudioInput/CAudio3Process.cpp
-  AudioInput/ESP32_fft.cpp
-  CAnalogueCapture.cpp
-  CLuaStorage.cpp
+  display/config/CMenuSettings.cpp
+  display/config/CMenuSettingPowerStep.cpp
+  display/config/CMenuSettingRampUpTime.cpp
+  display/config/CMenuSettingAbout.cpp
+  display/config/CMenuSettingAudio.cpp
+  display/config/CMenuSettingHardware.cpp
+
+  display/config/bluetooth/CMenuBluetooth.cpp
+  display/config/bluetooth/CMenuBluetoothScan.cpp
+  display/config/bluetooth/CMenuBluetoothTest.cpp
+  display/config/bluetooth/CMenuBluetoothMap.cpp
+
+  display/config/channel_config/CMenuChannelConfig.cpp
+  display/config/channel_config/CMenuCollarConfig.cpp
+  display/config/channel_config/CMenuCollarConfigSelected.cpp
+
+  display/config/display_options/CMenuSettingDisplayOptions.cpp
+  display/config/display_options/CMenuSettingButtonBrightness.cpp
+  display/config/display_options/CMenuSettingPowerLevelDisplay.cpp
+  display/config/display_options/CMenuSettingLedBrightnes.cpp
+
+  display/config/remote_access/CMenuRemoteAccess.cpp
+  display/config/remote_access/CMenuRemoteAccessConnectWifi.cpp
+  display/config/remote_access/CMenuRemoteAccessSerial.cpp
+  display/config/remote_access/CMenuApMode.cpp
+
+  FrontPanel/CRotEnc.cpp
+  FrontPanel/CFrontPanelV01.cpp
+  FrontPanel/CFrontPanelV02.cpp
+  
+  LuaScripts/LuaScripts.S
+  LuaScripts.cpp
 
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c
@@ -131,9 +157,6 @@ add_executable(zc95
   RemoteAccess/CMessageProcessor.cpp
   RemoteAccess/CSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
-
-  LuaScripts/LuaScripts.S
-  LuaScripts.cpp
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -157,6 +180,8 @@ target_link_libraries(zc95 pico_stdlib)
 # Add any user requested libraries
 target_link_libraries(zc95
         pico_cyw43_arch_lwip_poll
+        pico_btstack_cyw43
+        pico_btstack_ble
         hardware_spi
         hardware_i2c
         hardware_dma

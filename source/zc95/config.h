@@ -7,9 +7,12 @@
 #define ZC624_ADDR                  0x10
 #define EXT_INPUT_PORT_EXP_ADDR     0x21 // 3x I/O lines on front panel accessory port (p0-02), 4x for trigger inputs (p4-p7), 1x N/C (p3)
 #define CONTROLS_PORT_EXP_ADDR      0x22 // 4x front panel buttons (p0-p03), 3x I/O lines on expansion header J17 (p4-p6), 1x LCD backlight (p7)
-#define FP_ANALOG_PORT_EXP_2_ADDR   0x26 // Port expander (U2) on the front panel
+#define FP_0_1_PORT_EXP_ADDR        0x26 // Port expander (U2) on v0.1 of the front panel
 #define AUDIO_DIGIPOT_ADDR          0x2C // Digital potentiometer used to set gain on audio board
-#define ADC_ADDR                    0x48 // ADC on front panel, used for power control dials
+#define FP_0_2_PORT_EXP_ADDR        0x38 // Address of port expander used on >= v0.2 of the front panel
+#define FP_0_2_BUTTON_LED_DRV_ADDR  0x41 // LED driver for the LED's in the buttons of the v0.2 front panel
+#define FP_0_1_ADC_ADDR             0x48 // ADC on v0.1 of front panel, used for power control dials
+#define FP_0_2_ADC_ADDR             0x49 // ADC on v0.2 of front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 
 
 

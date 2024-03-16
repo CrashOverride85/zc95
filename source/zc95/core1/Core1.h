@@ -39,6 +39,7 @@ class Core1
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);
         void soft_button_pushed(soft_button button, bool pushed);
+        void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
 
     private:
         void delete_fullChannelAsSimpleChannels_and_restore_channels();
