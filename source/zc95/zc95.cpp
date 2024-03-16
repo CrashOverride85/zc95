@@ -53,7 +53,7 @@
 
 #include "display/CDisplay.h"
 #include "display/CMainMenu.h"
-#include "display/CMenuApMode.h"
+#include "display/config/remote_access/CMenuApMode.h"
 
 #include "core1/Core1.h"
 #include "core1/Core1Messages.h"

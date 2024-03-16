@@ -1,13 +1,13 @@
 #ifndef _CMENUSETTINGBUTTONBRIGHTNESSS_H
 #define _CMENUSETTINGBUTTONBRIGHTNESSS_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "CHorzBarGraph.h"
-#include "../CSavedSettings.h"
-#include "../core1/output/COutputChannel.h"
-#include "../core1/routines/CRoutine.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../CHorzBarGraph.h"
+#include "../../../CSavedSettings.h"
+#include "../../../core1/output/COutputChannel.h"
+#include "../../../core1/routines/CRoutine.h"
 
 class CMenuSettingButtonBrightness : public CMenu
 {

@@ -1,11 +1,11 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
-#include "../CChannel_types.h"
-#include "../core1/output/COutputChannel.h"
-#include "../core1/routines/CRoutine.h"
-#include "../core1/CRoutineOutput.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
+#include "../../../CChannel_types.h"
+#include "../../../core1/output/COutputChannel.h"
+#include "../../../core1/routines/CRoutine.h"
+#include "../../../core1/CRoutineOutput.h"
 
 class CMenuChannelConfig : public CMenu
 {

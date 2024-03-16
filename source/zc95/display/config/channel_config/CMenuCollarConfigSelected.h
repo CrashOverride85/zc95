@@ -1,11 +1,11 @@
 #ifndef _CMENUSETTINGCOLLARCONFIGSELECTED_H
 #define _CMENUSETTINGCOLLARCONFIGSELECTED_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
-#include "../core1/CRoutineOutput.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
+#include "../../../core1/CRoutineOutput.h"
 
 class CMenuCollarConfigSelected : public CMenu
 {

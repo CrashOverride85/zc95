@@ -19,8 +19,8 @@
 #include "CMenuChannelConfig.h"
 
 
-#include "CMenuSettings.h"
-#include "../config.h"
+#include "../CMenuSettings.h"
+#include "../../../config.h"
 
 
 CMenuChannelConfig::CMenuChannelConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)

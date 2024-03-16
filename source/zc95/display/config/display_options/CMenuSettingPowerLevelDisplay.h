@@ -1,7 +1,7 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
 
 class CMenuSettingPowerLevelDisplay : public CMenu
 {

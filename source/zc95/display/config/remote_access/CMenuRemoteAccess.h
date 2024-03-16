@@ -1,11 +1,11 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
 #include "CMenuRemoteAccessConnectWifi.h"
-#include "../CSavedSettings.h"
-#include "../CAnalogueCapture.h"
-#include "../RemoteAccess/CWifi.h"
-#include "../core1/CRoutineOutput.h"
+#include "../../../CSavedSettings.h"
+#include "../../../CAnalogueCapture.h"
+#include "../../../RemoteAccess/CWifi.h"
+#include "../../../core1/CRoutineOutput.h"
 
 class CMenuRemoteAccess : public CMenu
 {

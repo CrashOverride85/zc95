@@ -1,10 +1,10 @@
 #ifndef _CMENUSETTINGPOWERSTEP_H
 #define _CMENUSETTINGPOWERSTEP_H
 
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "CHorzBarGraph.h"
+#include "../CMenu.h"
+#include "../CDisplay.h"
+#include "../COptionsList.h"
+#include "../CHorzBarGraph.h"
 #include "../CSavedSettings.h"
 #include "../core1/output/COutputChannel.h"
 #include "../core1/routines/CRoutine.h"

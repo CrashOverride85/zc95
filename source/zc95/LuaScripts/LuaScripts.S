@@ -1,6 +1,6 @@
 .section .rodata
 
-/* Allocate 5 x 24k empty blocks in flash to store 5 lua scripts in.
+/* Allocate 4 x 24k and 1 x 48k empty blocks in flash to store 5 lua scripts in.
  * As these sections are re-written during operation, things are much easier if the size is
  * a multiple of 4096 (flash page size)
  */

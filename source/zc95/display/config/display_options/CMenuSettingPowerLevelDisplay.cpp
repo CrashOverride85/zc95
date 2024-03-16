@@ -17,9 +17,9 @@
  */
 
 #include "CMenuSettingPowerLevelDisplay.h"
-#include "CMenuSettings.h"
-#include "../CDebugOutput.h"
-#include "../config.h"
+#include "../CMenuSettings.h"
+#include "../../../CDebugOutput.h"
+#include "../../../config.h"
 
 
 CMenuSettingPowerLevelDisplay::CMenuSettingPowerLevelDisplay(CDisplay* display, CSavedSettings *saved_settings)

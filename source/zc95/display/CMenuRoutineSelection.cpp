@@ -18,7 +18,7 @@
 
 #include "CMenuRoutineSelection.h"
 #include "CMenuRoutineAdjust.h"
-#include "CMenuSettings.h"
+#include "config/CMenuSettings.h"
 #include "../globals.h"
 #include "../core1/output/CFullChannelAsSimpleChannel.h"
 #include "../core1/CRoutineOutput.h"

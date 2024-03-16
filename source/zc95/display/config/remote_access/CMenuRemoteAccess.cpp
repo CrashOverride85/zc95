@@ -19,7 +19,7 @@
 #include "CMenuRemoteAccess.h"
 #include "CMenuRemoteAccessSerial.h"
 #include "CMenuApMode.h"
-#include "CDisplayMessage.h"
+#include "../../CDisplayMessage.h"
 #include "../CHwCheck.h"
 
 CMenuRemoteAccess::CMenuRemoteAccess(

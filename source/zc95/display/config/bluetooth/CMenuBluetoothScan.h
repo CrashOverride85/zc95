@@ -1,11 +1,11 @@
-#include "CMenu.h"
-#include "CDisplay.h"
-#include "COptionsList.h"
-#include "../CSavedSettings.h"
-#include "../CAnalogueCapture.h"
-#include "../Bluetooth/CBluetooth.h"
-#include "../RemoteAccess/CWifi.h"
-#include "../core1/CRoutineOutput.h"
+#include "../../CMenu.h"
+#include "../../CDisplay.h"
+#include "../../COptionsList.h"
+#include "../../../CSavedSettings.h"
+#include "../../../CAnalogueCapture.h"
+#include "../../../Bluetooth/CBluetooth.h"
+#include "../../../RemoteAccess/CWifi.h"
+#include "../../../core1/CRoutineOutput.h"
 
 class CMenuBluetoothScan : public CMenu
 {
