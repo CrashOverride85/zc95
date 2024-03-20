@@ -213,7 +213,7 @@ target_compile_definitions(zc95 PRIVATE
   HAGL_HAL_USE_DMA
   HAGL_HAL_DEBUG
   MIPI_DISPLAY_ST7735
-  PICO_STACK_SIZE=8192
+  PICO_STACK_SIZE=12288
   PICO_CORE1_STACK_SIZE=0 # stack is malloc'd
   PICO_USE_STACK_GUARDS   # would rather die instantly on stack overflow, than get weird, hard to debug, errors
   
