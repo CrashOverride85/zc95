@@ -17,6 +17,7 @@
  */
 
 #include "CDisplay.h"
+#include "icons.h"
 #include "pico/stdlib.h"
 #include <font6x9.h>
 #include <font5x7.h>
@@ -343,7 +344,7 @@ void CDisplay::draw_battery_icon(int16_t x, int16_t y)
     // Battery icon is split into three 8x9 (WxH) sections
     for (uint8_t sec = 0; sec < 3; sec++)
     {
-        draw_logo(_bat_logo[sec], x + (sec * 8), y-1, colour);
+        draw_logo(bat_logo[sec], x + (sec * 8), y-1, colour);
     }
 }
 
@@ -376,7 +377,7 @@ void CDisplay::draw_bt_logo_if_required(int16_t x, int16_t y)
             break;
     }
  
-    draw_logo(_bt_logo, x, y-1, colour);
+    draw_logo(bt_logo, x, y-1, colour);
 }
 
 void CDisplay::draw_power_level()

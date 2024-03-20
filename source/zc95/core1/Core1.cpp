@@ -27,7 +27,7 @@
  * For code that runs on core1
  */
 
-#define STACK_SIZE 4096
+#define STACK_SIZE 6144
 static Core1 *core1 = NULL;
 static uint32_t *_stack = NULL;
 
