@@ -13,20 +13,20 @@ CBluetooth::~CBluetooth()
     printf("~CBluetooth()\n");
 }
 
-void CBluetooth::pair(bd_addr_t address)
+void CBluetooth::pair(bd_addr_t address, CSavedSettings::bt_device_type_t device_type)
 {
     if (_state != state_t::PAIR)
     {
-        _cBluetoothPair.set_address(address);
+        _cBluetoothPair.set_address(address, device_type);
         set_state(state_t::PAIR);
     }
 }
 
-void CBluetooth::connect(bd_addr_t address)
+void CBluetooth::connect(bd_addr_t address, CSavedSettings::bt_device_type_t device_type)
 {
     if (_state != state_t::PAIR)
     {
-        _cBluetoothConnect.set_address(address);
+        _cBluetoothConnect.set_address(address, device_type);
         set_state(state_t::CONNECT);
     }
 }
@@ -91,6 +91,11 @@ void CBluetooth::set_state(state_t new_state)
 void CBluetooth::set_keypress_queue(queue_t *bt_keypress_queue)
 {
     _cBluetoothConnect.set_keypress_queue(bt_keypress_queue);
+}
+
+void CBluetooth::set_bt_raw_hid_queue(queue_t *bt_raw_hid_queue)
+{
+    _cBluetoothConnect.set_bt_raw_hid_queue(bt_raw_hid_queue);
 }
 
 CBluetooth::state_t CBluetooth::get_state()

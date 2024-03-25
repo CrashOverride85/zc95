@@ -9,6 +9,7 @@ CBluetoothConnect::CBluetoothConnect()
     _s_CBluetoothConnect = this;
     _state = bt_connect_state_t::STOPPED;
     _last_state_change = time_us_64();
+    _bt_raw_hid_queue = NULL;
 }
 
 CBluetoothConnect::~CBluetoothConnect()
@@ -20,6 +21,11 @@ CBluetoothConnect::~CBluetoothConnect()
 void CBluetoothConnect::set_keypress_queue(queue_t *bt_keypress_queue)
 {
     _bluetooth_remote.set_keypress_queue(bt_keypress_queue);
+}
+
+void CBluetoothConnect::set_bt_raw_hid_queue(queue_t *bt_raw_hid_queue)
+{
+    _bt_raw_hid_queue = bt_raw_hid_queue;
 }
 
 void CBluetoothConnect::start()
@@ -172,15 +178,31 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         btstack_hid_parser_get_field(&parser, &usage_page, &usage, &value);
 
       //  printf("usage_page = 0x%x, usage = 0x%x, value = %li\n", usage_page, usage, value);
-        _bluetooth_remote.process_input(usage_page, usage, value);
+        if (_bt_device_type == CSavedSettings::bt_device_type_t::HID)
+        {
+            // shutter remotes
+            _bluetooth_remote.process_input(usage_page, usage, value);
+        }
+        else
+        {
+            if (_bt_raw_hid_queue)
+            {
+                bt_raw_hid_queue_entry_t entry;
+                entry.usage_page = usage_page;
+                entry.usage = usage;
+                entry.value = value;
+                queue_try_add(_bt_raw_hid_queue, &entry);
+            }
+        }
     }
 
     /// printf("--------------------------------- \n");
 }
 
-void CBluetoothConnect::set_address(bd_addr_t address)
+void CBluetoothConnect::set_address(bd_addr_t address, CSavedSettings::bt_device_type_t type)
 {
     memcpy(_address, address, BD_ADDR_LEN);
+    _bt_device_type = type;
 }
 
 void CBluetoothConnect::get_address(bd_addr_t *address)

@@ -18,10 +18,15 @@ class CMenuBluetoothTest : public CMenu
         void show();
 
     private:
+        void draw_bt_remote();
+        void draw_bt_other();
+
         display_area _disp_area;
         queue_t _bt_keypress_queue = {0};
+        queue_t _bt_raw_hid_queue = {0};
         std::string _message;
         uint64_t _keypress_displayed_us;
+        CSavedSettings::bt_device_type_t _bt_device_type = CSavedSettings::bt_device_type_t::NOT_RECEIVED;
         
         CDisplay* _display;
         CBluetooth *_bluetooth;

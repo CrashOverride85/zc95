@@ -28,14 +28,19 @@ CMenuBluetoothTest::CMenuBluetoothTest(CDisplay* display, CBluetooth *bluetooth)
     _disp_area = _display->get_display_area();
 
     queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
+    queue_init(&_bt_raw_hid_queue , sizeof(CBluetoothConnect::bt_raw_hid_queue_entry_t), 5);
+
     _bluetooth->set_keypress_queue(&_bt_keypress_queue);
+    _bluetooth->set_bt_raw_hid_queue(&_bt_raw_hid_queue);
 }
 
 CMenuBluetoothTest::~CMenuBluetoothTest()
 {
     printf("~CMenuBluetoothTest()\n");
     _bluetooth->set_keypress_queue(NULL);
+    _bluetooth->set_bt_raw_hid_queue(NULL);
     queue_free(&_bt_keypress_queue);
+    queue_free(&_bt_raw_hid_queue);
 
     if (_submenu_active)
     {
@@ -80,6 +85,18 @@ void CMenuBluetoothTest::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuBluetoothTest::draw()
 {
+    _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();
+    _display->put_text(CBluetoothConnect::s_state_to_string(connect_state), _disp_area.x0, _disp_area.y0+8, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
+
+    if (_bt_device_type == CSavedSettings::bt_device_type_t::HID)
+        draw_bt_remote();
+    else
+        draw_bt_other();
+}
+
+void CMenuBluetoothTest::draw_bt_remote()
+{
     CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
     while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
     {
@@ -96,10 +113,26 @@ void CMenuBluetoothTest::draw()
 
     _display->put_text("Key:"  , _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)-10 , hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
     _display->put_text(_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)    , text_colour);
+}
 
-    _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-    CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();
-    _display->put_text(CBluetoothConnect::s_state_to_string(connect_state), _disp_area.x0, _disp_area.y0+8, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
+void CMenuBluetoothTest::draw_bt_other()
+{
+    CBluetoothConnect::bt_raw_hid_queue_entry_t queue_entry;
+    if (queue_try_remove(&_bt_raw_hid_queue, &queue_entry))
+    {
+        char msg_buffer[100] = {0};
+        snprintf(msg_buffer, sizeof(msg_buffer), 
+            "Usage page = 0x%X\n"
+            "Usage      = 0x%X\n"
+            "Value      = %lu\n",
+            queue_entry.usage_page,
+            queue_entry.usage,
+            queue_entry.value);
+        
+        _message = msg_buffer;
+    }
+
+    _display->put_text(_message, _disp_area.x0, _disp_area.y0+30, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
 }
 
 void CMenuBluetoothTest::show()
@@ -110,10 +143,10 @@ void CMenuBluetoothTest::show()
     _display->set_option_d("");
 
     bd_addr_t paired_addr = {0};
+    _bt_device_type = g_SavedSettings->get_paired_bt_type();
     g_SavedSettings->get_paired_bt_address(&paired_addr);
 
-    _bluetooth->connect(paired_addr);
+    _bluetooth->connect(paired_addr, _bt_device_type);
 
     _exit_menu = false;
 }
-

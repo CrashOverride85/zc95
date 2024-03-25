@@ -8,7 +8,7 @@
 
 #include "pico/cyw43_arch.h"
 #include "btstack.h"
-
+#include "CBluetoothScan.h"
 
 
 class CBluetoothPair
@@ -25,7 +25,7 @@ class CBluetoothPair
         CBluetoothPair();
         ~CBluetoothPair();
 
-        void set_address(bd_addr_t address);
+        void set_address(bd_addr_t address, CSavedSettings::bt_device_type_t device_type);
         void get_address(bd_addr_t *address);
         void start();
         void stop();
@@ -39,13 +39,7 @@ class CBluetoothPair
         btstack_packet_callback_registration_t _event_callback_registration;
         bt_pair_state_t _state = bt_pair_state_t::IDLE;
         bd_addr_t _address;
-       
-
-
-
-
-
-
+        CSavedSettings::bt_device_type_t _device_type;
 };
 
 #endif

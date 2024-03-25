@@ -77,12 +77,16 @@ void CBluetoothScan::packet_handler(uint8_t packet_type, uint16_t channel, uint8
 void CBluetoothScan::process_advertising_report(const uint8_t *adv_data, uint8_t adv_size, bd_addr_t address)
 {
     ad_context_t context;
+    bt_device_t scan_entry;
+    scan_entry.type = CSavedSettings::bt_device_type_t::NOT_RECEIVED;
+    bool got_entry = false;
+
     for (ad_iterator_init(&context, adv_size, (uint8_t *)adv_data); ad_iterator_has_more(&context); ad_iterator_next(&context))
     {
         uint8_t data_type    = ad_iterator_get_data_type(&context);
         uint8_t size         = ad_iterator_get_data_len(&context);
         const uint8_t *data  = ad_iterator_get_data(&context);
-        
+
         if (data_type == BLUETOOTH_DATA_TYPE_SHORTENED_LOCAL_NAME || data_type == BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME)
         {
             std::string name;
@@ -90,16 +94,82 @@ void CBluetoothScan::process_advertising_report(const uint8_t *adv_data, uint8_t
             
             if (!address_in_list(address))
             {
-                bt_device_t scan_entry;
                 memcpy(scan_entry.address, address, BD_ADDR_LEN);
                 scan_entry.name = name;
-                _devices_found.push_back(scan_entry);
-                printf("Name: %s\n", name.c_str());
+                got_entry = true;
             }
 
             break; 
         }
+
+        else if (data_type == BLUETOOTH_DATA_TYPE_APPEARANCE)
+        {
+            // All shutter remotes I've tested report this as 0x3C1, which is:
+            //  category     = 0x00F - HID
+            //  sub-category = 0x01  - Keyboard
+            uint16_t appearance = little_endian_read_16(data, 0);
+            uint16_t category = appearance >> 6;
+
+            switch(category)
+            {
+                case 0x000:
+                    scan_entry.type = CSavedSettings::bt_device_type_t::GENERIC;
+                    break;
+
+                case 0x00F:
+                    scan_entry.type = CSavedSettings::bt_device_type_t::HID;
+                    break;
+
+                case 0x015:
+                    scan_entry.type = CSavedSettings::bt_device_type_t::SENSOR;
+                    break;
+
+                default:
+                    scan_entry.type = CSavedSettings::bt_device_type_t::OTHER;
+                    printf("Unknown device type, appearance value = 0x%X\n", appearance);
+                    break;
+            }
+        }
     }
+
+    if (got_entry)
+    {
+        _devices_found.push_back(scan_entry);
+        printf("Name: %s (type = %s)\n", scan_entry.name.c_str(), s_get_bt_type_string(scan_entry.type).c_str());
+    }
+}
+
+std::string CBluetoothScan::s_get_bt_type_string(CSavedSettings::bt_device_type_t type)
+{
+    std::string type_string = "<UNKNOWN>";
+    switch(type)
+    {
+        case CSavedSettings::bt_device_type_t::GENERIC:
+            type_string = "GENERIC";
+            break;
+
+        case CSavedSettings::bt_device_type_t::HID:
+            type_string = "HID";
+            break;
+
+        case CSavedSettings::bt_device_type_t::SENSOR:
+            type_string = "SENSOR";
+            break;
+
+        case CSavedSettings::bt_device_type_t::OTHER:
+            type_string = "OTHER";
+            break;
+
+        case CSavedSettings::bt_device_type_t::NOT_RECEIVED:
+            type_string = "<NOT_RECEIVED>";
+            break;
+
+        default:
+            type_string = "?";
+            break;
+    }
+
+    return type_string;
 }
 
 bool CBluetoothScan::address_in_list(bd_addr_t address)
