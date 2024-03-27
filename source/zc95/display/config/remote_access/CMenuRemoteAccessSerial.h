@@ -2,6 +2,7 @@
 #include "../../CDisplay.h"
 #include "../../COptionsList.h"
 #include "../../../CSavedSettings.h"
+#include "../../../Bluetooth/CBluetooth.h"
 #include "../../../RemoteAccess/CWifi.h"
 #include "../../../RemoteAccess/CSerialConnection.h"
 #include "../../../core1/CRoutineOutput.h"
@@ -18,7 +19,8 @@ class CMenuRemoteAccessSerial : public CMenu
             CGetButtonState *buttons, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> *routines);
+            std::vector<CRoutines::Routine> *routines,
+            CBluetooth *bluetooth);
         ~CMenuRemoteAccessSerial();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -35,4 +37,7 @@ class CMenuRemoteAccessSerial : public CMenu
         CRoutineOutput *_routine_output;
         CSerialConnection *_serial_connection;
         std::vector<CRoutines::Routine> *_routines;
+        CBluetooth *_bluetooth;
+        bool _bt_enabled = false;
+        queue_t _bt_keypress_queue = {0};
 };

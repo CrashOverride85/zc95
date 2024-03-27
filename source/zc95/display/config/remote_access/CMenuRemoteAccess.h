@@ -6,6 +6,7 @@
 #include "../../../CAnalogueCapture.h"
 #include "../../../RemoteAccess/CWifi.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Bluetooth/CBluetooth.h"
 
 class CMenuRemoteAccess : public CMenu
 {
@@ -17,7 +18,8 @@ class CMenuRemoteAccess : public CMenu
             CWifi *wifi, 
             CAnalogueCapture *analogueCapture, 
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> *routines);
+            std::vector<CRoutines::Routine> *routines,
+            CBluetooth *bluetooth);
 
         ~CMenuRemoteAccess();
         void button_pressed(Button button);
@@ -63,4 +65,5 @@ class CMenuRemoteAccess : public CMenu
         CAnalogueCapture *_analogueCapture;
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> *_routines;
+        CBluetooth *_bluetooth;
 };

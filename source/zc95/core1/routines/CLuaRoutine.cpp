@@ -58,7 +58,6 @@ void CLuaRoutine::CLuaRoutine_common()
     _last_lua_error = "";
     _lua_state = NULL;
     _script_valid = ScriptValid::UNKNOWN;
-    queue_init(&_bt_raw_hid_queue , sizeof(CBluetoothConnect::bt_raw_hid_queue_entry_t), 5);
 
     _lua_state = luaL_newstate_ud(this);
     luaL_openlibs(_lua_state);
@@ -373,6 +372,10 @@ void CLuaRoutine::start()
     if (!runnable())
         return;
 
+    // purge incoming bluetooth HID event queue to remove any stale entries before starting routine
+    CBluetoothConnect::bt_raw_hid_queue_entry_t raw_hid_queue_entry;
+    while (queue_try_remove(&gBtRawHidQueue, &raw_hid_queue_entry));
+
     lua_getglobal(_lua_state, "Setup");
     if (lua_isfunction(_lua_state, -1))
     {
@@ -422,7 +425,7 @@ void CLuaRoutine::loop(uint64_t time_us)
     {
         // There must be a loop function, or the script isn't going to work
         printf("CLuaRoutine::loop(): No loop function in script!\n");
-        print(text_type_t::ERROR, "Script stopped... no loop function found in script!");
+        print(text_type_t::ERROR, "Script stopped... no Loop function found in script!");
         _script_valid = ScriptValid::INVALID;
         stop();
         return;
