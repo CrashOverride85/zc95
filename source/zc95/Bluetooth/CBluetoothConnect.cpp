@@ -1,5 +1,6 @@
 #include "CBluetoothConnect.h"
 #include "CBluetoothPairGatt.h"
+#include "../globals.h"
 #include "pico/async_context_poll.h"
 
 static CBluetoothConnect *_s_CBluetoothConnect;
@@ -9,7 +10,6 @@ CBluetoothConnect::CBluetoothConnect()
     _s_CBluetoothConnect = this;
     _state = bt_connect_state_t::STOPPED;
     _last_state_change = time_us_64();
-    _bt_raw_hid_queue = NULL;
 }
 
 CBluetoothConnect::~CBluetoothConnect()
@@ -21,11 +21,6 @@ CBluetoothConnect::~CBluetoothConnect()
 void CBluetoothConnect::set_keypress_queue(queue_t *bt_keypress_queue)
 {
     _bluetooth_remote.set_keypress_queue(bt_keypress_queue);
-}
-
-void CBluetoothConnect::set_bt_raw_hid_queue(queue_t *bt_raw_hid_queue)
-{
-    _bt_raw_hid_queue = bt_raw_hid_queue;
 }
 
 void CBluetoothConnect::start()
@@ -185,14 +180,11 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         }
         else
         {
-            if (_bt_raw_hid_queue)
-            {
-                bt_raw_hid_queue_entry_t entry;
-                entry.usage_page = usage_page;
-                entry.usage = usage;
-                entry.value = value;
-                queue_try_add(_bt_raw_hid_queue, &entry);
-            }
+            bt_raw_hid_queue_entry_t entry;
+            entry.usage_page = usage_page;
+            entry.usage = usage;
+            entry.value = value;
+            queue_try_add(&gBtRawHidQueue, &entry);
         }
     }
 

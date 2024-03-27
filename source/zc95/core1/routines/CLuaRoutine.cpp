@@ -58,6 +58,7 @@ void CLuaRoutine::CLuaRoutine_common()
     _last_lua_error = "";
     _lua_state = NULL;
     _script_valid = ScriptValid::UNKNOWN;
+    queue_init(&_bt_raw_hid_queue , sizeof(CBluetoothConnect::bt_raw_hid_queue_entry_t), 5);
 
     _lua_state = luaL_newstate_ud(this);
     luaL_openlibs(_lua_state);
@@ -383,6 +384,10 @@ void CLuaRoutine::start()
     {
         set_all_channels_power(POWER_FULL);
     }
+
+    lua_getglobal(_lua_state, "BluetoothHidEvent");
+    printf("Start: have BluetoothHidEvent() function\n");
+    _get_raw_bt_hid_events = lua_isfunction(_lua_state, -1);
 }
 
 void CLuaRoutine::loop(uint64_t time_us)
@@ -416,6 +421,24 @@ void CLuaRoutine::loop(uint64_t time_us)
         print(text_type_t::ERROR, "Script stopped... no loop function found in script!");
         _script_valid = ScriptValid::INVALID;
         stop();
+        return;
+    }
+
+    if (_get_raw_bt_hid_events)
+    {
+        uint8_t count = 0;
+        CBluetoothConnect::bt_raw_hid_queue_entry_t raw_hid_queue_entry;
+        while (queue_try_remove(&gBtRawHidQueue, &raw_hid_queue_entry) && count++ < 10)
+        {
+            lua_getglobal(_lua_state, "BluetoothHidEvent");
+            if (lua_isfunction(_lua_state, -1))
+            {
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.usage_page);
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.usage);
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.value);
+                pcall(3, 0, 0);
+            }
+        }
     }
 }
 

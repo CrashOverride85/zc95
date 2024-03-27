@@ -28,19 +28,14 @@ CMenuBluetoothTest::CMenuBluetoothTest(CDisplay* display, CBluetooth *bluetooth)
     _disp_area = _display->get_display_area();
 
     queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
-    queue_init(&_bt_raw_hid_queue , sizeof(CBluetoothConnect::bt_raw_hid_queue_entry_t), 5);
-
     _bluetooth->set_keypress_queue(&_bt_keypress_queue);
-    _bluetooth->set_bt_raw_hid_queue(&_bt_raw_hid_queue);
 }
 
 CMenuBluetoothTest::~CMenuBluetoothTest()
 {
     printf("~CMenuBluetoothTest()\n");
     _bluetooth->set_keypress_queue(NULL);
-    _bluetooth->set_bt_raw_hid_queue(NULL);
     queue_free(&_bt_keypress_queue);
-    queue_free(&_bt_raw_hid_queue);
 
     if (_submenu_active)
     {
@@ -118,7 +113,7 @@ void CMenuBluetoothTest::draw_bt_remote()
 void CMenuBluetoothTest::draw_bt_other()
 {
     CBluetoothConnect::bt_raw_hid_queue_entry_t queue_entry;
-    if (queue_try_remove(&_bt_raw_hid_queue, &queue_entry))
+    if (queue_try_remove(&gBtRawHidQueue, &queue_entry))
     {
         char msg_buffer[100] = {0};
         snprintf(msg_buffer, sizeof(msg_buffer), 

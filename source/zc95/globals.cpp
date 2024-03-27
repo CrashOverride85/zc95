@@ -12,6 +12,7 @@ bool gInteruptable;
 queue_t gPulseQueue[MAX_CHANNELS];
 
 queue_t gPatternTextOutputQueue;
+queue_t gBtRawHidQueue;
 
 bool gFatalError;
 std::string gErrorString;

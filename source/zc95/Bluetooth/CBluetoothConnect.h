@@ -44,7 +44,6 @@ class CBluetoothConnect
         bt_connect_state_t get_state();
         
         void set_keypress_queue(queue_t *bt_keypress_queue);
-        void set_bt_raw_hid_queue(queue_t *bt_raw_hid_queue);
 
         static void s_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
         static void s_loop(btstack_timer_source_t *ts);
@@ -69,7 +68,6 @@ class CBluetoothConnect
         uint16_t _hids_cid;
         btstack_timer_source_t _timer;
         CBluetoothRemote _bluetooth_remote;
-        queue_t *_bt_raw_hid_queue = NULL;
 };
 
 #endif

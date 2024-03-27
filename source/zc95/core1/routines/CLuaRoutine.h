@@ -74,4 +74,6 @@ class CLuaRoutine: public CRoutine
         std::string _last_lua_error;
         int _instruction_count = 0;
         const int _hook_call_frequency = 25;
+        bool _get_raw_bt_hid_events = false; // true if the routine has a BluetoothHidEvent function
+        queue_t _bt_raw_hid_queue = {0};
 };

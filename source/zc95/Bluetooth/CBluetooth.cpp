@@ -93,11 +93,6 @@ void CBluetooth::set_keypress_queue(queue_t *bt_keypress_queue)
     _cBluetoothConnect.set_keypress_queue(bt_keypress_queue);
 }
 
-void CBluetooth::set_bt_raw_hid_queue(queue_t *bt_raw_hid_queue)
-{
-    _cBluetoothConnect.set_bt_raw_hid_queue(bt_raw_hid_queue);
-}
-
 CBluetooth::state_t CBluetooth::get_state()
 {
     return _state;
