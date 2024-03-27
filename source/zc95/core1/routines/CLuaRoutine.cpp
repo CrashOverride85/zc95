@@ -385,9 +385,13 @@ void CLuaRoutine::start()
         set_all_channels_power(POWER_FULL);
     }
 
+    _get_raw_bt_hid_events = false;
     lua_getglobal(_lua_state, "BluetoothHidEvent");
-    printf("Start: have BluetoothHidEvent() function\n");
-    _get_raw_bt_hid_events = lua_isfunction(_lua_state, -1);
+    if (lua_isfunction(_lua_state, -1))
+    {
+        printf("Start: have BluetoothHidEvent() function\n");
+        _get_raw_bt_hid_events = true;
+    }
 }
 
 void CLuaRoutine::loop(uint64_t time_us)

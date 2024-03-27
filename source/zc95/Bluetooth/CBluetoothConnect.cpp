@@ -173,19 +173,15 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         btstack_hid_parser_get_field(&parser, &usage_page, &usage, &value);
 
       //  printf("usage_page = 0x%x, usage = 0x%x, value = %li\n", usage_page, usage, value);
-        if (_bt_device_type == CSavedSettings::bt_device_type_t::HID)
-        {
-            // shutter remotes
-            _bluetooth_remote.process_input(usage_page, usage, value);
-        }
-        else
-        {
-            bt_raw_hid_queue_entry_t entry;
-            entry.usage_page = usage_page;
-            entry.usage = usage;
-            entry.value = value;
-            queue_try_add(&gBtRawHidQueue, &entry);
-        }
+
+        // shutter remotes
+        _bluetooth_remote.process_input(usage_page, usage, value);
+
+        bt_raw_hid_queue_entry_t entry;
+        entry.usage_page = usage_page;
+        entry.usage = usage;
+        entry.value = value;
+        queue_try_add(&gBtRawHidQueue, &entry);
     }
 
     /// printf("--------------------------------- \n");

@@ -112,16 +112,8 @@ void CBluetoothScan::process_advertising_report(const uint8_t *adv_data, uint8_t
 
             switch(category)
             {
-                case 0x000:
-                    scan_entry.type = CSavedSettings::bt_device_type_t::GENERIC;
-                    break;
-
                 case 0x00F:
                     scan_entry.type = CSavedSettings::bt_device_type_t::HID;
-                    break;
-
-                case 0x015:
-                    scan_entry.type = CSavedSettings::bt_device_type_t::SENSOR;
                     break;
 
                 default:
@@ -144,16 +136,8 @@ std::string CBluetoothScan::s_get_bt_type_string(CSavedSettings::bt_device_type_
     std::string type_string = "<UNKNOWN>";
     switch(type)
     {
-        case CSavedSettings::bt_device_type_t::GENERIC:
-            type_string = "GENERIC";
-            break;
-
         case CSavedSettings::bt_device_type_t::HID:
             type_string = "HID";
-            break;
-
-        case CSavedSettings::bt_device_type_t::SENSOR:
-            type_string = "SENSOR";
             break;
 
         case CSavedSettings::bt_device_type_t::OTHER:

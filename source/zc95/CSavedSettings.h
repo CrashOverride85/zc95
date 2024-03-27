@@ -111,11 +111,9 @@ class CSavedSettings
 
         enum class bt_device_type_t
         {
-            HID          = 0, // bluetooth shutter remotes
+            HID          = 0, // hopefully a bluetooth shutter remote
             NOT_RECEIVED = 1, // not in advertising report
             OTHER        = 2, // in advertising report, but not handled
-            GENERIC      = 3, // custom bluetooth device handling
-            SENSOR       = 4  // currently unused, looks like a good one to use the future
         };
 
         CSavedSettings(CEeprom *eeprom);
