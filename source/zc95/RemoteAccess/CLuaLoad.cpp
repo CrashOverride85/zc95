@@ -139,8 +139,8 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     {
         if (_lua_buffer)
         {
-            printf("_lua_buffer_\n");
-            puts((char*)_lua_buffer);
+           // printf("_lua_buffer_\n");
+           // puts((char*)_lua_buffer);
 
             CLuaRoutine lua = CLuaRoutine((const char*)_lua_buffer);
             bool ret = lua.is_script_valid();

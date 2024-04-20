@@ -276,7 +276,7 @@ void CMessageProcessor::loop()
 void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    StaticJsonDocument<1000> response_message;
+    DynamicJsonDocument response_message(1000);
 
     response_message["Type"] = "LuaScripts";
     response_message["MsgId"] = msg_count;
@@ -317,7 +317,7 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
 void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    StaticJsonDocument<2000> response_message;
+    DynamicJsonDocument response_message(2000);
 
     response_message["Type"] = "PatternList";
     response_message["MsgId"] = msg_count;
@@ -355,7 +355,8 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
-    StaticJsonDocument<2500> response_message;
+    DynamicJsonDocument response_message(2500);
+
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
 
