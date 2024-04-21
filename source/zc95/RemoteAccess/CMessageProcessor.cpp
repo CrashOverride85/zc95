@@ -194,7 +194,7 @@ void CMessageProcessor::loop()
 {
     if (_pending_message)
     {
-        printf("CMessageProcessor::loop() processing pending message\n");
+        // printf("CMessageProcessor::loop() processing pending message\n");
 
         StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
         DeserializationError error = deserializeJson(doc, _pending_message_buffer);
