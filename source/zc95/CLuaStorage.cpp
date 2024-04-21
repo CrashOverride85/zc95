@@ -39,57 +39,65 @@ CLuaStorage::~CLuaStorage()
     printf("CLuaStorage::~CLuaStorage()\n");
 }
 
-// Store a script. If lua_script == NULL and buffer_size=0, any existing script at specified index is erased without writing anything new
-bool CLuaStorage::store_script(uint8_t index, const char* lua_script, size_t buffer_size)
+bool CLuaStorage::is_script_index_valid(uint8_t index)
 {
     if (index > lua_script_count())
     {
-        printf("CLuaStorage::store_script: ERROR - invalid index - %d\n", index);
+        printf("CLuaStorage::store_script_section: ERROR - invalid index - %d\n", index);
         return false;
     }
 
     if (!lua_scripts[index].writeable)
     {
-        printf("CLuaStorage::store_script: ERROR - script at index %d is not writeable\n", index);
+        printf("CLuaStorage::store_script_section: ERROR - script at index %d is not writeable\n", index);
         return false;
     }
 
-    uint32_t flash_offset = get_flash_offset(index);
-    size_t flash_size = get_lua_flash_size(index);
-    printf("CLuaStorage::store_script: index=%d, flash_offset=%lu, flash_size=%d\n", index, flash_offset, flash_size);
-    if (lua_script == NULL && buffer_size == 0)
-    {
-        printf("Erasing flash for index %d only\n", index);
-    }
+    return true;
+}
 
-    if (flash_size == 0)
+bool CLuaStorage::store_script_section(uint8_t script_index, uint8_t section, const char* lua_script_fragment, size_t buffer_size)
+{
+    if (!is_script_index_valid(script_index))
+        return false;
+
+    if (buffer_size != LUA_UPLOAD_BUFFER_SIZE)
     {
-        // Could do extra validation here. e.g. not too big, is a multiple of 4096, etc.
-        printf("CLuaStorage::store_script(): invalid flash size\n");
+        printf("CLuaStorage::store_script_section: ERROR - expecting buffer to be exactly %d bytes\n", LUA_UPLOAD_BUFFER_SIZE);
         return false;
     }
 
-    if 
-    (
-        buffer_size != flash_size &&
-        (!(buffer_size == 0 && lua_script == NULL))
-    )
+    uint32_t flash_offset = get_flash_offset(script_index);
+    size_t flash_size = get_lua_flash_size(script_index);
+
+    if (flash_size < buffer_size)
     {
-        printf("CLuaStorage::store_script(): ERROR - expected either buffer=0 and script=NULL, or buffer to be %d (but was %d)\n", flash_size, buffer_size);
+        printf("CLuaStorage::store_script_section(): invalid flash size\n");
         return false;
-    }    
+    }
+
+    uint32_t target_offset = flash_offset + (section * buffer_size);
+    if (target_offset+buffer_size > flash_offset + flash_size)
+    {
+        printf("CLuaStorage::store_script_section(): out of flash space in script slot. script_index=%d, flash_offset=%lu, flash_size=%d, target_offset=%lu, section=%d\n",
+            script_index, flash_offset, flash_size, target_offset, section);
+        return false;
+    }
+
+    printf("CLuaStorage::store_script_section(): script_index=%d, script {flash_offset=%lu, flash_size=%d}, section {target_offset=%lu, size=%d, section#=%d}\n",
+        script_index, flash_offset, flash_size, target_offset, buffer_size, section);
 
     flash_write_params_t flash_params = 
     {
-        .flash_offset = flash_offset,
-        .flash_size = flash_size,
+        .flash_offset = target_offset,
+        .flash_size = buffer_size,
         .buffer_size = buffer_size,
-        .lua_script = lua_script
+        .lua_script = lua_script_fragment
     };
 
     return (flash_safe_execute(CLuaStorage::s_do_flash_erase_and_write, &flash_params, UINT32_MAX) == PICO_OK);
 }
-    
+
 void CLuaStorage::s_do_flash_erase_and_write(void *param)
 {
     const flash_write_params_t *params = (const flash_write_params_t *)param;
@@ -102,7 +110,24 @@ void CLuaStorage::s_do_flash_erase_and_write(void *param)
 
 bool CLuaStorage::delete_script_at_index(uint8_t index)
 {
-    return store_script(index, NULL, 0);
+    if (!is_script_index_valid(index))
+        return false;
+
+    uint32_t flash_offset = get_flash_offset(index);
+    size_t flash_size = get_lua_flash_size(index);
+
+    if (flash_offset == 0 || flash_size == 0)
+        return false;
+
+    flash_write_params_t flash_params = 
+    {
+        .flash_offset = flash_offset,
+        .flash_size = flash_size,
+        .buffer_size = 0,
+        .lua_script = NULL
+    };
+
+    return (flash_safe_execute(CLuaStorage::s_do_flash_erase_and_write, &flash_params, UINT32_MAX) == PICO_OK);
 }
 
 uint32_t CLuaStorage::get_flash_offset(uint8_t script_index)

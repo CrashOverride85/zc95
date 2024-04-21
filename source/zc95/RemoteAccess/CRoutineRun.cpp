@@ -202,7 +202,7 @@ void CRoutineRun::send_lua_script_error_message()
 
 void CRoutineRun::send_power_status_update()
 {
-    StaticJsonDocument<1000> status_message;
+    DynamicJsonDocument status_message(1000);
 
     status_message["Type"] = "PowerStatus";
     status_message["MsgId"] = -1;
