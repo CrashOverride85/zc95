@@ -257,6 +257,9 @@ int main()
     // out over a websocket connection, if running via RemoteAccess
     queue_init(&gPatternTextOutputQueue, sizeof(pattern_text_output_t), PATTERN_TEXT_OUTPUT_QUEUE_LENGTH);
 
+    // Queue used to send bluetooth HID events to Lua scripts
+    queue_init(&gBtRawHidQueue , sizeof(CBluetoothConnect::bt_raw_hid_queue_entry_t), 15);
+
     // Load/set gain, mic preamp, etc., from eeprom
     audio.init(&settings, &display);
 

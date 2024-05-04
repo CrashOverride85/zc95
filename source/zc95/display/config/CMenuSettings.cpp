@@ -138,7 +138,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines));
+            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth));
             break;
 
         case setting_id::ABOUT:

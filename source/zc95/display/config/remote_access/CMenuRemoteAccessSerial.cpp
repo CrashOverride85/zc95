@@ -24,7 +24,8 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CGetButtonState *buttons,
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
-    std::vector<CRoutines::Routine> *routines)
+    std::vector<CRoutines::Routine> *routines,
+    CBluetooth *bluetooth)
 {
     printf("CMenuRemoteAccessSerial() \n");
     _display = display;
@@ -33,8 +34,16 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     _disp_area = _display->get_display_area();
     _exit_menu = false;
     _routine_output = routine_output;
+    _bluetooth = bluetooth;
+    
+    _bt_enabled = _saved_settings->get_bluethooth_enabled();
 
     _serial_connection = new CSerialConnection(AUX_PORT_UART, routine_output, routines);
+    if (_bt_enabled)
+    {
+        queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);
+        _bluetooth->set_keypress_queue(&_bt_keypress_queue);
+    }
 
     _routine_output->enable_remote_power_mode();
 }
@@ -42,6 +51,13 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
 CMenuRemoteAccessSerial::~CMenuRemoteAccessSerial()
 {
     printf("~CMenuRemoteAccessSerial()\n");
+
+    if (_bt_enabled)
+    {
+        _bluetooth->set_keypress_queue(NULL);
+        queue_free(&_bt_keypress_queue);
+        _bluetooth->set_state(CBluetooth::state_t::OFF);
+    }
 
     if (_serial_connection != NULL)
     {
@@ -92,11 +108,21 @@ void CMenuRemoteAccessSerial::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuRemoteAccessSerial::draw()
 {
-        int y = ((_disp_area.y1-_disp_area.y0)/2) - 20;
-        _display->put_text("Serial control mode"  , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-        y += 10;
+    int y = ((_disp_area.y1-_disp_area.y0)/2) - 20;
+    _display->put_text("Serial control mode"  , _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    y += 10;
 
-        _serial_connection->loop();
+    _serial_connection->loop();
+
+    // Process input from bluetooth remote, if enabled
+    if (_bt_enabled)
+    {
+        CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
+        while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
+        {
+            _routine_output->bluetooth_remote_passthrough(queue_entry.key);
+        }
+    }
 }
 
 void CMenuRemoteAccessSerial::show()
@@ -107,4 +133,12 @@ void CMenuRemoteAccessSerial::show()
     _display->set_option_d("");
 
     _exit_menu = false;
+
+    if (_bt_enabled)
+    {
+        bd_addr_t paired_addr = {0};
+        CSavedSettings::bt_device_type_t bt_type = _saved_settings->get_paired_bt_type();
+        _saved_settings->get_paired_bt_address(&paired_addr);
+        _bluetooth->connect(paired_addr, bt_type);
+    }
 }

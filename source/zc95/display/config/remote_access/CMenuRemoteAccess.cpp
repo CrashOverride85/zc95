@@ -29,7 +29,8 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     CWifi *wifi, 
     CAnalogueCapture *analogueCapture, 
     CRoutineOutput *routine_output,
-    std::vector<CRoutines::Routine> *routines)
+    std::vector<CRoutines::Routine> *routines,
+    CBluetooth *bluetooth)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
@@ -39,6 +40,7 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     _analogueCapture = analogueCapture;
     _routine_output = routine_output;
     _routines = routines;
+    _bluetooth = bluetooth;
 
     _exit_menu = false;
     _options_list = new COptionsList(display, display->get_display_area());
@@ -117,7 +119,7 @@ void CMenuRemoteAccess::show_selected_setting()
         case option_id::SERIAL_ACCESS:
             std::string config_error = get_serial_config_error();
             if (config_error == "")
-                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _routines));
+                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _routines, _bluetooth));
             else
                 set_active_menu(new CDisplayMessage(_display, _buttons, config_error));
             break;

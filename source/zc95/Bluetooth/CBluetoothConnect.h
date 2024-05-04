@@ -6,6 +6,7 @@
 #include <string>
 #include <inttypes.h>
 
+#include "../CSavedSettings.h"
 #include "CBluetoothRemote.h"
 
 #include "pico/util/queue.h"
@@ -24,13 +25,20 @@ class CBluetoothConnect
             DISCONNECTED
         };
 
+        struct bt_raw_hid_queue_entry_t
+        {
+            uint16_t usage_page;
+            uint16_t usage;
+            int32_t  value;
+        };
+
         CBluetoothConnect();
         ~CBluetoothConnect();
 
         void start();
         void stop();
         
-        void set_address(bd_addr_t address);
+        void set_address(bd_addr_t address, CSavedSettings::bt_device_type_t type);
         void get_address(bd_addr_t *address);
 
         bt_connect_state_t get_state();
@@ -51,6 +59,7 @@ class CBluetoothConnect
         const uint32_t _loop_time_ms = 200;
         btstack_packet_callback_registration_t _event_callback_registration;
         bd_addr_t _address;
+        CSavedSettings::bt_device_type_t _bt_device_type;
         bt_connect_state_t _state;
         uint64_t _last_state_change;
 

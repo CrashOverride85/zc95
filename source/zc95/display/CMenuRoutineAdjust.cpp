@@ -438,10 +438,10 @@ void CMenuRoutineAdjust::show()
     if (_bt_enabled)
     {
         bd_addr_t paired_addr = {0};
+        CSavedSettings::bt_device_type_t bt_type = _saved_settings->get_paired_bt_type();
         _saved_settings->get_paired_bt_address(&paired_addr);
-        _bluetooth->connect(paired_addr);
+        _bluetooth->connect(paired_addr, bt_type);
     }
-
 }
 
 void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour)

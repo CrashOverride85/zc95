@@ -340,7 +340,12 @@ Note that unlike `SoftButton` and `ExternalTrigger`, there is only a single even
 
 If `bluetooth_remote_passthrough = false` (or is absent), this function is never called, and key presses from a connected bluetooth remote are interpreted according to the configured mappings. E.g. if SHUTTER is mapped to "`Top left soft`", pressing the shutter button will cause `SoftButton(true)` immediately followed by `SoftButton(false)` to be called.
 
-### Setup
+### BluetoothHidEvent (usage_page, usage, value)
+Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project [HidExample](../misc/Bluetooth/HidExample/).
+
+When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particular familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
+
+### Setup()
 Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 
 
 ### Loop(time_ms)

@@ -449,6 +449,16 @@ void CSavedSettings::set_bt_keypress_action(CBluetoothRemote::keypress_t key, CB
     }
 }
 
+CSavedSettings::bt_device_type_t CSavedSettings::get_paired_bt_type()
+{
+    return (CSavedSettings::bt_device_type_t)_eeprom_contents[(uint8_t)setting::BtDeviceType];
+}
+
+void CSavedSettings::set_paired_bt_type(bt_device_type_t type)
+{
+    _eeprom_contents[(uint8_t)setting::BtDeviceType] = (uint8_t)type;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

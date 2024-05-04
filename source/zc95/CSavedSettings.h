@@ -61,8 +61,9 @@ class CSavedSettings
         BTLeftAction   = 209, // KEY_LEFT
         BTRightAction  = 210, // KEY_RIGHT
         BTShutterAction= 211, // KEY_SHUTTER
-        BTUnknownAction= 212  // KEY_UNKNOWN
-     // <next>         = 213
+        BTUnknownAction= 212, // KEY_UNKNOWN
+     //<next bt action>= 213,
+        BtDeviceType   = 220  // Bluetooth device type (HID, GENERIC, etc.)
     };
 
     public:
@@ -106,6 +107,13 @@ class CSavedSettings
             DISAPPEARING_TEXT  = 1,   // Show power level on change for a few moments
             IN_BAR_GRAPH       = 2,   // Always show power level as a number in the bar graph
             BOTH               = 3    // DISAPPEARING_TEXT & IN_BAR_GRAPH
+        };
+
+        enum class bt_device_type_t
+        {
+            HID          = 0, // hopefully a bluetooth shutter remote
+            NOT_RECEIVED = 1, // not in advertising report
+            OTHER        = 2, // in advertising report, but not handled
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -189,6 +197,10 @@ class CSavedSettings
         // Bluetooth remote button to action mappings
         CBluetoothRemote::keypress_action_t get_bt_keypress_action(CBluetoothRemote::keypress_t key);
         void set_bt_keypress_action(CBluetoothRemote::keypress_t key, CBluetoothRemote::keypress_action_t action);
+
+        // Paired bluetooth device type
+        bt_device_type_t get_paired_bt_type();
+        void set_paired_bt_type(bt_device_type_t type);
 
         void eeprom_initialise();
 
