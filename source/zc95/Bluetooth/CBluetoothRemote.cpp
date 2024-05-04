@@ -85,8 +85,7 @@ void CBluetoothRemote::process_input(uint16_t usage_page, uint16_t usage, int32_
             break;
 
         default:
-            printf("CBluetoothRemote::process_input(): Unexpected usage page: 0x%X (usage = %d, value = %ld)\n", 
-                usage_page, usage, value);
+            // printf("CBluetoothRemote::process_input(): Unexpected usage page: 0x%X (usage = %d, value = %ld)\n", usage_page, usage, value);
             break;
     }
 

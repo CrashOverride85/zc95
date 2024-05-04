@@ -1,5 +1,5 @@
 # Bluetooth support
-At present, the ZC95 has limited bluetooth support, which allows the use of small shutter remotes meant for phones. These can be used to either simulate keypresses / triggers, or passed through more directly to a Lua script to use.
+At present, the ZC95 has limited bluetooth support, which allows the use of small shutter remotes meant for phones, and custom Bluetooth (HID) devices. The remotes can be used to either simulate keypresses / triggers, or passed through more directly to a Lua script to use. Events from custom Bluetooth devices can only be used with Lua scripts.
 
 When bluetooth is active, a logo is displayed in the bottom right corner of the screen. White means trying to connect and blue connected. 
 
@@ -8,7 +8,7 @@ Note that most of these bluetooth remotes will disconnect after a few minutes of
 ## Limitations
 * Only supports (some) BLE remotes, not bluetooth classic. Other BLE device types may pair successfully, but are very unlikely to work
 * Does not work in Audio modes
-* Does not work if a pattern is being ran remotely
+* Does not work if a pattern is being ran remotely over WiFi (but does over serial)
 * Only one device can be paired at once
 
 ## Tested remotes
@@ -70,6 +70,12 @@ Each of the received key press types can be set to one of:
 
 
 **Note:** For Lua scripts with `bluetooth_remote_passthrough = true` in the `Config` section, these mappings have no effect.
+
+### Misc
+A fairly obvious pattern to use a bluetooth remote with is "Fire", however if using this you'll need to set its "Mode" option to "Pulse", as "Continuous" only works if the button is held down, which can't be detected from a bluetooth shutter button.
+
+## Custom Bluetooth devices
+The ZC95 can be used to connect to and receive events from custom bluetooth devices. For an example device than can be used to control the power level of the ZC95 over bluetooth, see [this example](../misc/Bluetooth/HidExample/).
 
 [r1]: images/bt_remotes/1.jpg "BT remote 1"
 [r2]: images/bt_remotes/2.jpg "BT remote 2"
