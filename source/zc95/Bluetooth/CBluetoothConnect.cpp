@@ -37,7 +37,7 @@ void CBluetoothConnect::start()
         sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
         gatt_client_set_required_security_level(LEVEL_2);
 
-        att_server_init(profile_data, NULL, NULL);
+        att_server_init(CBluetoothPairGatt_profile_data, NULL, NULL);
         gatt_client_init();
         hids_client_init(_hid_descriptor_storage, sizeof(_hid_descriptor_storage));
 

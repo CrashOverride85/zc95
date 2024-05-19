@@ -148,19 +148,21 @@ void CMenuRoutineSelection::show()
         else
             name = "(!)" + conf.name;
 
-        // Hide audio routines from menu if audio hardware not present. Show everything else.        
-        if (!is_audio_routine(conf))
+        if (!conf.hidden_from_menu)
         {
-            _routine_display_list->add_option(name, index);
-        }
-        else
-        {
-            if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
+            // Hide audio routines from menu if audio hardware not present. Show everything else.        
+            if (!is_audio_routine(conf))
             {
                 _routine_display_list->add_option(name, index);
             }
+            else
+            {
+                if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
+                {
+                    _routine_display_list->add_option(name, index);
+                }
+            }
         }
-
         index++;
         delete routine;
     }

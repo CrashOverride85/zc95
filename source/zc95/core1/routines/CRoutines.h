@@ -19,6 +19,7 @@
 #include "CAudioIntensity.h"
 #include "CAudioVirtual3.h"
 #include "CLuaRoutine.h"
+#include "CDirectPulse.h"
 #include "../../LuaScripts/LuaScripts.h"
 
 class CRoutines
@@ -32,6 +33,8 @@ class CRoutines
 
         static void get_routines(std::vector<Routine> *routines)
         {
+            routines->push_back({&(CDirectPulse::create)   , 0}); // TODO: move
+
             // Loop through and add all valid lua scripts
             for (uint8_t index = 0; index < lua_script_count(); index++)
             {
@@ -55,6 +58,7 @@ class CRoutines
             routines->push_back({&(CShockChoice::create)   , 0});
             routines->push_back({&(CCamTrigger::create)    , 0});
             routines->push_back({&(CBuzz::create)          , 0});
+//            routines->push_back({&(CDirectPulse::create)   , 0});
         }
 
     private:

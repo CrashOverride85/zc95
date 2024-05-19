@@ -42,7 +42,7 @@ void CBluetoothPair::start()
         sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
         gatt_client_set_required_security_level(LEVEL_2);
 
-        att_server_init(profile_data, NULL, NULL);
+        att_server_init(CBluetoothPairGatt_profile_data, NULL, NULL);
         gatt_client_init();
 
         _event_callback_registration.callback = &CBluetoothPair::s_packet_handler;

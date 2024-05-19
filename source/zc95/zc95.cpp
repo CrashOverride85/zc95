@@ -64,6 +64,7 @@
 
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
+#include "RemoteAccess/CBtGatt.h"
 
 #include "FrontPanel/CFrontPanelV01.h"
 #include "FrontPanel/CFrontPanelV02.h"
@@ -295,6 +296,13 @@ int main()
     port_expander.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
+
+
+    radio->bluetooth(true);
+    CBtGatt bt = CBtGatt(routine_output, &routines);
+    bt.init();
+    
+
 
     while (1) 
     {

@@ -99,6 +99,7 @@ struct routine_conf
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
     uint16_t loop_freq_hz = 0;
     bool bluetooth_remote_passthrough = false; // If true, pass bt remote keypresses (e.g. "KEY_LEFT") straight through, without mapping to an action
+    bool hidden_from_menu = false;
 };
 
 class CRoutine;

@@ -28,6 +28,14 @@ set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
+set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+
+add_custom_command(
+  OUTPUT RemoteAccess/GattProfile.h
+    DEPENDS RemoteAccess/GattProfile.gatt
+    COMMAND ${BTSTACK_ROOT}/tool/compile_gatt.py
+    ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.h
+)
 
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
@@ -96,6 +104,7 @@ add_executable(zc95
   core1/routines/CAudioIntensity.cpp
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
+  core1/routines/CDirectPulse.cpp
   
   display/CMenu.cpp
   display/CDisplay.cpp
@@ -156,7 +165,9 @@ add_executable(zc95
   RemoteAccess/CRoutineRun.cpp
   RemoteAccess/CMessageProcessor.cpp
   RemoteAccess/CSerialConnection.cpp
+  RemoteAccess/CBtGatt.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
+  RemoteAccess/GattProfile.h
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
