@@ -1,4 +1,5 @@
 #include "../globals.h"
+#include "../gDebugCounters.h"
 
 #include "CBtGatt.h"
 #include "GattProfile.h"
@@ -156,17 +157,24 @@ int CBtGatt::s_att_write_callback(hci_con_handle_t connection_handle, uint16_t a
 }
 
 // The fist byte of the message is the number of pulses it contains
-// There should then be that number of 13 bytes pulses
+// The second byte is an incrementing 8bit packet counter
+// There should then be the a series of 13 byte pulse messages (as specified in the first byte)
 void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size)
 {
-    static uint16_t packet_count = 0;
-    static uint64_t last_debug_msg = 0;
+    static uint64_t s_last_debug_msg = 0;
+    static uint32_t s_recv_packets = 0;
+    static uint32_t s_recv_messages = 0;
+    static uint8_t s_last_packet_count = 0;
+    const uint8_t header_size = 2; // pulse_count & packet_counter are always sent, followed by a variable (pulse_count) number of 13 bytes messages
 
     if (buffer_size == 0)
         return;
 
+    s_recv_packets++;
+
     uint8_t pulse_count = buffer[0];
-    uint16_t expected_buffer_size = (sizeof(ble_message_pulse_t) * pulse_count) + 1;
+    uint8_t packet_counter = buffer[1];
+    uint16_t expected_buffer_size = (sizeof(ble_message_pulse_t) * pulse_count) + header_size;
 
     if (buffer_size != expected_buffer_size)
     {
@@ -174,67 +182,104 @@ void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size
             buffer_size, expected_buffer_size, pulse_count);
         return;
     }
-/*        
-    packet_count++;
-    if (time_us_64() - last_debug_msg > 1000 * 1000)
+
+    // Keep track of missed packets, assumes that the packet_counter being sent is incremented by 1 
+    // for each packet, wrapping around to zero after 255. Being careful to to stick to uint8_t 
+    // types when calculating so warp around works as desired.
+    uint8_t expected_packet_count = s_last_packet_count + 1;
+    uint8_t missed_packets = packet_counter - expected_packet_count;
+    _dbg_missing_packet_counter += missed_packets;
+    s_last_packet_count = packet_counter;
+       
+    if (time_us_64() - s_last_debug_msg > 1000 * 1000)
     {
-        printf("pck=%d, ms=%llu\n", packet_count, (time_us_64() - last_debug_msg) / 1000);
-        last_debug_msg = time_us_64();
-        packet_count = 0;
+        printf("Packet count: %lu, Message count: %lu, Missing packets: %lu, fifo full: %lu, msg_old: %lu, msg_past: %lu, msg_future: %lu\n", 
+            s_recv_packets,
+            s_recv_messages,
+            _dbg_missing_packet_counter,
+            _dbg_fifo_full_counter, 
+            debug_counters_get(dbg_counter_t::DBG_COUNTER_MSG_OLD),
+            debug_counters_get(dbg_counter_t::DBG_COUNTER_MSG_PAST),
+            debug_counters_get(dbg_counter_t::DBG_COUNTER_MSG_FUTURE)
+        );
+        debug_counters_reset();
+
+        s_last_debug_msg = time_us_64();
+        _dbg_missing_packet_counter = 0;
+        _dbg_fifo_full_counter = 0;
+        s_recv_packets = 0;
+        s_recv_messages = 0;
     }
-*/
+
     for (uint8_t pulse_index = 0; pulse_index < pulse_count; pulse_index++)
     {
-        ble_message_pulse_t *msg = (ble_message_pulse_t*)(buffer + 1 + (pulse_index * sizeof(ble_message_pulse_t)));
-        /*
-        printf("cmd_type         = %d\n"  , msg->cmd_type);
-        printf("pulse_width      = %d\n"  , msg->pulse_width);
-        printf("amplitude        = %d\n"  , msg->amplitude);
-        printf("time_us          = %llu\n", msg->time_us);
-        printf("channel_polarity = %d\n"  , msg->channel_polarity);
-        */
+        s_recv_messages++;
+        ble_message_pulse_t *msg = (ble_message_pulse_t*)(buffer + header_size + (pulse_index * sizeof(ble_message_pulse_t)));
 
         switch(msg->cmd_type)
         {
             case BLE_MSG_PULSE_RESET:
                 printf("process_pulse_stream_message: START\n");
                 _start_time_us = time_us_64();
+                _dbg_missing_packet_counter = 0;
+                _dbg_fifo_full_counter = 0;
+                s_last_packet_count = packet_counter;
                 break;
             
             case BLE_MSG_PULSE_PULSE:
                 {
+                    if ((msg->time_us + _start_time_us) < time_us_64())
+                    {
+                        // Discard pulse messages where the time is in the past
+                        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_PAST);
+                        continue;
+                    }
+
+                    if (msg->amplitude > 1000)
+                    {
+                        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_INVALID);
+                        continue;
+                    }
+
                     for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
                     {
                         pulse_message_t pulse_msg = {0};
+                        pulse_msg.power_level = msg->amplitude;
+
                         uint8_t chan_opt = pulse_message_for_channel(chan, msg->channel_polarity);
                         if (chan_opt)
                         {
-                            if (chan_opt == 0x01 || chan_opt == 0x03)
+                            if (chan_opt & 0x01)
                             {
                                 pulse_msg.pos_pulse_us = msg->pulse_width;
                             }
                             
-                            if (chan_opt == 0x02 || chan_opt == 0x03)
+                            if (chan_opt & 0x02)
                             {
                                 pulse_msg.neg_pulse_us = msg->pulse_width;
                             }
                             
                             pulse_msg.abs_time_us = msg->time_us + _start_time_us;
-                            
                             if (!queue_try_add(&gPulseQueue[chan], &pulse_msg))
                             {
-                                printf("gPulseQueue FIFO was full for chan %d\n", chan);
+                                _dbg_fifo_full_counter++;
                             }
                         }
                     }
-                }
+                } // end of BLE_MSG_PULSE_PULSE
                 break;
         }
     }
 
     return;
 }
+
 // Channel 0-3
+// When given the channel_polarity section of a message and requested channel number, return channel options:
+//  0 = no pulse
+//  1 = positive pulse only
+//  2 = negative pulse only
+//  3 = both
 uint8_t CBtGatt::pulse_message_for_channel(uint8_t channel, uint8_t channel_polarity)
 {
     uint8_t chan_conf = channel_polarity >> (channel * 2);

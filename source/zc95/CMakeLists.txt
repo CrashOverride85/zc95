@@ -56,6 +56,7 @@ add_executable(zc95
   CUtil.cpp
   FlashHelper.cpp
   globals.cpp
+  gDebugCounters.cpp
   i2c_scan.cpp
   zc95.cpp
 

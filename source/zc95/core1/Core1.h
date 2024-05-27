@@ -48,6 +48,7 @@ class Core1
         void update_power_levels();
         void set_output_chanels_to_off(bool enable_channel_isolation);
         void process_audio_pulse_queue();
+        void process_audio_pulse_queue2();
         void check_validity_of_lua_script();
         static void __not_in_flash_func(core1_suspend)(void);
 

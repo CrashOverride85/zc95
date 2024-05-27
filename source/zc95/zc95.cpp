@@ -22,6 +22,7 @@
 #include <inttypes.h>
 
 #include "globals.h"
+#include "gDebugCounters.h"
 #include "config.h"
 #include "git_version.h"
 
@@ -174,6 +175,7 @@ int main()
     printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
 
     mutex_init(&gI2cMutex);
+    debug_counters_init();
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -335,7 +337,7 @@ int main()
 
             uint64_t timenow = time_us_64();
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();
-            printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, batt_percentage);
+            // printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, batt_percentage);
             display.set_battery_percentage(batt_percentage);
         }
         else

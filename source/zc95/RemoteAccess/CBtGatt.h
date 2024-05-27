@@ -36,6 +36,10 @@ class CBtGatt
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> *_routines;
         uint64_t _start_time_us = 0;
+
+        // debug counters
+        uint32_t _dbg_missing_packet_counter = 0;
+        uint32_t _dbg_fifo_full_counter = 0;
 };
 
 #endif

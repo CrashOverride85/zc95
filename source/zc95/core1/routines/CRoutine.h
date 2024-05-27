@@ -128,7 +128,7 @@ class CRoutine
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
         virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
-        virtual void pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
+        virtual void pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
 
         virtual lua_script_state_t lua_script_state()
         {
