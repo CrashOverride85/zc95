@@ -20,7 +20,7 @@
 
 #define CHANNEL_COUNT 4
 
-/* Process pulses being sent to us remotely 
+/* Process pulses or freq/pulse width requests being sent to us remotely.
  * This isn't displayed on the menu, but is started when in certain remote access modes
  */
 
@@ -28,6 +28,12 @@
 CDirectPulse::CDirectPulse(uint8_t param)
 {
     printf("CDirectPulse()\n");
+
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        _chan_pos_pulse_width[chan] = DEFAULT_PULSE_WIDTH;
+        _chan_neg_pulse_width[chan] = DEFAULT_PULSE_WIDTH;
+    }
 }
 
 CDirectPulse::~CDirectPulse()
@@ -37,31 +43,85 @@ CDirectPulse::~CDirectPulse()
 
 void CDirectPulse::config(struct routine_conf *conf)
 {
-    conf->name = "DirectPulse";
+    conf->name = "DirectControl";
 
     // Want 4x full channels
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
     conf->outputs.push_back(output_type::FULL);
-/*
-    struct menu_entry menu_chan[MAX_CHANNELS] = {0};
 
+    // menu_id's 0-3 are for channel 0-3 power
+    struct menu_entry menu_chan_power[MAX_CHANNELS] = {0};
     for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
     {
-        menu_chan[chan].id = chan;
-        menu_chan[chan].title = "Chan " + std::to_string(chan+1) + " power";
-        menu_chan[chan].menu_type = menu_entry_type::MIN_MAX;
-        menu_chan[chan].minmax.UoM = "";
-        menu_chan[chan].minmax.increment_step = 1;
-        menu_chan[chan].minmax.min = 0;
-        menu_chan[chan].minmax.max = 1000;
-        menu_chan[chan].minmax.current_value = 0;
-        conf->menu.push_back(menu_chan[chan]);
+        menu_chan_power[chan].id = chan;
+        menu_chan_power[chan].title = "Chan " + std::to_string(chan+1) + " power";
+        menu_chan_power[chan].menu_type = menu_entry_type::MIN_MAX;
+        menu_chan_power[chan].minmax.UoM = "";
+        menu_chan_power[chan].minmax.increment_step = 1;
+        menu_chan_power[chan].minmax.min = 0;
+        menu_chan_power[chan].minmax.max = 1000;
+        menu_chan_power[chan].minmax.current_value = 0;
+        conf->menu.push_back(menu_chan_power[chan]);
     }
-*/
+
+    // menu_id's 10-13 are for channel 0-3 positive pulse width
+    struct menu_entry menu_chan_pos_pulse_width[MAX_CHANNELS] = {0};
+    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        menu_chan_pos_pulse_width[chan].id = chan+10;
+        menu_chan_pos_pulse_width[chan].title = "Chan " + std::to_string(chan+1) + " +pulse wid";
+        menu_chan_pos_pulse_width[chan].menu_type = menu_entry_type::MIN_MAX;
+        menu_chan_pos_pulse_width[chan].minmax.UoM = "us";
+        menu_chan_pos_pulse_width[chan].minmax.increment_step = 1;
+        menu_chan_pos_pulse_width[chan].minmax.min = 0;
+        menu_chan_pos_pulse_width[chan].minmax.max = 255;
+        menu_chan_pos_pulse_width[chan].minmax.current_value = DEFAULT_PULSE_WIDTH;
+        conf->menu.push_back(menu_chan_pos_pulse_width[chan]);
+    }
+
+    // menu_id's 20-23 are for channel 0-3 negative pulse width
+    struct menu_entry menu_chan_neg_width[MAX_CHANNELS] = {0};
+    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        menu_chan_neg_width[chan].id = chan+20;
+        menu_chan_neg_width[chan].title = "Chan " + std::to_string(chan+1) + " -pulse wid";
+        menu_chan_neg_width[chan].menu_type = menu_entry_type::MIN_MAX;
+        menu_chan_neg_width[chan].minmax.UoM = "us";
+        menu_chan_neg_width[chan].minmax.increment_step = 1;
+        menu_chan_neg_width[chan].minmax.min = 0;
+        menu_chan_neg_width[chan].minmax.max = 255;
+        menu_chan_neg_width[chan].minmax.current_value = DEFAULT_PULSE_WIDTH;
+        conf->menu.push_back(menu_chan_neg_width[chan]);
+    }
+
+    // menu_id's 30-33 are for channel 0-3 frequency (hz)
+    struct menu_entry menu_chan_freq[MAX_CHANNELS] = {0};
+    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        menu_chan_freq[chan].id = chan+30;
+        menu_chan_freq[chan].title = "Chan " + std::to_string(chan+1) + " freq";
+        menu_chan_freq[chan].menu_type = menu_entry_type::MIN_MAX;
+        menu_chan_freq[chan].minmax.UoM = "hz";
+        menu_chan_freq[chan].minmax.increment_step = 1;
+        menu_chan_freq[chan].minmax.min = 5;
+        menu_chan_freq[chan].minmax.max = 250;
+        menu_chan_freq[chan].minmax.current_value = DEFAULT_FREQ_HZ;
+        conf->menu.push_back(menu_chan_freq[chan]);
+    }
+
+    struct menu_entry menu_chan_iso = new_menu_entry();
+    menu_chan_iso.id = 100;
+    menu_chan_iso.title = "Chan isolation";
+    menu_chan_iso.menu_type = menu_entry_type::MULTI_CHOICE;
+    menu_chan_iso.multichoice.current_selection = 1;
+    menu_chan_iso.multichoice.choices.push_back(get_choice("On", 1));
+    menu_chan_iso.multichoice.choices.push_back(get_choice("Off", 0));
+    conf->menu.push_back(menu_chan_iso);
+
     conf->audio_processing_mode = audio_mode_t::OFF;
-    conf->enable_channel_isolation = false;
+    conf->force_channel_isolation = false;
     conf->hidden_from_menu = true;
 }
 
@@ -70,26 +130,75 @@ void CDirectPulse::get_config(struct routine_conf *conf)
    CDirectPulse::config(conf);
 }
 
-
 void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
-/*
-    if (menu_id >= MAX_CHANNELS)
-        return;
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        // power level
+        if (menu_id == chan)
+        {
+            if (new_value < 0 || new_value > 1000)
+                return;
 
-    if (new_value < 0)
-        new_value = 0;
+            full_channel_set_power(menu_id, new_value);
 
-    if (new_value > 1000)
-        new_value = 1000;
+            if (new_value == 0)
+                full_channel_off(chan);
+            else if (new_value > 0 && _chan_last_power_level[chan] == 0)
+                full_channel_on(chan);
 
-    full_channel_set_power(menu_id, new_value);
-    */
+            _chan_last_power_level[chan] = new_value;
+
+            return;
+        }
+
+        // positive pulse width
+        else if (menu_id == chan+10)
+        {
+            if (new_value < 0 || new_value > 255)
+                return;
+            
+            _chan_pos_pulse_width[chan] = new_value;
+
+            full_channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
+            return;
+        }
+
+        // negative pulse width
+        else if (menu_id == chan+20)
+        {
+            if (new_value < 0 || new_value > 255)
+                return;
+            
+            _chan_neg_pulse_width[chan] = new_value;
+
+            full_channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
+            return;
+        }
+
+        // frequency
+        else if (menu_id == chan+30)
+        {
+            if (new_value < 1 || new_value > 255)
+                return;
+            
+            full_channel_set_freq(chan, new_value);
+            return;
+        }
+    }
 }
 
 void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
-{    
-
+{
+    printf("chan iso change\n");
+    // Channel isolation
+    if (menu_id == 100)
+    {
+        if (choice_id == 0)
+            set_channel_isolation(false);
+        else
+            set_channel_isolation(true);
+    }
 }
 
 void CDirectPulse::soft_button_pushed (soft_button button, bool pushed)
@@ -119,11 +228,13 @@ void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t 
 
 void CDirectPulse::start()
 {
-    set_all_channels_power(0);
+    set_all_channels_power(100);
     for (uint8_t chan=0; chan < MAX_CHANNELS; chan++)
     {
-        _chan_last_power_level[chan] = 0;
+        _chan_last_power_level[chan] = 100;
     }
+
+    full_channel_on(0);
 }
 
 void CDirectPulse::loop(uint64_t time_us)

@@ -141,9 +141,9 @@ void CMenuRoutineSelection::show()
         CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
-        // Add a warning for routines that disable channel isolation
+        // Add a warning for routines that are able to disable channel isolation
         std::string name;
-        if (conf.enable_channel_isolation)
+        if (conf.force_channel_isolation)
             name = conf.name;
         else
             name = "(!)" + conf.name;

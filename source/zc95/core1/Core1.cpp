@@ -534,7 +534,7 @@ void Core1::activate_routine(uint8_t routine_id)
     routine_conf conf;
     _active_routine->get_config(&conf);
 
-    // Loop through all the channels the routine has requsted
+    // Loop through all the channels the routine has requested
     uint8_t channel = 0;
     for (std::vector<output_type>::iterator it = conf.outputs.begin(); it != conf.outputs.end(); it++)
     {
@@ -569,7 +569,6 @@ void Core1::activate_routine(uint8_t routine_id)
                 if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
                 {
                     _active_routine->set_full_output_channel(channel, (CFullOutputChannel *)_active_channels[channel]);
-                    ((CFullOutputChannel *)_active_channels[channel])->set_channel_isolation(conf.enable_channel_isolation);
                 }
                 else
                 {
@@ -596,6 +595,7 @@ void Core1::stop_routine()
     // Stop & delete currently running routine, if any
     if (_active_routine != NULL)
     {
+        printf("Stop routine\n");
         (_active_routine)->stop();
         delete _active_routine;
         _active_routine = NULL;

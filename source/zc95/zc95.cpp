@@ -301,13 +301,14 @@ int main()
 
 
     radio->bluetooth(true);
-    CBtGatt bt = CBtGatt(routine_output, &routines);
-    bt.init();
+    CBtGatt bt = CBtGatt(routine_output, routines);
+    bt.init(batteryGauge.get_battery_percentage());
     
 
 
     while (1) 
     {
+        bt.loop();
         uint64_t loop_start = time_us_64();
         radio->loop();
         wifi->loop();
@@ -339,6 +340,7 @@ int main()
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();
             // printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, batt_percentage);
             display.set_battery_percentage(batt_percentage);
+            bt.set_battery_percentage(batt_percentage);
         }
         else
         {

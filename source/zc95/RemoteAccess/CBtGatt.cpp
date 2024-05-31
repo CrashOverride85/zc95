@@ -1,9 +1,9 @@
 #include "../globals.h"
 #include "../gDebugCounters.h"
+#include "../git_version.h"
 
 #include "CBtGatt.h"
 #include "GattProfile.h"
-#include "ble_message.h"
 
 #include "pico/util/queue.h"
 
@@ -19,26 +19,33 @@ static const uint8_t _adv_data[] =
    
     // Pulse stream service 
     17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9a, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac,
+
+    // General control service
+ //   17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9b, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac, 
      
      // Battery service
      3, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE & 0xff, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE >> 8, 
 };
 static const uint8_t _adv_data_len = sizeof(_adv_data);
 
-CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines)
 {
     _s_CBtGatt = this;
     _routine_output = routine_output;
     _routines = routines;
+    _routine_running = false;
+
+    // get routine config
+    _routine_id = find_routine_by_name_and_set_config("DirectControl"); // populates _routine_conf
 }
 
 CBtGatt::~CBtGatt()
 {
     _s_CBtGatt = NULL;
-    _routine_output->stop_routine();
+    routine_run(false);
 }
 
-void CBtGatt::init()
+void CBtGatt::init(uint8_t bat_level_pc)
 {
     l2cap_init();
     sm_init();
@@ -47,9 +54,8 @@ void CBtGatt::init()
     att_server_init(profile_data, CBtGatt::s_att_read_callback, CBtGatt::s_att_write_callback);    
 
     // setup battery service
-    battery_service_server_init(25); // TODO: supply bat %
-
-    // need to call battery_service_server_set_battery_value()
+    battery_service_server_init(bat_level_pc);
+    _battery_percentage = bat_level_pc;
 
     // setup advertisements
     uint16_t adv_int_min = 0x0300;
@@ -69,9 +75,29 @@ void CBtGatt::init()
     att_server_register_packet_handler(CBtGatt::s_packet_handler);
 
     hci_power_control(HCI_POWER_ON);
+}
 
-    _routine_output->activate_routine(find_routine_by_name("DirectPulse"));
+void CBtGatt::loop()
+{
+    if (time_us_64() - _last_power_status_update_us > (250 * 1000)) // at most every 250ms
+    {
+        bool update_required = false;
+        for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+        {
+            if (_routine_output->get_front_pannel_power(channel) != _channel_power_change[channel].power_level)
+            {
+                _channel_power_change[channel].power_level = _routine_output->get_front_pannel_power(channel);
+                _channel_power_change[channel].notification_pending = true;
+                update_required = true;
+            }
+        }
 
+        if (update_required)
+        {
+            att_server_request_can_send_now_event(_bt_connection_handle);
+            _last_power_status_update_us = time_us_64();
+        }
+    }
 }
 
 void CBtGatt::s_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
@@ -82,38 +108,128 @@ void CBtGatt::s_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
 void CBtGatt::packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
-    hci_con_handle_t con_handle;
     if (packet_type != HCI_EVENT_PACKET) return;
 
     switch (hci_event_packet_get_type(packet)) 
     {
+        case ATT_EVENT_CONNECTED:
+            printf("ATT Connected\n");
+            _bt_connection_handle = att_event_connected_get_handle(packet);
+            routine_run(true);
+            break;
+
+        case ATT_EVENT_DISCONNECTED:
+            printf("ATT disconnect\n");
+            disconnected();
+            break;
+
+        case HCI_EVENT_DISCONNECTION_COMPLETE:
+            printf("HCI disconnect\n");
+            disconnected();
+            break;
+
         case HCI_EVENT_META_GAP:
             printf("HCI_EVENT_META_GAP\n");
+            break;
 
         case HCI_EVENT_LE_META:
-            {
-                printf("HCI_EVENT_LE_META\n");
+            printf("HCI_EVENT_LE_META\n");
+            break;
 
-                
-            }
+        case ATT_EVENT_CAN_SEND_NOW:
+            send_notifications();
             break;
     }
+}
 
+void CBtGatt::disconnected()
+{
+    for(uint8_t c = 0; c < MAX_CHANNELS; c++)
+    {
+        _channel_power_change[c].notifications_enabled = false;
+        _channel_power_change[c].notification_pending = false;
+    }
+    _bt_connection_handle = HCI_CON_HANDLE_INVALID;
+    routine_run(false);
+}
+
+// If the front panel power level dials have changed, and notifications have been requested for power level changes,
+// send that notification
+void CBtGatt::send_notifications()
+{
+    if (_bt_connection_handle == HCI_CON_HANDLE_INVALID)
+        return;
+
+    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        uint16_t attribute_handle = 0;
+        if (_channel_power_change[chan].notification_pending && _channel_power_change[chan].notifications_enabled)
+        {
+            switch(chan)
+            {
+                case 0:
+                    attribute_handle = ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B01_01_VALUE_HANDLE;
+                    break;
+
+                case 1:
+                    attribute_handle = ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B02_01_VALUE_HANDLE;
+                    break;
+
+                case 2:
+                    attribute_handle = ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B03_01_VALUE_HANDLE;
+                    break;
+
+                case 3:
+                    attribute_handle = ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B04_01_VALUE_HANDLE;
+                    break;
+                
+                default:
+                    return;
+            }
+
+            printf("Send notification for chan %d power level change\n", chan+1);
+            att_server_notify(_bt_connection_handle, attribute_handle, (uint8_t*)(&_channel_power_change[chan].power_level), 2);
+            _channel_power_change[chan].notification_pending = false;
+        }
+    }
 }
 
 uint16_t CBtGatt::s_att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t * buffer, uint16_t buffer_size)
 {
-    /*
-    if (att_handle == ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_VALUE_HANDLE)
-    {
-        return att_read_callback_handle_blob((const uint8_t *)counter_string, counter_string_len, offset, buffer, buffer_size);
-    }
-    return 0;
-    */
-   return 0;
+    if (_s_CBtGatt == NULL)
+        return 0;
+
+    return _s_CBtGatt->att_read_callback(connection_handle, att_handle, offset, buffer, buffer_size);
 }
 
+uint16_t CBtGatt::att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t * buffer, uint16_t buffer_size)
+{   
+    switch (att_handle)
+    {
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B01_01_VALUE_HANDLE: // Front panel power setting, channel 1
+            return att_read_callback_handle_blob((uint8_t*)(&_channel_power_change[0].power_level), 2, offset, buffer, buffer_size);
 
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B02_01_VALUE_HANDLE: // Front panel power setting, channel 2
+            return att_read_callback_handle_blob((uint8_t*)(&_channel_power_change[1].power_level), 2, offset, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B03_01_VALUE_HANDLE: // Front panel power setting, channel 3
+            return att_read_callback_handle_blob((uint8_t*)(&_channel_power_change[2].power_level), 2, offset, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B04_01_VALUE_HANDLE: // Front panel power setting, channel 4
+            return att_read_callback_handle_blob((uint8_t*)(&_channel_power_change[3].power_level), 2, offset, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9A02_01_VALUE_HANDLE: // Channel isolation - allow disable (read only)
+            return att_read_callback_handle_blob(allow_channel_isolation_disable(), 1, offset, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9A03_01_VALUE_HANDLE: // Channel isolation - current setting (read/write)
+            return att_read_callback_handle_blob((uint8_t*)&gZc624ChannelIsolationEnabled, 1, offset, buffer, buffer_size);            
+
+        case ATT_CHARACTERISTIC_ORG_BLUETOOTH_CHARACTERISTIC_FIRMWARE_REVISION_STRING_01_VALUE_HANDLE:
+            return att_read_callback_handle_blob((uint8_t*)(kGitHash), strlen(kGitHash), offset, buffer, buffer_size);
+    }
+
+   return 0;
+}
 
 /**
  * @brief ATT Client Write Callback for Dynamic Data
@@ -135,31 +251,156 @@ uint16_t CBtGatt::s_att_read_callback(hci_con_handle_t connection_handle, uint16
  */
 int CBtGatt::s_att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
 {
+    if (_s_CBtGatt == NULL)
+        return 0;
+
+    return _s_CBtGatt->att_write_callback(connection_handle, att_handle, transaction_mode, offset, buffer, buffer_size);
+}
+
+int CBtGatt::att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
+{
+    bool notification_enable = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
+    
     switch (att_handle)
     {
-
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9A01_01_VALUE_HANDLE: // Pulse stream Characteristic
-            //printf("Write: transaction mode %u, offset %u, data (%u bytes): ", transaction_mode, offset, buffer_size);
-          //  printf_hexdump(buffer, buffer_size);
+            return process_pulse_stream_packet(buffer, buffer_size);
 
-            _s_CBtGatt->process_pulse_stream_message(buffer, buffer_size);
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9A03_01_VALUE_HANDLE: // Channel isolation (read/write)
+            return process_set_channel_isolation_packet(buffer, buffer_size);
 
+        // Handle requests to enable/disable notification of front panel power changes
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B01_01_CLIENT_CONFIGURATION_HANDLE: // Chanel 1 write notification enable
+            printf("notification_enable chan1: %d\n", notification_enable);
+            _channel_power_change[0].notifications_enabled = notification_enable;
             break;
-//        case ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_VALUE_HANDLE:
-//            printf("Write: transaction mode %u, offset %u, data (%u bytes): ", transaction_mode, offset, buffer_size);
-//            printf_hexdump(buffer, buffer_size);
-//            break;
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B02_01_CLIENT_CONFIGURATION_HANDLE: // Chanel 2 write notification enable
+            printf("notification_enable chan2: %d\n", notification_enable);
+            _channel_power_change[1].notifications_enabled = notification_enable;
+            break;
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B03_01_CLIENT_CONFIGURATION_HANDLE: // Chanel 3 write notification enable
+            printf("notification_enable chan3: %d\n", notification_enable);
+            _channel_power_change[2].notifications_enabled = notification_enable;
+            break;
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B04_01_CLIENT_CONFIGURATION_HANDLE: // Chanel 4 write notification enable
+            printf("notification_enable chan4: %d\n", notification_enable);
+            _channel_power_change[3].notifications_enabled = notification_enable;
+            break;
+
+        /////// Alternative to pulse mode - just set freq, pulse width & power ///////
+        
+        // Set frequency
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B21_01_VALUE_HANDLE: 
+            return set_channel_frequency(0, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B22_01_VALUE_HANDLE: 
+            return set_channel_frequency(1, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B23_01_VALUE_HANDLE: 
+            return set_channel_frequency(2, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B24_01_VALUE_HANDLE: 
+            return set_channel_frequency(3, buffer, buffer_size);
+
+        // Set pulse width
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B11_01_VALUE_HANDLE:
+            return set_channel_pulse_width(0, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B12_01_VALUE_HANDLE:
+            return set_channel_pulse_width(1, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B13_01_VALUE_HANDLE:
+            return set_channel_pulse_width(2, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B14_01_VALUE_HANDLE:
+            return set_channel_pulse_width(3, buffer, buffer_size);
+
+        // Set power
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B31_01_VALUE_HANDLE:
+            return set_channel_power(0, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B32_01_VALUE_HANDLE:
+            return set_channel_power(1, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B33_01_VALUE_HANDLE:
+            return set_channel_power(2, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B34_01_VALUE_HANDLE:
+            return set_channel_power(3, buffer, buffer_size);
+
         default:
+            printf("Write: att_handle: 0x%x, transaction mode %u, offset %u, data (%u bytes): ", att_handle, transaction_mode, offset, buffer_size);
+            printf_hexdump(buffer, buffer_size);
             break;
 
     }
     return 0;
 }
 
+// Set frequency for channel (0-3) using min/max menus of running DirectPulse pattern
+// menu_ids 30-33 are for setting the frequency of channels 0-3
+uint8_t CBtGatt::set_channel_frequency(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
+{
+    if (buffer_size != 1)
+    {
+        printf("Invalid freq set message for chan %d (buffer size = %d vs expected 1)\n", channel, buffer_size);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    uint8_t freq = *buffer;
+    printf("set freq for chan %d to %d\n", channel, freq);
+
+    _routine_output->menu_min_max_change(channel+30, freq);
+
+    return 0;
+}
+
+// Expecting two bytes - 1=pos pulse width, 2=neg pulse width
+uint8_t CBtGatt::set_channel_pulse_width(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
+{
+    if (buffer_size != 2)
+    {
+        printf("Invalid pulse width set message for chan %d (buffer size = %d vs expected 2)\n", channel, buffer_size);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    uint8_t pos_pulse_width = *(buffer);
+    uint8_t neg_pulse_width = *(buffer+1);
+    printf("set pulse width for chan %d to %d/%d\n", channel, pos_pulse_width, neg_pulse_width);
+
+    _routine_output->menu_min_max_change(channel+10, pos_pulse_width);
+    _routine_output->menu_min_max_change(channel+20, neg_pulse_width);
+    return 0;
+}
+
+// Expecting two bytes for a 16bit value
+uint8_t CBtGatt::set_channel_power(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
+{
+    if (buffer_size != 2)
+    {
+        printf("Invalid power set message for chan %d (buffer size = %d vs expected 2)\n", channel, buffer_size);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    uint16_t power_level =  (buffer[0] << 8) | buffer[1];
+
+    if (power_level > 1000)
+    {
+        printf("Invalid channel power message: %d (max 1000)\n", power_level);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    _routine_output->menu_min_max_change(channel, power_level);
+    return 0;
+}
+
 // The fist byte of the message is the number of pulses it contains
 // The second byte is an incrementing 8bit packet counter
 // There should then be the a series of 13 byte pulse messages (as specified in the first byte)
-void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size)
+uint8_t CBtGatt::process_pulse_stream_packet(uint8_t *buffer, uint16_t buffer_size)
 {
     static uint64_t s_last_debug_msg = 0;
     static uint32_t s_recv_packets = 0;
@@ -168,7 +409,7 @@ void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size
     const uint8_t header_size = 2; // pulse_count & packet_counter are always sent, followed by a variable (pulse_count) number of 13 bytes messages
 
     if (buffer_size == 0)
-        return;
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
 
     s_recv_packets++;
 
@@ -178,9 +419,9 @@ void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size
 
     if (buffer_size != expected_buffer_size)
     {
-        printf("process_pulse_stream_message: unexpected message size - %d vs expected %d for %d pulses\n", 
+        printf("process_pulse_stream_message: unexpected packet size - %d vs expected %d for %d messages\n", 
             buffer_size, expected_buffer_size, pulse_count);
-        return;
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
     }
 
     // Keep track of missed packets, assumes that the packet_counter being sent is incremented by 1 
@@ -224,54 +465,85 @@ void CBtGatt::process_pulse_stream_message(uint8_t *buffer, uint16_t buffer_size
                 _dbg_missing_packet_counter = 0;
                 _dbg_fifo_full_counter = 0;
                 s_last_packet_count = packet_counter;
+                debug_counters_reset();
                 break;
             
             case BLE_MSG_PULSE_PULSE:
-                {
-                    if ((msg->time_us + _start_time_us) < time_us_64())
-                    {
-                        // Discard pulse messages where the time is in the past
-                        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_PAST);
-                        continue;
-                    }
-
-                    if (msg->amplitude > 1000)
-                    {
-                        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_INVALID);
-                        continue;
-                    }
-
-                    for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
-                    {
-                        pulse_message_t pulse_msg = {0};
-                        pulse_msg.power_level = msg->amplitude;
-
-                        uint8_t chan_opt = pulse_message_for_channel(chan, msg->channel_polarity);
-                        if (chan_opt)
-                        {
-                            if (chan_opt & 0x01)
-                            {
-                                pulse_msg.pos_pulse_us = msg->pulse_width;
-                            }
-                            
-                            if (chan_opt & 0x02)
-                            {
-                                pulse_msg.neg_pulse_us = msg->pulse_width;
-                            }
-                            
-                            pulse_msg.abs_time_us = msg->time_us + _start_time_us;
-                            if (!queue_try_add(&gPulseQueue[chan], &pulse_msg))
-                            {
-                                _dbg_fifo_full_counter++;
-                            }
-                        }
-                    }
-                } // end of BLE_MSG_PULSE_PULSE
+                process_pulse_message(msg);
                 break;
         }
     }
 
-    return;
+    return 0;
+}
+
+void CBtGatt::process_pulse_message(ble_message_pulse_t *msg)
+{
+    if ((msg->time_us + _start_time_us) < time_us_64())
+    {
+        // Discard pulse messages where the time is in the past
+        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_PAST);
+        return;
+    }
+
+    if (msg->amplitude > 1000)
+    {
+        debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_INVALID);
+        return;
+    }
+
+    for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+    {
+        pulse_message_t pulse_msg = {0};
+        pulse_msg.power_level = msg->amplitude;
+
+        uint8_t chan_opt = pulse_message_for_channel(chan, msg->channel_polarity);
+        if (chan_opt)
+        {
+            if (chan_opt & 0x01)
+            {
+                pulse_msg.pos_pulse_us = msg->pulse_width;
+            }
+            
+            if (chan_opt & 0x02)
+            {
+                pulse_msg.neg_pulse_us = msg->pulse_width;
+            }
+            
+            pulse_msg.abs_time_us = msg->time_us + _start_time_us;
+            if (!queue_try_add(&gPulseQueue[chan], &pulse_msg))
+            {
+                _dbg_fifo_full_counter++;
+            }
+        }
+    }
+}
+
+uint8_t CBtGatt::process_set_channel_isolation_packet(uint8_t *buffer, uint16_t buffer_size)
+{
+    if (buffer_size != 1)
+    {
+        printf("process_set_channel_isolation_packet: unexpected buffer size of %d vs expected 1\n", buffer_size);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    if (buffer[0] != 0 && buffer[0] != 1)
+    {
+        printf("process_set_channel_isolation_packet: unexpected value received of [%d]. Expected 0 or 1\n", buffer[0]);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    uint8_t* allow_disable = allow_channel_isolation_disable();
+    if (*allow_disable)
+    {
+        _routine_output->menu_multi_choice_change(100, buffer[0]); // 0=disable channel isolation, 1=enable channel isolation
+        return 0;
+    }
+    else
+    {
+        printf("process_set_channel_isolation_packet: Rejecting attempt to disable channel isolation when not permitted by config\n");
+        return ATT_ERROR_WRITE_NOT_PERMITTED;
+    }
 }
 
 // Channel 0-3
@@ -288,10 +560,53 @@ uint8_t CBtGatt::pulse_message_for_channel(uint8_t channel, uint8_t channel_pola
     return chan_conf;
 }
 
-
-int8_t CBtGatt::find_routine_by_name(std::string name)
+void CBtGatt::set_battery_percentage(uint8_t bat)
 {
-    // TODO
+    if (_battery_percentage != bat)
+    {
+        battery_service_server_set_battery_value(bat);
+        _battery_percentage = bat;
+    }
+}
+
+void CBtGatt::routine_run(bool run)
+{
+    if (_routine_running == run)
+        return;
+
+    if (run)
+        _routine_output->activate_routine(_routine_id);
+    else
+        _routine_output->stop_routine();
+
+    _routine_running = run;
+}
+
+int8_t CBtGatt::find_routine_by_name_and_set_config(std::string name)
+{
+    for (uint8_t idx=0; idx < _routines.size(); idx++)
+    {
+        CRoutines::Routine routine = _routines[idx];
+        CRoutine* routine_ptr = routine.routine_maker(routine.param);
+        routine_ptr->get_config(&_routine_conf); // Note _routine_conf class variable
+        delete routine_ptr;
+
+        if (std::string(_routine_conf.name) == name)
+        {
+            _routine_id = idx;
+            return _routine_id;
+        }   
+    }
+
+    printf("find_routine_by_name_and_set_config: ERROR: [%s] not found - things will not work well!\n", name.c_str());
     return 0;
 }
 
+uint8_t* CBtGatt::allow_channel_isolation_disable()
+{
+    static uint8_t val = true;
+    val = !_routine_conf.force_channel_isolation;
+
+   // TODO: read config as set in menu
+   return &val;
+}

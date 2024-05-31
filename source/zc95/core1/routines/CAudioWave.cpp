@@ -60,7 +60,7 @@ void CAudioWave::config(struct routine_conf *conf)
     menu_triphase_view.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
     conf->menu.push_back(menu_triphase_view);
 
-    conf->enable_channel_isolation = false;
+    conf->force_channel_isolation = false;
 }
 
 void CAudioWave::get_config(struct routine_conf *conf)
@@ -123,6 +123,7 @@ void CAudioWave::pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t ne
 void CAudioWave::start()
 {
     set_all_channels_power(0);
+    set_channel_isolation(false);
 }
 
 void CAudioWave::loop(uint64_t time_us)
