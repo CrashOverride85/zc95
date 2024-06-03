@@ -1,3 +1,21 @@
+/*
+ * ZC95
+ * Copyright (C) 2024  CrashOverride85
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #include "../globals.h"
 #include "../gDebugCounters.h"
 #include "../git_version.h"
@@ -30,6 +48,7 @@ static const uint8_t _adv_data_len = sizeof(_adv_data);
 
 CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines)
 {
+    printf("CBtGatt()\n");
     _s_CBtGatt = this;
     _routine_output = routine_output;
     _routines = routines;
@@ -41,8 +60,21 @@ CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine>
 
 CBtGatt::~CBtGatt()
 {
-    _s_CBtGatt = NULL;
+    printf("~CBtGatt()\n");
     routine_run(false);
+
+    if (_init_ran)
+    {
+        gap_advertisements_enable(0);
+        hci_remove_event_handler(&_hci_event_callback_registration);
+
+        att_server_deinit();
+        sm_deinit();
+        l2cap_deinit();
+        hci_power_control(HCI_POWER_OFF);
+    }
+
+    _s_CBtGatt = NULL;
 }
 
 void CBtGatt::init(uint8_t bat_level_pc)
@@ -75,6 +107,7 @@ void CBtGatt::init(uint8_t bat_level_pc)
     att_server_register_packet_handler(CBtGatt::s_packet_handler);
 
     hci_power_control(HCI_POWER_ON);
+    _init_ran = true;
 }
 
 void CBtGatt::loop()
@@ -129,11 +162,11 @@ void CBtGatt::packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pac
             break;
 
         case HCI_EVENT_META_GAP:
-            printf("HCI_EVENT_META_GAP\n");
+            // printf("HCI_EVENT_META_GAP\n");
             break;
 
         case HCI_EVENT_LE_META:
-            printf("HCI_EVENT_LE_META\n");
+            // printf("HCI_EVENT_LE_META\n");
             break;
 
         case ATT_EVENT_CAN_SEND_NOW:
@@ -231,24 +264,6 @@ uint16_t CBtGatt::att_read_callback(hci_con_handle_t connection_handle, uint16_t
    return 0;
 }
 
-/**
- * @brief ATT Client Write Callback for Dynamic Data
- * Each Prepared Write Request triggers a callback with transaction mode ATT_TRANSACTION_MODE_ACTIVE.
- * On Execute Write, the callback will be called with ATT_TRANSACTION_MODE_VALIDATE and allows to validate all queued writes and return an application error.
- * If none of the registered callbacks return an error for ATT_TRANSACTION_MODE_VALIDATE and the callback will be called with ATT_TRANSACTION_MODE_EXECUTE.
- * Otherwise, all callbacks will be called with ATT_TRANSACTION_MODE_CANCEL.
- *
- * If the additional validation step is not needed, just return 0 for all callbacks with transaction mode ATT_TRANSACTION_MODE_VALIDATE.
- *
- * @param con_handle of hci le connection
- * @param attribute_handle to be written
- * @param transaction - ATT_TRANSACTION_MODE_NONE for regular writes. For prepared writes: ATT_TRANSACTION_MODE_ACTIVE, ATT_TRANSACTION_MODE_VALIDATE, ATT_TRANSACTION_MODE_EXECUTE, ATT_TRANSACTION_MODE_CANCEL
- * @param offset into the value - used for queued writes and long attributes
- * @param buffer 
- * @param buffer_size
- * @param signature used for signed write commmands
- * @return 0 if write was ok, ATT_ERROR_PREPARE_QUEUE_FULL if no space in queue, ATT_ERROR_INVALID_OFFSET if offset is larger than max buffer
- */
 int CBtGatt::s_att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
 {
     if (_s_CBtGatt == NULL)

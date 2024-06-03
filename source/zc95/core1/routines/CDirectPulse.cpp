@@ -211,7 +211,6 @@ void CDirectPulse::trigger(trigger_socket socket, trigger_part part, bool active
 
 }
 
-
 void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
     if (channel < MAX_CHANNELS)

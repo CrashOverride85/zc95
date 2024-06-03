@@ -70,6 +70,7 @@ class CBtGatt
         bool _routine_running = false;
         struct routine_conf _routine_conf;
         uint8_t _routine_id = 0;
+        bool _init_ran = false;
 
         hci_con_handle_t _bt_connection_handle = HCI_CON_HANDLE_INVALID;
 
