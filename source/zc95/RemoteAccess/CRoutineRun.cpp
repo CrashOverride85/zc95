@@ -42,7 +42,7 @@ CRoutineRun::CRoutineRun(
         std::function<void(std::string)> send_function, 
         std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
         CRoutineOutput *routine_output,
-        std::vector<CRoutines::Routine> *routines
+        std::vector<CRoutines::Routine> &routines
 )
 {
     printf("CRoutineRun()\n");
@@ -81,7 +81,7 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     {
         int index = (*doc)["Index"];
 
-        if (index < 0 || index >= (int)_routines->size())
+        if (index < 0 || index >= (int)_routines.size())
         {
             send_ack("ERROR", msgId);
             return true; // finished

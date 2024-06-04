@@ -124,10 +124,10 @@ add_executable(zc95
   display/config/CMenuSettingAudio.cpp
   display/config/CMenuSettingHardware.cpp
 
-  display/config/bluetooth/CMenuBluetooth.cpp
-  display/config/bluetooth/CMenuBluetoothScan.cpp
-  display/config/bluetooth/CMenuBluetoothTest.cpp
-  display/config/bluetooth/CMenuBluetoothMap.cpp
+  display/config/bluetooth_peripherals/CMenuBluetooth.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothTest.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothMap.cpp
 
   display/config/channel_config/CMenuChannelConfig.cpp
   display/config/channel_config/CMenuCollarConfig.cpp
@@ -142,6 +142,8 @@ add_executable(zc95
   display/config/remote_access/CMenuRemoteAccessConnectWifi.cpp
   display/config/remote_access/CMenuRemoteAccessSerial.cpp
   display/config/remote_access/CMenuApMode.cpp
+  display/config/remote_access/CMenuRemoteAccessBLE.cpp
+  display/config/remote_access/CMenuRemoteAccessBleConfig.cpp
 
   FrontPanel/CRotEnc.cpp
   FrontPanel/CFrontPanelV01.cpp

@@ -22,7 +22,7 @@
 
 CMainMenu::CMainMenu(
     CDisplay* display, 
-    std::vector<CRoutines::Routine> *routines,
+    std::vector<CRoutines::Routine> &routines,
     CGetButtonState *buttons,
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
@@ -30,7 +30,8 @@ CMainMenu::CMainMenu(
     CAudio *audio,
     CAnalogueCapture *analogueCapture,
     CWifi *wifi,
-    CBluetooth *bluetooth
+    CBluetooth *bluetooth,
+    CRadio *radio
 )
 {
     printf("CMainMenu() \n");
@@ -39,8 +40,9 @@ CMainMenu::CMainMenu(
     _buttons = buttons;
     _settings = settings;
     _bluetooth = bluetooth;
+    _radio = radio;
 
-    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck, audio, analogueCapture, wifi, bluetooth);
+    _submenu_active = new CMenuRoutineSelection(_display, _routines, _buttons, _settings, routine_output, hwCheck, audio, analogueCapture, wifi, bluetooth, _radio);
     _submenu_active->show();
 }
 

@@ -28,7 +28,7 @@
 
 CMenuRoutineSelection::CMenuRoutineSelection(
     CDisplay* display, 
-    std::vector<CRoutines::Routine> *routines, 
+    std::vector<CRoutines::Routine> &routines, 
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
@@ -36,7 +36,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CAudio *audio,
     CAnalogueCapture *analogueCapture,
     CWifi *wifi,
-    CBluetooth *bluetooth
+    CBluetooth *bluetooth,
+    CRadio *radio
     )
 {
     printf("CMenuRoutineSelection() \n");
@@ -53,6 +54,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _analogueCapture = analogueCapture;
     _wifi = wifi;
     _bluetooth = bluetooth;
+    _radio = radio;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -91,7 +93,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
         if (button == Button::A) // Select
         {
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
-            CRoutines::Routine routine = (*_routines)[routine_id];
+            CRoutines::Routine routine = _routines[routine_id];
             _last_selection = _routine_display_list->get_current_selection();
             set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio, _bluetooth, _settings));
             _routine_output->activate_routine(routine_id);
@@ -99,7 +101,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio));
         }
         
         if (button == Button::C) // "Up"
@@ -135,7 +137,7 @@ void CMenuRoutineSelection::show()
     // Get a list of routines to show
     _routine_display_list->clear_options();
     int index=0;
-    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
         struct routine_conf conf;
         CRoutine* routine = (*it).routine_maker((*it).param);

@@ -13,7 +13,7 @@
 class CWebServer
 {
     public:
-        CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
         ~CWebServer();
         void start();
         void stop();
@@ -25,7 +25,7 @@ class CWebServer
         static void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode);
 
         bool _started = false;
-        static std::vector<CRoutines::Routine> *_s_routines;
+        static std::vector<CRoutines::Routine> _s_routines;
         static std::map<struct tcp_pcb*, CWsConnection*> _s_ws_connections;
         static CRoutineOutput *_s_routine_output;
 };

@@ -16,7 +16,7 @@ class CMessageProcessor
     public:
         CMessageProcessor(
                 CRoutineOutput *routine_output, 
-                std::vector<CRoutines::Routine> *routines, 
+                std::vector<CRoutines::Routine> &routines, 
                 std::function<void(std::string)> send_function
         );
         ~CMessageProcessor();
@@ -43,7 +43,7 @@ class CMessageProcessor
         std::function<void(std::string)> _send;
 
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine> _routines;
 
         state_t _state = state_t::ACTIVE;
         CLuaLoad *_lua_load = NULL;

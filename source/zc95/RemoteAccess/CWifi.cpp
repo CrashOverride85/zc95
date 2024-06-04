@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-CWifi::CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWifi::CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines)
 {
     printf("CWifi()\n");
     _analogue_capture = analogueCapture;

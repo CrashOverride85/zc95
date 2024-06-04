@@ -17,7 +17,7 @@
  */
 
 #include "CMenuSettings.h"
-#include "bluetooth/CMenuBluetooth.h"
+#include "bluetooth_peripherals/CMenuBluetooth.h"
 #include "channel_config/CMenuChannelConfig.h"
 #include "channel_config/CMenuCollarConfig.h"
 #include "display_options/CMenuSettingLedBrightnes.h"
@@ -40,8 +40,9 @@ CMenuSettings::CMenuSettings(
         CAudio *audio, 
         CAnalogueCapture *analogueCapture,
         CWifi *wifi,
-        std::vector<CRoutines::Routine> *routines,
-        CBluetooth *bluetooth)
+        std::vector<CRoutines::Routine> &routines,
+        CBluetooth *bluetooth,
+        CRadio *radio)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -56,6 +57,7 @@ CMenuSettings::CMenuSettings(
     _wifi = wifi;
     _routines = routines;
     _bluetooth = bluetooth;
+    _radio = radio;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -138,7 +140,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth));
+            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio));
             break;
 
         case setting_id::ABOUT:
@@ -174,7 +176,7 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));    
 
     if (CHwCheck::running_on_picow())
-        _settings.push_back(CMenuSettings::setting(setting_id::BLUETOOTH,  "Bluetooth"          ));
+        _settings.push_back(CMenuSettings::setting(setting_id::BLUETOOTH,  "BLE peripherals"));
 
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));

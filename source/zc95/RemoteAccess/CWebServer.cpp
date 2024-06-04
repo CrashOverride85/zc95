@@ -34,9 +34,9 @@
 
 std::map<struct tcp_pcb*, CWsConnection*> CWebServer::_s_ws_connections;
 CRoutineOutput *CWebServer::_s_routine_output;
-std::vector<CRoutines::Routine> *CWebServer::_s_routines;
+std::vector<CRoutines::Routine> CWebServer::_s_routines;
 
-CWebServer::CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWebServer::CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines)
 {
     printf("CWebServer()\n");
     _s_routine_output = routine_output;

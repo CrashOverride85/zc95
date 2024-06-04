@@ -65,7 +65,7 @@
 
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
-#include "RemoteAccess/CBtGatt.h"
+
 
 #include "FrontPanel/CFrontPanelV01.h"
 #include "FrontPanel/CFrontPanelV02.h"
@@ -248,7 +248,7 @@ int main()
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
-    CRoutines::get_routines(&routines);
+    CRoutines::get_routines(routines);
    
     hw_check.check_part2(&led, &port_expander); // If a fault is found, this never returns
 
@@ -276,7 +276,7 @@ int main()
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);
-    wifi = new CWifi(radio, &analogueCapture, routine_output, &routines);
+    wifi = new CWifi(radio, &analogueCapture, routine_output, routines);
     flash_helper_init(&analogueCapture, routine_output);
 
     // Configure port expander used for external inputs (accessory & trigger sockets)
@@ -288,7 +288,7 @@ int main()
     ext_input->process(true);
 
 
-    CMainMenu routine_selection = CMainMenu(&display, &routines, &port_expander, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi, &bluetooth);
+    CMainMenu routine_selection = CMainMenu(&display, routines, &port_expander, &settings, routine_output, &hw_check, &audio, &analogueCapture, wifi, &bluetooth, radio);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -299,16 +299,9 @@ int main()
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 
-
-    radio->bluetooth(true);
-    CBtGatt bt = CBtGatt(routine_output, routines);
-    bt.init(batteryGauge.get_battery_percentage());
-    
-
-
     while (1) 
     {
-        bt.loop();
+
         uint64_t loop_start = time_us_64();
         radio->loop();
         wifi->loop();
@@ -340,7 +333,7 @@ int main()
             uint8_t batt_percentage = batteryGauge.get_battery_percentage();
             // printf("Loop time: %" PRId64 ", batt: %d\n", timenow - loop_start, batt_percentage);
             display.set_battery_percentage(batt_percentage);
-            bt.set_battery_percentage(batt_percentage);
+            
         }
         else
         {

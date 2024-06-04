@@ -3,25 +3,20 @@
 #include "../../COptionsList.h"
 #include "../../../CSavedSettings.h"
 #include "../../../Bluetooth/CBluetooth.h"
-#include "../../../RemoteAccess/CWifi.h"
-#include "../../../RemoteAccess/CSerialConnection.h"
+#include "../../../RemoteAccess/CBtGatt.h"
 #include "../../../core1/CRoutineOutput.h"
 
-#include "pico/stdlib.h"
-#include "hardware/uart.h"
-#include "hardware/irq.h"
-
-class CMenuRemoteAccessSerial : public CMenu
+class CMenuRemoteAccessBLE : public CMenu
 {
     public:
-        CMenuRemoteAccessSerial(
+        CMenuRemoteAccessBLE(
             CDisplay* display,
             CGetButtonState *buttons, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
             std::vector<CRoutines::Routine> &routines,
-            CBluetooth *bluetooth);
-        ~CMenuRemoteAccessSerial();
+            CRadio *radio);
+        ~CMenuRemoteAccessBLE();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
         void draw();
@@ -35,9 +30,8 @@ class CMenuRemoteAccessSerial : public CMenu
         CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
-        CSerialConnection *_serial_connection;
-        std::vector<CRoutines::Routine> _routines;
-        CBluetooth *_bluetooth;
-        bool _bt_enabled = false;
-        queue_t _bt_keypress_queue = {0};
+        std::vector<CRoutines::Routine> *_routines;
+        CRadio *_radio;
+        CBtGatt *_gatt_server;
+
 };

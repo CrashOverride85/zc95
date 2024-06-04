@@ -459,6 +459,16 @@ void CSavedSettings::set_paired_bt_type(bt_device_type_t type)
     _eeprom_contents[(uint8_t)setting::BtDeviceType] = (uint8_t)type;
 }
 
+bool CSavedSettings::get_ble_remote_disable_channel_isolation_permitted()
+{
+    return (_eeprom_contents[(uint8_t)setting::BleAllowTriphase] == 1);
+}
+
+void CSavedSettings::set_ble_remote_disable_channel_isolation_permitted(bool setting)
+{
+    _eeprom_contents[(uint8_t)setting::BleAllowTriphase] = setting;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

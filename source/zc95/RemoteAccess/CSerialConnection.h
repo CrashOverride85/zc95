@@ -15,7 +15,7 @@
 class CSerialConnection
 {
     public:
-        CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
         ~CSerialConnection();
         // void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);
@@ -39,7 +39,7 @@ class CSerialConnection
         };
 
         CRoutineOutput *_routine_output; 
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine> _routines;
 
         CMessageProcessor *_messageProcessor;
         volatile state_t _state = state_t::IDLE;

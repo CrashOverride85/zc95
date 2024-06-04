@@ -25,7 +25,7 @@ class CMainMenu : public CMenu
     public:
         CMainMenu(
             CDisplay* display, 
-            std::vector<CRoutines::Routine> *routines, 
+            std::vector<CRoutines::Routine> &routines, 
             CGetButtonState *buttons, 
             CSavedSettings *settings, 
             CRoutineOutput *routine_output, 
@@ -33,7 +33,8 @@ class CMainMenu : public CMenu
             CAudio *audio, 
             CAnalogueCapture *analogueCapture,
             CWifi *wifi, 
-            CBluetooth *bluetooth);
+            CBluetooth *bluetooth,
+            CRadio *radio);
 
         ~CMainMenu();
         void button_pressed(Button button);
@@ -44,8 +45,9 @@ class CMainMenu : public CMenu
 
     private:
         CDisplay* _display;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine> _routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CBluetooth *_bluetooth;
+        CRadio *_radio;
 };

@@ -214,6 +214,11 @@ void CDisplay::set_battery_percentage(uint8_t bat)
     _battery_percentage = bat;
 }
 
+uint8_t CDisplay::get_battery_percentage()
+{
+    return _battery_percentage;
+}
+
 void CDisplay::set_active_pattern(std::string pattern)
 {
     _active_pattern = pattern;

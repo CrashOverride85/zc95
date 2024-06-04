@@ -15,12 +15,14 @@
 class CBtGatt
 {
     public:
-        CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines);
+        CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines, CSavedSettings *saved_settings);
         ~CBtGatt();
 
         void init(uint8_t bat_level_pc);
         void loop();
         void set_battery_percentage(uint8_t bat);
+        bool is_connected();
+        const char *get_connected_device_address();
 
 
     private:
@@ -62,6 +64,7 @@ class CBtGatt
 
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine> _routines;
+        CSavedSettings *_saved_settings;
         uint64_t _start_time_us = 0;
 
         channel_power_t _channel_power_change[MAX_CHANNELS] = {0};
@@ -73,6 +76,7 @@ class CBtGatt
         bool _init_ran = false;
 
         hci_con_handle_t _bt_connection_handle = HCI_CON_HANDLE_INVALID;
+        bd_addr_t _connected_device_address;
 
         // debug counters
         uint32_t _dbg_missing_packet_counter = 0;

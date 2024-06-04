@@ -24,7 +24,7 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CGetButtonState *buttons,
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
-    std::vector<CRoutines::Routine> *routines,
+    std::vector<CRoutines::Routine> &routines,
     CBluetooth *bluetooth)
 {
     printf("CMenuRemoteAccessSerial() \n");

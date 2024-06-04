@@ -34,7 +34,7 @@
 
 CMessageProcessor::CMessageProcessor(
     CRoutineOutput *routine_output, 
-    std::vector<CRoutines::Routine> *routines,
+    std::vector<CRoutines::Routine> &routines,
     std::function<void(std::string)> send_function)
 {
     printf("CMessageProcessor::CMessageProcessor()\n");
@@ -325,7 +325,7 @@ void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
     JsonArray patterns = response_message.createNestedArray("Patterns");
 
     int index=0;
-    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
         struct routine_conf conf;
         CRoutine* routine = (*it).routine_maker((*it).param);
@@ -360,7 +360,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
 
-    if (id < 0 || id >= (int)((*_routines).size()))
+    if (id < 0 || id >= (int)(_routines.size()))
     {
         printf("CMessageProcessor::send_pattern_detail: invalid id: %d\n", id);
         response_message["Result"] = "ERROR";
@@ -369,7 +369,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     {
         // Get pattern config
         struct routine_conf conf;
-        CRoutines::Routine routine = (*_routines)[id];
+        CRoutines::Routine routine = _routines[id];
         CRoutine* routine_ptr = routine.routine_maker(routine.param);
         routine_ptr->get_config(&conf);
         delete routine_ptr;
@@ -456,6 +456,6 @@ void CMessageProcessor::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_S
 void CMessageProcessor::reload_routines()
 {
     printf("CMessageProcessor::reload_routines(): routines list has changed, updating\n");
-    _routines->clear();
+    _routines.clear();
     CRoutines::get_routines(_routines);
 }

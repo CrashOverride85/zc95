@@ -185,7 +185,7 @@ void CMenuBluetooth::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuBluetooth::setting_t(setting_id::ENABLED    , "Enabled"  ));
+    _settings.push_back(CMenuBluetooth::setting_t(setting_id::ENABLED    , "Auto connect"));
     _settings.push_back(CMenuBluetooth::setting_t(setting_id::SCAN       , "Scan/Pair"));
     _settings.push_back(CMenuBluetooth::setting_t(setting_id::TEST       , "Test"));
     _settings.push_back(CMenuBluetooth::setting_t(setting_id::MAP_BUTTONS, "Configure remote"));

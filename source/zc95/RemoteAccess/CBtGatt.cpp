@@ -46,16 +46,18 @@ static const uint8_t _adv_data[] =
 };
 static const uint8_t _adv_data_len = sizeof(_adv_data);
 
-CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines)
+CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines, CSavedSettings *saved_settings)
 {
     printf("CBtGatt()\n");
     _s_CBtGatt = this;
     _routine_output = routine_output;
     _routines = routines;
     _routine_running = false;
+    _saved_settings = saved_settings;
 
     // get routine config
     _routine_id = find_routine_by_name_and_set_config("DirectControl"); // populates _routine_conf
+    memset(_connected_device_address, 0, sizeof(_connected_device_address));
 }
 
 CBtGatt::~CBtGatt()
@@ -148,6 +150,7 @@ void CBtGatt::packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pac
         case ATT_EVENT_CONNECTED:
             printf("ATT Connected\n");
             _bt_connection_handle = att_event_connected_get_handle(packet);
+            att_event_connected_get_address(packet, _connected_device_address);
             routine_run(true);
             break;
 
@@ -183,6 +186,7 @@ void CBtGatt::disconnected()
         _channel_power_change[c].notification_pending = false;
     }
     _bt_connection_handle = HCI_CON_HANDLE_INVALID;
+    memset(_connected_device_address, 0, sizeof(_connected_device_address));
     routine_run(false);
 }
 
@@ -617,11 +621,26 @@ int8_t CBtGatt::find_routine_by_name_and_set_config(std::string name)
     return 0;
 }
 
+// Channel isolation can be disabled if the routine has it's force_channel_isolation option set to false (that should 
+// always be the case here) and the BLE config option "Allow triphase" is set to "Yes".
 uint8_t* CBtGatt::allow_channel_isolation_disable()
 {
     static uint8_t val = true;
     val = !_routine_conf.force_channel_isolation;
+    val &= _saved_settings->get_ble_remote_disable_channel_isolation_permitted();
 
-   // TODO: read config as set in menu
    return &val;
+}
+
+bool CBtGatt::is_connected()
+{
+    return (_bt_connection_handle != HCI_CON_HANDLE_INVALID);
+}
+
+const char *CBtGatt::get_connected_device_address()
+{
+    if (is_connected())
+        return bd_addr_to_str(_connected_device_address);
+    else
+        return "";
 }
