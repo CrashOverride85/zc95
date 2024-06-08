@@ -58,7 +58,8 @@ class CBtGatt
 
         uint8_t set_channel_frequency(uint8_t channel, uint8_t *buffer, uint16_t buffer_size);
         uint8_t set_channel_pulse_width(uint8_t channel, uint8_t *buffer, uint16_t buffer_size);
-        uint8_t set_channel_power(uint8_t channel, uint8_t *buffer, uint16_t buffer_size);
+        uint8_t set_channel_power_level(uint8_t channel, uint8_t *buffer, uint16_t buffer_size);
+        uint8_t set_channel_power_enable(uint8_t channel, uint8_t *buffer, uint16_t buffer_size);
 
         uint8_t* allow_channel_isolation_disable();
 

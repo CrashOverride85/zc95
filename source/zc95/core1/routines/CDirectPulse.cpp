@@ -111,6 +111,19 @@ void CDirectPulse::config(struct routine_conf *conf)
         conf->menu.push_back(menu_chan_freq[chan]);
     }
 
+    // menu_id's 40-43 are for channel 0-3 power enable (true/false)
+    struct menu_entry menu_chan_power_enable[MAX_CHANNELS] = {0};
+    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        menu_chan_power_enable[chan].id = chan+40;
+        menu_chan_power_enable[chan].title = "Chan " + std::to_string(chan+1) + " power";
+        menu_chan_power_enable[chan].menu_type = menu_entry_type::MULTI_CHOICE;
+        menu_chan_power_enable[chan].multichoice.current_selection = 0;
+        menu_chan_power_enable[chan].multichoice.choices.push_back(get_choice("Off", 0));
+        menu_chan_power_enable[chan].multichoice.choices.push_back(get_choice("On", 1));
+        conf->menu.push_back(menu_chan_power_enable[chan]);
+    }
+
     struct menu_entry menu_chan_iso = new_menu_entry();
     menu_chan_iso.id = 100;
     menu_chan_iso.title = "Chan isolation";
@@ -141,14 +154,6 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
                 return;
 
             full_channel_set_power(menu_id, new_value);
-
-            if (new_value == 0)
-                full_channel_off(chan);
-            else if (new_value > 0 && _chan_last_power_level[chan] == 0)
-                full_channel_on(chan);
-
-            _chan_last_power_level[chan] = new_value;
-
             return;
         }
 
@@ -198,6 +203,22 @@ void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
             set_channel_isolation(false);
         else
             set_channel_isolation(true);
+
+        return;
+    }
+
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    {
+        // power enable/disable
+        if (menu_id == chan+40)
+        {
+            if (choice_id == 1)
+                full_channel_on(chan);
+            else
+                full_channel_off(chan);
+
+            return;
+        }
     }
 }
 
@@ -227,13 +248,7 @@ void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t 
 
 void CDirectPulse::start()
 {
-    set_all_channels_power(100);
-    for (uint8_t chan=0; chan < MAX_CHANNELS; chan++)
-    {
-        _chan_last_power_level[chan] = 100;
-    }
-
-    full_channel_on(0);
+    set_all_channels_power(0);
 }
 
 void CDirectPulse::loop(uint64_t time_us)
@@ -243,5 +258,5 @@ void CDirectPulse::loop(uint64_t time_us)
 
 void CDirectPulse::stop()
 {
-
+    set_all_channels_power(0);
 }

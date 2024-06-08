@@ -337,22 +337,36 @@ int CBtGatt::att_write_callback(hci_con_handle_t connection_handle, uint16_t att
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B14_01_VALUE_HANDLE:
             return set_channel_pulse_width(3, buffer, buffer_size);
 
-        // Set power
+        // Set power level
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B31_01_VALUE_HANDLE:
-            return set_channel_power(0, buffer, buffer_size);
+            return set_channel_power_level(0, buffer, buffer_size);
 
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B32_01_VALUE_HANDLE:
-            return set_channel_power(1, buffer, buffer_size);
+            return set_channel_power_level(1, buffer, buffer_size);
 
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B33_01_VALUE_HANDLE:
-            return set_channel_power(2, buffer, buffer_size);
+            return set_channel_power_level(2, buffer, buffer_size);
 
         case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B34_01_VALUE_HANDLE:
-            return set_channel_power(3, buffer, buffer_size);
+            return set_channel_power_level(3, buffer, buffer_size);
+
+        // Power enable/disable
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B41_01_VALUE_HANDLE:
+            return set_channel_power_enable(0, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B42_01_VALUE_HANDLE:
+            return set_channel_power_enable(1, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B43_01_VALUE_HANDLE:
+            return set_channel_power_enable(2, buffer, buffer_size);
+
+        case ATT_CHARACTERISTIC_AC7744C0_0BAD_11EF_A9CD_0800200C9B44_01_VALUE_HANDLE:
+            return set_channel_power_enable(3, buffer, buffer_size);
+
 
         default:
             printf("Write: att_handle: 0x%x, transaction mode %u, offset %u, data (%u bytes): ", att_handle, transaction_mode, offset, buffer_size);
-            printf_hexdump(buffer, buffer_size);
+            // printf_hexdump(buffer, buffer_size);
             break;
 
     }
@@ -396,11 +410,11 @@ uint8_t CBtGatt::set_channel_pulse_width(uint8_t channel, uint8_t *buffer, uint1
 }
 
 // Expecting two bytes for a 16bit value
-uint8_t CBtGatt::set_channel_power(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
+uint8_t CBtGatt::set_channel_power_level(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
 {
     if (buffer_size != 2)
     {
-        printf("Invalid power set message for chan %d (buffer size = %d vs expected 2)\n", channel, buffer_size);
+        printf("Invalid power level set message for chan %d (buffer size = %d vs expected 2)\n", channel, buffer_size);
         return ATT_ERROR_VALUE_NOT_ALLOWED;
     }
 
@@ -412,7 +426,36 @@ uint8_t CBtGatt::set_channel_power(uint8_t channel, uint8_t *buffer, uint16_t bu
         return ATT_ERROR_VALUE_NOT_ALLOWED;
     }
 
-    _routine_output->menu_min_max_change(channel, power_level);
+    if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
+    {
+        _routine_output->set_remote_power(channel, power_level);
+    }
+    else if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::SCALE)
+    {
+        _routine_output->menu_min_max_change(channel, power_level);        
+    }
+
+    return 0;
+}
+
+uint8_t CBtGatt::set_channel_power_enable(uint8_t channel, uint8_t *buffer, uint16_t buffer_size)
+{
+    if (buffer_size != 1)
+    {
+        printf("Invalid power enable message for chan %d (buffer size = %d vs expected 1)\n", channel, buffer_size);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    uint8_t enable = buffer[0];
+
+    if (enable > 1)
+    {
+        printf("Invalid channel power enable message: %d (expected 0 or 1)\n", enable);
+        return ATT_ERROR_VALUE_NOT_ALLOWED;
+    }
+
+    _routine_output->menu_multi_choice_change(40+channel, enable);
+
     return 0;
 }
 
@@ -594,10 +637,29 @@ void CBtGatt::routine_run(bool run)
         return;
 
     if (run)
+    {
         _routine_output->activate_routine(_routine_id);
+
+       if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
+        {
+            // This tells the DirectControl routine to set its output to 100%. In LIMIT mode, received BLE power level commands
+            // will be used to set the power level by calling set_remote_power, which is displayed as the blue bar. The routine
+            // power level is the inner yellow bar, so in this mode (and like most inbuilt built routes outside of remote access),
+            // the yellow bar will always match the blue bar.
+            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+                _routine_output->menu_min_max_change(channel, 1000);
+        }
+    }
     else
+    {
         _routine_output->stop_routine();
 
+        if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
+        {
+            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+                _routine_output->set_remote_power(channel, 0);
+        }
+    }
     _routine_running = run;
 }
 

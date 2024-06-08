@@ -469,6 +469,16 @@ void CSavedSettings::set_ble_remote_disable_channel_isolation_permitted(bool set
     _eeprom_contents[(uint8_t)setting::BleAllowTriphase] = setting;
 }
 
+CSavedSettings::ble_power_dial_mode_t CSavedSettings::get_ble_remote_access_power_dial_mode()
+{
+    return (ble_power_dial_mode_t)(_eeprom_contents[(uint8_t)setting::BlePowerMode]);
+}
+
+void CSavedSettings::set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode)
+{
+    _eeprom_contents[(uint8_t)setting::BlePowerMode] = (uint8_t)mode;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

@@ -121,6 +121,10 @@ void CMenuRemoteAccessBleConfig::save_setting(uint8_t setting_menu_index, uint8_
         case setting_id::ALLOW_TRIPHASE:
             _saved_settings->set_ble_remote_disable_channel_isolation_permitted(choice_id.id);
             break;
+
+        case setting_id::POWER_DIAL_MODE:
+            _saved_settings->set_ble_remote_access_power_dial_mode((CSavedSettings::ble_power_dial_mode_t)choice_id.id);
+            break;
     }
 }
 
@@ -145,7 +149,8 @@ void CMenuRemoteAccessBleConfig::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuRemoteAccessBleConfig::setting_t(setting_id::ALLOW_TRIPHASE  , "Allow triphase"));
+    _settings.push_back(CMenuRemoteAccessBleConfig::setting_t(setting_id::ALLOW_TRIPHASE , "Allow triphase"));
+    _settings.push_back(CMenuRemoteAccessBleConfig::setting_t(setting_id::POWER_DIAL_MODE, "Power dial mode"));
 
     _settings_list->clear_options();
     for (std::vector<CMenuRemoteAccessBleConfig::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
@@ -168,6 +173,12 @@ void CMenuRemoteAccessBleConfig::set_options_on_multi_choice_list(uint8_t settin
             _setting_choices.push_back(CMenuRemoteAccessBleConfig::setting_t(0, "No" ));
             _setting_choices.push_back(CMenuRemoteAccessBleConfig::setting_t(1, "Yes"));
             current_choice_id = (uint8_t)_saved_settings->get_ble_remote_disable_channel_isolation_permitted();
+            break;
+
+        case setting_id::POWER_DIAL_MODE:
+            _setting_choices.push_back(CMenuRemoteAccessBleConfig::setting_t((uint8_t)CSavedSettings::ble_power_dial_mode_t::LIMIT, "Limit" ));
+            _setting_choices.push_back(CMenuRemoteAccessBleConfig::setting_t((uint8_t)CSavedSettings::ble_power_dial_mode_t::SCALE, "Scale" ));
+            current_choice_id = (uint8_t)_saved_settings->get_ble_remote_access_power_dial_mode();
             break;
     }
 

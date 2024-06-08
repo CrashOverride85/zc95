@@ -64,7 +64,8 @@ class CSavedSettings
         BTUnknownAction  = 212, // KEY_UNKNOWN
      //<next bt action>= 213,
         BtDeviceType     = 220, // Bluetooth device type (HID, GENERIC, etc.)
-        BleAllowTriphase = 221  // If enabled, channel isolation can be disabled via BLE remote connect
+        BleAllowTriphase = 221, // If enabled, channel isolation can be disabled via BLE remote connect
+        BlePowerMode     = 222  // What the front panel power dials do. See ble_power_dial_mode_t.
     };
 
     public:
@@ -115,6 +116,13 @@ class CSavedSettings
             HID          = 0, // hopefully a bluetooth shutter remote
             NOT_RECEIVED = 1, // not in advertising report
             OTHER        = 2, // in advertising report, but not handled
+        };
+
+        // When in BLE remote access mode, what the front panel power dials do
+        enum class ble_power_dial_mode_t
+        {
+            LIMIT = 0,
+            SCALE = 1
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -206,6 +214,10 @@ class CSavedSettings
         // Allow BLE remote connections to disable channel isolation
         bool get_ble_remote_disable_channel_isolation_permitted();
         void set_ble_remote_disable_channel_isolation_permitted(bool setting);
+
+        // Front panel power dial mode when running BLE remote access
+        ble_power_dial_mode_t get_ble_remote_access_power_dial_mode();
+        void set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode);
 
         void eeprom_initialise();
 

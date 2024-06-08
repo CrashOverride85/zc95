@@ -36,7 +36,9 @@ CMenuRemoteAccessBLE::CMenuRemoteAccessBLE(
     _routine_output = routine_output;
     _radio = radio;
     
-    _routine_output->enable_remote_power_mode();
+    if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
+        _routine_output->enable_remote_power_mode();
+
     _gatt_server = new CBtGatt(routine_output, routines, _saved_settings);
 }
 
@@ -56,7 +58,9 @@ CMenuRemoteAccessBLE::~CMenuRemoteAccessBLE()
         _gatt_server = NULL;
     }
 
-    _routine_output->disable_remote_power_mode();
+    if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
+        _routine_output->disable_remote_power_mode();
+
      _radio->bluetooth(false);
 }
 

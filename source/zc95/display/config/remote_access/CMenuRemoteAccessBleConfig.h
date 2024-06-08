@@ -35,7 +35,8 @@ class CMenuRemoteAccessBleConfig : public CMenu
 
         enum setting_id
         {
-            ALLOW_TRIPHASE = 0
+            ALLOW_TRIPHASE = 0,
+            POWER_DIAL_MODE = 1
         };
 
         std::vector<setting_t> _settings;
