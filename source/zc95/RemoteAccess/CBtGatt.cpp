@@ -559,17 +559,17 @@ void CBtGatt::process_pulse_message(ble_message_pulse_t *msg)
         pulse_message_t pulse_msg = {0};
         pulse_msg.power_level = msg->amplitude;
 
-        uint8_t chan_opt = pulse_message_for_channel(chan, msg->channel_polarity);
+        uint8_t chan_opt = pulse_message_for_channel(chan, msg->channel_mask);
         if (chan_opt)
         {
             if (chan_opt & 0x01)
             {
-                pulse_msg.pos_pulse_us = msg->pulse_width;
+                pulse_msg.pos_pulse_us = msg->pulse_width_pos;
             }
             
             if (chan_opt & 0x02)
             {
-                pulse_msg.neg_pulse_us = msg->pulse_width;
+                pulse_msg.neg_pulse_us = msg->pulse_width_neg;
             }
             
             pulse_msg.abs_time_us = msg->time_us + _start_time_us;

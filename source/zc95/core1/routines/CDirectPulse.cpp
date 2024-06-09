@@ -154,6 +154,7 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
                 return;
 
             full_channel_set_power(menu_id, new_value);
+            _chan_last_power_level[chan] = new_value;
             return;
         }
 
@@ -199,7 +200,7 @@ void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
     if (menu_id == 100)
     {
         printf("chan iso change\n");
-        
+
         if (choice_id == 0)
             set_channel_isolation(false);
         else
@@ -250,6 +251,9 @@ void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t 
 void CDirectPulse::start()
 {
     set_all_channels_power(0);
+
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+        _chan_last_power_level[chan] = 0;
 }
 
 void CDirectPulse::loop(uint64_t time_us)
