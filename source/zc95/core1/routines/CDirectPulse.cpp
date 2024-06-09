@@ -195,10 +195,11 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 
 void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
 {
-    printf("chan iso change\n");
     // Channel isolation
     if (menu_id == 100)
     {
+        printf("chan iso change\n");
+        
         if (choice_id == 0)
             set_channel_isolation(false);
         else

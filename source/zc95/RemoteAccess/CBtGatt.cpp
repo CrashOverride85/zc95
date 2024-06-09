@@ -36,10 +36,10 @@ static const uint8_t _adv_data[] =
     5, BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME, 'Z', 'C', '9', '5', 
    
     // Pulse stream service 
-    17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9a, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac,
+    //17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9a, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac,
 
     // General control service
- //   17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9b, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac, 
+    17, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x00, 0x9b, 0x0c, 0x20, 0x00, 0x08, 0xcd, 0xa9, 0xef, 0x11, 0xad, 0x0b, 0xc0, 0x44, 0x77, 0xac, 
      
      // Battery service
      3, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE & 0xff, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE >> 8, 
@@ -365,7 +365,7 @@ int CBtGatt::att_write_callback(hci_con_handle_t connection_handle, uint16_t att
 
 
         default:
-            printf("Write: att_handle: 0x%x, transaction mode %u, offset %u, data (%u bytes): ", att_handle, transaction_mode, offset, buffer_size);
+            printf("Write: att_handle: 0x%x, transaction mode %u, offset %u, data (%u bytes)\n", att_handle, transaction_mode, offset, buffer_size);
             // printf_hexdump(buffer, buffer_size);
             break;
 

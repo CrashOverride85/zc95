@@ -6,9 +6,8 @@ from bleak import BleakClient
 from bleak import BleakScanner
 
 class ZcBle:
-    def __init__(self, ble_tx_queue, ble_address = None):
+    def __init__(self, ble_address = None):
         self.ble_address = ble_address
-        self.ble_tx_queue = ble_tx_queue
         self.connected = False
         self.characteristic_channel_power_level = {}
         self.characteristic_channel_power_enable = {}
@@ -67,10 +66,6 @@ class ZcBle:
 
         self.set_characteristics()
 
-        while True:
-            message = await self.ble_tx_queue.get()
-            print("GOT: " + message)
-
     async def channel_power_enable(self, channel, enable):
         if not self.connected:
             return
@@ -97,3 +92,21 @@ class ZcBle:
             return
         await self.client.write_gatt_char(self.characteristic_channel_frequency[channel], struct.pack('B', freq), response=False)
 
+    # all_ versions that change all channels
+    ###
+
+    async def all_channel_power_enable(self, enable):
+        for channel in range(1, 5):
+            await self.channel_power_enable(channel, enable)
+
+    async def all_channel_power_level(self, power):
+        for channel in range(1, 5):
+            await self.channel_power_level(channel, power)
+
+    async def all_channel_pulse_width(self, pos, neg):
+        for channel in range(1, 5):
+            await self.channel_pulse_width(channel, pos, neg)
+
+    async def all_channel_frequency(self, freq):
+        for channel in range(1, 5):
+            await self.channel_frequency(channel, freq)
