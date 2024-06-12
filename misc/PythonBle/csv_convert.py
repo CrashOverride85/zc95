@@ -1,3 +1,4 @@
+import sys
 import csv
 
 class Pulse:
@@ -100,9 +101,15 @@ class csv_process:
 
             # Write the pulse data
             for pulse in pulse_list:
-                writer.writerow([pulse.time_us, pulse.channel, pulse.pulse_width_pos, pulse.pulse_width_neg, 500])
+                writer.writerow([pulse.time_us, pulse.channel, pulse.pulse_width_pos, pulse.pulse_width_neg, 1000])
 
-file_path = 'Toggle.csv'
+
+if len(sys.argv) != 2:
+    print("Error - must specify csv to convert")
+    exit()
+
+file_path = sys.argv[1]
+print("Reading from: " + file_path)
 csvp = csv_process(file_path)
 
 zc95_pulses = csvp.parse_csv()
@@ -113,5 +120,3 @@ if (output_file == file_path):
     exit()
 
 csvp.write_pulses_to_csv(zc95_pulses, output_file)
-
-

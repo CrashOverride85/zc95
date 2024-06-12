@@ -243,7 +243,7 @@ void Core1::process_messages()
     }
 
     // Pulses from audio processing or remote access that don't fit in the usual FIFO queue
-    process_audio_pulse_queue2();
+    process_audio_pulse_queue();
 }
 
 void Core1::process_message(message msg)
@@ -403,82 +403,6 @@ void __not_in_flash_func(Core1::core1_suspend)(void)
 }
 
 void Core1::process_audio_pulse_queue()
-{    
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
-    {
-        if (_pulse_messages[channel].abs_time_us)
-        {
-            if (time_us_64() >= _pulse_messages[channel].abs_time_us)
-            {
-                int32_t msg_age = time_us_64() - _pulse_messages[channel].abs_time_us;
-                if (msg_age > 1000)
-                {
-                    // The pulse is too old for some reason - discard
-                     //printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
-                    debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_OLD);
-                }
-                else
-                {
-                    if (_active_routine)
-                    {
-                        _active_routine->pulse_message(channel, 0, _pulse_messages[channel].pos_pulse_us, _pulse_messages[channel].neg_pulse_us);
-                    }
-                }
-                _pulse_messages[channel].abs_time_us = 0;
-            }
-        }
-    }
-
-    // Get the next message for each channel, where the channel doesn't already have a pending message in _pulse_messages
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
-    {
-        while ((_pulse_messages[channel].abs_time_us == 0) && queue_try_remove(&gPulseQueue[channel], &_pulse_messages[channel]))
-        {
-            if (_pulse_messages[channel].abs_time_us < time_us_64())
-            {
-                // pulse time is in the past... discard
-                _pulse_messages[channel].abs_time_us = 0;
-                //printf("DISCARD msg with time in past (chan %d)\n", channel);
-                debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_PAST);
-            }
-            else if (_pulse_messages[channel].abs_time_us > (time_us_64() + (1000 * 1000)))
-            {
-                // if the pulse is more than a second in the future, something's probably gone wrong... discard
-                _pulse_messages[channel].abs_time_us = 0;
-                debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_FUTURE);
-                //printf("DISCARD msg with time too far in future (chan %d)\n", channel);
-            }
-        }
-    }
-
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
-    {
-        if (_pulse_messages[channel].abs_time_us)
-        {
-            if (time_us_64() >= _pulse_messages[channel].abs_time_us)
-            {
-                int32_t msg_age = time_us_64() - _pulse_messages[channel].abs_time_us;
-                if (msg_age > 1000)
-                {
-                    // The pulse is too old for some reason - discard
-                     //printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
-                    debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_OLD);
-                }
-                else
-                {
-                    if (_active_routine)
-                    {
-                        _active_routine->pulse_message(channel, 0, _pulse_messages[channel].pos_pulse_us, _pulse_messages[channel].neg_pulse_us);
-                    }
-                }
-                _pulse_messages[channel].abs_time_us = 0;
-            }
-        }
-    }
-}
-
-
-void Core1::process_audio_pulse_queue2()
 {    
     pulse_message_t pulse_message;
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)

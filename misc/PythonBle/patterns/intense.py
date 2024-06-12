@@ -20,8 +20,8 @@ class intense:
         await self.ble.all_channel_frequency(self.freq_hz)
         await self.ble.all_channel_pulse_width(130, 130)
 
-        await self.ble.channel_power_enable(1, self.c3on)
-        await self.ble.channel_power_enable(2, self.c3on)
+        await self.ble.channel_power_enable(1, True)
+        await self.ble.channel_power_enable(2, True)
 
     async def toggle(self):
         self.c3on = not self.c3on

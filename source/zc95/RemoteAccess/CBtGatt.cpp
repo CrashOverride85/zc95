@@ -426,14 +426,7 @@ uint8_t CBtGatt::set_channel_power_level(uint8_t channel, uint8_t *buffer, uint1
         return ATT_ERROR_VALUE_NOT_ALLOWED;
     }
 
-    if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
-    {
-        _routine_output->set_remote_power(channel, power_level);
-    }
-    else if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::SCALE)
-    {
-        _routine_output->menu_min_max_change(channel, power_level);        
-    }
+    _routine_output->menu_min_max_change(channel, power_level);    
 
     return 0;
 }
@@ -461,16 +454,16 @@ uint8_t CBtGatt::set_channel_power_enable(uint8_t channel, uint8_t *buffer, uint
 
 // The fist byte of the message is the number of pulses it contains
 // The second byte is an incrementing 8bit packet counter
-// There should then be the a series of 13 byte pulse messages (as specified in the first byte)
+// There should then be the a series of 14 byte pulse messages (as specified in the first byte)
 uint8_t CBtGatt::process_pulse_stream_packet(uint8_t *buffer, uint16_t buffer_size)
 {
     static uint64_t s_last_debug_msg = 0;
     static uint32_t s_recv_packets = 0;
     static uint32_t s_recv_messages = 0;
     static uint8_t s_last_packet_count = 0;
-    const uint8_t header_size = 2; // pulse_count & packet_counter are always sent, followed by a variable (pulse_count) number of 13 bytes messages
+    const uint8_t header_size = 2; // pulse_count & packet_counter are always sent, followed by a variable (pulse_count) number of 14 bytes messages
 
-    if (buffer_size == 0)
+    if (buffer_size < 2)
         return ATT_ERROR_VALUE_NOT_ALLOWED;
 
     s_recv_packets++;
@@ -642,12 +635,9 @@ void CBtGatt::routine_run(bool run)
 
        if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
         {
-            // This tells the DirectControl routine to set its output to 100%. In LIMIT mode, received BLE power level commands
-            // will be used to set the power level by calling set_remote_power, which is displayed as the blue bar. The routine
-            // power level is the inner yellow bar, so in this mode (and like most inbuilt built routes outside of remote access),
-            // the yellow bar will always match the blue bar.
+            // TODO: why? Set blue bar to max. Remote pattern affects yellow bar
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
-                _routine_output->menu_min_max_change(channel, 1000);
+                _routine_output->set_remote_power(channel, 1000);
         }
     }
     else
