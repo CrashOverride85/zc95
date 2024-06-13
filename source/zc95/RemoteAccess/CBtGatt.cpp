@@ -418,7 +418,7 @@ uint8_t CBtGatt::set_channel_power_level(uint8_t channel, uint8_t *buffer, uint1
         return ATT_ERROR_VALUE_NOT_ALLOWED;
     }
 
-    uint16_t power_level =  (buffer[0] << 8) | buffer[1];
+    uint16_t power_level =  (buffer[1] << 8) | buffer[0];
 
     if (power_level > 1000)
     {
@@ -454,16 +454,17 @@ uint8_t CBtGatt::set_channel_power_enable(uint8_t channel, uint8_t *buffer, uint
 
 // The fist byte of the message is the number of pulses it contains
 // The second byte is an incrementing 8bit packet counter
-// There should then be the a series of 14 byte pulse messages (as specified in the first byte)
+// There's then two bytes reserved for future use.
+// There should then be the a series of 16 byte pulse messages (as specified in the first byte)
 uint8_t CBtGatt::process_pulse_stream_packet(uint8_t *buffer, uint16_t buffer_size)
 {
     static uint64_t s_last_debug_msg = 0;
     static uint32_t s_recv_packets = 0;
     static uint32_t s_recv_messages = 0;
     static uint8_t s_last_packet_count = 0;
-    const uint8_t header_size = 2; // pulse_count & packet_counter are always sent, followed by a variable (pulse_count) number of 14 bytes messages
+    const uint8_t header_size = 4; // pulse_count & packet_counter are always sent, followed 2 reserved bytes then a variable (pulse_count) number of 16 bytes messages
 
-    if (buffer_size < 2)
+    if (buffer_size < header_size)
         return ATT_ERROR_VALUE_NOT_ALLOWED;
 
     s_recv_packets++;

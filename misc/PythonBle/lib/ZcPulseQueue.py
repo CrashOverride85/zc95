@@ -10,7 +10,7 @@ class PulseQueue:
         self.first_pulse_in_queue_us = 0
         self.pulse_count_in_queue = 0
         self.packets_sent = 0
-        self.pulse_queue = queue.Queue(17) # => (17 * 14 bytes) + 2 bytes = up to 240 bytes per packet (using DLE)
+        self.pulse_queue = queue.Queue(14) # => (14 * 16 bytes) + 4 bytes = up to 228 bytes per packet (using DLE)
         self.bleak_client = bleak_client
         self.pulse_char = pulse_char
         self.packet_count = 1 # assume start has already been sent
@@ -26,6 +26,8 @@ class PulseQueue:
         # print("Send: " + str(self.pulse_count_in_queue))
         packet  = bytes([self.pulse_count_in_queue]) # first byte of packet is number of messages
         packet += bytes([(self.packet_count % 256)]) # second byte is an 8bit packet counter; warpping around to 0 after 255. Used by ZC95 to spot missed/dropped packets
+        packet += bytes([0])                         # two reserved bytes
+        packet += bytes([0])
         self.packet_count += 1
         self.pulse_count_in_queue = 0
 

@@ -27,7 +27,7 @@ class ZcBlePulseMessage:
             self.channel_mask = 0xC0
 
     def pack(self):
-        return struct.pack('<BBBHQB', self.cmd_type, self.pulse_width_pos, self.pulse_width_neg, self.amplitude, self.time_us, self.channel_mask)
+        return struct.pack('<BBBBQHH', self.cmd_type, self.pulse_width_pos, self.pulse_width_neg, self.channel_mask, self.time_us, self.amplitude, 0)
 
 class ZcBle:
     def __init__(self, ble_address = None):
@@ -113,7 +113,7 @@ class ZcBle:
     async def channel_power_level(self, channel, power):
         if not self.connected:
             return
-        await self.client.write_gatt_char(self.characteristic_channel_power_level[channel], struct.pack('>H', power), response=False)
+        await self.client.write_gatt_char(self.characteristic_channel_power_level[channel], struct.pack('<H', power), response=False)
 
     async def channel_pulse_width(self, channel, pos, neg):
         if not self.connected:
@@ -153,6 +153,8 @@ class ZcBle:
         # Start message (more of a clock sync message). Tells the ZC95 that all future messages will have a time_us relative to now.
         msg  = bytes([1]) # first packet being sent only has one message - the start message
         msg += bytes([0]) # second byte is the packet counter. This is the start message which resets it, so should be 0
+        msg += bytes([0]) # two reserved bytes
+        msg += bytes([0])
         msg += ZcBlePulseMessage(0x01, 0, 0, 0, 0, 0).pack()
         await self.client.write_gatt_char(self.characteristic_pulse, msg, response=False)
         self.pulse_start_time = self.time_us()

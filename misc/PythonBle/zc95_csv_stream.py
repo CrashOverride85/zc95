@@ -13,7 +13,7 @@ from lib.ZcBle import ZcBle, ZcBlePulseMessage
 # Scans for ZC95, connects, then starts streaming the pulses from the CSV to it.
 # When all have been sent, it goes back to the start.
 
-async def main(address):
+async def main():
 
     def pattern_time_us(start_time_us):
         return ((time.time_ns() / 1000) - start_time_us)
@@ -171,4 +171,4 @@ async def main(address):
             await ble.process_queue()
             await asyncio.sleep(0)
 
-asyncio.run(main(address))
+asyncio.run(main())

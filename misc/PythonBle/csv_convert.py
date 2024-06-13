@@ -1,6 +1,18 @@
 import sys
 import csv
 
+# This script converts CSV files in the format published by Onwrikbaar in the NeoDK repository under patterns312, e.g.:
+# https://github.com/Onwrikbaar/NeoDK/blob/2d3f97142200198a6b14f82a4e323c43dab2d1db/patterns312/Toggle.csv
+# to something the zc95 can more readily use.
+#
+# Run by calling "python3 csv_convert.py <filename.csv>"
+# The generated file will be named "<filename.zc95.csv>"
+#
+# Limitations:
+#  - The file format being read can include things the ZC95 cannot (at present) do, so the resulting file will be somewhat
+#    of an approximation
+#  - Vprim in the file is ignored, and the resulting files have power = 1000 (full)
+
 class Pulse:
     def __init__(self, time_us, channel, pulse_width_pos, pulse_width_neg):
         self.time_us = time_us
