@@ -53,9 +53,9 @@ On first power up, the box shows a menu of available patterns. Either the highli
 ## Config
 Configuration options so far:
 
-* Remote access - Allows for remote access to the ZC95 over WiFi (if running on a Pico-W) and serial, for the purpose of either remotely controlling it or uploading Lua scripts. See [Remote Access](./RemoteAccess.md) 
+* Remote access - Allows for remote access to the ZC95 over WiFi + BLE (if running on a Pico-W) and serial, for the purpose of either remotely controlling it or uploading Lua scripts. See [Remote Access](./RemoteAccess.md) for serial & WiFi, and [BLE Streaming](./BleStreaming.md) for BLE remote control
 
-* Bluetooth - Only visible if running on a Pico-W. For configuring bluetooth remotes; see [Bluetooth page](./Bluetooth.md)
+* BLE peripherals - Only visible if running on a Pico-W. For configuring bluetooth remotes; see [Bluetooth peripherals page](./BluetoothPeripherals.md)
 
 * Channel config - For each channel 1-4, picks if either the internal output (on the 2.5mm connector) should be used, or if a shock collar should be triggered
 
