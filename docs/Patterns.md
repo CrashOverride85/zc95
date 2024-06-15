@@ -36,6 +36,19 @@ No.
 
 ------------------------------------------------------------
 
+## Intense
+Continuous output on channels 1 & 2, with 3 & 4 switching/toggling. 
+
+### Menu options
+* Toggle delay - Delay between switching from channel 3 to 4 and back 100ms - 1000ms
+* Chan 1&2 freq - Output frequency of channel 1 & 2
+* Chan 3&4 freq - Output frequency of channel 3 & 4
+
+### Extra hardware required?:
+No.
+
+------------------------------------------------------------
+
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
 Can be used with shock collars.
