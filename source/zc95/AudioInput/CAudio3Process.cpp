@@ -50,7 +50,7 @@ CAudio3Process::CAudio3Process(uint8_t output_channel, CAnalogueCapture *analogu
     _analogue_capture = analogue_capture;
 }
 
-void CAudio3Process::process_samples(uint16_t sample_count, uint8_t *buffer, uint8_t *out_intensity)
+void CAudio3Process::process_samples(uint16_t sample_count, uint8_t *buffer)
 {
     uint32_t capture_duration_us = _analogue_capture->get_capture_duration();
     uint64_t capture_end_time_us = _analogue_capture->get_capture_end_time_us();
@@ -58,10 +58,13 @@ void CAudio3Process::process_samples(uint16_t sample_count, uint8_t *buffer, uin
 
     uint64_t sample_time_start_us = capture_end_time_us - capture_duration_us;
 
-    // Figure out min, max and average (mean) sample values
-    uint32_t total = 0;
+    // Figure out min and max sample values
     int16_t min = INT16_MAX;
     int16_t max = INT16_MIN;
+
+    uint16_t above = 0;
+    uint16_t below = 0;
+
     for (uint16_t x = 0; x < sample_count; x++)
     {
         if (buffer[x] > max)
@@ -70,45 +73,64 @@ void CAudio3Process::process_samples(uint16_t sample_count, uint8_t *buffer, uin
         if (buffer[x] < min)
             min = buffer[x];
     
-        total += buffer[x];
+        if (buffer[x] < 128)
+            below++;
+        else
+            above++;
     }
-    uint8_t avg = total / sample_count;
+    uint8_t zero_point = 127; // ~1.65v
+
+    // Particularly low frequency signals can mean even a tiny amount of noise causes a false zero cross detection around 
+    // the zero cross point. We're only wanting to trigger on a rising edge, and for the rising edge there isn't a problem 
+    // as after the first, any more will be ignored for the next 2.6ms.
+    // It *IS* a problem for the falling edge, though. What can happen is the signal reaches 0, then in the next sample 
+    // noise pushes it up to 1, then it goes below 0 again. It gets falsely detected as a rising/zero cross.
+    // (Although at this point in the code, the zero cross point of the signal is 127).
+    bool low_frequency = false;
+    if (abs(above-below) > 50)
+        low_frequency = true;
+
+    uint16_t output_level = get_output_level(max, min, zero_point);
 
     // Noise filter. If no/very weak signal, don't continue (don't want to trigger on noise)
-    if (abs(min-avg) < 5 && abs(max-avg) < 5)
+    if (output_level < 50) 
     {
-        *out_intensity = 0;
         return;
     }
-
-    *out_intensity = max - min; // crude approximation of volume
-
+   
     for (uint16_t sample_idx=0; sample_idx < sample_count; sample_idx++)
     {
         uint16_t sample_time_offset_us = (sample_duration_us * (double)sample_idx);
 
         // Call process_sample with the time the sample happened, and the value -128 to +128 (or thereabouts)
-        process_sample(sample_time_start_us + sample_time_offset_us, avg-buffer[sample_idx]);
+        process_sample(sample_time_start_us + sample_time_offset_us, zero_point-buffer[sample_idx], low_frequency, output_level);
     }
 }
 
-void CAudio3Process::process_sample(uint64_t time_us, int16_t value)
+void CAudio3Process::process_sample(uint64_t time_us, int16_t value, bool low_frequency, uint16_t output_level)
 {
     pulse_message_t pulse_msg;
 
-    // Look for crossing zero
-    if (value > 0 && _last_sample_value <= 0)
+    // Look for crossing zero / rising edge
+    if 
+    (
+        (value > 0 && _last_sample_value[0] <= 0) && 
+
+        // When dealing with a low frequency / slow moving signal, require at least two samples going in the right direction
+        (!low_frequency || (_last_sample_value[0] >= _last_sample_value[1]))
+    )
     {
-        uint64_t zero_cross_time_us = _last_sample_time_us + get_zero_cross_time(0, _last_sample_value, time_us - _last_sample_time_us, value);
+        uint64_t zero_cross_time_us = _last_sample_time_us + get_zero_cross_time(0, _last_sample_value[0], time_us - _last_sample_time_us, value);
 
         // At most one pulse every 2.6ms
         uint64_t pulse_time = zero_cross_time_us + (1000 * 25);  // 25ms in future
-        if (pulse_time - _last_pulse_us > 2666)
+        if (pulse_time - _last_pulse_us > 2666) // ~375hz limit
         {
             // do pulse
             pulse_msg.abs_time_us = pulse_time;
             pulse_msg.neg_pulse_us = DEFAULT_PULSE_WIDTH;
             pulse_msg.pos_pulse_us = DEFAULT_PULSE_WIDTH;
+            pulse_msg.power_level = output_level;
 
             if (!queue_try_add(&gPulseQueue[_output_channel], &pulse_msg))
             {
@@ -119,8 +141,40 @@ void CAudio3Process::process_sample(uint64_t time_us, int16_t value)
         }
     }
 
-    _last_sample_value = value;
+    _last_sample_value[1] = _last_sample_value[0];
+    _last_sample_value[0] = value;
     _last_sample_time_us = time_us;
+}
+
+// Figure out what output level to set from the signal.
+// Due to the capture period of ~16ms, for anything < ~60hz we won't see a full cycle. 
+// To try and make things work down to 30hz, look for the highest value seen from the 0 point, in
+// either direction.
+uint16_t CAudio3Process::get_output_level(int16_t max_sample, int16_t min_sample, int16_t zero_point)
+{
+    int16_t ret = 0;
+
+    if (max_sample-zero_point > 0)
+        ret = max_sample-zero_point;
+    
+    if 
+    (
+        (zero_point - min_sample > 0 ) && 
+        ((zero_point - min_sample) > ret)
+    )
+    {
+        ret = zero_point - min_sample;
+    }
+
+    if (ret < 0) // shouldn't be possible
+        ret = 0;
+
+    ret *=2; // should give 0-255
+    ret *=4; // 0-1020, close enough to 0-1000 required
+    if (ret > 1000)
+        ret = 1000;
+
+    return ret;
 }
 
 // Use linear interpolation to have a better guess at the zero cross time

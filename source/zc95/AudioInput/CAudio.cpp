@@ -470,13 +470,6 @@ void CAudio::draw_audio_fft_threshold(uint8_t x0, uint8_t y0, uint8_t x1, uint8_
 
 void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t *sample_buffer_right)
 {
-    static uint8_t last_intensity_left  = 0;
-    static uint8_t last_intensity_right = 0;
-    static uint8_t last_intensity_virt  = 0;
-    uint8_t intensity_left  = 0;
-    uint8_t intensity_right = 0;
-    uint8_t intensity_virt  = 0;
-
     _interruptable_section.start();
 
     // generate 3rd channel
@@ -484,32 +477,9 @@ void CAudio::audio3(uint16_t sample_count, uint8_t *sample_buffer_left, uint8_t 
     if (!sample_buffer_virt)
         return;
 
-    _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left , &intensity_left );
-    _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right, &intensity_right);
-    _audio3_process[AUDIO_VIRT ]->process_samples(sample_count, sample_buffer_virt , &intensity_virt );
-
-    // Change power level based on audio level. Power level changes are slow, so do this at most once every 20ms
-    static uint64_t last_level_change_time_us = 0;
-    if (time_us_64() - last_level_change_time_us > (1000 * 20))
-    {
-        if 
-        (
-            last_intensity_left  != intensity_left  || 
-            last_intensity_right != intensity_right ||
-            last_intensity_virt  != intensity_virt 
-        )
-        {
-            last_intensity_left  = intensity_left;
-            last_intensity_right = intensity_right;
-            last_intensity_virt  = intensity_virt;
-            last_level_change_time_us = time_us_64();
-
-            if (_routine_output)
-            {
-                _routine_output->audio_intensity_change (intensity_left, intensity_right, intensity_virt);
-            }  
-        }
-    }
+    _audio3_process[AUDIO_LEFT ]->process_samples(sample_count, sample_buffer_left );
+    _audio3_process[AUDIO_RIGHT]->process_samples(sample_count, sample_buffer_right);
+    _audio3_process[AUDIO_VIRT ]->process_samples(sample_count, sample_buffer_virt );
 
     free(sample_buffer_virt);
     _interruptable_section.end();
