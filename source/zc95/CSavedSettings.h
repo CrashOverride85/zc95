@@ -65,7 +65,8 @@ class CSavedSettings
      //<next bt action>= 213,
         BtDeviceType     = 220, // Bluetooth device type (HID, GENERIC, etc.)
         BleAllowTriphase = 221, // If enabled, channel isolation can be disabled via BLE remote connect
-        BlePowerMode     = 222  // What the front panel power dials do. See ble_power_dial_mode_t.
+        BlePowerMode     = 222, // What the front panel power dials do. See ble_power_dial_mode_t.
+        PowerLevel       = 223  // Power level: Low, Medium or High (default)
     };
 
     public:
@@ -123,6 +124,13 @@ class CSavedSettings
         {
             LIMIT = 0,
             SCALE = 1
+        };
+
+        enum class power_level_t
+        {
+            HIGH   = 0,
+            MEDIUM = 1,
+            LOW    = 2
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -218,6 +226,10 @@ class CSavedSettings
         // Front panel power dial mode when running BLE remote access
         ble_power_dial_mode_t get_ble_remote_access_power_dial_mode();
         void set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode);
+
+        // Power level
+        power_level_t get_power_level();
+        void set_power_level(power_level_t power_level);
 
         void eeprom_initialise();
 
