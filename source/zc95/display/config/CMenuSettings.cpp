@@ -23,7 +23,6 @@
 #include "display_options/CMenuSettingLedBrightnes.h"
 #include "display_options/CMenuSettingDisplayOptions.h"
 #include "remote_access/CMenuRemoteAccess.h"
-#include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
@@ -126,10 +125,6 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingOutput(_display, _buttons, _saved_settings));
             break;
 
-        case setting_id::RAMP_UP_TIME:
-            set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_settings));
-            break;
-
         case setting_id::AUDIO:
             set_active_menu(new CMenuSettingAudio(_display, _buttons, _audio, _saved_settings));
             break;
@@ -182,7 +177,6 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config" ));
     _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"  ));
     _settings.push_back(CMenuSettings::setting(setting_id::DISPLAY_OPTIONS,"Display options"));
-    _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"   ));
     
     if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));

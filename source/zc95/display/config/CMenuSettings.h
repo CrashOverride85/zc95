@@ -56,7 +56,7 @@ class CMenuSettings : public CMenu
             COLLAR_CONFIG  = 1,
             DISPLAY_OPTIONS= 2,
             OUTPUT         = 3,
-            RAMP_UP_TIME   = 4,
+       //   RAMP_UP_TIME   = 4,
             AUDIO          = 5,
             HARDWARE       = 6,
             REMOTE_ACCESS  = 7,
