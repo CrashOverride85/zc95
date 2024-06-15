@@ -57,6 +57,10 @@ Configuration options so far:
 
 * BLE peripherals - Only visible if running on a Pico-W. For configuring bluetooth remotes; see [Bluetooth peripherals page](./BluetoothPeripherals.md)
 
+* Output - Settings related to signal output. Options:
+  - Power level - High (default), Medium or Low
+  - Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
+
 * Channel config - For each channel 1-4, picks if either the internal output (on the 2.5mm connector) should be used, or if a shock collar should be triggered
 
 * Collar config - Allows 4x shock collars to be configured. Each shock collar needs to be paired to the box, and the bottom option allows for testing the collar with the current settings. The "Chan." option corresponds to the CH button on the original remote, and it probably makes sense to be left as 1 for all collars, as each will have a unique ID anyway. Note that the mode (shock / vibrate / beep) needs to be set here, and won't change outside of this config screen (for the time being, at least)
@@ -71,8 +75,6 @@ Configuration options so far:
     - Both - Enable Disappearing text display and in bar graph
 
   - Button brightness - controls how bright the LEDs in the 4 front panel buttons are
-
-* Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
 
 * Audio input - Displayed if audio board present by default, depends on "Hardware config > Audio" setting. See [Audio Input](./AudioInput-Operation.md)
 

@@ -175,7 +175,7 @@ void CMenuSettingOutput::draw()
 
         case setting_kind_t::MIN_MAX:
             hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
-            _bar_graph->draw_horz_bar_graph(_setting_choice_area, 1, RAMP_UP_TIME_MAXIMUM_SECS, _saved_settings->get_ramp_up_time_seconds(), "sec", bar_colour);
+            _bar_graph->draw_horz_bar_graph(_setting_choice_area, _min_max_value_min, _min_max_value_max, _saved_settings->get_ramp_up_time_seconds(), "sec", bar_colour);
             break;
     };
 }
