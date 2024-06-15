@@ -23,7 +23,7 @@
 #define MESSAGE_BLUETOOTH_REMOTE_KEYPRESS    16
 
 // messages from core1 to core0
-#define MESSAGE_SET_POWER                   100
+#define MESSAGE_SET_DISPLAY_POWER           100
 #define MESSAGE_SET_MAXIMUM_POWER           101
 
 #define MESSAGE_SET_LED_CHAN0               110

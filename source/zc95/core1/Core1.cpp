@@ -172,11 +172,11 @@ void Core1::update_power_levels()
     for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
     {
         // Send current power level being output, if changed
-        uint16_t power_level = power_level_control->get_output_power_level(channel_number);
+        uint16_t power_level = power_level_control->get_display_power_level(channel_number);
         if (power_level != _output_power[channel_number])
         {
             message msg = {0};
-            msg.msg8[0] = MESSAGE_SET_POWER;
+            msg.msg8[0] = MESSAGE_SET_DISPLAY_POWER;
             msg.msg8[1] = channel_number;
             msg.msg8[2] = power_level & 0xFF;
             msg.msg8[3] = (power_level >> 8) & 0xFF;

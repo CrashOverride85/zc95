@@ -228,7 +228,7 @@ void CRoutineOutputCore1::process_message(message msg)
 {
     switch(msg.msg8[0])
     {
-        case MESSAGE_SET_POWER:
+        case MESSAGE_SET_DISPLAY_POWER:
         {
             uint8_t channel = msg.msg8[1];
             uint16_t power = msg.msg8[2];

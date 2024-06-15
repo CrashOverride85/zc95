@@ -120,6 +120,27 @@ uint16_t CPowerLevelControl::get_output_power_level(uint8_t channel)
     if (channel >= MAX_CHANNELS)
         return 0;
 
+    switch(_saved_settings->get_power_level())
+    {
+        case CSavedSettings::power_level_t::HIGH:
+            return _output_power[channel];
+        
+        case CSavedSettings::power_level_t::MEDIUM:
+            return _output_power[channel] * 0.66;
+        
+        case CSavedSettings::power_level_t::LOW:
+            return _output_power[channel] * 0.33;
+        
+        default:
+            return 0;
+    }
+}
+
+uint16_t CPowerLevelControl::get_display_power_level(uint8_t channel)
+{
+    if (channel >= MAX_CHANNELS)
+        return 0;
+
     return _output_power[channel];
 }
 

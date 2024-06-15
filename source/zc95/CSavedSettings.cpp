@@ -479,6 +479,16 @@ void CSavedSettings::set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t
     _eeprom_contents[(uint8_t)setting::BlePowerMode] = (uint8_t)mode;
 }
 
+CSavedSettings::power_level_t CSavedSettings::get_power_level()
+{
+    return (power_level_t)(_eeprom_contents[(uint8_t)setting::PowerLevel]);
+}
+
+void CSavedSettings::set_power_level(CSavedSettings::power_level_t power_level)
+{
+    _eeprom_contents[(uint8_t)setting::PowerLevel] = (uint8_t)power_level;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

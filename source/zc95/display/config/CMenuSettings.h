@@ -55,7 +55,7 @@ class CMenuSettings : public CMenu
             CHANNEL_CONFIG = 0,
             COLLAR_CONFIG  = 1,
             DISPLAY_OPTIONS= 2,
-            POWER_STEP     = 3,
+            OUTPUT         = 3,
             RAMP_UP_TIME   = 4,
             AUDIO          = 5,
             HARDWARE       = 6,
