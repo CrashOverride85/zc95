@@ -42,7 +42,7 @@ CMenuSettings::CMenuSettings(
         CWifi *wifi,
         std::vector<CRoutines::Routine> &routines,
         CBluetooth *bluetooth,
-        CRadio *radio)
+        CRadio *radio) : _routines(routines)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -55,7 +55,6 @@ CMenuSettings::CMenuSettings(
     _audio = audio;
     _analogueCapture = analogueCapture;
     _wifi = wifi;
-    _routines = routines;
     _bluetooth = bluetooth;
     _radio = radio;
 }

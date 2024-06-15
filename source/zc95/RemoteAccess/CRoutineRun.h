@@ -31,7 +31,7 @@ class CRoutineRun
         void script_output(pattern_text_output_t output);
         
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
         uint16_t _output_power[MAX_CHANNELS];
         uint16_t _max_output_power[MAX_CHANNELS];
         uint16_t _front_panel_power[MAX_CHANNELS]; // acts as power limit in remote access mode

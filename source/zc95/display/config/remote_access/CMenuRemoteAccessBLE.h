@@ -30,7 +30,6 @@ class CMenuRemoteAccessBLE : public CMenu
         CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> *_routines;
         CRadio *_radio;
         CBtGatt *_gatt_server;
 

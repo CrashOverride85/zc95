@@ -45,7 +45,7 @@ class CMainMenu : public CMenu
 
     private:
         CDisplay* _display;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CBluetooth *_bluetooth;

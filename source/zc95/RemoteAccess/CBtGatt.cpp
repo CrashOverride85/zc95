@@ -46,12 +46,11 @@ static const uint8_t _adv_data[] =
 };
 static const uint8_t _adv_data_len = sizeof(_adv_data);
 
-CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines, CSavedSettings *saved_settings)
+CBtGatt::CBtGatt(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> const &routines, CSavedSettings *saved_settings) : _routines(routines)
 {
     printf("CBtGatt()\n");
     _s_CBtGatt = this;
     _routine_output = routine_output;
-    _routines = routines;
     _routine_running = false;
     _saved_settings = saved_settings;
 

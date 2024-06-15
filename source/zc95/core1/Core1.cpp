@@ -41,7 +41,7 @@ void core1_entry()
         core1->loop();
 }
 
-Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
+Core1 *core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)
 {
     printf("core1_start\n");
     if (core1 == NULL)
@@ -63,14 +63,13 @@ Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *sa
     return core1;
 }
 
-Core1::Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
+Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)  : _routines(routines)
 {
     printf("Core1::Core1()\n");
     _saved_settings = saved_settings;
     _active_routine = NULL;
     _channel_config = NULL;
 
-    _routines = routines;
     power_level_control = new CPowerLevelControl(saved_settings);
 
     memset(_active_channels, 0, sizeof(_active_channels));
@@ -443,7 +442,7 @@ void Core1::process_audio_pulse_queue()
 void Core1::activate_routine(uint8_t routine_id)
 {
     printf("Core1::activate_routine(%d)\n", routine_id);
-    CRoutines::Routine routine = (*_routines)[routine_id];
+    CRoutines::Routine routine = _routines[routine_id];
 
     if (!routine.routine_maker)
     {

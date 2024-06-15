@@ -38,13 +38,12 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CWifi *wifi,
     CBluetooth *bluetooth,
     CRadio *radio
-    )
+    ) : _routines(routines)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
     _area = display->get_display_area();
     _routine_display_list = new COptionsList(display, _area);
-    _routines = routines;
     _buttons = buttons;
     _submenu_active = NULL;
     _settings = settings;

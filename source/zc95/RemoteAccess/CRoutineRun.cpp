@@ -43,13 +43,12 @@ CRoutineRun::CRoutineRun(
         std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
         CRoutineOutput *routine_output,
         std::vector<CRoutines::Routine> &routines
-)
+)  : _routines(routines)
 {
     printf("CRoutineRun()\n");
     _send = send_function;
     _send_ack = send_ack_func;
     _routine_output = routine_output;
-    _routines = routines;
 
     _routine_output->set_text_callback_function(std::bind(&CRoutineRun::script_output, this, std::placeholders::_1));
 

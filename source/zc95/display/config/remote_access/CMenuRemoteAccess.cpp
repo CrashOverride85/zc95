@@ -33,7 +33,7 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     CRoutineOutput *routine_output,
     std::vector<CRoutines::Routine> &routines,
     CBluetooth *bluetooth,
-    CRadio *radio)
+    CRadio *radio) : _routines(routines)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
@@ -42,7 +42,6 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     _wifi = wifi;
     _analogueCapture = analogueCapture;
     _routine_output = routine_output;
-    _routines = routines;
     _bluetooth = bluetooth;
     _radio = radio;
 

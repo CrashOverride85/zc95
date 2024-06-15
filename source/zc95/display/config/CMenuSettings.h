@@ -77,7 +77,7 @@ class CMenuSettings : public CMenu
         CAudio *_audio;
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
         CRadio *_radio;
 };

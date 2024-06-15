@@ -35,13 +35,12 @@
 CMessageProcessor::CMessageProcessor(
     CRoutineOutput *routine_output, 
     std::vector<CRoutines::Routine> &routines,
-    std::function<void(std::string)> send_function)
+    std::function<void(std::string)> send_function) : _routines(routines)
 {
     printf("CMessageProcessor::CMessageProcessor()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
     _pending_message = false;
     _routine_output = routine_output;
-    _routines = routines;
     _send = send_function;
 }
 
@@ -147,11 +146,8 @@ void CMessageProcessor::set_state(state_t new_state)
         _lua_load != NULL
     )
     {
-        // If LuaLoad changed the routines list (e.g new routine loaded), refresh the list
-        if (_lua_load->routines_updated())
-        {
-            reload_routines();
-        }
+        // If LuaLoad may have changed the routines list (e.g new routine loaded), so refresh the list
+        reload_routines();
 
         delete _lua_load;
         _lua_load = NULL;
@@ -332,7 +328,8 @@ void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
         routine->get_config(&conf);
 
         // Audio stuff probably isn't going to work correctly remotely, so skip
-        if (conf.audio_processing_mode == audio_mode_t::OFF)
+        // Also skip stuff that's hidden from the menu
+        if ((conf.audio_processing_mode == audio_mode_t::OFF) && (!conf.hidden_from_menu))
         {
             JsonObject obj = patterns.createNestedObject();
             obj["Id"] = index;
@@ -455,7 +452,7 @@ void CMessageProcessor::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_S
 
 void CMessageProcessor::reload_routines()
 {
-    printf("CMessageProcessor::reload_routines(): routines list has changed, updating\n");
+    printf("CMessageProcessor::reload_routines(): routines list have have changed, updating\n");
     _routines.clear();
     CRoutines::get_routines(_routines);
 }

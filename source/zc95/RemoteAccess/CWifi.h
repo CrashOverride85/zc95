@@ -29,7 +29,7 @@ class CWifi
         CAnalogueCapture *_analogue_capture;
         CRoutineOutput *_routine_output;
         CWebServer *_web_server = NULL;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
 };
 
 #endif

@@ -32,11 +32,10 @@ CMainMenu::CMainMenu(
     CWifi *wifi,
     CBluetooth *bluetooth,
     CRadio *radio
-)
+) : _routines(routines)
 {
     printf("CMainMenu() \n");
     _display = display;
-    _routines = routines;
     _buttons = buttons;
     _settings = settings;
     _bluetooth = bluetooth;

@@ -272,7 +272,7 @@ int main()
 
     sleep_ms(100);
 
-    core1_start(&routines, &settings);
+    core1_start(routines, &settings);
     CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
 
     audio.set_routine_output(routine_output);

@@ -64,7 +64,7 @@ class CBtGatt
         uint8_t* allow_channel_isolation_disable();
 
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> _routines;
+        const std::vector<CRoutines::Routine>& _routines;
         CSavedSettings *_saved_settings;
         uint64_t _start_time_us = 0;
 

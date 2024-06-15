@@ -138,7 +138,6 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
                 if (_lua_buffer_postion >= LUA_UPLOAD_BUFFER_SIZE)
                 {
                     // write section to flash
-                    _routines_updated = true;
                     bool store_result = _lua_storage->store_script_section(_index, _lua_slot_section, (const char*)_lua_buffer, LUA_UPLOAD_BUFFER_SIZE);
                     _lua_buffer_postion = 0;
                     memset(_lua_buffer, 0, LUA_UPLOAD_BUFFER_SIZE);
@@ -176,7 +175,6 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         if (_index >= 0)
         {
             // Write what's still in lua_buffer to flash
-            _routines_updated = true;
             bool store_result = _lua_storage->store_script_section(_index, _lua_slot_section, (const char*)_lua_buffer, LUA_UPLOAD_BUFFER_SIZE);
             if (!store_result)
             {
@@ -200,7 +198,6 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
                 // Script is good (or at least not horribly broken), now remove that inital null so it will get processed at startup and show on the patterns list
                 memcpy(_lua_buffer, (const char *)(lua_scripts[_index].start), LUA_UPLOAD_BUFFER_SIZE);
                 _lua_buffer[0] = '\n';
-                _routines_updated = true;
                 bool store_result = _lua_storage->store_script_section(_index, 0, (const char*)_lua_buffer, LUA_UPLOAD_BUFFER_SIZE);
                 if (!store_result)
                 {
@@ -239,11 +236,6 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         send_ack("OK", msgId);
 
     return retval;
-}
-
-bool CLuaLoad::routines_updated()
-{
-    return _routines_updated;
 }
 
 void CLuaLoad::send_ack(std::string result, int msg_count, std::string error)

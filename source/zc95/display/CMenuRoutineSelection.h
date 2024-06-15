@@ -53,7 +53,7 @@ class CMenuRoutineSelection : public CMenu
         COptionsList *_routine_display_list = NULL;
         struct display_area _area;
         CDisplay* _display;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CRoutineOutput *_routine_output;

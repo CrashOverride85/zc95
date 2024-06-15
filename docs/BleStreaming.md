@@ -5,7 +5,7 @@ Right now, the BLE remote access functionality is likely only of use to develope
 There are two main ways in can be used:
 1. For each channel, the pulse width, frequency and power level can be set. When the channel is then switched on, it will continue outputting with these settings until either changed, or BLE disconnection. This level of control is all most inbuilt patterns use (arguably more, as most inbuilt patterns don't change the power level).
 There's a pattern_runner python script, and a couple of python patterns that demonstrate this.
-2. Individual pulse pairs can be streamed to the box. There's some examples of doing this from a CSV file. This allows for the possibility of creating triphase effects if enabled, if the pulses are created with that in mind.
+2. Individual pulse pairs can be streamed to the box. There's some examples of doing this from a CSV file. This allows for the possibility of creating triphase effects if enabled, if the pulses are created with that in mind. This mode should be considered experimental. 
 
 Whilst the examples are in python, it should be easy enough to use this from embedded projects.
 

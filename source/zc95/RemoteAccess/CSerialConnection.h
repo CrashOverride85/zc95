@@ -39,7 +39,7 @@ class CSerialConnection
         };
 
         CRoutineOutput *_routine_output; 
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
 
         CMessageProcessor *_messageProcessor;
         volatile state_t _state = state_t::IDLE;

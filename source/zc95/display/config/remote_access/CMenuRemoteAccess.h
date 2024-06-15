@@ -67,7 +67,7 @@ class CMenuRemoteAccess : public CMenu
         CWifi *_wifi;
         CAnalogueCapture *_analogueCapture;
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> _routines;
+        std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
         CRadio *_radio;
 };

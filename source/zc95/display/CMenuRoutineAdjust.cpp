@@ -26,7 +26,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
-                CSavedSettings *saved_settings)
+                CSavedSettings *saved_settings) 
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
