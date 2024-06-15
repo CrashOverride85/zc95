@@ -118,7 +118,6 @@ add_executable(zc95
   display/CDisplayMessage.cpp
 
   display/config/CMenuSettings.cpp
-  display/config/CMenuSettingPowerStep.cpp
   display/config/CMenuSettingRampUpTime.cpp
   display/config/CMenuSettingAbout.cpp
   display/config/CMenuSettingAudio.cpp

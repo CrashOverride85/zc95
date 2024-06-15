@@ -23,7 +23,6 @@
 #include "display_options/CMenuSettingLedBrightnes.h"
 #include "display_options/CMenuSettingDisplayOptions.h"
 #include "remote_access/CMenuRemoteAccess.h"
-#include "CMenuSettingPowerStep.h"
 #include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"

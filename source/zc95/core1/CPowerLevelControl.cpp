@@ -30,7 +30,7 @@
  *                               with front_panel_power serving as a power limit
  *   - max_power_level         - The maximum power level currently possible - always <= front_panel_power. This takes into account ramp up 
  *                             - time, so for the first few seconds this will increase (assuming the front panel isn't set to 0)
- *   - output_power_level      - The power level to be sent to output chanel after combining all the above
+ *   - output_power_level      - The power level to be sent to output chanel after combining all the above. Also scaled based on power mode (high/medium/low)
  */
 
 CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings)
