@@ -21,6 +21,8 @@
 .global lua_script_orgasm_end
 .global lua_script_climb_start
 .global lua_script_climb_end
+.global lua_script_intense_start
+.global lua_script_intense_end
 
 lua_script1_start:
 .balign 4096
@@ -71,3 +73,7 @@ lua_script_climb_start:
 .fill 2, 1, 0x00 /* null terminate */
 lua_script_climb_end:
 
+lua_script_intense_start:
+.incbin "LuaScripts/intense.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_intense_end:
