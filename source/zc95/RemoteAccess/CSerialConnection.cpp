@@ -37,13 +37,12 @@
 extern CSerialConnection *g_SerialConnection;
 CSerialConnection *CSerialConnection::_s_instance = NULL;
 
-CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines)  : _routines(routines)
 {
     printf("CSerialConnection::CSerialConnection()\n");
     _s_instance = this;
     _uart = uart;
     _routine_output = routine_output;
-    _routines = routines;
 
     _recv_buffer_position = 0;
     memset(_recv_buffer, 0, sizeof(_recv_buffer));

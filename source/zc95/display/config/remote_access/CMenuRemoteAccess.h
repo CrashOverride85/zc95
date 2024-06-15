@@ -18,8 +18,9 @@ class CMenuRemoteAccess : public CMenu
             CWifi *wifi, 
             CAnalogueCapture *analogueCapture, 
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> *routines,
-            CBluetooth *bluetooth);
+            std::vector<CRoutines::Routine> &routines,
+            CBluetooth *bluetooth,
+            CRadio *radio);
 
         ~CMenuRemoteAccess();
         void button_pressed(Button button);
@@ -50,7 +51,9 @@ class CMenuRemoteAccess : public CMenu
             CONNECT_WIFI        = 1,
             CLEAR_SAVED_CREDS   = 2,
             REGEN_AP_PSK        = 3,
-            SERIAL_ACCESS       = 4
+            SERIAL_ACCESS       = 4,
+            BLE_GATT            = 5,
+            BLE_CONFIG          = 6
         };
 
         std::vector<option> _options;
@@ -64,6 +67,7 @@ class CMenuRemoteAccess : public CMenu
         CWifi *_wifi;
         CAnalogueCapture *_analogueCapture;
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
+        CRadio *_radio;
 };

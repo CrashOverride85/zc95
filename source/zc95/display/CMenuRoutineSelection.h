@@ -30,7 +30,7 @@ class CMenuRoutineSelection : public CMenu
     public:
         CMenuRoutineSelection(
                 CDisplay* display, 
-                std::vector<CRoutines::Routine> *routines, 
+                std::vector<CRoutines::Routine> &routines, 
                 CGetButtonState *buttons, 
                 CSavedSettings *settings, 
                 CRoutineOutput *routine_output, 
@@ -38,7 +38,8 @@ class CMenuRoutineSelection : public CMenu
                 CAudio *audio, 
                 CAnalogueCapture *analogueCapture, 
                 CWifi *wifi, 
-                CBluetooth *bluetooth);
+                CBluetooth *bluetooth,
+                CRadio *radio);
 
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
@@ -52,7 +53,7 @@ class CMenuRoutineSelection : public CMenu
         COptionsList *_routine_display_list = NULL;
         struct display_area _area;
         CDisplay* _display;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine>& _routines;
         CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CRoutineOutput *_routine_output;
@@ -62,6 +63,7 @@ class CMenuRoutineSelection : public CMenu
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
         CBluetooth *_bluetooth;
+        CRadio *_radio;
 };
 
 #endif

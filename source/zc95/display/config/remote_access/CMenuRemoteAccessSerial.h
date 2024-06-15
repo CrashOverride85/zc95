@@ -19,7 +19,7 @@ class CMenuRemoteAccessSerial : public CMenu
             CGetButtonState *buttons, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> *routines,
+            std::vector<CRoutines::Routine> &routines,
             CBluetooth *bluetooth);
         ~CMenuRemoteAccessSerial();
         void button_pressed(Button button);
@@ -36,7 +36,6 @@ class CMenuRemoteAccessSerial : public CMenu
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CSerialConnection *_serial_connection;
-        std::vector<CRoutines::Routine> *_routines;
         CBluetooth *_bluetooth;
         bool _bt_enabled = false;
         queue_t _bt_keypress_queue = {0};

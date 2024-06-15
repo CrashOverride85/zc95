@@ -19,6 +19,7 @@
 #include "CAudioIntensity.h"
 #include "CAudioVirtual3.h"
 #include "CLuaRoutine.h"
+#include "CDirectPulse.h"
 #include "../../LuaScripts/LuaScripts.h"
 
 class CRoutines
@@ -30,31 +31,32 @@ class CRoutines
             int param;
         };
 
-        static void get_routines(std::vector<Routine> *routines)
+        static void get_routines(std::vector<Routine> &routines)
         {
             // Loop through and add all valid lua scripts
             for (uint8_t index = 0; index < lua_script_count(); index++)
             {
                 if (is_lua_script_valid(index))
-                    routines->push_back({&(CLuaRoutine::create), index});
+                    routines.push_back({&(CLuaRoutine::create), index});
             }
             
-         // routines->push_back({&(CWaves::create)         , 0}); now a lua script
-            routines->push_back({&(CToggle::create)        , 0});
-            routines->push_back({&(CRoundRobin::create)    , 0});
-            routines->push_back({&(CTens::create)          , 0});
-        //  routines->push_back({&(CClimb::create)         , 0}); now a lua script
-            routines->push_back({&(CTriggeredClimb::create), 0});
-            routines->push_back({&(CFire::create)          , 0});
-            routines->push_back({&(CAudioThreshold::create), 0});
-            routines->push_back({&(CAudioWave::create)     , 0});
-            routines->push_back({&(CAudioIntensity::create), 0});
-            routines->push_back({&(CAudioVirtual3::create) , 0});
-            routines->push_back({&(CClimbPulse::create)    , 0});
-            routines->push_back({&(CPredicament::create)   , 0});
-            routines->push_back({&(CShockChoice::create)   , 0});
-            routines->push_back({&(CCamTrigger::create)    , 0});
-            routines->push_back({&(CBuzz::create)          , 0});
+         // routines.push_back({&(CWaves::create)         , 0}); now a lua script
+            routines.push_back({&(CToggle::create)        , 0});
+            routines.push_back({&(CRoundRobin::create)    , 0});
+            routines.push_back({&(CTens::create)          , 0});
+        //  routines.push_back({&(CClimb::create)         , 0}); now a lua script
+            routines.push_back({&(CTriggeredClimb::create), 0});
+            routines.push_back({&(CFire::create)          , 0});
+            routines.push_back({&(CAudioThreshold::create), 0});
+            routines.push_back({&(CAudioWave::create)     , 0});
+            routines.push_back({&(CAudioIntensity::create), 0});
+            routines.push_back({&(CAudioVirtual3::create) , 0});
+            routines.push_back({&(CClimbPulse::create)    , 0});
+            routines.push_back({&(CPredicament::create)   , 0});
+            routines.push_back({&(CShockChoice::create)   , 0});
+            routines.push_back({&(CCamTrigger::create)    , 0});
+            routines.push_back({&(CBuzz::create)          , 0});
+            routines.push_back({&(CDirectPulse::create)   , 0}); // special for BLE. hidden from menu.
         }
 
     private:

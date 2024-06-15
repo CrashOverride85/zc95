@@ -25,7 +25,7 @@ class Core1
 {
 
     public:
-        Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings);
+        Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);
         ~Core1();
         void init();
         void loop();
@@ -57,14 +57,14 @@ class Core1
         CFullChannelAsSimpleChannel *_fullChannelAsSimpleChannels[MAX_CHANNELS];
         CSavedSettings *_saved_settings;
         COutputChannel *_real_output_channel[MAX_CHANNELS];
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine>& _routines;
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
 };
 
-Core1* core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings);
+Core1* core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);
 
 #endif
 

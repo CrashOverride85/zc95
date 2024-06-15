@@ -16,54 +16,56 @@ class CSavedSettings
 {
     enum class setting
     {
-        EepromInit     =  0, // Contains magic value if eeprom as been initialised
-        ChannelType    =  1, // Channel id 0 type
-        ChannelIndex   =  2, // Channel id 0 index
-        //  ...        = 19     Channel id 9 type
-        //  ...        = 20     Channel id 9 index
-        LEDBrightness  = 21, // default LED brightness
-        PowerStep      = 22, // When using rot encoder for power, how many steps to increase power by for each click (e.g. as power level is 0-1000, 10 would give 100 possible power levels)
-        RampUpTimeSecs = 23, // When selecting a routine, how long (in seconds) does the power take to reach the power level set on the front pannel
-        AudioGainL     = 24, // Gain for left  channel
-        AudioGainR     = 25, // Gain for right channel
-        MicPreAmp      = 26, // Mic pre-amp enabled
-        MicPower       = 27, // Mic power enabled
-        Audio          = 28, // Audio setting: Auto/no gain/off
-        Debug          = 29, // Debugging output destination
+        EepromInit       =  0, // Contains magic value if eeprom as been initialised
+        ChannelType      =  1, // Channel id 0 type
+        ChannelIndex     =  2, // Channel id 0 index
+        //  ...          = 19     Channel id 9 type
+        //  ...          = 20     Channel id 9 index
+        LEDBrightness    = 21, // default LED brightness
+        PowerStep        = 22, // When using rot encoder for power, how many steps to increase power by for each click (e.g. as power level is 0-1000, 10 would give 100 possible power levels)
+        RampUpTimeSecs   = 23, // When selecting a routine, how long (in seconds) does the power take to reach the power level set on the front panel
+        AudioGainL       = 24, // Gain for left  channel
+        AudioGainR       = 25, // Gain for right channel
+        MicPreAmp        = 26, // Mic pre-amp enabled
+        MicPower         = 27, // Mic power enabled
+        Audio            = 28, // Audio setting: Auto/no gain/off
+        Debug            = 29, // Debugging output destination
     
         // Collar config
-        Collar0IdLow   = 30,
-        Collar0IdHigh  = 31,
-        Collar0Chan    = 32,
-        Collar0Mode    = 33,
-       // not used     = 34
-       // Collar1IdLow = 35
+        Collar0IdLow     = 30,
+        Collar0IdHigh    = 31,
+        Collar0Chan      = 32,
+        Collar0Mode      = 33,
+       // not used       = 34
+       // Collar1IdLow   = 35
        // ...
-       // Collar9Mode  = 78
-       // not used     = 79
+       // Collar9Mode    = 78
+       // not used       = 79
 
-        AuxPort        = 80,  // Aux port usage - Audio or Serial
-        WifiSSID       = 81,  // SSID to connect to. 32 characters/bytes + null
-        WifiPSK        = 114, // Password, 64 characters + null
-        WiFiConfigured = 179, // Set to EEPROM_MAGIC_VAL if wifi configured. Anything else means not configured.
-        WifiApPsk      = 180, // Auto-generated AP PSK. 16 characters + NULL
-        WifiApPskEnd   = 196, //
-        PowerLevelDisp = 197, // Power level numeric display 
-        ButtonLedBright= 198, // Brightness of illuminated LED buttons 
-        BluetoothOn    = 199, // Bluetooth enabled yes/no
-        BTAddrStart    = 200, // Bluetooth address (6 bytes) start. Currently selected / paired device
-        BTAddrEnd      = 205, // Bluetooth address end
+        AuxPort          = 80,  // Aux port usage - Audio or Serial
+        WifiSSID         = 81,  // SSID to connect to. 32 characters/bytes + null
+        WifiPSK          = 114, // Password, 64 characters + null
+        WiFiConfigured   = 179, // Set to EEPROM_MAGIC_VAL if wifi configured. Anything else means not configured.
+        WifiApPsk        = 180, // Auto-generated AP PSK. 16 characters + NULL
+        WifiApPskEnd     = 196, //
+        PowerLevelDisp   = 197, // Power level numeric display 
+        ButtonLedBright  = 198, // Brightness of illuminated LED buttons 
+        BluetoothOn      = 199, // Bluetooth enabled yes/no
+        BTAddrStart      = 200, // Bluetooth address (6 bytes) start. Currently selected / paired device
+        BTAddrEnd        = 205, // Bluetooth address end
 
         // These map keypress_t::* to a keypress_action_t::*, e.g. KEY_LEFT => ROT_LEFT
-        BTButtonAction = 206, // KEY_BUTTON
-        BTUpAction     = 207, // KEY_UP
-        BTDownAction   = 208, // KEY_DOWN
-        BTLeftAction   = 209, // KEY_LEFT
-        BTRightAction  = 210, // KEY_RIGHT
-        BTShutterAction= 211, // KEY_SHUTTER
-        BTUnknownAction= 212, // KEY_UNKNOWN
+        BTButtonAction   = 206, // KEY_BUTTON
+        BTUpAction       = 207, // KEY_UP
+        BTDownAction     = 208, // KEY_DOWN
+        BTLeftAction     = 209, // KEY_LEFT
+        BTRightAction    = 210, // KEY_RIGHT
+        BTShutterAction  = 211, // KEY_SHUTTER
+        BTUnknownAction  = 212, // KEY_UNKNOWN
      //<next bt action>= 213,
-        BtDeviceType   = 220  // Bluetooth device type (HID, GENERIC, etc.)
+        BtDeviceType     = 220, // Bluetooth device type (HID, GENERIC, etc.)
+        BleAllowTriphase = 221, // If enabled, channel isolation can be disabled via BLE remote connect
+        BlePowerMode     = 222  // What the front panel power dials do. See ble_power_dial_mode_t.
     };
 
     public:
@@ -114,6 +116,13 @@ class CSavedSettings
             HID          = 0, // hopefully a bluetooth shutter remote
             NOT_RECEIVED = 1, // not in advertising report
             OTHER        = 2, // in advertising report, but not handled
+        };
+
+        // When in BLE remote access mode, what the front panel power dials do
+        enum class ble_power_dial_mode_t
+        {
+            LIMIT = 0,
+            SCALE = 1
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -201,6 +210,14 @@ class CSavedSettings
         // Paired bluetooth device type
         bt_device_type_t get_paired_bt_type();
         void set_paired_bt_type(bt_device_type_t type);
+
+        // Allow BLE remote connections to disable channel isolation
+        bool get_ble_remote_disable_channel_isolation_permitted();
+        void set_ble_remote_disable_channel_isolation_permitted(bool setting);
+
+        // Front panel power dial mode when running BLE remote access
+        ble_power_dial_mode_t get_ble_remote_access_power_dial_mode();
+        void set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode);
 
         void eeprom_initialise();
 

@@ -18,6 +18,8 @@
 
 #include "CMenuRemoteAccess.h"
 #include "CMenuRemoteAccessSerial.h"
+#include "CMenuRemoteAccessBLE.h"
+#include "CMenuRemoteAccessBleConfig.h"
 #include "CMenuApMode.h"
 #include "../../CDisplayMessage.h"
 #include "../CHwCheck.h"
@@ -29,8 +31,9 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     CWifi *wifi, 
     CAnalogueCapture *analogueCapture, 
     CRoutineOutput *routine_output,
-    std::vector<CRoutines::Routine> *routines,
-    CBluetooth *bluetooth)
+    std::vector<CRoutines::Routine> &routines,
+    CBluetooth *bluetooth,
+    CRadio *radio) : _routines(routines)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
@@ -39,8 +42,8 @@ CMenuRemoteAccess::CMenuRemoteAccess(
     _wifi = wifi;
     _analogueCapture = analogueCapture;
     _routine_output = routine_output;
-    _routines = routines;
     _bluetooth = bluetooth;
+    _radio = radio;
 
     _exit_menu = false;
     _options_list = new COptionsList(display, display->get_display_area());
@@ -116,6 +119,14 @@ void CMenuRemoteAccess::show_selected_setting()
             set_active_menu(new CDisplayMessage(_display, _buttons, "New PSK for AP mode will be generated when AP mode next started"));
             break;
 
+        case option_id::BLE_GATT:
+            set_active_menu(new CMenuRemoteAccessBLE(_display, _buttons, _saved_settings, _routine_output, _routines, _radio));
+            break;
+
+        case option_id::BLE_CONFIG:
+            set_active_menu(new CMenuRemoteAccessBleConfig(_display, _buttons, _saved_settings, _routine_output));
+            break;
+
         case option_id::SERIAL_ACCESS:
             std::string config_error = get_serial_config_error();
             if (config_error == "")
@@ -151,6 +162,8 @@ void CMenuRemoteAccess::show()
         _options.push_back(CMenuRemoteAccess::option(option_id::AP_MODE          ,  "Config Wifi/AP mode"));
         _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
         _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
+        _options.push_back(CMenuRemoteAccess::option(option_id::BLE_GATT         ,  "BLE remote access"));
+        _options.push_back(CMenuRemoteAccess::option(option_id::BLE_CONFIG       ,  "BLE config"));
     }
     _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access (Aux)"));
 

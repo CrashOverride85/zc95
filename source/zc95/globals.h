@@ -16,6 +16,8 @@ extern queue_t gBtRawHidQueue;
 extern bool gFatalError;
 extern std::string gErrorString;
 
+extern bool gZc624ChannelIsolationEnabled;
+
 extern mutex_t gI2cMutex;
 
 extern CSavedSettings *g_SavedSettings;

@@ -95,10 +95,11 @@ struct routine_conf
     std::vector<output_type> outputs;
     std::vector<menu_entry> menu;
     std::string button_text[(int)soft_button::BUTTON_MAX];
-    bool enable_channel_isolation = true;
+    bool force_channel_isolation = true;  // If true, routine cannot disable channel isolation. If false, routine is prefixed with "(!)" in menu as a warning
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
     uint16_t loop_freq_hz = 0;
     bool bluetooth_remote_passthrough = false; // If true, pass bt remote keypresses (e.g. "KEY_LEFT") straight through, without mapping to an action
+    bool hidden_from_menu = false;
 };
 
 class CRoutine;
@@ -127,7 +128,7 @@ class CRoutine
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
         virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
-        virtual void pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
+        virtual void pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
 
         virtual lua_script_state_t lua_script_state()
         {
@@ -157,7 +158,7 @@ class CRoutine
             conf.outputs.clear();
             conf.menu.clear();
             conf.audio_processing_mode = audio_mode_t::OFF;
-            conf.enable_channel_isolation = true;
+            conf.force_channel_isolation = true;
 
             for (int x=0; x < (int)soft_button::BUTTON_MAX; x++)
                 conf.button_text[x] = " ";
@@ -260,6 +261,25 @@ class CRoutine
             if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
             {
                 _full_channel[channel]->off();
+            }
+        }
+
+        void set_channel_isolation(bool enabled)
+        {
+            routine_conf conf;
+            get_config(&conf);
+            if (conf.force_channel_isolation && !enabled)
+            {
+                printf("ERROR: attempt to disable channel isolation when not permitted\n");
+                return;
+            }
+
+            for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+            {
+                if (_full_channel[chan] != NULL)
+                {
+                    _full_channel[chan]->set_channel_isolation(enabled);
+                }
             }
         }
 

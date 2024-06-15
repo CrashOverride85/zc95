@@ -54,6 +54,7 @@ struct pulse_message_t
     uint64_t abs_time_us;
     uint8_t  pos_pulse_us;
     uint8_t  neg_pulse_us;
+    uint16_t power_level; // 0 - 1000
 };
 
 enum class text_type_t { PRINT, ERROR };

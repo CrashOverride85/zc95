@@ -7,7 +7,7 @@ This is the bare minimum to get to the point where you can build a binary to cop
 
 ## Install build tools
 ```
-apt-get install git cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential libstdc++-arm-none-eabi-newlib
+apt-get install git cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential libstdc++-arm-none-eabi-newlib python3 python3-pycryptodome
 ```
 
 ## Setup pico-sdk

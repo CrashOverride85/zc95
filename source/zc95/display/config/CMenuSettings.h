@@ -24,8 +24,9 @@ class CMenuSettings : public CMenu
             CAudio *audio, 
             CAnalogueCapture *analogueCapture,
             CWifi *wifi,
-            std::vector<CRoutines::Routine> *routines,
-            CBluetooth *bluetooth);
+            std::vector<CRoutines::Routine> &routines,
+            CBluetooth *bluetooth,
+            CRadio *radio);
 
         ~CMenuSettings();
         void button_pressed(Button button);
@@ -76,6 +77,7 @@ class CMenuSettings : public CMenu
         CAudio *_audio;
         CAnalogueCapture *_analogueCapture;
         CWifi *_wifi;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
+        CRadio *_radio;
 };

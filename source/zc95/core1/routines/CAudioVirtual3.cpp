@@ -77,31 +77,17 @@ void CAudioVirtual3::trigger(trigger_socket socket, trigger_part part, bool acti
 
 }
 
-void CAudioVirtual3::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
-{
-    uint16_t power_left  = left_chan  * 4;
-    uint16_t power_right = right_chan * 4;
-    uint16_t power_virt  = virt_chan  * 4;
-
-    if (power_left > 1000)
-        power_left = 1000;
-
-    if (power_right > 1000)
-        power_right = 1000;
-
-    if (power_virt > 1000)
-        power_virt = 1000;
-
-    full_channel_set_power(0, power_left );
-    full_channel_set_power(1, power_right);
-    full_channel_set_power(2, power_virt );
-}
-
-void CAudioVirtual3::pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
+void CAudioVirtual3::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
     // Pretty much all the processing for this pattern is done in CAudio, and passed into here.
     if (channel > 3)
         return;
+
+    if (_chan_last_power_level[channel] != power_level)
+    {
+        full_channel_set_power(channel, power_level);
+        _chan_last_power_level[channel] = power_level;
+    }
 
     full_channel_pulse(channel, pos_pulse_us, neg_pulse_us);
 }
@@ -109,6 +95,9 @@ void CAudioVirtual3::pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_
 void CAudioVirtual3::start()
 {
     set_all_channels_power(0);
+
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+        _chan_last_power_level[chan] = 0;
 }
 
 void CAudioVirtual3::loop(uint64_t time_us)
