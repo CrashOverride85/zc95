@@ -409,18 +409,25 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
                     break;
                 }
 
+                // These aren't properly supported for remote access. Full support would mean needing to stream display 
+                // updates to the connected GUI, and the current implementation almost certainly isn't close to being 
+                // fast enough.
+                // For now, just let the remote client know what they are, but without trying to send audio data.
+                case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+                    menu_item["Type"] = "AUDIO_VIEW_INTENSITY_STEREO";
+                    break;
+
+                case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+                    menu_item["Type"] = "AUDIO_VIEW_INTENSITY_MONO";
+                    break;
+
+                // Patterns using these menu types are filtered out by send_pattern_list, so the 
+                // connected client shouldn't know the id of the patterns that won't work (although being 
+                // sequential, they're rather easy to guess)
                 case menu_entry_type::AUDIO_VIEW_SPECT:
                 case menu_entry_type::AUDIO_VIEW_WAVE:
-                case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
-                case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
                 case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
-                    // Not supported for remote access. Would need to stream display updates to the connected GUI,
-                    // and the current implementation almost certainly isn't close to being fast enough.
-                    // Note that patterns using these menu types are filtered out by send_pattern_list, so the 
-                    // connected client shouldn't know the id of the patterns that won't work (although being 
-                    // sequential, they're rather easy to guess)
                     break;
-                
             }
         }
 

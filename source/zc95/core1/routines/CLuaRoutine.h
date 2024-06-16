@@ -21,6 +21,7 @@ class CLuaRoutine: public CRoutine
         void soft_button_pushed (soft_button button, bool pushed);
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
+        void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan);
         void start();
         void loop(uint64_t time_us);
         void stop();
@@ -41,6 +42,7 @@ class CLuaRoutine: public CRoutine
         void load_lua_script_if_required();
         bool CheckLua(int r);
         bool GetMenuEntryTypeFromString(const char* type, menu_entry_type *menu_type_out);
+        audio_mode_t get_audio_processing_mode();
         void get_multi_choice_entry(struct menu_entry *entry);
         void get_min_max_entry(struct menu_entry *entry);
         int get_int_field(const char *field_name);
