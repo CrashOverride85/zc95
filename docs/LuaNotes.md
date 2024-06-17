@@ -3,7 +3,8 @@
 ## Capability
 Lua scripts can be written / uploaded (see [Remote Access](./RemoteAccess.md) for how to upload) to add new patterns to the ZC95. These scripts are able to switch each channel on/off, set the frequency and pulse width, and set the power level (scaled to what the front panel is set to - i.e. a Lua script can't set the output power to higher than set on the front panel).
 They can also receive notification of settings being changed via the menu, and inputs from the external trigger inputs along with the top left soft button being pressed.
-The most significant thing they can't do (that inbuilt patterns can) right now is anything to do with audio.
+There is also limited support for audio - so far only reacting to volume, and no audio wave display when running over Wifi (and no audio support at all over serial due to using the same aux socket)
+
 
 ## Example scripts
 There are a few example scripts in `remote_access/lua`, which demonstrate some of things that can be done from Lua. These scripts are:
@@ -13,6 +14,8 @@ There are a few example scripts in `remote_access/lua`, which demonstrate some o
 * toggle.lua - switches between channel 1+2 & 3+4 at a speed that can be set via the menu. If the channels are switched on constant or just pulsed can also be set from the menu
 
 * waves.lua - a basic waves pattern. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
+
+* audio.lua - audio example assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency. Channels 3&4 react to volume changes
 
 * bluetooth_fire.lua - uses Left/Up/Down/Right buttons on a bluetooth remote to trigger chanel's 1 to 4 respectively for a configurable pulse duration
 
@@ -30,6 +33,7 @@ _delay_ms = 500
 
 Config = {
     name = "Toggle",
+    audio_processing_mode = "OFF",
     menu_items = {
         {
             type = "MIN_MAX",
@@ -122,6 +126,7 @@ The `Config` section is used to set the name and build the on screen menu:
 ```
 Config = {
     name = "Toggle",
+    audio_processing_mode = "OFF",
     menu_items = {
         {
             type = "MIN_MAX",
@@ -149,12 +154,18 @@ Config = {
 ```
 `name = "Toggle"` sets the name for the script - this is prefixed with `U:` then used on the patterns menu.
 
-A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
- _Optionally_, each item can be given a `group` number - this only has any affect when ran remotely using the GUI, and allows related options to be group together, instead of appearing in one long list (useful for scripts with many options).
+Optional fields:
+* `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be group together, instead of appearing in one long list (useful for scripts with many options)
+* `audio_processing_mode` - if the script can use audio, sets the mode. Currently either `OFF` (default) or `AUDIO_INTENSITY`. See audio section later.
 
- There are two types supported:
+A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
+
+ There are four types supported:
 * `MIN_MAX` - shows a horizontal bar graph that can be changed between the set min/max using the adjust dial. The unit of measure (uom) text is displayed as suffix to the numeric value in the bar chart 
 * `MULTI_CHOICE` - used to show a menu option that allows for one of multiple settings to be picked. Each choice must have a unique id.
+* `AUDIO_VIEW_INTENSITY_STEREO` - show a stereo waveform display; see audio section later
+* `AUDIO_VIEW_INTENSITY_MONO` - show a mono waveform display; see audio section later
+
 
 ```
 function MinMaxChange(menu_id, min_max_val)
@@ -345,6 +356,11 @@ Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_
 
 When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particular familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
 
+### AudioIntensityChange(left_chan, right_chan, virt_chan)
+Receive audio data from aux socket.
+
+See audio section later.
+
 ### Setup()
 Called once when the pattern is started, before `Loop()`. It can be used to do any initial setup, including setting power level. If this function does _not_ exist, the power level is defaulted to 1000, otherwise it is set to 0 and can be set to something more appropriate here. 
 
@@ -354,5 +370,31 @@ Called periodically for as long as the pattern is running. `time_ms` is how long
 `Loop()` is called as often as possible by default, but how often will depend enormously on how much work is done in the Loop() function - expect an empty Loop() to be called around every 50us, and a complex loop() to be called closer to every 4000us (or more).
 
 If a specific frequency is required (rather than just as often as possible), a `loop_freq_hz = n` option can be added to the `Config = {}` block, where `n` is between 1 and 400. Be aware that for particularly complex scripts, higher values are unlikely to work well - and note that this setting will only reduce how often Loop() is called when compared to the default.
+
+## Audio
+Lua scripts can be made to react to audio intensity/volume changes when being ran locally, or over Wifi.
+
+To use audio support:
+* Configure the box for audio as per the usual [audio operation](./AudioInput-Operation.md) notes, and confirm that the inbuilt `Audio intensity` pattern is working as expected
+* Set `audio_processing_mode = "AUDIO_INTENSITY"` in the script `Config` section
+* Optionally, add a `AUDIO_VIEW_INTENSITY_STEREO` or `AUDIO_VIEW_INTENSITY_MONO` menu item. Only useful if the script isn't being ran remotely
+* Implement `function AudioIntensityChange(left_chan, right_chan, virt_chan)` in the script to receive audio data
+
+### Microphone input
+With the [microphone pre-amp enabled](./AudioInput-Operation.md), the amplified signal will be present in the `left_chan` value. `right_chan` will have the same signal, but without the mic pre-amp so will be much weaker - likely unusablely so - therefore should be discarded. For microphone input, if a waveform display is desired a `AUDIO_VIEW_INTENSITY_MONO` menu item should be added.
+
+### Line input
+With the [microphone pre-amp disabled](./AudioInput-Operation.md), the line level signal will be present in `left_chan` and `right_chan` for the left and right audio channels respectively. 
+If the signal is expected to be stereo, a stereo waveform display can be shown by adding a menu item with the type `AUDIO_VIEW_INTENSITY_STEREO`.
+
+### AudioIntensityChange(left_chan, right_chan, virt_chan)
+With `audio_processing_mode = "AUDIO_INTENSITY"` in the `Config` section of the script, it is expected that a `AudioIntensityChange` function will be present to receive audio volume/intensity changes. 
+
+The `left_chan` and `right_chan` parameters are for the left and right audio channels respectively. The `virt_chan` is an attempt a simulating a triphase effect on a separate logical channel, and probably isn't much use - I suggest ignoring it for now.
+
+All values sent to these functions will be 0-255, if being used to modulate the output power of a channel, will need to be scaled to 0-1000.
+
+### Example
+The `audio.lua` script shows an example of audio support assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency, and channels 3 & 4 react to volume changes
 
 [acc port]: images/lua_acc_port.png "Accessory port"
