@@ -71,7 +71,7 @@ CMessageProcessor::~CMessageProcessor()
 // later processing from loop()
 void CMessageProcessor::message(uint8_t *data, u16_t data_len)
 {
-    printf("CMessageProcessor::message()\n");
+    // printf("CMessageProcessor::message()\n");
     std::string message((char*)data, data_len);
 
     printf("msg < %s\n", message.c_str());
