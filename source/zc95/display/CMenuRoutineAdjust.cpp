@@ -66,8 +66,6 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
 
     // Set the text used on the status bar
     _title = _active_routine_conf.name;
-
-    _audio->set_audio_mode(_active_routine_conf.audio_processing_mode);
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
@@ -94,7 +92,6 @@ CMenuRoutineAdjust::~CMenuRoutineAdjust()
     }
 
     _routine_output->stop_routine();
-    _audio->set_audio_mode(audio_mode_t::OFF);
 }
 
 void CMenuRoutineAdjust::button_released(Button button)

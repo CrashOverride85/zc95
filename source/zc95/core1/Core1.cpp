@@ -510,6 +510,7 @@ void Core1::activate_routine(uint8_t routine_id)
 
     power_level_control->ramp_start();
     _active_routine->start();
+    set_audio_mode(conf.audio_processing_mode);
     printf("Core1::activate_routine: completed\n");
 }
 
@@ -529,6 +530,7 @@ void Core1::stop_routine()
     // Get rid of any FullChannelAsSimpleChannel wrappers that may have been used
     delete_fullChannelAsSimpleChannels_and_restore_channels();
     set_output_chanels_to_off(false);
+    set_audio_mode(audio_mode_t::OFF);
 }
 
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
@@ -633,5 +635,17 @@ void Core1::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
     if (_active_routine != NULL)
     {
         _active_routine->bluetooth_remote_keypress(key);
+    }
+}
+
+void Core1::set_audio_mode(audio_mode_t mode)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_SET_AUDIO_MODE;
+    msg.msg8[1] = (uint8_t)mode;
+
+    if (multicore_fifo_wready())
+    {
+        multicore_fifo_push_blocking(msg.msg32);
     }
 }

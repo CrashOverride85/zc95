@@ -49,6 +49,7 @@ class Core1
         void set_output_chanels_to_off(bool enable_channel_isolation);
         void process_audio_pulse_queue();
         void check_validity_of_lua_script();
+        void set_audio_mode(audio_mode_t mode);
         static void __not_in_flash_func(core1_suspend)(void);
 
         CChannelConfig *_channel_config;
