@@ -182,7 +182,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
             else
                 break;
 
-            menu_item->multichoice.current_selection = _routine_multi_choice_list->get_current_selection();
+            menu_item->multichoice.current_selection = menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id;
 
             _routine_output->menu_multi_choice_change(menu_item->id, menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id);
             break;
