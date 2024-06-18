@@ -61,7 +61,9 @@ void CMenuBluetoothScan::button_pressed(Button button)
                 if (_options_list->count() > 0)
                 {
                     _last_selection = -1;
-                    _bluetooth->pair(_devices[_options_list->get_current_selection()].address);
+                    _bluetooth->pair(
+                        _devices[_options_list->get_current_selection()].address, 
+                        _devices[_options_list->get_current_selection()].type);
                 }
                 return;
 

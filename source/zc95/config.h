@@ -1,5 +1,5 @@
 
-#define PULSE_QUEUE_LENGTH 12  // queue size for pules sent from core0 to core1. Only used for audio pattern
+#define PULSE_QUEUE_LENGTH 50  // queue size for pules sent from core0 to core1. Only used for audio pattern
                                // (maybe serial input in the future), where processing happens on core0
 
 #define PATTERN_TEXT_OUTPUT_QUEUE_LENGTH 4 // Max number of queued text/debug messages from Core1 (so far just lua) to Core0
@@ -86,3 +86,5 @@
 #define ACC_PORT_UART uart1
 
 #define SERIAL_TX_QUEUE_SIZE 2000 // only used when in remote access/serial mode
+
+#define LUA_UPLOAD_BUFFER_SIZE  4096 // Will probably break if not a multiple of 4096, likely also depends on the script slot sizes in flash (see LuaScripts/LuaScripts.S)

@@ -449,6 +449,46 @@ void CSavedSettings::set_bt_keypress_action(CBluetoothRemote::keypress_t key, CB
     }
 }
 
+CSavedSettings::bt_device_type_t CSavedSettings::get_paired_bt_type()
+{
+    return (CSavedSettings::bt_device_type_t)_eeprom_contents[(uint8_t)setting::BtDeviceType];
+}
+
+void CSavedSettings::set_paired_bt_type(bt_device_type_t type)
+{
+    _eeprom_contents[(uint8_t)setting::BtDeviceType] = (uint8_t)type;
+}
+
+bool CSavedSettings::get_ble_remote_disable_channel_isolation_permitted()
+{
+    return (_eeprom_contents[(uint8_t)setting::BleAllowTriphase] == 1);
+}
+
+void CSavedSettings::set_ble_remote_disable_channel_isolation_permitted(bool setting)
+{
+    _eeprom_contents[(uint8_t)setting::BleAllowTriphase] = setting;
+}
+
+CSavedSettings::ble_power_dial_mode_t CSavedSettings::get_ble_remote_access_power_dial_mode()
+{
+    return (ble_power_dial_mode_t)(_eeprom_contents[(uint8_t)setting::BlePowerMode]);
+}
+
+void CSavedSettings::set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode)
+{
+    _eeprom_contents[(uint8_t)setting::BlePowerMode] = (uint8_t)mode;
+}
+
+CSavedSettings::power_level_t CSavedSettings::get_power_level()
+{
+    return (power_level_t)(_eeprom_contents[(uint8_t)setting::PowerLevel]);
+}
+
+void CSavedSettings::set_power_level(CSavedSettings::power_level_t power_level)
+{
+    _eeprom_contents[(uint8_t)setting::PowerLevel] = (uint8_t)power_level;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

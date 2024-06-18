@@ -17,17 +17,16 @@
  */
 
 #include "CMenuSettings.h"
-#include "bluetooth/CMenuBluetooth.h"
+#include "bluetooth_peripherals/CMenuBluetooth.h"
 #include "channel_config/CMenuChannelConfig.h"
 #include "channel_config/CMenuCollarConfig.h"
 #include "display_options/CMenuSettingLedBrightnes.h"
 #include "display_options/CMenuSettingDisplayOptions.h"
 #include "remote_access/CMenuRemoteAccess.h"
-#include "CMenuSettingPowerStep.h"
-#include "CMenuSettingRampUpTime.h"
 #include "CMenuSettingAbout.h"
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
+#include "CMenuSettingOutput.h"
 
 #include "../core1/routines/CRoutine.h"
 
@@ -40,8 +39,9 @@ CMenuSettings::CMenuSettings(
         CAudio *audio, 
         CAnalogueCapture *analogueCapture,
         CWifi *wifi,
-        std::vector<CRoutines::Routine> *routines,
-        CBluetooth *bluetooth)
+        std::vector<CRoutines::Routine> &routines,
+        CBluetooth *bluetooth,
+        CRadio *radio) : _routines(routines)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -54,8 +54,8 @@ CMenuSettings::CMenuSettings(
     _audio = audio;
     _analogueCapture = analogueCapture;
     _wifi = wifi;
-    _routines = routines;
     _bluetooth = bluetooth;
+    _radio = radio;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -121,12 +121,8 @@ void CMenuSettings::show_selected_setting()
             set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings, _hwCheck));
             break;
 
-        case setting_id::POWER_STEP:
-            set_active_menu(new CMenuSettingPowerStep(_display, _buttons, _saved_settings));
-            break;
-
-        case setting_id::RAMP_UP_TIME:
-            set_active_menu(new CMenuSettingRampUpTime(_display, _buttons, _saved_settings));
+        case setting_id::OUTPUT:
+            set_active_menu(new CMenuSettingOutput(_display, _buttons, _saved_settings));
             break;
 
         case setting_id::AUDIO:
@@ -138,7 +134,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines));
+            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio));
             break;
 
         case setting_id::ABOUT:
@@ -174,12 +170,13 @@ void CMenuSettings::show()
     _settings.push_back(CMenuSettings::setting(setting_id::REMOTE_ACCESS,  "Remote access"  ));    
 
     if (CHwCheck::running_on_picow())
-        _settings.push_back(CMenuSettings::setting(setting_id::BLUETOOTH,  "Bluetooth"          ));
+        _settings.push_back(CMenuSettings::setting(setting_id::BLUETOOTH,  "BLE peripherals"));
 
-    _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config"));
-    _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"));
+    _settings.push_back(CMenuSettings::setting(setting_id::OUTPUT,         "Output"         ));
+
+    _settings.push_back(CMenuSettings::setting(setting_id::CHANNEL_CONFIG, "Channel config" ));
+    _settings.push_back(CMenuSettings::setting(setting_id::COLLAR_CONFIG,  "Collar config"  ));
     _settings.push_back(CMenuSettings::setting(setting_id::DISPLAY_OPTIONS,"Display options"));
-    _settings.push_back(CMenuSettings::setting(setting_id::RAMP_UP_TIME,   "Ramp up time"));
     
     if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));

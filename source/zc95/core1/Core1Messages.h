@@ -23,7 +23,7 @@
 #define MESSAGE_BLUETOOTH_REMOTE_KEYPRESS    16
 
 // messages from core1 to core0
-#define MESSAGE_SET_POWER                   100
+#define MESSAGE_SET_DISPLAY_POWER           100
 #define MESSAGE_SET_MAXIMUM_POWER           101
 
 #define MESSAGE_SET_LED_CHAN0               110
@@ -37,6 +37,7 @@
 #define MESSAGE_SET_ACC_IO_PORT3_STATE      123
 
 #define MESSAGE_LUA_SCRIPT_STATE            130
+#define MESSAGE_SET_AUDIO_MODE              131
 
 enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
@@ -54,6 +55,7 @@ struct pulse_message_t
     uint64_t abs_time_us;
     uint8_t  pos_pulse_us;
     uint8_t  neg_pulse_us;
+    uint16_t power_level; // 0 - 1000
 };
 
 enum class text_type_t { PRINT, ERROR };

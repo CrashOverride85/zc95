@@ -56,14 +56,16 @@ void CMenuBluetoothTest::button_pressed(Button button)
     {
         switch (button)
         {
-            case Button::A:
+            case Button::A: // remote view
+                _hid_view = true;
                 return;
 
             case Button::B: // "Back"
                 _exit_menu = true;
                 break;
 
-            case Button::C:
+            case Button::C: // raw view
+                _hid_view = false;
                 break;
 
             case Button::D:
@@ -80,13 +82,35 @@ void CMenuBluetoothTest::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuBluetoothTest::draw()
 {
-    CBluetoothRemote::bt_keypress_queue_entry_t queue_entry;
-    while (queue_try_remove(&_bt_keypress_queue, &queue_entry))
+    _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+    CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();
+    _display->put_text(CBluetoothConnect::s_state_to_string(connect_state), _disp_area.x0, _disp_area.y0+8, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
+
+    // Get keypresses from remote
+    CBluetoothRemote::bt_keypress_queue_entry_t key_queue_entry;
+    while (queue_try_remove(&_bt_keypress_queue, &key_queue_entry))
     {
-        _message = CBluetoothRemote::s_get_keypress_string(queue_entry.key);
+        _remote_message = CBluetoothRemote::s_get_keypress_string(key_queue_entry.key);
         _keypress_displayed_us = time_us_64();
     }
 
+    // Get raw hid events
+    CBluetoothConnect::bt_raw_hid_queue_entry_t hid_queue_entry;
+    if (queue_try_remove(&gBtRawHidQueue, &hid_queue_entry))
+    {
+        _hid_display_items.push_front(hid_queue_entry);
+        while (_hid_display_items.size() > 5)
+            _hid_display_items.pop_back();
+    }
+
+    if (_hid_view)
+        draw_bt_remote();
+    else
+        draw_bt_other();
+}
+
+void CMenuBluetoothTest::draw_bt_remote()
+{
     // If the keypress was received in the last 100ms, make the text yellow, otherwise stick to white
     hagl_color_t text_colour; 
     if (time_us_64() - _keypress_displayed_us < 1000 * 100)
@@ -95,25 +119,37 @@ void CMenuBluetoothTest::draw()
         text_colour = hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70);
 
     _display->put_text("Key:"  , _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)-10 , hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-    _display->put_text(_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)    , text_colour);
+    _display->put_text(_remote_message, _disp_area.x0, _disp_area.y0 + ((_disp_area.y1-_disp_area.y0)/2)    , text_colour);
+}
 
-    _display->put_text("State: ", _disp_area.x0, _disp_area.y0, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-    CBluetoothConnect::bt_connect_state_t connect_state = _bluetooth->get_connect_state();
-    _display->put_text(CBluetoothConnect::s_state_to_string(connect_state), _disp_area.x0, _disp_area.y0+8, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
+void CMenuBluetoothTest::draw_bt_other()
+{
+    _display->put_text("Page Usage Value", _disp_area.x0, _disp_area.y0+20, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+
+    for (uint8_t i = 0; i < _hid_display_items.size(); i++ )
+    {
+        char msg_buffer[100] = {0};
+        snprintf(msg_buffer, sizeof(msg_buffer), "%04X %04X  %08lx",
+            _hid_display_items[i].usage_page,
+            _hid_display_items[i].usage,
+            _hid_display_items[i].value);
+
+        _display->put_text(msg_buffer, _disp_area.x0, _disp_area.y0+30 + (i*10), hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
+    }
 }
 
 void CMenuBluetoothTest::show()
 {
+    _display->set_option_a("Remote");
     _display->set_option_b("Back");
-    _display->set_option_a("");
-    _display->set_option_c("");
+    _display->set_option_c("Raw");
     _display->set_option_d("");
 
     bd_addr_t paired_addr = {0};
+    CSavedSettings::bt_device_type_t bt_device_type = g_SavedSettings->get_paired_bt_type();
     g_SavedSettings->get_paired_bt_address(&paired_addr);
 
-    _bluetooth->connect(paired_addr);
+    _bluetooth->connect(paired_addr, bt_device_type);
 
     _exit_menu = false;
 }
-

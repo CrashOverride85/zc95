@@ -32,11 +32,12 @@
 #include "Core1Messages.h"
 
 
-CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp)
+CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio *audio)
 {
     _display = display;
     _led_control = led_control;
     _ext_port_exp = ext_port_exp;
+    _audio = audio;
 }
 
 void CRoutineOutputCore1::set_front_panel_power(uint8_t channel, uint16_t power)
@@ -228,7 +229,7 @@ void CRoutineOutputCore1::process_message(message msg)
 {
     switch(msg.msg8[0])
     {
-        case MESSAGE_SET_POWER:
+        case MESSAGE_SET_DISPLAY_POWER:
         {
             uint8_t channel = msg.msg8[1];
             uint16_t power = msg.msg8[2];
@@ -304,6 +305,10 @@ void CRoutineOutputCore1::process_message(message msg)
 
         case MESSAGE_LUA_SCRIPT_STATE:
             _lua_script_state = (lua_script_state_t)msg.msg8[1];
+            break;
+
+        case MESSAGE_SET_AUDIO_MODE:
+            _audio->set_audio_mode((audio_mode_t)msg.msg8[1]);
             break;
     }
 }

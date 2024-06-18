@@ -8,12 +8,13 @@
 #include "../CLedControl.h"
 #include "../CExtInputPortExp.h"
 #include "../EExtInputPort.h"
+#include "../AudioInput/CAudio.h"
 
 
 class CRoutineOutputCore1 : public CRoutineOutput
 {
     public:
-        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp);
+        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio* audio);
         void set_front_panel_power(uint8_t channel, uint16_t power);
         void set_remote_power(uint8_t channel, uint16_t power);
         void enable_remote_power_mode();
@@ -66,6 +67,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         bool _remote_mode_active = false;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
         std::function<void(pattern_text_output_t)> _text_output_callback = NULL;
+        CAudio* _audio;
 };
 
 #endif

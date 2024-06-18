@@ -64,10 +64,12 @@ void CAnalogueCapture::start()
 
     _s_irq_counter1 = 0;
     _s_irq_counter2 = 0;
-    adc_gpio_init(26 + ADC_CHANNEL_0);
-    adc_gpio_init(26 + ADC_CHANNEL_1);
-    adc_gpio_init(26 + ADC_CHANNEL_2);
+    adc_gpio_init(26 + ADC_CHANNEL_0); // Battery
+    adc_gpio_init(26 + ADC_CHANNEL_1); // Audio/left
+    adc_gpio_init(26 + ADC_CHANNEL_2); // Audio/right
     adc_init();
+
+    // Starting with channel 0 (battery) should mean we get 341 samples for audio L, 341 for audio R and 342 for battery (= 1024)
     adc_select_input(ADC_CHANNEL_0);
     adc_set_round_robin(1 << ADC_CHANNEL_0 | 1 << ADC_CHANNEL_1 | 1 << ADC_CHANNEL_2);
 

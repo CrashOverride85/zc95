@@ -9,7 +9,7 @@
 #if __cplusplus >= 200704L
 constexpr
 #endif
-const uint8_t profile_data[] =
+const uint8_t CBluetoothPairGatt_profile_data[] =
 {
     // ATT DB Version
     1,

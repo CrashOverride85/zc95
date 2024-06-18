@@ -193,6 +193,8 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
             conf->loop_freq_hz = loop_freq; 
         }
 
+        conf->audio_processing_mode = get_audio_processing_mode();
+
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
 
@@ -221,10 +223,16 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
                         get_multi_choice_entry(&entry);
                         break;
 
+                    case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+                        entry.menu_type = menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO;
+                        break;
+
+                    case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+                        entry.menu_type = menu_entry_type::AUDIO_VIEW_INTENSITY_MONO;
+                        break;
+
                     case menu_entry_type::AUDIO_VIEW_SPECT:
                     case menu_entry_type::AUDIO_VIEW_WAVE:
-                    case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
-                    case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
                     case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
                         // Unsupported from Lua (so far)
                         // GetMenuEntryTypeFromString() should mean we never end up here.
@@ -360,6 +368,18 @@ void CLuaRoutine::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
     }
 }
 
+void CLuaRoutine::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
+{
+    lua_getglobal(_lua_state, "AudioIntensityChange");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        lua_pushinteger(_lua_state, left_chan);
+        lua_pushinteger(_lua_state, right_chan);
+        lua_pushinteger(_lua_state, virt_chan);
+        pcall(3, 0, 0);
+    }
+}
+
 void CLuaRoutine::start()
 {
     load_lua_script_if_required();
@@ -372,6 +392,10 @@ void CLuaRoutine::start()
     if (!runnable())
         return;
 
+    // purge incoming bluetooth HID event queue to remove any stale entries before starting routine
+    CBluetoothConnect::bt_raw_hid_queue_entry_t raw_hid_queue_entry;
+    while (queue_try_remove(&gBtRawHidQueue, &raw_hid_queue_entry));
+
     lua_getglobal(_lua_state, "Setup");
     if (lua_isfunction(_lua_state, -1))
     {
@@ -382,6 +406,14 @@ void CLuaRoutine::start()
     else
     {
         set_all_channels_power(POWER_FULL);
+    }
+
+    _get_raw_bt_hid_events = false;
+    lua_getglobal(_lua_state, "BluetoothHidEvent");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        printf("Start: have BluetoothHidEvent() function\n");
+        _get_raw_bt_hid_events = true;
     }
 }
 
@@ -413,9 +445,27 @@ void CLuaRoutine::loop(uint64_t time_us)
     {
         // There must be a loop function, or the script isn't going to work
         printf("CLuaRoutine::loop(): No loop function in script!\n");
-        print(text_type_t::ERROR, "Script stopped... no loop function found in script!");
+        print(text_type_t::ERROR, "Script stopped... no Loop function found in script!");
         _script_valid = ScriptValid::INVALID;
         stop();
+        return;
+    }
+
+    if (_get_raw_bt_hid_events)
+    {
+        uint8_t count = 0;
+        CBluetoothConnect::bt_raw_hid_queue_entry_t raw_hid_queue_entry;
+        while (queue_try_remove(&gBtRawHidQueue, &raw_hid_queue_entry) && count++ < 10)
+        {
+            lua_getglobal(_lua_state, "BluetoothHidEvent");
+            if (lua_isfunction(_lua_state, -1))
+            {
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.usage_page);
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.usage);
+                lua_pushinteger(_lua_state, raw_hid_queue_entry.value);
+                pcall(3, 0, 0);
+            }
+        }
     }
 }
 
@@ -506,7 +556,11 @@ bool CLuaRoutine::GetMenuEntryTypeFromString(const char* type, menu_entry_type *
     if (!strcasecmp(type, "MIN_MAX"))
         *menu_type_out = menu_entry_type::MIN_MAX;
     else if (!strcasecmp(type, "MULTI_CHOICE"))
-        *menu_type_out = menu_entry_type::MULTI_CHOICE;    
+        *menu_type_out = menu_entry_type::MULTI_CHOICE;
+    else if (!strcasecmp(type, "AUDIO_VIEW_INTENSITY_STEREO"))
+        *menu_type_out = menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO;
+    else if (!strcasecmp(type, "AUDIO_VIEW_INTENSITY_MONO"))
+        *menu_type_out = menu_entry_type::AUDIO_VIEW_INTENSITY_MONO;  
     else
     {
         printf("Unexpected menu type encountered: %s\n", type);
@@ -600,6 +654,15 @@ bool CLuaRoutine::get_bool_field(const char *field_name)
 
     lua_pop(_lua_state, 1);
     return ret;
+}
+
+audio_mode_t CLuaRoutine::get_audio_processing_mode()
+{
+    std::string s = get_string_field("audio_processing_mode");
+    if (s == "AUDIO_INTENSITY")
+        return audio_mode_t::AUDIO_INTENSITY;
+    else
+        return audio_mode_t::OFF;
 }
 
 bool CLuaRoutine::is_channel_number_valid(int channel_number)

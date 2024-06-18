@@ -30,7 +30,7 @@
  *                               with front_panel_power serving as a power limit
  *   - max_power_level         - The maximum power level currently possible - always <= front_panel_power. This takes into account ramp up 
  *                             - time, so for the first few seconds this will increase (assuming the front panel isn't set to 0)
- *   - output_power_level      - The power level to be sent to output chanel after combining all the above
+ *   - output_power_level      - The power level to be sent to output chanel after combining all the above. Also scaled based on power mode (high/medium/low)
  */
 
 CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings)
@@ -116,6 +116,27 @@ void CPowerLevelControl::set_routine_requested_power_level(uint8_t channel, uint
 
 // Get power level to send to output chanel (0-1000)
 uint16_t CPowerLevelControl::get_output_power_level(uint8_t channel)
+{
+    if (channel >= MAX_CHANNELS)
+        return 0;
+
+    switch(_saved_settings->get_power_level())
+    {
+        case CSavedSettings::power_level_t::HIGH:
+            return _output_power[channel];
+        
+        case CSavedSettings::power_level_t::MEDIUM:
+            return _output_power[channel] * 0.66;
+        
+        case CSavedSettings::power_level_t::LOW:
+            return _output_power[channel] * 0.33;
+        
+        default:
+            return 0;
+    }
+}
+
+uint16_t CPowerLevelControl::get_display_power_level(uint8_t channel)
 {
     if (channel >= MAX_CHANNELS)
         return 0;

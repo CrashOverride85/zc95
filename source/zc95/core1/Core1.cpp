@@ -18,6 +18,7 @@
 
 #include "Core1.h"
 #include "../globals.h"
+#include "../gDebugCounters.h"
 #include <string.h>
 #include "pico/multicore.h"
 #include "pico/util/queue.h"
@@ -40,7 +41,7 @@ void core1_entry()
         core1->loop();
 }
 
-Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
+Core1 *core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)
 {
     printf("core1_start\n");
     if (core1 == NULL)
@@ -62,14 +63,13 @@ Core1 *core1_start(std::vector<CRoutines::Routine> *routines, CSavedSettings *sa
     return core1;
 }
 
-Core1::Core1(std::vector<CRoutines::Routine> *routines, CSavedSettings *saved_settings)
+Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)  : _routines(routines)
 {
     printf("Core1::Core1()\n");
     _saved_settings = saved_settings;
     _active_routine = NULL;
     _channel_config = NULL;
 
-    _routines = routines;
     power_level_control = new CPowerLevelControl(saved_settings);
 
     memset(_active_channels, 0, sizeof(_active_channels));
@@ -172,11 +172,11 @@ void Core1::update_power_levels()
     for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
     {
         // Send current power level being output, if changed
-        uint16_t power_level = power_level_control->get_output_power_level(channel_number);
+        uint16_t power_level = power_level_control->get_display_power_level(channel_number);
         if (power_level != _output_power[channel_number])
         {
             message msg = {0};
-            msg.msg8[0] = MESSAGE_SET_POWER;
+            msg.msg8[0] = MESSAGE_SET_DISPLAY_POWER;
             msg.msg8[1] = channel_number;
             msg.msg8[2] = power_level & 0xFF;
             msg.msg8[3] = (power_level >> 8) & 0xFF;
@@ -241,7 +241,7 @@ void Core1::process_messages()
         process_message(msg);
     }
 
-    // Pulses from audio processing that doesn't fit in the usual FIFO queue
+    // Pulses from audio processing or remote access that don't fit in the usual FIFO queue
     process_audio_pulse_queue();
 }
 
@@ -402,54 +402,47 @@ void __not_in_flash_func(Core1::core1_suspend)(void)
 }
 
 void Core1::process_audio_pulse_queue()
-{
+{    
+    pulse_message_t pulse_message;
     for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
     {
-        if (_pulse_messages[channel].abs_time_us)
+        if (queue_try_peek (&gPulseQueue[channel], &pulse_message))
         {
-            if (time_us_64() >= _pulse_messages[channel].abs_time_us)
+            // Check message isn't too old
+            if (pulse_message.abs_time_us <  time_us_64()-1000)
             {
-                uint32_t msg_age = time_us_64() - _pulse_messages[channel].abs_time_us;
-                if (msg_age > 1000)
-                {
-                    // The pulse is too old for some reason - discard
-                    // printf("DISCARD old msg (%lu us old, chan %d)\n", msg_age, channel);
-                }
-                else
-                {
-                    if (_active_routine)
-                    {
-                        _active_routine->pulse_message(channel, _pulse_messages[channel].pos_pulse_us, _pulse_messages[channel].neg_pulse_us);
-                    }
-                }
-                _pulse_messages[channel].abs_time_us = 0;
+                // This shouldn't really happen. Any pulses with a time in the past would already have been discarded on reception
+                // Assuming a pulse was received that was due now, it should still reach point within 1000us
+                debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_OLD);
+                queue_try_remove(&gPulseQueue[channel], &pulse_message); // discard message
+                continue;
             }
-        }
-        else
-        {
-            while (queue_try_remove(&gPulseQueue[channel], &_pulse_messages[channel]) && _pulse_messages[channel].abs_time_us == 0)
+
+            // Check message isn't too far in the future
+            if (pulse_message.abs_time_us > time_us_64() + (1000*1000))
             {
-                if (_pulse_messages[channel].abs_time_us < time_us_64())
+                debug_counters_increment(dbg_counter_t::DBG_COUNTER_MSG_FUTURE);
+                queue_try_remove(&gPulseQueue[channel], &pulse_message); // message is for more than a second in the future. That's probably a bug somewhere; discard
+                continue;
+            }
+
+            if (time_us_64() >= pulse_message.abs_time_us)
+            {
+                queue_try_remove(&gPulseQueue[channel], &pulse_message);
+                if (_active_routine)
                 {
-                    // pulse time is in the past... discard
-                    _pulse_messages[channel].abs_time_us = 0;
-                    printf("DISCARD msg with time in past (chan %d)\n", channel);
-                }
-                else if (_pulse_messages[channel].abs_time_us > (time_us_64() + (1000 * 1000)))
-                {
-                    // if the pulse is more than a second in the future, something's probably gone wrong... discard
-                    _pulse_messages[channel].abs_time_us = 0;
-                    printf("DISCARD msg with time too far in future (chan %d)\n", channel);
+                    _active_routine->pulse_message(channel, pulse_message.power_level, pulse_message.pos_pulse_us, pulse_message.neg_pulse_us);
                 }
             }
         }
     }
 }
 
+
 void Core1::activate_routine(uint8_t routine_id)
 {
     printf("Core1::activate_routine(%d)\n", routine_id);
-    CRoutines::Routine routine = (*_routines)[routine_id];
+    CRoutines::Routine routine = _routines[routine_id];
 
     if (!routine.routine_maker)
     {
@@ -464,7 +457,7 @@ void Core1::activate_routine(uint8_t routine_id)
     routine_conf conf;
     _active_routine->get_config(&conf);
 
-    // Loop through all the channels the routine has requsted
+    // Loop through all the channels the routine has requested
     uint8_t channel = 0;
     for (std::vector<output_type>::iterator it = conf.outputs.begin(); it != conf.outputs.end(); it++)
     {
@@ -499,7 +492,6 @@ void Core1::activate_routine(uint8_t routine_id)
                 if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
                 {
                     _active_routine->set_full_output_channel(channel, (CFullOutputChannel *)_active_channels[channel]);
-                    ((CFullOutputChannel *)_active_channels[channel])->set_channel_isolation(conf.enable_channel_isolation);
                 }
                 else
                 {
@@ -518,6 +510,7 @@ void Core1::activate_routine(uint8_t routine_id)
 
     power_level_control->ramp_start();
     _active_routine->start();
+    set_audio_mode(conf.audio_processing_mode);
     printf("Core1::activate_routine: completed\n");
 }
 
@@ -526,6 +519,7 @@ void Core1::stop_routine()
     // Stop & delete currently running routine, if any
     if (_active_routine != NULL)
     {
+        printf("Stop routine\n");
         (_active_routine)->stop();
         delete _active_routine;
         _active_routine = NULL;
@@ -536,6 +530,7 @@ void Core1::stop_routine()
     // Get rid of any FullChannelAsSimpleChannel wrappers that may have been used
     delete_fullChannelAsSimpleChannels_and_restore_channels();
     set_output_chanels_to_off(false);
+    set_audio_mode(audio_mode_t::OFF);
 }
 
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
@@ -640,5 +635,17 @@ void Core1::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
     if (_active_routine != NULL)
     {
         _active_routine->bluetooth_remote_keypress(key);
+    }
+}
+
+void Core1::set_audio_mode(audio_mode_t mode)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_SET_AUDIO_MODE;
+    msg.msg8[1] = (uint8_t)mode;
+
+    if (multicore_fifo_wready())
+    {
+        multicore_fifo_push_blocking(msg.msg32);
     }
 }

@@ -26,7 +26,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
-                CSavedSettings *saved_settings)
+                CSavedSettings *saved_settings) 
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -66,8 +66,6 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
 
     // Set the text used on the status bar
     _title = _active_routine_conf.name;
-
-    _audio->set_audio_mode(_active_routine_conf.audio_processing_mode);
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
@@ -94,7 +92,6 @@ CMenuRoutineAdjust::~CMenuRoutineAdjust()
     }
 
     _routine_output->stop_routine();
-    _audio->set_audio_mode(audio_mode_t::OFF);
 }
 
 void CMenuRoutineAdjust::button_released(Button button)
@@ -185,7 +182,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
             else
                 break;
 
-            menu_item->multichoice.current_selection = _routine_multi_choice_list->get_current_selection();
+            menu_item->multichoice.current_selection = menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id;
 
             _routine_output->menu_multi_choice_change(menu_item->id, menu_item->multichoice.choices[_routine_multi_choice_list->get_current_selection()].choice_id);
             break;
@@ -438,10 +435,10 @@ void CMenuRoutineAdjust::show()
     if (_bt_enabled)
     {
         bd_addr_t paired_addr = {0};
+        CSavedSettings::bt_device_type_t bt_type = _saved_settings->get_paired_bt_type();
         _saved_settings->get_paired_bt_address(&paired_addr);
-        _bluetooth->connect(paired_addr);
+        _bluetooth->connect(paired_addr, bt_type);
     }
-
 }
 
 void CMenuRoutineAdjust::draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour)

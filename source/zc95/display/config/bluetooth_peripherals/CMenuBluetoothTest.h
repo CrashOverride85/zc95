@@ -5,6 +5,7 @@
 #include "../../../Bluetooth/CBluetooth.h"
 
 #include "pico/util/queue.h"
+#include <deque>
 
 class CMenuBluetoothTest : public CMenu
 {
@@ -18,11 +19,17 @@ class CMenuBluetoothTest : public CMenu
         void show();
 
     private:
+        void draw_bt_remote();
+        void draw_bt_other();
+
         display_area _disp_area;
         queue_t _bt_keypress_queue = {0};
-        std::string _message;
+        std::string _remote_message;
         uint64_t _keypress_displayed_us;
-        
+
         CDisplay* _display;
         CBluetooth *_bluetooth;
+        bool _hid_view = true;
+        std::deque<CBluetoothConnect::bt_raw_hid_queue_entry_t> _hid_display_items;
+        
 };

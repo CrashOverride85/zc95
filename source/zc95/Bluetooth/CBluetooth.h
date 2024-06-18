@@ -36,8 +36,8 @@ class CBluetooth
 
         void scan_get_devices_found(std::vector<CBluetoothScan::bt_device_t>& devices);
         void set_keypress_queue(queue_t *bt_keypress_queue);
-        void pair(bd_addr_t address);
-        void connect(bd_addr_t address);
+        void pair(bd_addr_t address, CSavedSettings::bt_device_type_t device_type);
+        void connect(bd_addr_t address, CSavedSettings::bt_device_type_t device_type);
         bool is_paired(bd_addr_t address);
 
     private:

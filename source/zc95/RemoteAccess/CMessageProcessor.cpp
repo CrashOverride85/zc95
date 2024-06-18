@@ -34,14 +34,13 @@
 
 CMessageProcessor::CMessageProcessor(
     CRoutineOutput *routine_output, 
-    std::vector<CRoutines::Routine> *routines,
-    std::function<void(std::string)> send_function)
+    std::vector<CRoutines::Routine> &routines,
+    std::function<void(std::string)> send_function) : _routines(routines)
 {
     printf("CMessageProcessor::CMessageProcessor()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
     _pending_message = false;
     _routine_output = routine_output;
-    _routines = routines;
     _send = send_function;
 }
 
@@ -72,7 +71,7 @@ CMessageProcessor::~CMessageProcessor()
 // later processing from loop()
 void CMessageProcessor::message(uint8_t *data, u16_t data_len)
 {
-    printf("CMessageProcessor::message()\n");
+    // printf("CMessageProcessor::message()\n");
     std::string message((char*)data, data_len);
 
     printf("msg < %s\n", message.c_str());
@@ -147,11 +146,8 @@ void CMessageProcessor::set_state(state_t new_state)
         _lua_load != NULL
     )
     {
-        // If LuaLoad changed the routines list (e.g new routine loaded), refresh the list
-        if (_lua_load->routines_updated())
-        {
-            reload_routines();
-        }
+        // If LuaLoad may have changed the routines list (e.g new routine loaded), so refresh the list
+        reload_routines();
 
         delete _lua_load;
         _lua_load = NULL;
@@ -194,7 +190,7 @@ void CMessageProcessor::loop()
 {
     if (_pending_message)
     {
-        printf("CMessageProcessor::loop() processing pending message\n");
+        // printf("CMessageProcessor::loop() processing pending message\n");
 
         StaticJsonDocument<MAX_WS_MESSAGE_SIZE> doc;
         DeserializationError error = deserializeJson(doc, _pending_message_buffer);
@@ -276,7 +272,7 @@ void CMessageProcessor::loop()
 void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    StaticJsonDocument<1000> response_message;
+    DynamicJsonDocument response_message(1000);
 
     response_message["Type"] = "LuaScripts";
     response_message["MsgId"] = msg_count;
@@ -317,7 +313,7 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
 void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    StaticJsonDocument<2000> response_message;
+    DynamicJsonDocument response_message(2000);
 
     response_message["Type"] = "PatternList";
     response_message["MsgId"] = msg_count;
@@ -325,14 +321,19 @@ void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
     JsonArray patterns = response_message.createNestedArray("Patterns");
 
     int index=0;
-    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
         struct routine_conf conf;
         CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
-        // Audio stuff probably isn't going to work correctly remotely, so skip
-        if (conf.audio_processing_mode == audio_mode_t::OFF)
+        // Only include patterns that either don't use audio, or use audio intensity mode. Other's won't work at all remotely. 
+        // Also skip stuff that's hidden from the menu
+        if 
+        (
+            (conf.audio_processing_mode == audio_mode_t::OFF || conf.audio_processing_mode == audio_mode_t::AUDIO_INTENSITY) && 
+            (!conf.hidden_from_menu)
+        )
         {
             JsonObject obj = patterns.createNestedObject();
             obj["Id"] = index;
@@ -355,11 +356,12 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
-    StaticJsonDocument<2500> response_message;
+    DynamicJsonDocument response_message(2500);
+
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
 
-    if (id < 0 || id >= (int)((*_routines).size()))
+    if (id < 0 || id >= (int)(_routines.size()))
     {
         printf("CMessageProcessor::send_pattern_detail: invalid id: %d\n", id);
         response_message["Result"] = "ERROR";
@@ -368,7 +370,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     {
         // Get pattern config
         struct routine_conf conf;
-        CRoutines::Routine routine = (*_routines)[id];
+        CRoutines::Routine routine = _routines[id];
         CRoutine* routine_ptr = routine.routine_maker(routine.param);
         routine_ptr->get_config(&conf);
         delete routine_ptr;
@@ -411,18 +413,25 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
                     break;
                 }
 
+                // These aren't properly supported for remote access. Full support would mean needing to stream display 
+                // updates to the connected GUI, and the current implementation almost certainly isn't close to being 
+                // fast enough.
+                // For now, just let the remote client know what they are, but without trying to send audio data.
+                case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
+                    menu_item["Type"] = "AUDIO_VIEW_INTENSITY_STEREO";
+                    break;
+
+                case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
+                    menu_item["Type"] = "AUDIO_VIEW_INTENSITY_MONO";
+                    break;
+
+                // Patterns using these menu types are filtered out by send_pattern_list, so the 
+                // connected client shouldn't know the id of the patterns that won't work (although being 
+                // sequential, they're rather easy to guess)
                 case menu_entry_type::AUDIO_VIEW_SPECT:
                 case menu_entry_type::AUDIO_VIEW_WAVE:
-                case menu_entry_type::AUDIO_VIEW_INTENSITY_STEREO:
-                case menu_entry_type::AUDIO_VIEW_INTENSITY_MONO:
                 case menu_entry_type::AUDIO_VIEW_VIRTUAL_3:
-                    // Not supported for remote access. Would need to stream display updates to the connected GUI,
-                    // and the current implementation almost certainly isn't close to being fast enough.
-                    // Note that patterns using these menu types are filtered out by send_pattern_list, so the 
-                    // connected client shouldn't know the id of the patterns that won't work (although being 
-                    // sequential, they're rather easy to guess)
                     break;
-                
             }
         }
 
@@ -454,7 +463,7 @@ void CMessageProcessor::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_S
 
 void CMessageProcessor::reload_routines()
 {
-    printf("CMessageProcessor::reload_routines(): routines list has changed, updating\n");
-    _routines->clear();
+    printf("CMessageProcessor::reload_routines(): routines list have have changed, updating\n");
+    _routines.clear();
     CRoutines::get_routines(_routines);
 }

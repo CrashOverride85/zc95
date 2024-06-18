@@ -60,7 +60,7 @@ void CAudioWave::config(struct routine_conf *conf)
     menu_triphase_view.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
     conf->menu.push_back(menu_triphase_view);
 
-    conf->enable_channel_isolation = false;
+    conf->force_channel_isolation = false;
 }
 
 void CAudioWave::get_config(struct routine_conf *conf)
@@ -88,26 +88,32 @@ void CAudioWave::trigger(trigger_socket socket, trigger_part part, bool active)
 
 }
 
-void CAudioWave::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
+void CAudioWave::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
-    uint16_t power_left  = left_chan  * 4;
-    uint16_t power_right = right_chan * 4;
-    if (power_left > 1000)
-        power_left = 1000;
+    if (channel >= 2)
+        return;
 
-    if (power_right > 1000)
-        power_right = 1000;
-
-    full_channel_set_power(0, power_left );
-    full_channel_set_power(1, power_left );
-    full_channel_set_power(2, power_right);
-    full_channel_set_power(3, power_right);
-}
-
-void CAudioWave::pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
-{
     // Pretty much all the processing for this pattern is done in CAudio/CAudio3Process, and passed into here.
-    // All that needs to be done now is copy the 2 channels of data arriving into 4 channels
+    // All that needs to be done now is copy the 2 channels of data arriving into 4 channels, and adjust the 
+    // power level, if needed.
+
+    // Update power level if needed
+    if (_chan_last_power_level[channel] != power_level)
+    {
+        if (channel == 0)
+        {
+            full_channel_set_power(0, power_level);
+            full_channel_set_power(1, power_level);
+        }
+        else if (channel == 1)
+        {
+            full_channel_set_power(2, power_level);
+            full_channel_set_power(3, power_level);
+        }
+        
+        _chan_last_power_level[channel] = power_level;
+    }
+
     if (channel == 0)
     {
         full_channel_pulse(0, pos_pulse_us, neg_pulse_us);
@@ -115,14 +121,18 @@ void CAudioWave::pulse_message(uint8_t channel, uint8_t pos_pulse_us, uint8_t ne
     }
     else if (channel == 1)
     {
-        full_channel_pulse(2, pos_pulse_us, neg_pulse_us);
-        full_channel_pulse(3, pos_pulse_us, neg_pulse_us);
+       full_channel_pulse(2, pos_pulse_us, neg_pulse_us);
+       full_channel_pulse(3, pos_pulse_us, neg_pulse_us);
     }
 }
 
 void CAudioWave::start()
 {
     set_all_channels_power(0);
+    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+        _chan_last_power_level[chan] = 0;
+
+    set_channel_isolation(false);
 }
 
 void CAudioWave::loop(uint64_t time_us)

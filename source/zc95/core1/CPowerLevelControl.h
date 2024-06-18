@@ -27,9 +27,15 @@ class CPowerLevelControl
         // Power level being requested by routine (0-1000)
         void set_routine_requested_power_level(uint8_t channel, uint16_t power);
 
-        // Get power level to send to output chanel (0-1000)
-        // (this is the yellow bar inside the bar graph)
+        // Get power level to send to output chanel. Range varies based on set power level:
+        //  - High   = 0 - 1000
+        //  - Medium = 0 -  666
+        //  - Low    = 0 -  333
         uint16_t get_output_power_level(uint8_t channel);
+
+        // Get power level to display in the yellow graph. 
+        // When in High power mode (default), this will always return the same as get_output_power_level()
+        uint16_t get_display_power_level(uint8_t channel);
         
         // Get the current maximum power level (0-1000)
         // After ramp up, this will return the same as get_target_max_power_level.

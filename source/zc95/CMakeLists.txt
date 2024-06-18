@@ -28,6 +28,14 @@ set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
+set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+
+add_custom_command(
+  OUTPUT RemoteAccess/GattProfile.h
+    DEPENDS RemoteAccess/GattProfile.gatt
+    COMMAND ${BTSTACK_ROOT}/tool/compile_gatt.py
+    ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.h
+)
 
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
@@ -48,6 +56,7 @@ add_executable(zc95
   CUtil.cpp
   FlashHelper.cpp
   globals.cpp
+  gDebugCounters.cpp
   i2c_scan.cpp
   zc95.cpp
 
@@ -96,6 +105,7 @@ add_executable(zc95
   core1/routines/CAudioIntensity.cpp
   core1/routines/CAudioVirtual3.cpp
   core1/routines/CLuaRoutine.cpp
+  core1/routines/CDirectPulse.cpp
   
   display/CMenu.cpp
   display/CDisplay.cpp
@@ -108,16 +118,15 @@ add_executable(zc95
   display/CDisplayMessage.cpp
 
   display/config/CMenuSettings.cpp
-  display/config/CMenuSettingPowerStep.cpp
-  display/config/CMenuSettingRampUpTime.cpp
   display/config/CMenuSettingAbout.cpp
   display/config/CMenuSettingAudio.cpp
   display/config/CMenuSettingHardware.cpp
+  display/config/CMenuSettingOutput.cpp
 
-  display/config/bluetooth/CMenuBluetooth.cpp
-  display/config/bluetooth/CMenuBluetoothScan.cpp
-  display/config/bluetooth/CMenuBluetoothTest.cpp
-  display/config/bluetooth/CMenuBluetoothMap.cpp
+  display/config/bluetooth_peripherals/CMenuBluetooth.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothTest.cpp
+  display/config/bluetooth_peripherals/CMenuBluetoothMap.cpp
 
   display/config/channel_config/CMenuChannelConfig.cpp
   display/config/channel_config/CMenuCollarConfig.cpp
@@ -132,6 +141,8 @@ add_executable(zc95
   display/config/remote_access/CMenuRemoteAccessConnectWifi.cpp
   display/config/remote_access/CMenuRemoteAccessSerial.cpp
   display/config/remote_access/CMenuApMode.cpp
+  display/config/remote_access/CMenuRemoteAccessBLE.cpp
+  display/config/remote_access/CMenuRemoteAccessBleConfig.cpp
 
   FrontPanel/CRotEnc.cpp
   FrontPanel/CFrontPanelV01.cpp
@@ -156,7 +167,9 @@ add_executable(zc95
   RemoteAccess/CRoutineRun.cpp
   RemoteAccess/CMessageProcessor.cpp
   RemoteAccess/CSerialConnection.cpp
+  RemoteAccess/CBtGatt.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
+  RemoteAccess/GattProfile.h
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -213,14 +226,14 @@ target_compile_definitions(zc95 PRIVATE
   HAGL_HAL_USE_DMA
   HAGL_HAL_DEBUG
   MIPI_DISPLAY_ST7735
-  PICO_STACK_SIZE=12288
+  PICO_STACK_SIZE=8192
   PICO_CORE1_STACK_SIZE=0 # stack is malloc'd
   PICO_USE_STACK_GUARDS   # would rather die instantly on stack overflow, than get weird, hard to debug, errors
   
   # For Lua. If a Lua script consumes all the memory, Lua can handle that and give an OOM error, which is better 
   # than crashing with a Panic. Ideally Lua would use a seperate alloc function that didn't panic, whilst everything
   # else did. Not quite sure how to manage that yet; multicore/malloc mutex complicates things.
-  PICO_MALLOC_PANIC=0     
+  PICO_MALLOC_PANIC=0
 )
 
 target_compile_definitions(zc95 PRIVATE

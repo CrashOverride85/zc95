@@ -15,7 +15,7 @@
 class CWsConnection
 {
     public:
-        CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines);
+        CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
         ~CWsConnection();
         void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);

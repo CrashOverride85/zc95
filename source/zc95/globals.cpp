@@ -12,10 +12,13 @@ bool gInteruptable;
 queue_t gPulseQueue[MAX_CHANNELS];
 
 queue_t gPatternTextOutputQueue;
+queue_t gBtRawHidQueue;
 
 bool gFatalError;
 std::string gErrorString;
 mutex_t gI2cMutex;
+
+bool gZc624ChannelIsolationEnabled = true;
 
 CSavedSettings *g_SavedSettings = NULL;
 CSerialConnection *g_SerialConnection = NULL;

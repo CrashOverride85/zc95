@@ -214,6 +214,11 @@ void CDisplay::set_battery_percentage(uint8_t bat)
     _battery_percentage = bat;
 }
 
+uint8_t CDisplay::get_battery_percentage()
+{
+    return _battery_percentage;
+}
+
 void CDisplay::set_active_pattern(std::string pattern)
 {
     _active_pattern = pattern;
@@ -326,9 +331,44 @@ void CDisplay::draw_status_bar()
     put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
     draw_battery_icon(0, y);
 
-    // If bluetooth is on, show bt symbol in bottom right of screen
+    // Draw H/M/L power indicator (always)
     uint16_t x = MIPI_DISPLAY_WIDTH - 8;
+    draw_power_level_indicator(x, y-1);
+
+    // If bluetooth is on, show bt symbol in bottom right of screen to the left of the power level indicator
+    x -= 8;
     draw_bt_logo_if_required(x, y-1);
+}
+
+void CDisplay::draw_power_level_indicator(int16_t x, int16_t y)
+{
+    hagl_color_t colour;
+
+    std::string power_level;
+    switch (g_SavedSettings->get_power_level())
+    {
+        case CSavedSettings::power_level_t::LOW:
+            power_level = "L";
+            colour = hagl_color(_hagl_backend, 0x00, 0xFF, 0x00); // green
+            break;
+
+        case CSavedSettings::power_level_t::MEDIUM:
+            power_level = "M";
+            colour =  hagl_color(_hagl_backend, 0xFF, 0xFF, 0x00); // yellow
+            break;
+
+        case CSavedSettings::power_level_t::HIGH:
+            power_level = "H";
+            colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00); // red
+            break;
+
+        default:
+            power_level = "?";
+            colour = hagl_color(_hagl_backend, 0x70, 0x70, 0x70); // grey
+            break;
+    }
+
+    put_text(power_level, x, y, colour, false, font5x7);
 }
 
 void CDisplay::draw_battery_icon(int16_t x, int16_t y)

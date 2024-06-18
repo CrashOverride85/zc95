@@ -29,7 +29,7 @@
 #include "CWsConnection.h"
 #include "../git_version.h"
 
-CWsConnection::CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> *routines)
+CWsConnection::CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines) 
 {
     printf("CWsConnection::CWsConnection()\n");
     _pcb = pcb;
@@ -51,7 +51,7 @@ CWsConnection::~CWsConnection()
 // Process web socket message. This is called from the wifi/tcp polling thread
 void CWsConnection::callback(uint8_t *data, u16_t data_len, uint8_t mode)
 {
-    printf("CWsConnection::callback()\n");
+    // printf("CWsConnection::callback()\n");
 
     // message isn't processed until _messageProcessor.loop() is called
     _messageProcessor->message(data, data_len);

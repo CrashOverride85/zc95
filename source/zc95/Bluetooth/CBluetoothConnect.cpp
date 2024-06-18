@@ -1,5 +1,6 @@
 #include "CBluetoothConnect.h"
 #include "CBluetoothPairGatt.h"
+#include "../globals.h"
 #include "pico/async_context_poll.h"
 
 static CBluetoothConnect *_s_CBluetoothConnect;
@@ -36,7 +37,7 @@ void CBluetoothConnect::start()
         sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
         gatt_client_set_required_security_level(LEVEL_2);
 
-        att_server_init(profile_data, NULL, NULL);
+        att_server_init(CBluetoothPairGatt_profile_data, NULL, NULL);
         gatt_client_init();
         hids_client_init(_hid_descriptor_storage, sizeof(_hid_descriptor_storage));
 
@@ -172,15 +173,24 @@ void CBluetoothConnect::hid_handle_input_report(uint8_t service_index, const uin
         btstack_hid_parser_get_field(&parser, &usage_page, &usage, &value);
 
       //  printf("usage_page = 0x%x, usage = 0x%x, value = %li\n", usage_page, usage, value);
+
+        // shutter remotes
         _bluetooth_remote.process_input(usage_page, usage, value);
+
+        bt_raw_hid_queue_entry_t entry;
+        entry.usage_page = usage_page;
+        entry.usage = usage;
+        entry.value = value;
+        queue_try_add(&gBtRawHidQueue, &entry);
     }
 
     /// printf("--------------------------------- \n");
 }
 
-void CBluetoothConnect::set_address(bd_addr_t address)
+void CBluetoothConnect::set_address(bd_addr_t address, CSavedSettings::bt_device_type_t type)
 {
     memcpy(_address, address, BD_ADDR_LEN);
+    _bt_device_type = type;
 }
 
 void CBluetoothConnect::get_address(bd_addr_t *address)

@@ -28,7 +28,7 @@
 
 CMenuRoutineSelection::CMenuRoutineSelection(
     CDisplay* display, 
-    std::vector<CRoutines::Routine> *routines, 
+    std::vector<CRoutines::Routine> &routines, 
     CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
@@ -36,14 +36,14 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CAudio *audio,
     CAnalogueCapture *analogueCapture,
     CWifi *wifi,
-    CBluetooth *bluetooth
-    )
+    CBluetooth *bluetooth,
+    CRadio *radio
+    ) : _routines(routines)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
     _area = display->get_display_area();
     _routine_display_list = new COptionsList(display, _area);
-    _routines = routines;
     _buttons = buttons;
     _submenu_active = NULL;
     _settings = settings;
@@ -53,6 +53,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _analogueCapture = analogueCapture;
     _wifi = wifi;
     _bluetooth = bluetooth;
+    _radio = radio;
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -91,7 +92,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
         if (button == Button::A) // Select
         {
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
-            CRoutines::Routine routine = (*_routines)[routine_id];
+            CRoutines::Routine routine = _routines[routine_id];
             _last_selection = _routine_display_list->get_current_selection();
             set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio, _bluetooth, _settings));
             _routine_output->activate_routine(routine_id);
@@ -99,7 +100,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth));
+            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio));
         }
         
         if (button == Button::C) // "Up"
@@ -135,32 +136,34 @@ void CMenuRoutineSelection::show()
     // Get a list of routines to show
     _routine_display_list->clear_options();
     int index=0;
-    for (std::vector<CRoutines::Routine>::iterator it = _routines->begin(); it != _routines->end(); it++)
+    for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
         struct routine_conf conf;
         CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
-        // Add a warning for routines that disable channel isolation
+        // Add a warning for routines that are able to disable channel isolation
         std::string name;
-        if (conf.enable_channel_isolation)
+        if (conf.force_channel_isolation)
             name = conf.name;
         else
             name = "(!)" + conf.name;
 
-        // Hide audio routines from menu if audio hardware not present. Show everything else.        
-        if (!is_audio_routine(conf))
+        if (!conf.hidden_from_menu)
         {
-            _routine_display_list->add_option(name, index);
-        }
-        else
-        {
-            if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
+            // Hide audio routines from menu if audio hardware not present. Show everything else.        
+            if (!is_audio_routine(conf))
             {
                 _routine_display_list->add_option(name, index);
             }
+            else
+            {
+                if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
+                {
+                    _routine_display_list->add_option(name, index);
+                }
+            }
         }
-
         index++;
         delete routine;
     }

@@ -18,9 +18,10 @@ CBluetoothPair::~CBluetoothPair()
     _s_CBluetoothPair = NULL;
 }
 
-void CBluetoothPair::set_address(bd_addr_t address)
+void CBluetoothPair::set_address(bd_addr_t address, CSavedSettings::bt_device_type_t device_type)
 {
     memcpy(_address, address, BD_ADDR_LEN);
+    _device_type = device_type;
 }
 
 void CBluetoothPair::get_address(bd_addr_t *address)
@@ -41,7 +42,7 @@ void CBluetoothPair::start()
         sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
         gatt_client_set_required_security_level(LEVEL_2);
 
-        att_server_init(profile_data, NULL, NULL);
+        att_server_init(CBluetoothPairGatt_profile_data, NULL, NULL);
         gatt_client_init();
 
         _event_callback_registration.callback = &CBluetoothPair::s_packet_handler;
@@ -80,6 +81,7 @@ void CBluetoothPair::set_state(bt_pair_state_t newState)
     if (newState == bt_pair_state_t::SUCCESS)
     {
         g_SavedSettings->set_paired_bt_address(_address);
+        g_SavedSettings->set_paired_bt_type(_device_type);
     }
 
     _state = newState;

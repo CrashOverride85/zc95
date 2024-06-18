@@ -139,5 +139,14 @@ bool CZC624ChannelFull::set_channel_isolation(bool on)
         return false;
     }
 
+    if (gZc624ChannelIsolationEnabled != on)
+    {
+        if (on)
+            printf("CZC624ChannelFull::set_channel_isolation: Channel isolation enabled\n");
+        else
+            printf("CZC624ChannelFull::set_channel_isolation: Channel isolation DISABLED\n");
+
+        gZc624ChannelIsolationEnabled = on;
+    }
     return true;
 }

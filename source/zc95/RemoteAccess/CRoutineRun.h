@@ -17,7 +17,7 @@ class CRoutineRun
             std::function<void(std::string)> send_function, 
             std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> *routines);
+            std::vector<CRoutines::Routine> &routines);
         ~CRoutineRun();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void loop();
@@ -31,7 +31,7 @@ class CRoutineRun
         void script_output(pattern_text_output_t output);
         
         CRoutineOutput *_routine_output;
-        std::vector<CRoutines::Routine> *_routines;
+        std::vector<CRoutines::Routine>& _routines;
         uint16_t _output_power[MAX_CHANNELS];
         uint16_t _max_output_power[MAX_CHANNELS];
         uint16_t _front_panel_power[MAX_CHANNELS]; // acts as power limit in remote access mode

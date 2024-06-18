@@ -29,7 +29,7 @@ class CLuaStorage
         };
 
         static size_t get_lua_flash_size(uint8_t index);
-        bool store_script(uint8_t index, const char* lua_script, size_t buffer_size);
+        bool store_script_section(uint8_t script_index, uint8_t section, const char* lua_script_fragment, size_t buffer_size);
         bool delete_script_at_index(uint8_t index);
 
         static const char* get_script_at_index(uint8_t index);
@@ -39,6 +39,7 @@ class CLuaStorage
 
     private:
         static uint32_t get_flash_offset(uint8_t script_index);
+        bool is_script_index_valid(uint8_t index);
 };
 
 #endif
