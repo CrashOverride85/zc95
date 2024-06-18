@@ -15,7 +15,7 @@ There are a few example scripts in `remote_access/lua`, which demonstrate some o
 
 * waves.lua - a basic waves pattern. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
 
-* audio.lua - audio example assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency. Channels 3&4 react to volume changes
+* audio.lua - audio example assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency. Channels 3 & 4 react to volume changes
 
 * bluetooth_fire.lua - uses Left/Up/Down/Right buttons on a bluetooth remote to trigger chanel's 1 to 4 respectively for a configurable pulse duration
 
@@ -155,8 +155,9 @@ Config = {
 `name = "Toggle"` sets the name for the script - this is prefixed with `U:` then used on the patterns menu.
 
 Optional fields:
-* `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be group together, instead of appearing in one long list (useful for scripts with many options)
+* `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be grouped together, instead of appearing in one long list (useful for scripts with many options)
 * `audio_processing_mode` - if the script can use audio, sets the mode. Currently either `OFF` (default) or `AUDIO_INTENSITY`. See audio section later.
+* `bluetooth_remote_passthrough` - if present and set to `True`, keypresses from connected to bluetooth remotes are passed though to the `BluetoothRemoteKeypress()` function, instead of using the configured mappings from the config menu. See `BluetoothRemoteKeypress()` notes later for more details
 
 A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
 
@@ -392,7 +393,7 @@ With `audio_processing_mode = "AUDIO_INTENSITY"` in the `Config` section of the 
 
 The `left_chan` and `right_chan` parameters are for the left and right audio channels respectively. The `virt_chan` is an attempt a simulating a triphase effect on a separate logical channel, and probably isn't much use - I suggest ignoring it for now.
 
-All values sent to these functions will be 0-255, if being used to modulate the output power of a channel, will need to be scaled to 0-1000.
+All values sent to these functions will be 0-255, so if used to modulate the output power of a channel, will need to be scaled to 0-1000.
 
 ### Example
 The `audio.lua` script shows an example of audio support assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency, and channels 3 & 4 react to volume changes
