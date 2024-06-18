@@ -327,9 +327,13 @@ void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
         CRoutine* routine = (*it).routine_maker((*it).param);
         routine->get_config(&conf);
 
-        // Audio stuff probably isn't going to work correctly remotely, so skip
+        // Only include patterns that either don't use audio, or use audio intensity mode. Other's won't work at all remotely. 
         // Also skip stuff that's hidden from the menu
-        if ((conf.audio_processing_mode == audio_mode_t::OFF) && (!conf.hidden_from_menu))
+        if 
+        (
+            (conf.audio_processing_mode == audio_mode_t::OFF || conf.audio_processing_mode == audio_mode_t::AUDIO_INTENSITY) && 
+            (!conf.hidden_from_menu)
+        )
         {
             JsonObject obj = patterns.createNestedObject();
             obj["Id"] = index;
