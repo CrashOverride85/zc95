@@ -273,7 +273,7 @@ int main()
     sleep_ms(100);
 
     core1_start(routines, &settings);
-    CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input);
+    CRoutineOutput* routine_output = new CRoutineOutputCore1(&display, &led, &ext_input, &audio);
 
     audio.set_routine_output(routine_output);
     wifi = new CWifi(radio, &analogueCapture, routine_output, routines);

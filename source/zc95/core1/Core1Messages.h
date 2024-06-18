@@ -37,6 +37,7 @@
 #define MESSAGE_SET_ACC_IO_PORT3_STATE      123
 
 #define MESSAGE_LUA_SCRIPT_STATE            130
+#define MESSAGE_SET_AUDIO_MODE              131
 
 enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
