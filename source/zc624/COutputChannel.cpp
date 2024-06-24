@@ -80,13 +80,16 @@ bool COutputChannel::calibrate()
     uint16_t dac_val = 0;
 
     /* Ending up with any _cal_value between 3600 and 1600 would produce valid dac levels (0-4000) 
-       for any valid power level (0-1000), but if it's outside the range below, it's likely 
-       something is wrong (i.e. hardware fault on that channel).
+       for any valid power level (0-1000).
+       
+       Previously this was set to 3400-2400 on the assumption that anything outside that range indicated
+       a fault, but different batches of IRF9Z24NPBF's seem to require values outside of that range
+       (presumably due to different - but still within spec for the part - gate threshold voltages).
     
        Note that extending it beyond 3600-1600 will cause set_power() to sometimes break - depending
        on the power level passed to it.
     */
-    for (dac_val = 3400; dac_val > 2400; dac_val-=10)
+    for (dac_val = 3600; dac_val > 1600; dac_val-=10)
     {
         _dac->set_channel_value(_dac_channel, dac_val);
         sleep_us(100);
