@@ -47,6 +47,8 @@ As with the MK312-BT, the PFETs (IRF9Z24NPBF) in particular should not be substi
 ### Misc parts
 [The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (case, display, etc.).
 
+### LED riser
+_Optional_: Order or 3d print LED riser: [STL file](../misc/led-riser/led-riser.stl).
 
 ## Assembly
 
@@ -73,6 +75,10 @@ Photo of board as it arrived from JLCPCB:
 * J20 (I2C header, bottom left) is for future expansion and doesn't need to be populated
 * J17 (just below battery, to the right) is for the optional audio input board; if building that, fit a 2.54mm pin header, otherwise leave unpopulated
 * J16 "FP-BUTTONS" (below the battery, towards the centre) is no longer used (was used for v0.1 of the front panel), and can be left unpopulated
+* J19 IDC connector should be orientated with the cut out towards the back of the board, like so:
+
+  ![main board idc]
+
 
 Then (optionally) plug a 433MHz transmitter into J11
 
@@ -102,7 +108,14 @@ Photo of board as it arrived from JLCPCB:
 ![front panel controls-bottom]
 ![front panel controls-top]
 
-* Getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
+
+* If printed/ordered, use the LED risers to get the LEDs at the correct height, e.g.:
+
+  ![front panel LED riser]:
+
+  (Thanks to @electro991 for this, see [#102][gh102])
+
+* Otherwise, getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
 * Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen
 
 Fully assembled board:
@@ -278,11 +291,13 @@ Possible causes (not exhaustive!) for calibration to fail:
 [jumpers]: images/jumpers.jpg "J8 with jumpers fitted"
 [main board]: images/main_board.jpg "Unpopulated main board"
 [main board populated]: images/main_board_populated.jpg "Populated main board"
+[main board idc]: images/main_board_idc.jpg "IDC socket on main board"
 [zc624 smt only]: images/zc624.jpg "ZC624 as received from JLCPCB"
 [zc624 populated]: images/zc624_populated.jpg "Fully populated ZC624"
 [front panel controls-bottom]: images/fpc_bottom.jpg "Unpopulated front panel controls board - bottom"
 [front panel controls-top]: images/fpc_top.jpg "Unpopulated front panel controls board - top"
 [front panel controls-top-populated]: images/fpc_top_populated.jpg "Populated front panel controls board - top"
+[front panel LED riser]: images/fpc_led_riser.jpg "Front panel with LED riser"
 [front panel]: images/fp.jpg "Front panel"
 [front panel buttons connected]: images/fpc_buttons.jpg "Front panel with buttons attached"
 [button connections]: images/button_connection.png "Front panel buttons to fpc board connection"
@@ -298,4 +313,4 @@ Possible causes (not exhaustive!) for calibration to fail:
 [q1]: images/build_Q1.jpg "Use diode for Q1"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
 [gh46]: https://github.com/CrashOverride85/zc95/issues/46
-
+[gh102]: https://github.com/CrashOverride85/zc95/discussions/102
