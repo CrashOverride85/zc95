@@ -614,22 +614,20 @@ void CHwCheck::set_display(CDisplay *display)
     _hagl_backend = display->get_hagl_backed();
 }
 
-// Try to determine the front panel version by looking for the ADC, as it's on a different address (as well as being
-// a different IC all together) depending on the version. If it not found, return UNKNOWN
+// Try to determine the front panel version.
+// Identify v0.1 by the presence of the I/O expander on 0x26 (on v0.2 the I/O expander is on 0x38, but needs to be written to before it'll respond)
+// Identify v0.2 by the presence of the ADC 0x49
 CHwCheck::front_panel_version_t CHwCheck::determine_front_panel_version()
 {
     uint8_t rx_data = 0;
 
-    bool v0_1 = (i2c_read_timeout_us(i2c0, FP_0_1_ADC_ADDR, &rx_data, 1, false, 1000) > 0);
-
-    // TCA9534 is awkward, need to write before read
-    uint8_t tx_reg = 0x01;
-    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, &tx_reg , 1, false , 10000);
+    bool v0_1 = (i2c_read_timeout_us(i2c0, FP_0_1_PORT_EXP_ADDR, &rx_data, 1, false, 1000) > 0);
     bool v0_2 = (i2c_read_timeout_us(i2c0, FP_0_2_ADC_ADDR, &rx_data, 1, false, 1000) > 0);
 
     if (v0_1 && v0_2)
     {
-        printf("ERROR: unable to determine front panel version: device found at address 0x%x AND address 0x%x?!\n", FP_0_1_ADC_ADDR, FP_0_2_ADC_ADDR);
+        printf("ERROR: unable to determine front panel version: device found at address 0x%x (v0.1 IO expander) AND address 0x%x (v0.2 ADC) ?!\n", 
+            FP_0_1_PORT_EXP_ADDR, FP_0_2_ADC_ADDR);
         printf("       (only one - either - expected)\n");
         _front_panel_version = front_panel_version_t::UNKNOWN;
     }
@@ -646,7 +644,8 @@ CHwCheck::front_panel_version_t CHwCheck::determine_front_panel_version()
     }
     else
     {
-        printf("ERROR: unable to determine front panel version: No ADC found\n");
+        printf("ERROR: unable to determine front panel version: No device found on either address 0x%x (v0.1 IO expander) or address 0x%x (v0.2 ADC)\n",
+             FP_0_1_PORT_EXP_ADDR, FP_0_2_ADC_ADDR);
         _front_panel_version = front_panel_version_t::UNKNOWN;
     }
 
