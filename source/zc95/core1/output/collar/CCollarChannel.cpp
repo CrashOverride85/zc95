@@ -66,18 +66,9 @@ void CCollarChannel::on()
 
 void CCollarChannel::pulse(uint16_t minimum_duration_ms)
 {
-    if (minimum_duration_ms < 300)
-    {
-        _pulse_end_time = 0;
-        transmit( _collar_level);
-        _current_status = collar_status::OFF;
-    }
-    else
-    {
-        _pulse_end_time = get_time_us() + (minimum_duration_ms * 1000);
-        transmit(_collar_level);
-        _current_status = collar_status::ON;
-    }
+    _pulse_end_time = get_time_us() + (minimum_duration_ms * 1000);
+    transmit(_collar_level);
+    _current_status = collar_status::ON;
 }
 
 void CCollarChannel::off()
