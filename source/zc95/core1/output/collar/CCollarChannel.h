@@ -26,7 +26,7 @@ class CCollarChannel : public CSimpleOutputChannel
     void set_collar_level_from_power(int16_t power);
     void transmit (uint8_t power);
     CCollarComms *_comms;
-    struct CSavedSettings::collar_config _collar_conf;
+    CSavedSettings* _saved_settings;
 
     uint8_t _channel_id;
     uint64_t _last_tx_time_us;
