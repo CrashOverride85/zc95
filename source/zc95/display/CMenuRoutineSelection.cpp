@@ -119,6 +119,17 @@ void CMenuRoutineSelection::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
+    else
+    {
+        if (change >= 1)
+        {
+            _routine_display_list->down();
+        }
+        else if (change <= -1)
+        {
+            _routine_display_list->up();
+        }
+    }
 }
 
 void CMenuRoutineSelection::draw()
