@@ -142,7 +142,7 @@ void CShockChoice::loop(uint64_t time_us)
 
     if (!_warning_issued && (time_remaining_us() < secs_to_us(warn_interval_sec)))
     {
-        simple_channel_pulse(3, 100);
+        simple_channel_pulse(3, 1200);
         _warning_issued = true;
     }
 
