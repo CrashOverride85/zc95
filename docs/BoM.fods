@@ -3240,7 +3240,7 @@
       <text:p>C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C49678</text:p>
+      <text:p>C14663</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="6" calcext:value-type="float">
       <text:p>6</text:p>
@@ -3303,7 +3303,7 @@
       <text:p>C_0603_1608Metric_Pad1.08x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C28323</text:p>
+      <text:p>C15849</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
@@ -3471,7 +3471,7 @@
       <text:p>R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C149504</text:p>
+      <text:p>C25803</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="27" calcext:value-type="float">
       <text:p>27</text:p>
@@ -3492,7 +3492,7 @@
       <text:p>R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C17414</text:p>
+      <text:p>C25804</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="15" calcext:value-type="float">
       <text:p>15</text:p>
@@ -3513,7 +3513,7 @@
       <text:p>R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C17470</text:p>
+      <text:p>C22807</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="8" calcext:value-type="float">
       <text:p>8</text:p>
@@ -3555,7 +3555,7 @@
       <text:p>R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C4310</text:p>
+      <text:p>C22843</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="3" calcext:value-type="float">
       <text:p>3</text:p>
@@ -3576,7 +3576,7 @@
       <text:p>R_0603_1608Metric_Pad0.98x0.95mm_HandSolder</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="string" calcext:value-type="string">
-      <text:p>C17798</text:p>
+      <text:p>C23228</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce125" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
