@@ -1,7 +1,7 @@
 "Comment","Designator","Footprint","LCSC Part #"
 "100nF","C1,C2,C3,C4,C5,C6","C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","C14663"
 "10nF","C7","C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","C57112"
-"10uF","C8","C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","C15850"
+"10uF","C8","C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","C96446"
 "220uF","C9","CP_Radial_D8.0mm_P3.50mm","C440836"
 "1uF","C10,C11","C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","C15849"
 "220uF","C12,C13,C14,C15","CP_EIA-7343-43_Kemet-X_Pad2.25x2.55mm_HandSolder","C122311"
