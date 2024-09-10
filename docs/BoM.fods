@@ -3174,7 +3174,7 @@
       <text:p>R_Axial_DIN0309_L9.0mm_D3.2mm_P5.08mm_Vertical</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce128" office:value-type="string" calcext:value-type="string">
-      <text:p>C479296</text:p>
+      <text:p>C479327</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce128" office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>
