@@ -36,7 +36,20 @@ function setupdefaults(n)
     n["width"]["actionmax"] = 255
     n["width"]["select"] = 0
     n["width"]["timer"] = 0       
-    n["width"]["changed"] = true    
+    n["width"]["changed"] = true
+
+    n["gate"] = {}
+    n["gate"]["select"] = 0
+    n["gate"]["timer"] = 0
+    n["gate"]["rate"] = 0
+    n["gate"]["gateoff"] = false
+    n["gate"]["changed"] = true
+
+    n["blocktimer"] = {}
+    n["blocktimer"]["select"] = 0
+    n["blocktimer"]["timer"] = 0
+    n["blocktimer"]["rate"] = 0
+    n["blocktimer"]["nextblock"] = 0    
 end
 
 -- because old lua
@@ -61,6 +74,7 @@ block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
 block_phasing = 20
 block_waves = 11
 block_stroke = 3
+block_rhythm, block_rhythm16, block_rhythm17 = 15, 16, 17
 
 function setupblock(channels)
     print("setupblock");
@@ -116,6 +130,36 @@ function setupblock(channels)
           channels[4]["intensity"]["min"] = 230
           channels[3]["intensity"]["value"] = channels[4]["intensity"]["min"]          -- start it offset
           channels[4]["width"]["value"] = 216
+    elseif (channels["block"] == block_rhythm) then
+          for chan = 1, 4, 1
+          do    
+            channels[chan]["width"]["value"] = 70
+            channels[chan]["intensity"]["value"] = 224
+            channels[chan]["intensity"]["min"] = 224      
+            channels[chan]["intensity"]["actionmin"] = 253 -- 0xfd goto max
+            channels[chan]["intensity"]["actionmax"] = 253 -- 0xfd goto min
+            channels[chan]["intensity"]["select"] = 1
+            channels[chan]["intensity"]["steps"] = 0
+            channels[chan]["gate"]["select"] = 1
+            channels[chan]["gate"]["rate"] = 12
+          end
+          channels[1]["blocktimer"]["select"] = 1
+          channels[1]["blocktimer"]["rate"] = 31
+          channels[1]["blocktimer"]["nextblock"] = 16
+          
+    elseif (channels["block"] == block_rhythm16) then
+          channels[1]["blocktimer"]["nextblock"] = 17
+          for chan = 1, 4, 1
+          do    
+            channels[chan]["width"]["value"] = 196
+            channels[chan]["intensity"]["value"] = channels[chan]["intensity"]["value"] + 1
+          end
+    elseif (channels["block"] == block_rhythm17) then
+          channels[1]["blocktimer"]["nextblock"] = 16    
+          for chan = 1, 4, 1
+          do    
+            channels[chan]["width"]["value"] = 70
+          end
     elseif (channels["block"] == block_climb) then
           channels[1]["freq"]["select"] = 1
           channels[1]["freq"]["rate"] = 50  -- MA knob 1 to 100
@@ -200,6 +244,30 @@ function setupblock(channels)
     end            
 end
 
+function handleblocktimer(b)
+    if b["select"] == 0 then
+      return
+    end
+    b["timer"] = b["timer"] +1
+    if b["timer"] > (8*b["rate"]) then
+      b["timer"] = 0
+      channels["block"] = b["nextblock"]
+      setupblock(channels)
+    end
+end
+    
+function handlegatetimer(b)
+    if b["select"] == 0 then
+      return
+    end
+    b["timer"] = b["timer"] +1
+    if b["timer"] > b["rate"] then
+      b["timer"] = 0
+      b["gateoff"] = not b["gateoff"]
+      b["changed"] = true
+    end
+end
+
 function handleblock(b)
     local changed = false
 
@@ -210,32 +278,32 @@ function handleblock(b)
     if b["timer"] > b["rate"] then
          b["timer"] = 0
          b["value"] = b["value"] + b["steps"]
-         if (b["steps"] > 0) then
-             if b["value"] >= b["max"] then
-               b["value"] = b["max"]
-               if b["actionmax"] == 255 then
+         if b["value"] >= b["max"] then
+             b["value"] = b["max"]
+             if b["actionmax"] == 255 then
                  b["steps"] = -b["steps"]
-               elseif b["actionmax"] == 254 then
+             elseif b["actionmax"] == 254 then
                  b["steps"] = -b["steps"]
                  b["gateoff"] = not b["gateoff"]
-               elseif b["actionmax"] <200 then
+             elseif b["actionmin"] == 253 then
+                 b["value"] = b["min"]
+             elseif b["actionmax"] <200 then
                  channels["block"] = b["actionmax"]
                  setupblock(channels)
-               end
-           end
-         else
-           if b["value"] <= b["min"] then
+             end
+         elseif b["value"] <= b["min"] then
              b["value"] = b["min"]
              if b["actionmin"] == 255 then
                  b["steps"] = -b["steps"]
              elseif b["actionmin"] == 254 then
                  b["steps"] = -b["steps"]
-                 b["gateoff"] = not b["gateoff"]                 
+                 b["gateoff"] = not b["gateoff"]
+             elseif b["actionmin"] == 253 then
+                 b["value"] = b["max"]
              elseif b["actionmin"] <200 then
                  channels["block"] = b["actionmin"]
                  setupblock(channels)
              end             
-         end
          end
          changed = true
          b["changed"] = true
@@ -246,6 +314,9 @@ end
 function at244hz()
     for chan = 1, 4, 1
     do
+        ettot.handleblocktimer(channels[chan]["blocktimer"])
+        ettot.handlegatetimer(channels[chan]["gate"])
+        
         ettot.handleblock(channels[chan]["freq"])
         if channels[chan]["freq"]["changed"] then
            zc.SetFrequency(chan, 3750/channels[chan]["freq"]["value"])
@@ -259,13 +330,14 @@ function at244hz()
         end
 
         ettot.handleblock(channels[chan]["intensity"])
-        if channels[chan]["intensity"]["changed"] then
-            if (channels[chan]["intensity"]["gateoff"]) then
+        if (channels[chan]["intensity"]["changed"] or channels[chan]["gate"]["changed"]) then
+            if (channels[chan]["intensity"]["gateoff"] or channels[chan]["gate"]["gateoff"]) then
                zc.SetPower(chan, 0)
             else
                zc.SetPower(chan, channels[chan]["intensity"]["value"]*1000/255)
             end
             channels[chan]["intensity"]["changed"] = false
+            channels[chan]["gate"]["changed"] = false            
         end
     end
 end

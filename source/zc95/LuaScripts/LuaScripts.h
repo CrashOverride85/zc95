@@ -25,6 +25,8 @@ extern uint8_t lua_script_phasing2_start;
 extern uint8_t lua_script_phasing2_end;
 extern uint8_t lua_script_stroke_start;
 extern uint8_t lua_script_stroke_end;
+extern uint8_t lua_script_rhythm_start;
+extern uint8_t lua_script_rhythm_end;
 
 // Lua libraries
 extern uint8_t lua_lib_script_ettot_start;
@@ -59,6 +61,7 @@ const lua_script_in_flash_t lua_scripts[] =
     {((uint32_t)&lua_script_intense_start)  , ((uint32_t)&lua_script_intense_end)   , false},
     {((uint32_t)&lua_script_phasing2_start) , ((uint32_t)&lua_script_phasing2_end)  , false},
     {((uint32_t)&lua_script_stroke_start)   , ((uint32_t)&lua_script_stroke_end)    , false},    
+    {((uint32_t)&lua_script_rhythm_start)   , ((uint32_t)&lua_script_rhythm_end)    , false},    
     { 0, 0, 0 }
 };
 
