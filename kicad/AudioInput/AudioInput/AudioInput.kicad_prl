@@ -36,6 +36,7 @@
       8,
       9,
       10,
+      11,
       12,
       13,
       14,
@@ -62,7 +63,7 @@
       36
     ],
     "visible_layers": "8001020_ffffffff",
-    "zone_display_mode": 1
+    "zone_display_mode": 0
   },
   "meta": {
     "filename": "AudioInput.kicad_prl",
