@@ -23,6 +23,10 @@
 .global lua_script_climb_end
 .global lua_script_intense_start
 .global lua_script_intense_end
+.global lua_script_phasing2_start
+.global lua_script_phasing2_end
+.global lua_script_stroke_start
+.global lua_script_stroke_end        
 
 lua_script1_start:
 .balign 4096
@@ -77,3 +81,13 @@ lua_script_intense_start:
 .incbin "LuaScripts/intense.lua"
 .fill 2, 1, 0x00 /* null terminate */
 lua_script_intense_end:
+
+lua_script_phasing2_start:
+.incbin "LuaScripts/phasing2.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_phasing2_end:
+
+lua_script_stroke_start:
+.incbin "LuaScripts/stroke.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_stroke_end:

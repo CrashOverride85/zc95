@@ -2,8 +2,6 @@
 
 require("ettot")
 
-block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
-
 Config = {
     name = "Climb",
     menu_items = {
@@ -35,7 +33,7 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = block_climb
+    channels["block"] = ettot.block_climb
     ettot.setupblock(channels)
 end
 

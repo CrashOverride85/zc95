@@ -1,7 +1,6 @@
 -- "Orgasm" - kindly contributed by someone who perfers to remain anonymous
 
 require("ettot")
-block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
 
 Config = {
     name = "Orgasm",
@@ -34,7 +33,7 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = block_orgasm
+    channels["block"] = ettot.block_orgasm
     ettot.setupblock(channels)
 end
 

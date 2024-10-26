@@ -8,12 +8,13 @@ function setupdefaults(n)
     n["intensity"]["min"] = 222
     n["intensity"]["max"] = 255
     n["intensity"]["rate"] = 1
-    n["intensity"]["steps"] = 1    
-    n["intensity"]["actionmin"] = 255       
+    n["intensity"]["steps"] = 1
+    n["intensity"]["actionmin"] = 255
     n["intensity"]["actionmax"] = 255
     n["intensity"]["select"] = 0
     n["intensity"]["timer"] = 0
-    n["intensity"]["changed"] = true    
+    n["intensity"]["gateoff"] = false
+    n["intensity"]["changed"] = true
 
     n["freq"]["value"] = 22
     n["freq"]["min"] = 9
@@ -58,6 +59,8 @@ end
 block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
 block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
 block_phasing = 20
+block_waves = 11
+block_stroke = 3
 
 function setupblock(channels)
     print("setupblock");
@@ -68,7 +71,52 @@ function setupblock(channels)
         channels[chan]["intensity"]["changed"] = true        
     end
     print("**** NEW BLOCK ",channels["block"])
-    if (channels["block"] == block_climb) then
+    if (channels["block"] == block_waves) then
+          channels[1]["freq"]["max"] = 128
+          channels[3]["freq"]["max"] = channels[1]["freq"]["max"]
+          channels[2]["freq"]["max"] = 64
+          channels[4]["freq"]["max"] = channels[2]["freq"]["max"]
+          channels[1]["width"]["steps"] = 2
+          channels[2]["width"]["steps"] = 3
+          channels[3]["width"]["steps"] = channels[2]["width"]["steps"]
+          channels[4]["width"]["steps"] = channels[1]["width"]["steps"]
+          for chan = 1, 4, 1
+          do
+              channels[chan]["freq"]["select"] = 1
+              channels[chan]["freq"]["rate"] = 32
+              channels[chan]["width"]["select"] = 1
+              channels[chan]["width"]["rate"] = channels[chan]["freq"]["rate"]
+          end
+    elseif (channels["block"] == block_stroke) then
+          channels[1]["intensity"]["gateoff"] = true
+          channels[1]["intensity"]["steps"] = 2
+          channels[1]["intensity"]["rate"] = 16 -- MA knob 0 to 32
+          channels[1]["intensity"]["select"] = 1
+          -- intensity minimum is range_depth_high (255) - depth_advanced (215) + range_depth_low (165) = 205          
+          channels[1]["intensity"]["min"] = 205
+          channels[1]["intensity"]["actionmin"] = 254 -- xor gate with 110 then same as 255
+          channels[1]["intensity"]["actionmax"] = 254 -- xor gate with 110 then same as 255
+          channels[1]["width"]["value"] = 255
+          channels[2]["intensity"]["select"] = 1
+          channels[2]["intensity"]["rate"] = 16 -- MA knob 0 to 32
+          channels[2]["intensity"]["min"] = 230
+          channels[2]["width"]["value"] = 216
+
+          channels[3]["intensity"]["gateoff"] = true
+          channels[3]["intensity"]["steps"] = 2
+          channels[3]["intensity"]["rate"] = 16 -- MA knob 0 to 32
+          channels[3]["intensity"]["select"] = 1
+          channels[3]["intensity"]["min"] = 205
+          channels[3]["intensity"]["value"] = channels[3]["intensity"]["min"]          -- start it offset
+          channels[3]["intensity"]["actionmin"] = 254 -- xor gate with 110 then same as 255
+          channels[3]["intensity"]["actionmax"] = 254 -- xor gate with 110 then same as 255
+          channels[3]["width"]["value"] = 255
+          channels[4]["intensity"]["select"] = 1
+          channels[4]["intensity"]["rate"] = 16 -- MA knob 0 to 32
+          channels[4]["intensity"]["min"] = 230
+          channels[3]["intensity"]["value"] = channels[4]["intensity"]["min"]          -- start it offset
+          channels[4]["width"]["value"] = 216
+    elseif (channels["block"] == block_climb) then
           channels[1]["freq"]["select"] = 1
           channels[1]["freq"]["rate"] = 50  -- MA knob 1 to 100
           channels[1]["freq"]["value"] = 255
@@ -82,7 +130,6 @@ function setupblock(channels)
           channels[2]["freq"]["max"] = 255
           channels[2]["freq"]["steps"] = 1
           channels[2]["freq"]["actionmin"] = block_climb9
-
     elseif (channels["block"] == block_climb5) then
           channels[1]["freq"]["select"] = 1
           channels[1]["freq"]["value"] = 255
@@ -111,21 +158,14 @@ function setupblock(channels)
           channels[2]["freq"]["value"] = 255
           channels[2]["freq"]["steps"] = 5
           channels[2]["freq"]["actionmin"] = block_climb8
-
     elseif (channels["block"] == block_phasing) then
-        channels[1]["width"]["select"] = 0
-        channels[2]["width"]["select"] = 0        
-        channels[1]["width"]["value"] = 126
-        channels[2]["width"]["value"] = 121       
-        channels[1]["freq"]["value"] = 25
-        channels[2]["freq"]["value"] = 25
-        channels[1]["intensity"]["select"] = 1
-        channels[2]["intensity"]["select"] = 1        
-        channels[1]["intensity"]["rate"] = 5
-        channels[2]["intensity"]["rate"] = 5
-        channels[1]["intensity"]["min"] = 231
-        channels[2]["intensity"]["min"] = 231
-
+          for chan = 1, 4, 1
+          do
+                channels[chan]["width"]["value"] = 129 - 4*chan
+                channels[chan]["freq"]["value"] = 25
+                channels[chan]["intensity"]["select"] = 1
+                channels[chan]["intensity"]["min"] = 215
+          end
     elseif (channels["block"] == block_orgasm) then
         channels[1]["freq"]["value"] = 135
         channels[2]["freq"]["value"] = channels[1]["freq"]["value"]
@@ -175,6 +215,9 @@ function handleblock(b)
                b["value"] = b["max"]
                if b["actionmax"] == 255 then
                  b["steps"] = -b["steps"]
+               elseif b["actionmax"] == 254 then
+                 b["steps"] = -b["steps"]
+                 b["gateoff"] = not b["gateoff"]
                elseif b["actionmax"] <200 then
                  channels["block"] = b["actionmax"]
                  setupblock(channels)
@@ -184,7 +227,10 @@ function handleblock(b)
            if b["value"] <= b["min"] then
              b["value"] = b["min"]
              if b["actionmin"] == 255 then
-                 b["steps"] = -b["steps"]             
+                 b["steps"] = -b["steps"]
+             elseif b["actionmin"] == 254 then
+                 b["steps"] = -b["steps"]
+                 b["gateoff"] = not b["gateoff"]                 
              elseif b["actionmin"] <200 then
                  channels["block"] = b["actionmin"]
                  setupblock(channels)
@@ -195,4 +241,31 @@ function handleblock(b)
          b["changed"] = true
     end
     return changed
+end
+
+function at244hz()
+    for chan = 1, 4, 1
+    do
+        ettot.handleblock(channels[chan]["freq"])
+        if channels[chan]["freq"]["changed"] then
+           zc.SetFrequency(chan, 3750/channels[chan]["freq"]["value"])
+           channels[chan]["freq"]["changed"] = false
+        end
+
+        ettot.handleblock(channels[chan]["width"])
+        if channels[chan]["width"]["changed"] then
+            zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
+            channels[chan]["width"]["changed"] = false
+        end
+
+        ettot.handleblock(channels[chan]["intensity"])
+        if channels[chan]["intensity"]["changed"] then
+            if (channels[chan]["intensity"]["gateoff"]) then
+               zc.SetPower(chan, 0)
+            else
+               zc.SetPower(chan, channels[chan]["intensity"]["value"]*1000/255)
+            end
+            channels[chan]["intensity"]["changed"] = false
+        end
+    end
 end
