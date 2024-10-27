@@ -1,19 +1,19 @@
--- "Stroke" - kindly contributed by someone who perfers to remain anonymous
+-- "Combo" - kindly contributed by someone who perfers to remain anonymous
 
 require("ettot")
 
 Config = {
-    name = "Stroke",
+    name = "Combo",
     menu_items = {
         {
             type = "MIN_MAX",
             title = "Speed",
             id = 1,
-            min = 0,
-            max = 32,
-            increment_step = 1,
+            min = 1,
+            max = 64,
+            increment_step = 2,
             uom = "",
-            default = 16
+            default = 32
          }
     }
 }
@@ -27,15 +27,14 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = ettot.block_stroke
+    channels["block"] = ettot.block_combo
     ettot.setupblock(channels)
 end
 
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["intensity"]["rate"] = min_max_val
-        channels[chan]["intensity"]["changed"] = true
+        channels[chan]["gate"]["rate"] = min_max_val*8
     end
 end
 

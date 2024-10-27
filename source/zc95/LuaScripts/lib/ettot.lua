@@ -4,6 +4,7 @@ module("ettot", package.seeall)
 
 -- Defaults for all the modes
 function setupdefaults(n)
+    n["intensity"] = {}
     n["intensity"]["value"] = 255
     n["intensity"]["min"] = 222
     n["intensity"]["max"] = 255
@@ -16,6 +17,7 @@ function setupdefaults(n)
     n["intensity"]["gateoff"] = false
     n["intensity"]["changed"] = true
 
+    n["freq"] = {}
     n["freq"]["value"] = 22
     n["freq"]["min"] = 9
     n["freq"]["max"] = 100
@@ -27,6 +29,7 @@ function setupdefaults(n)
     n["freq"]["timer"] = 0
     n["freq"]["changed"] = true
 
+    n["width"] = {}
     n["width"]["value"] = 130
     n["width"]["min"] = 50    
     n["width"]["max"] = 200
@@ -52,29 +55,15 @@ function setupdefaults(n)
     n["blocktimer"]["nextblock"] = 0    
 end
 
--- because old lua
-function bxor (a,b)
-    local r = 0
-    
-    for i = 0, 31 do
-        local x = a / 2 + b / 2
-        if x ~= math.floor (x) then
-            r = r + 2^i
-        end
-
-        a = math.floor (a / 2)
-        b = math.floor (b / 2)
-    end
-    
-    return r
-end
-
-block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
-block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
-block_phasing = 20
-block_waves = 11
 block_stroke = 3
+block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
+block_waves = 11
+block_combo = 13
 block_rhythm, block_rhythm16, block_rhythm17 = 15, 16, 17
+block_phasing = 20
+block_orgasm, block_orgasm2, block_orgasm3, block_orgasm4 = 24, 25, 26, 27
+block_torment, block_torment1, block_torment2, block_torment3 = 28, 29, 30, 31
+block_random2 = 32
 
 function setupblock(channels)
     print("setupblock");
@@ -82,7 +71,8 @@ function setupblock(channels)
     do
         channels[chan]["width"]["changed"] = true
         channels[chan]["freq"]["changed"] = true
-        channels[chan]["intensity"]["changed"] = true        
+        channels[chan]["intensity"]["changed"] = true
+        channels[chan]["gate"]["changed"] = true        
     end
     print("**** NEW BLOCK ",channels["block"])
     if (channels["block"] == block_waves) then
@@ -146,7 +136,6 @@ function setupblock(channels)
           channels[1]["blocktimer"]["select"] = 1
           channels[1]["blocktimer"]["rate"] = 31
           channels[1]["blocktimer"]["nextblock"] = 16
-          
     elseif (channels["block"] == block_rhythm16) then
           channels[1]["blocktimer"]["nextblock"] = 17
           for chan = 1, 4, 1
@@ -160,6 +149,53 @@ function setupblock(channels)
           do    
             channels[chan]["width"]["value"] = 70
           end
+    elseif (channels["block"] == block_combo) then
+          channels[2]["freq"]["steps"] = 2
+          channels[2]["width"]["steps"] = 2
+          channels[4]["freq"]["steps"] = 2
+          channels[4]["width"]["steps"] = 2
+          for chan = 1, 4, 1
+          do              
+              channels[chan]["gate"]["select"] = 1
+              channels[chan]["gate"]["rate"] = 256
+              channels[chan]["freq"]["rate"] = 8 -- default *8
+              channels[chan]["width"]["rate"] = 40 -- advanced param 5 *8
+              channels[chan]["width"]["value"] = 130 -- advanced param 130
+          end
+    elseif (channels["block"] == block_torment) then
+        for chan = 1, 4, 1
+        do    
+            channels[chan]["intensity"]["select"] = 0
+            channels[chan]["intensity"]["value"] = 176           
+            channels[chan]["intensity"]["gateoff"] = true
+            channels[chan]["intensity"]["max"] = math.random(224,255)
+            channels[chan]["intensity"]["rate"] = math.random(6,63)
+            channels[chan]["intensity"]["actionmax"] = 255
+        end
+        channels[1]["blocktimer"]["select"] = 1
+        channels[1]["blocktimer"]["rate"] = math.random(5,24) * 256 / 8
+        channels[1]["blocktimer"]["nextblock"] = math.random(block_torment1,block_torment3)
+    elseif (channels["block"] == block_torment1) then
+        for chan = 1, 4, 1
+        do
+            channels[chan]["intensity"]["select"] = 1
+            channels[chan]["intensity"]["gateoff"] = false
+            channels[chan]["intensity"]["actionmax"] = block_torment
+        end
+    elseif (channels["block"] == block_torment2) then
+        for chan = 2, 4, 2
+        do    
+            channels[chan]["intensity"]["select"] = 1
+            channels[chan]["intensity"]["gateoff"] = false
+            channels[chan]["intensity"]["actionmax"] = block_torment
+        end
+    elseif (channels["block"] == block_torment3) then
+        for chan = 1, 3, 2
+        do    
+            channels[chan]["intensity"]["select"] = 1
+            channels[chan]["intensity"]["gateoff"] = false
+            channels[chan]["intensity"]["actionmax"] = block_torment
+        end
     elseif (channels["block"] == block_climb) then
           channels[1]["freq"]["select"] = 1
           channels[1]["freq"]["rate"] = 50  -- MA knob 1 to 100
@@ -230,9 +266,7 @@ function setupblock(channels)
         channels[2]["width"]["select"] = 1
         channels[2]["width"]["actionmax"] = 255
         channels[1]["width"]["min"] = (channels[1]["width"]["min"] + 2)%256
-        channels[1]["width"]["min"] = bxor(channels[1]["width"]["min"],2)
         channels[2]["width"]["min"] = (channels[2]["width"]["min"] + 2)%256
-        channels[2]["width"]["min"] = bxor(channels[2]["width"]["min"],2)
     elseif (channels["block"] == block_orgasm3) then
         channels[1]["width"]["select"] = 0
         channels[2]["width"]["actionmin"] = block_orgasm4
@@ -311,8 +345,9 @@ function handleblock(b)
     return changed
 end
 
-function at244hz()
-    for chan = 1, 4, 1
+function at244hz(nchannels)
+    nchannels = nchannels or 4 -- old default
+    for chan = 1, nchannels, 1
     do
         ettot.handleblocktimer(channels[chan]["blocktimer"])
         ettot.handlegatetimer(channels[chan]["gate"])
@@ -320,21 +355,30 @@ function at244hz()
         ettot.handleblock(channels[chan]["freq"])
         if channels[chan]["freq"]["changed"] then
            zc.SetFrequency(chan, 3750/channels[chan]["freq"]["value"])
+           if (nchannels == 2) then
+               zc.SetFrequency(chan+2, 3750/channels[chan]["freq"]["value"])
+           end
            channels[chan]["freq"]["changed"] = false
         end
 
         ettot.handleblock(channels[chan]["width"])
         if channels[chan]["width"]["changed"] then
             zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
+            if (nchannels == 2) then
+                zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
+            end
             channels[chan]["width"]["changed"] = false
         end
 
         ettot.handleblock(channels[chan]["intensity"])
         if (channels[chan]["intensity"]["changed"] or channels[chan]["gate"]["changed"]) then
+            local power = channels[chan]["intensity"]["value"]*1000/255
             if (channels[chan]["intensity"]["gateoff"] or channels[chan]["gate"]["gateoff"]) then
-               zc.SetPower(chan, 0)
-            else
-               zc.SetPower(chan, channels[chan]["intensity"]["value"]*1000/255)
+               power = 0
+            end
+            zc.SetPower(chan, power)
+            if (nchannels == 2) then
+                zc.SetPower(chan+2, power)
             end
             channels[chan]["intensity"]["changed"] = false
             channels[chan]["gate"]["changed"] = false            

@@ -29,6 +29,10 @@
 .global lua_script_stroke_end
 .global lua_script_rhythm_start
 .global lua_script_rhythm_end
+.global lua_script_torment_start
+.global lua_script_torment_end
+.global lua_script_combo_start
+.global lua_script_combo_end
 
 lua_script1_start:
 .balign 4096
@@ -93,6 +97,16 @@ lua_script_stroke_start:
 .incbin "LuaScripts/stroke.lua"
 .fill 2, 1, 0x00 /* null terminate */
 lua_script_stroke_end:
+
+lua_script_torment_start:
+.incbin "LuaScripts/torment.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_torment_end:        
+
+lua_script_combo_start:
+.incbin "LuaScripts/combo.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_combo_end:
 
 lua_script_rhythm_start:
 .incbin "LuaScripts/rhythm.lua"

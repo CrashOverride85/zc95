@@ -1,21 +1,9 @@
--- "Stroke" - kindly contributed by someone who perfers to remain anonymous
+-- "Torment" - kindly contributed by someone who perfers to remain anonymous
 
 require("ettot")
 
 Config = {
-    name = "Stroke",
-    menu_items = {
-        {
-            type = "MIN_MAX",
-            title = "Speed",
-            id = 1,
-            min = 0,
-            max = 32,
-            increment_step = 1,
-            uom = "",
-            default = 16
-         }
-    }
+    name = "Torment",
 }
 
 function Setup(time_ms)
@@ -27,16 +15,9 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = ettot.block_stroke
+    channels["block"] = ettot.block_torment
     ettot.setupblock(channels)
-end
 
-function MinMaxChange(menu_id, min_max_val)
-    for chan = 1, 4, 1
-    do
-        channels[chan]["intensity"]["rate"] = min_max_val
-        channels[chan]["intensity"]["changed"] = true
-    end
 end
 
 _last_ms = 0
