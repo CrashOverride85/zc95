@@ -275,7 +275,25 @@ function setupblock(channels)
         channels[2]["width"]["select"] = 0
         channels[1]["width"]["steps"] = 1
         channels[2]["width"]["steps"] = 1          
-    end            
+    elseif (channels["block"] == block_random2) then
+        for chan = 1, 4, 1 
+        do    
+          channels[chan]["intensity"]["select"] = 1
+          channels[chan]["intensity"]["rate"] = math.random(1,4)*8
+          channels[chan]["freq"]["select"] = 1
+          channels[chan]["freq"]["rate"] = math.random(1,4)*8
+          channels[chan]["width"]["select"] = 1        
+          channels[chan]["intensity"]["select"] = 1
+        end
+        for chan = 2, 4, 2
+        do
+          channels[chan]["width"]["rate"] = math.random(1,4)
+          channels[chan]["freq"]["step"] = math.random(1,4)
+        end
+        channels[1]["blocktimer"]["select"] = 1
+        channels[1]["blocktimer"]["rate"] = math.random(5,31) * 256 / 8
+        channels[1]["blocktimer"]["nextblock"] = block_random2
+     end            
 end
 
 function handleblocktimer(b)
