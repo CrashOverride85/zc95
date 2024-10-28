@@ -9,11 +9,11 @@ Config = {
             type = "MIN_MAX",
             title = "Frequency",
             id = 1,
-            min = 15,
-            max = 255,
-            increment_step = 8,
+            min = 1,
+            max = 100,
+            increment_step = 5,
             uom = "",
-            default = 135
+            default = 50
          }
     }
 }
