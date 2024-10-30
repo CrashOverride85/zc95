@@ -34,7 +34,7 @@ end
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["freq"]["value"] = min_max_val
+        channels[chan]["freq"]["rate"] = min_max_val
         channels[chan]["freq"]["changed"] = true
     end
 end

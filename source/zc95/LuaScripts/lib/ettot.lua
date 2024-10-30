@@ -6,7 +6,7 @@ module("ettot", package.seeall)
 function setupdefaults(n)
     n["intensity"] = {}
     n["intensity"]["value"] = 255
-    n["intensity"]["min"] = 222
+    n["intensity"]["min"] = 205
     n["intensity"]["max"] = 255
     n["intensity"]["rate"] = 1
     n["intensity"]["steps"] = 1
@@ -25,7 +25,7 @@ function setupdefaults(n)
     n["freq"]["steps"] = 1
     n["freq"]["actionmin"] = 255
     n["freq"]["actionmax"] = 255
-    n["freq"]["select"] = 0
+    n["freq"]["select"] = 0 -- default is use MA value
     n["freq"]["timer"] = 0
     n["freq"]["changed"] = true
 
@@ -37,20 +37,20 @@ function setupdefaults(n)
     n["width"]["steps"] = 1
     n["width"]["actionmin"] = 255
     n["width"]["actionmax"] = 255
-    n["width"]["select"] = 0
+    n["width"]["select"] = 0 -- default is use Advanced Param value
     n["width"]["timer"] = 0
     n["width"]["changed"] = true
 
     n["gate"] = {}
     n["gate"]["select"] = 0
-    n["gate"]["timer"] = 0
+    n["gate"]["timer"] = 0 -- on/off time is 62 default
     n["gate"]["rate"] = 0
     n["gate"]["gateoff"] = false
     n["gate"]["changed"] = true
 
     n["blocktimer"] = {}
     n["blocktimer"]["select"] = 0
-    n["blocktimer"]["timer"] = 0
+    n["blocktimer"]["timer"] = 0 -- max is 255 default
     n["blocktimer"]["rate"] = 0
     n["blocktimer"]["nextblock"] = 0
 end
@@ -130,7 +130,7 @@ function setupblock(channels)
             channels[chan]["intensity"]["select"] = 1
             channels[chan]["intensity"]["steps"] = 0
             channels[chan]["gate"]["select"] = 1
-            channels[chan]["gate"]["rate"] = 12
+            channels[chan]["gate"]["rate"] = 12 -- MA
           end
           channels[1]["blocktimer"]["select"] = 1
           channels[1]["blocktimer"]["rate"] = 31
@@ -149,19 +149,20 @@ function setupblock(channels)
             channels[chan]["width"]["value"] = 70
           end
     elseif (channels["block"] == block_combo) then
-          channels[2]["freq"]["steps"] = 2
-          channels[2]["width"]["steps"] = 2
-          channels[4]["freq"]["steps"] = 2
-          channels[4]["width"]["steps"] = 2
           for chan = 1, 4, 1
           do
               channels[chan]["gate"]["select"] = 1
-              channels[chan]["gate"]["rate"] = 256
+              channels[chan]["gate"]["rate"] = 32*8
               channels[chan]["freq"]["select"] = 1
               channels[chan]["freq"]["rate"] = 8 -- default *8
               channels[chan]["width"]["select"] = 1
               channels[chan]["width"]["rate"] = 40 -- advanced param 5 *8
               channels[chan]["width"]["value"] = 130 -- advanced param 130
+          end
+          for chan = 2, 4, 2
+          do
+              channels[chan]["freq"]["steps"] = 2
+              channels[chan]["width"]["steps"] = 2
           end
     elseif (channels["block"] == block_torment) then
         for chan = 1, 4, 1
@@ -198,19 +199,16 @@ function setupblock(channels)
             channels[chan]["intensity"]["actionmax"] = block_torment
         end
     elseif (channels["block"] == block_climb) then
-          channels[1]["freq"]["select"] = 1
-          channels[1]["freq"]["rate"] = 50  -- MA knob 1 to 100
-          channels[1]["freq"]["value"] = 255
-          channels[1]["freq"]["max"] = 255
-          channels[1]["freq"]["steps"] = 1
-          channels[1]["freq"]["actionmin"] = block_climb6
-
-          channels[2]["freq"]["rate"] = 50  -- MA knob 1 to 100
-          channels[2]["freq"]["select"] = 1
-          channels[2]["freq"]["value"] = 255
-          channels[2]["freq"]["max"] = 255
-          channels[2]["freq"]["steps"] = 1
-          channels[2]["freq"]["actionmin"] = block_climb9
+        for chan = 1, 2, 1
+        do
+          channels[chan]["freq"]["select"] = 1
+          channels[chan]["freq"]["rate"] = 50  -- MA knob 1 to 100
+          channels[chan]["freq"]["value"] = 255
+          channels[chan]["freq"]["max"] = 255
+          channels[chan]["freq"]["steps"] = 1
+        end
+        channels[1]["freq"]["actionmin"] = block_climb6
+        channels[2]["freq"]["actionmin"] = block_climb9
     elseif (channels["block"] == block_climb5) then
           channels[1]["freq"]["select"] = 1
           channels[1]["freq"]["value"] = 255
@@ -245,7 +243,8 @@ function setupblock(channels)
                 channels[chan]["width"]["value"] = 129 - 4*chan
                 channels[chan]["freq"]["value"] = 25
                 channels[chan]["intensity"]["select"] = 1
-                channels[chan]["intensity"]["min"] = 215
+                channels[chan]["intensity"]["min"] = 215 -- advanced param
+                channels[chan]["intensity"]["rate"] = 1 -- advanced param
           end
     elseif (channels["block"] == block_orgasm) then
         for chan = 1, 2, 1
@@ -264,9 +263,10 @@ function setupblock(channels)
         channels[1]["width"]["actionmin"] = block_orgasm3
         channels[2]["width"]["select"] = 1
         channels[2]["width"]["actionmax"] = 255
-        channels[1]["width"]["min"] = (channels[1]["width"]["min"] + 2)%256
---        print("width",channels[1]["width"]["value"],channels[1]["width"]["min"])
-        channels[2]["width"]["min"] = (channels[2]["width"]["min"] + 2)%256
+
+        channels[1]["width"]["min"] = (channels[1]["width"]["min"] + 2) %256
+        channels[2]["width"]["min"] = (channels[2]["width"]["min"] + 2) %256
+        print("block 25 width2 min is",channels[2]["width"]["min"])
     elseif (channels["block"] == block_orgasm3) then
         channels[1]["width"]["select"] = 0
         channels[2]["width"]["actionmin"] = block_orgasm4
@@ -319,7 +319,7 @@ function handlegatetimer(b)
     end
 end
 
-function handleblock(b)
+function handleblock(b,name,xchan)
     local changed = false
 
     if b["select"] == 0 then
@@ -329,7 +329,9 @@ function handleblock(b)
     if b["timer"] >= b["rate"] then
          b["timer"] = 0
          b["value"] = b["value"] + b["steps"]
-         if b["value"] > b["max"] then
+--         print(name,xchan,"adding ",b["steps"]," to ",b["value"]," min ",b["min"]," max ",b["max"])
+         if (b["steps"]>=0 and b["value"] > b["max"]) then
+--             print(name,xchan,"is bigger than max")
              b["value"] = b["max"]
              if b["actionmax"] == 255 then
                  b["steps"] = -b["steps"]
@@ -342,7 +344,8 @@ function handleblock(b)
                  channels["block"] = b["actionmax"]
                  setupblock(channels)
              end
-         elseif b["value"] <= b["min"] then
+         elseif (b["steps"]<=0 and b["value"] <= b["min"]) then
+--            print(name,xchan,"is smaller than min")
              b["value"] = b["min"]
              if b["actionmin"] == 255 then
                  b["steps"] = -b["steps"]
@@ -364,12 +367,13 @@ end
 
 function at244hz(nchannels)
     nchannels = nchannels or 4 -- old default
+    local chan
     for chan = 1, nchannels, 1
     do
         ettot.handleblocktimer(channels[chan]["blocktimer"])
         ettot.handlegatetimer(channels[chan]["gate"])
 
-        ettot.handleblock(channels[chan]["freq"])
+        ettot.handleblock(channels[chan]["freq"],"f",chan)
         if channels[chan]["freq"]["changed"] then
            zc.SetFrequency(chan, 3750/channels[chan]["freq"]["value"])
            if (nchannels == 2) then
@@ -378,7 +382,7 @@ function at244hz(nchannels)
            channels[chan]["freq"]["changed"] = false
         end
 
-        ettot.handleblock(channels[chan]["width"])
+        ettot.handleblock(channels[chan]["width"],"w",chan)
         if channels[chan]["width"]["changed"] then
             zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
             if (nchannels == 2) then
@@ -387,7 +391,7 @@ function at244hz(nchannels)
             channels[chan]["width"]["changed"] = false
         end
 
-        ettot.handleblock(channels[chan]["intensity"])
+        ettot.handleblock(channels[chan]["intensity"],"i",chan)
         if (channels[chan]["intensity"]["changed"] or channels[chan]["gate"]["changed"]) then
             local power = channels[chan]["intensity"]["value"]*1000/255
             if (channels[chan]["intensity"]["gateoff"] or channels[chan]["gate"]["gateoff"]) then
