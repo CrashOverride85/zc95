@@ -365,6 +365,17 @@ function handleblock(b,name,xchan)
     return changed
 end
 
+function setpower(chan, level)
+    if (level == 0) 
+    then
+        zc.ChannelOff(chan)
+        zc.SetPower(chan, 0)
+    else
+        zc.SetPower(chan, level)
+        zc.ChannelOn(chan)
+    end
+end
+
 function at244hz(nchannels)
     nchannels = nchannels or 4 -- old default
     local chan
@@ -397,9 +408,9 @@ function at244hz(nchannels)
             if (channels[chan]["intensity"]["gateoff"] or channels[chan]["gate"]["gateoff"]) then
                power = 0
             end
-            zc.SetPower(chan, power)
+            setpower(chan, power)
             if (nchannels == 2) then
-                zc.SetPower(chan+2, power)
+                setpower(chan+2, power)
             end
             channels[chan]["intensity"]["changed"] = false
             channels[chan]["gate"]["changed"] = false
