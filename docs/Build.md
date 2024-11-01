@@ -29,8 +29,8 @@ Order the board using [these gerbers](../pcb/FrontPanelControls-v0.2/GERBER-Pane
 
 Select the "SMT Assembly" option again at the bottom - pick "Assemble **BOTTOM** side" (this is _not_ the default) and Tooling holes "Added by JLCPCB". 
 On the next page, add the BOM and CPL files:
-* [output_bom_jlc.csv](../pcb/FrontPanelControls-v0.2/BOM-PanelControls.csv)
-* [output_cpl_jlc.csv](../pcb/FrontPanelControls-v0.2/CPL-PanelControls.csv)
+* [BOM-PanelControls.csv](../pcb/FrontPanelControls-v0.2/BOM-PanelControls.csv)
+* [CPL-PanelControls.csv](../pcb/FrontPanelControls-v0.2/CPL-PanelControls.csv)
 
 The next page should show a list of all parts found / matched. The BoM/CPL file also includes the through hole part J5 - I'd suggest un-ticking it and soldering it yourself as it's cheaper.
 

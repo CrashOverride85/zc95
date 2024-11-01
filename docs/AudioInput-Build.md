@@ -20,12 +20,15 @@ Order the blank PCB from JLC using the [AudioInput](../pcb/AudioInput.zip) gerbe
 
 Unfortunately I didn't manage to fit the component values on the silkscreen, so the best way to assemble the board is probably just going through the BoM which lists component references & values; a printout of the [board outline and silkscreen](./AudioOutput.pdf) may help.
 
-Mistake on silkscreen: the footprints for Q1 & Q3 (P Channel MOSFETs) are backwards if ordering the LCSC part C151450. If ordering the part from elsewhere be aware that BS250 MOSFETs come in two different pinouts - DGS and SGD, so putting the part in backwards is rather easy! Perhaps a poor choice of mosfet by me there.
-The most practical solution is probably just to use a diode tester on the actual part, and put the anode on the left when inserting it (assuming the board is orientated with the version text the right way up at the bottom).
+Mistakes on silkscreen of v0.3 PCB: 
+- The footprints for Q1 & Q3 (P Channel MOSFETs) are backwards
+- Didode D3 (under the relay) is also backwards - the cathode should go in the hole labelled A
 
 Assembled board:
 
 ![AI board]
+
+**TODO**: Fix photo, D3, Q1 & Q3 are wrong
 
 Once assembled, plug the audio board into the main board, with the text ("Audio input for ZC95") towards the front / near the front panel. Be careful to line it up correctly with the headers, it is possible to insert it misaligned. 
 
