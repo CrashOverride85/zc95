@@ -230,19 +230,21 @@ void CDisplay::draw_soft_buttons()
     hagl_color_t line_colour = hagl_color(_hagl_backend, 0xFF, 0, 0);
 
     // A
-    put_text(_option_a, 3, (menu_bar_height/2)-6, text_colour);
+    put_text(_option_a, 3, (menu_bar_height/2)-5, text_colour);
     hagl_draw_rectangle(_hagl_backend, 0, 0, (MIPI_DISPLAY_WIDTH-1)/2, menu_bar_height, line_colour);
     
     // B
-    put_text(_option_b, 3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    put_text(_option_b, 3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-5-status_bar_height, text_colour);
     hagl_draw_rectangle(_hagl_backend, 0, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 
     // C
-    put_text(_option_c, (MIPI_DISPLAY_WIDTH/2)+3, (menu_bar_height/2)-6, text_colour);
+    uint8_t cxpos = MIPI_DISPLAY_WIDTH-4-_option_c.length()*6; // right align
+    put_text(_option_c, cxpos, (menu_bar_height/2)-5, text_colour);
     hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, 0, (MIPI_DISPLAY_WIDTH-1), menu_bar_height, line_colour);
 
     // D
-    put_text(_option_d, (MIPI_DISPLAY_WIDTH/2)+3, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-6-status_bar_height, text_colour);
+    uint8_t dxpos = MIPI_DISPLAY_WIDTH-4-_option_d.length()*6; // right align
+    put_text(_option_d, dxpos, (MIPI_DISPLAY_HEIGHT-1) - (menu_bar_height/2)-5-status_bar_height, text_colour);
     hagl_draw_rectangle(_hagl_backend, (MIPI_DISPLAY_WIDTH-1)/2, (MIPI_DISPLAY_HEIGHT-1)-menu_bar_height-status_bar_height, (MIPI_DISPLAY_WIDTH-1), (MIPI_DISPLAY_HEIGHT-1)-status_bar_height, line_colour);
 
     _front_panel->set_button_in_use(Button::A, _option_a.length() > 0);
