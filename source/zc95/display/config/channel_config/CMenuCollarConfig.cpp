@@ -51,6 +51,7 @@ void CMenuCollarConfig::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+            case Button::ROT:
                 set_active_menu(new CMenuCollarConfigSelected(_display, _buttons, _saved_settings, _collar_list->get_current_selection(), _routine_output));
                 break;
 
@@ -75,6 +76,17 @@ void CMenuCollarConfig::adjust_rotary_encoder_change(int8_t change)
     if (_submenu_active)
     {
         _submenu_active->adjust_rotary_encoder_change(change);
+    }
+    else
+    {
+        if (change>=1)
+        {
+            _collar_list->down();
+        }
+        else if (change<=1)
+        {
+            _collar_list->up();
+        }
     }
 }
 

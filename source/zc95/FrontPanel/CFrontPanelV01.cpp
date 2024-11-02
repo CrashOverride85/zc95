@@ -3,6 +3,7 @@
 #include "../globals.h"
 #include "../CUtil.h"
 
+#define ROT_BUTTON 5
 #define ROT_A   6
 #define ROT_B   7
 
@@ -18,6 +19,7 @@ CFrontPanelV01::CFrontPanelV01(CSavedSettings *saved_settings, CMainBoardPortExp
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0;
     _adjust_value = 0;
+    _last_rot_button_state = false;
     
     // The very first time the ADC is read, the first channel seems to have an invalid value. So read it now, 
     // so when it's read next time as usual, it'll return something sensible.
@@ -139,10 +141,38 @@ uint8_t CFrontPanelV01::read_port_expander()
 // on the main board, not the port expander on the front panel.
 bool CFrontPanelV01::button_state(enum Button button)
 {
-    return _main_board_port_exp->button_state(button);
+    if ( button == Button::ROT )
+    {
+        return !(_last_port_exp_read & (1 << ROT_BUTTON));
+    }
+    else
+    {
+        return _main_board_port_exp->button_state(button);
+    }
 }
 
 bool CFrontPanelV01::has_button_state_changed(enum Button button, bool *new_state)
 {
-    return _main_board_port_exp->has_button_state_changed(button, new_state);
+    if ( button == Button::ROT )
+    {
+        bool button_state_changed;
+        *new_state = button_state(button);
+
+        button_state_changed = (_last_rot_button_state != *new_state);
+
+        if (button_state_changed)
+        {
+        if (time_us_64() - _last_rot_button_state_change < (25 * 1000) ) // 25ms debounce
+            return false;
+        else
+            _last_rot_button_state_change = time_us_64();
+        }
+
+        _last_rot_button_state = *new_state;
+        return button_state_changed;
+    }
+    else
+    {
+        return _main_board_port_exp->has_button_state_changed(button, new_state);
+    }
 }

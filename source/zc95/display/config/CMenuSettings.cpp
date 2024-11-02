@@ -85,6 +85,7 @@ void CMenuSettings::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+            case Button::ROT:
                 _last_selection = _settings_list->get_current_selection();
                 show_selected_setting();
                 break;

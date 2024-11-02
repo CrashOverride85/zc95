@@ -85,6 +85,9 @@ void CMenuRemoteAccessConnectWifi::button_pressed(Button button)
 
             case Button::D: // "Down"
                 break;
+
+            case Button::ROT:
+                break;
         }
     }
 }
