@@ -82,8 +82,6 @@ uint8_t CDisplay::get_font_height()
  void CDisplay::init()
  {
     _hagl_backend = hagl_init();
-    hagl_clear(_hagl_backend);
-    update();
  }
 
  void CDisplay::update()
@@ -544,4 +542,28 @@ void CDisplay::draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_col
                 hagl_put_pixel(_hagl_backend, x0+(7-x), y0+y, colour);
         }
     }
+}
+
+void CDisplay::show_splash_screen()
+{
+    hagl_clear(_hagl_backend);
+    hagl_color_t colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00);
+
+    uint8_t y_offset = 15;
+
+    for (uint8_t y=0; y < SPLASH_Y; y++)
+    {
+        for (uint8_t x_ar=0; x_ar < SPLASH_X; x_ar++)
+        {
+            for (uint8_t byte_pos=0; byte_pos < 8; byte_pos++)
+            {
+                if (!(splash_screen[(y * SPLASH_X) + x_ar] & (1 << (7-byte_pos))))
+                {
+                    hagl_put_pixel(_hagl_backend, (x_ar * 8) + byte_pos, y + y_offset, colour);
+                }
+            }
+        }
+    }
+
+    hagl_flush(_hagl_backend);
 }
