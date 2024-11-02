@@ -9,10 +9,7 @@ Can NOT be used with shock collars.
 ### Menu options
 * Frequency - controls how fast the intensity increases/decreases. 1-64, lower is faster.
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## Orgasm
 Pleasurable increasing and decreasing sensation, achieved by varying both pulse width and frequency. A full cycles takes a few minutes.
@@ -20,10 +17,7 @@ Pleasurable increasing and decreasing sensation, achieved by varying both pulse 
 ### Menu options
 * Frequency - controls how fast the intensity increases/decreases. 15-255, lower is faster.
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## Climb
 Gradually increasing intensity.
@@ -31,10 +25,58 @@ Gradually increasing intensity.
 ### Menu options
 * Frequency - controls how fast the intensity increases/decreases. 15-255, lower is faster.
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
+
+## Phasing 2
+An intensity ramp program, note that this is not triphase.
+
+### Menu options
+* Pulse Speed 
+
+
+
+## Stroke
+Channels 1+3 pulse to full set power, gradually reduce, then switch off. Channels 2+4 gently pulses around the present power level.
+
+
+### Menu options
+* Speed - lower is faster
+
+
+
+## Rhythm
+Outputs are enabled/disabled, with both the frequency and pulse widths changing.
+
+### Menu options
+* Spikeyness
+
+
+
+## Torment
+Short, activation of channels 1+3 and 2+4 and random intervals.
+
+### Menu options
+* (none)
+
+
+
+## Combo
+
+A mix of difference effects
+
+### Menu options
+* Speed - lower is faster
+
+
+
+## Random 2
+
+A mixture of different randomised effects, including varying pulse widths, frequency and power.
+
+### Menu options
+* (none)
+
+
 
 ## Intense
 Continuous output on channels 1 & 2, with 3 & 4 switching/toggling. 
@@ -44,10 +86,7 @@ Continuous output on channels 1 & 2, with 3 & 4 switching/toggling.
 * Chan 1&2 freq - Output frequency of channel 1 & 2
 * Chan 3&4 freq - Output frequency of channel 3 & 4
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
@@ -59,10 +98,7 @@ Can be used with shock collars.
   - Pulse - gives a brief (100ms) pulse on each channel
   - Continuous -  keeps the channel on until it's time to switch to the next
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## RoundRobin
 Cycles through channels 1->2->3->4.
@@ -74,10 +110,7 @@ Can be used with shock collars.
   - Pulse - gives a brief (100ms) pulse on each channel
   - Continuous -  keeps the channel on until it's time to switch to the next
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## TENS
 Approximation of TENs style output, with all channels outputting the same.
@@ -88,10 +121,7 @@ If the aim is solely to achieve absolute maximum intensity, this is the mode to 
 * Pulse width - Pulse width in microseconds. Lower is weaker. Most other modes use 150us.
 * Frequency - Frequency in Hz of signal. Most other modes use 150Hz
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## Triggered Climb
 Power increases on channels 1+2 until a remote button is pressed, then a pulse is delivered on channels 3+4, and 1+2 is reset. Every time the button is pressed the shock delivered on channels 3+4 is increased.
@@ -104,10 +134,9 @@ Channels 3+4 can be shock collars. Unlike Climb, this achieves increasing intens
 * Shock duration - How long, in milliseconds, should the shock delivered on channels 3+4 last.
 * Soft button "Reset" - Reset power levels back to zero
 
-### Extra hardware required?:
-Yes: A remote button wired to trigger input 1.
+### Extra hardware required
+A remote button wired to trigger input 1.
 
-------------------------------------------------------------
 
 ## Fire
 When either soft button or a remote button is pressed, trigger a shock on all channels.
@@ -120,10 +149,10 @@ Can be used with shock collars.
 * Pulse length - When in pulse mode, how long, in milliseconds, the pulse should be
 * Soft button "Fire" - deliver shock
 
-### Extra hardware required?:
+### Extra hardware required
 Optional: A remote button wired to trigger input 1 can be used as an alternative to the Fire soft button
 
-------------------------------------------------------------
+
 
 ## Audio Threshold
 Only available if audio enabled. 
@@ -134,10 +163,10 @@ If the volume goes above the level set, triggers the output on all 4 channels. I
 
 ![Audio Threshold]
 
-### Extra hardware required?:
+### Extra hardware required
 Audio output board fitted and audio source
 
-------------------------------------------------------------
+
 
 ## Audio Wave
 Only available if audio enabled. 
@@ -156,10 +185,10 @@ Note that the selected view does not affect the output, and the indicated tripha
 
 ![Audio Wave Stereo]
 
-### Extra hardware required?:
+### Extra hardware required
 Audio output board fitted and audio source
 
-------------------------------------------------------------
+
 
 ## Audio intensity
 Only available if audio enabled. 
@@ -176,10 +205,10 @@ The adjust dial changes the gain, which is displayed on the thin yellow bar at t
 
 ![Audio intensity mono]
 
-### Extra hardware required?:
+### Extra hardware required
 Audio output board fitted and audio source
 
-------------------------------------------------------------
+
 
 ## Audio virtual 3
 Only available if audio enabled. 
@@ -195,10 +224,10 @@ The adjust dial changes the gain, which is displayed on the thin yellow bar at t
 
 ![Audio virtual 3]
 
-### Extra hardware required?:
+### Extra hardware required
 Audio output board fitted and audio source
 
-------------------------------------------------------------
+
 
 ## Climb with pulse
 Channels 1+2 behave the same as Climb, but when full intensity is reached, channels 3+4 are enabled/pulsed (depending on mode).
@@ -212,10 +241,7 @@ Channels 3+4 can be shock collars.
 * Pulse duration - how long, in milliseconds, the pulse delivered on channels 3+4 should be
 * Soft button "Reset" - Reset power levels back to zero
 
-### Extra hardware required?:
-No.
 
-------------------------------------------------------------
 
 ## Predicament
 Designed for predicament bondage scenarios. I'm finding this difficult to explain, so hopefully some examples will help.
@@ -240,10 +266,10 @@ For example, if two foot pedals are used, it can deliver a shock unless both are
 | No           | No           | Or    | Yes        | If only one button connected to trigger1, shock when it is not pressed
 
 
-### Extra hardware required?:
+### Extra hardware required
 Yes - Sensors (e.g. foot pedals) connected to trigger inputs 1 & 2
 
-------------------------------------------------------------
+
 
 ## Shock choice
 Gives the subject a choice of where to receive a shock, with no decision resulting in both (and for longer).
@@ -258,10 +284,10 @@ Each time a shock is delivered, the power level for that channel(s) is increased
 * Shock increment by - How many percentage points to increase the power level on channels 3+4 by every time the remote button is pressed (e.g. if the current power was 20%, a setting of "10" would mean increase from 20% -> 30%). Can be set to zero.
 * Soft button "Reset" - Reset power levels back to zero
 
-### Extra hardware required?:
-Yes: Remote buttons wired to trigger inputs 1 & 2.
+### Extra hardware required
+Remote buttons wired to trigger inputs 1 & 2.
 
-------------------------------------------------------------
+
 
 ## Camera Trigger
 When the "Trigger" soft button is pressed, a shock is delivered on all channels, then a preset amount of time later ACC_IO_1 (pin 9 on the DB9 socket) is pulsed low. The intention is for this to be connected to a remote camera trigger.
@@ -273,10 +299,10 @@ This is only really practical if the camera is in manual focus mode.
 * Camera delay - how long to wait after delivering the shock before taking a photo. Note that if set to zero, ACC_IO_1 will be pulsed low 300ms _before_ the shock is delivered: i.e. assuming a 300ms response time from the camera should mean that the photo is taken as the shock is delivered. For good results, 500ms seems to work well.
 * Soft button "Trigger" - deliver shock and take photo
 
-### Extra hardware required?:
-Yes: Something connected to the accessory port that triggers a photo on pin 9 being pulsed low.
+### Extra hardware required
+Something connected to the accessory port that triggers a photo on pin 9 being pulsed low.
 
-------------------------------------------------------------
+
 
 ## Buzz
 Intended to be used with a buzz wire game, probably better explained with a photo:
@@ -297,7 +323,7 @@ Note: This mode works well enough when just channel 3 (or 4) is used with a pair
 * Min shock length - the minimum length, in milliseconds, of the shock delivered on channels 3+4. The shock will continue to be delivered for as long as the wand touches the wire, this only sets the minimum duration that applies to brief touches
 * Soft button "Start" - starts the game: channels 1+2 are switched on and start increasing, and touching the wand against the wire results in a shock from channel 3+4
 
-### Extra hardware required?:
+### Extra hardware required
 Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as follows:
 * Tip = wand (common ground)
 * Ring = contact at end of wire (green)
