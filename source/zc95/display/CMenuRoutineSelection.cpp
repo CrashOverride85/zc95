@@ -54,6 +54,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _wifi = wifi;
     _bluetooth = bluetooth;
     _radio = radio;
+
+    populate_routine_list();
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -144,6 +146,22 @@ void CMenuRoutineSelection::show()
     _display->set_option_c("Up");
     _display->set_option_d("Down");
 
+    // If we've already been in a routine and come back to this menu, pre-select that routine, instead
+    // of going back to the top of the list
+    if (_last_selection > 0)
+    {
+        _routine_display_list->set_selected(_last_selection);
+    }
+}
+
+// If a routine has any menu item that uses audio, return true
+bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
+{
+    return (conf.audio_processing_mode != audio_mode_t::OFF);
+}
+
+void CMenuRoutineSelection::populate_routine_list()
+{
     // Get a list of routines to show
     _routine_display_list->clear_options();
     int index=0;
@@ -178,17 +196,4 @@ void CMenuRoutineSelection::show()
         index++;
         delete routine;
     }
-
-    // If we've already been in a routine and come back to this menu, pre-select that routine, instead
-    // of going back to the top of the list
-    if (_last_selection > 0)
-    {
-        _routine_display_list->set_selected(_last_selection);
-    }
-}
-
-// If a routine has any menu item that uses audio, return true
-bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
-{
-    return (conf.audio_processing_mode != audio_mode_t::OFF);
 }
