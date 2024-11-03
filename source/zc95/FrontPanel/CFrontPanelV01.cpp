@@ -19,7 +19,7 @@ CFrontPanelV01::CFrontPanelV01(CSavedSettings *saved_settings, CMainBoardPortExp
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0;
     _adjust_value = 0;
-    _last_rot_button_state = false;
+    _last_rot_button_state = true;
     
     // The very first time the ADC is read, the first channel seems to have an invalid value. So read it now, 
     // so when it's read next time as usual, it'll return something sensible.
