@@ -125,6 +125,7 @@ void process_front_panel_input(CMainBoardPortExp *port_expander, CMenu *current_
     check_button(current_menu, Button::B);
     check_button(current_menu, Button::C);
     check_button(current_menu, Button::D);
+    check_button(current_menu, Button::ROT);
 }
 
 void update_power_levels_from_front_panel(CRoutineOutput *routine_output)

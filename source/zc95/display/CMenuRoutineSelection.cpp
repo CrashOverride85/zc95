@@ -89,7 +89,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
     }
     else
         {
-        if (button == Button::A) // Select
+        if (button == Button::A || button == Button::ROT ) // Select
         {
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
             CRoutines::Routine routine = _routines[routine_id];
