@@ -1,19 +1,19 @@
--- "Waves" - kindly contributed by someone who perfers to remain anonymous
+-- "Rhythm" - kindly contributed by someone who perfers to remain anonymous
 
 require("ettot")
 
 Config = {
-    name = "Waves",
+    name = "Rhythm",
     menu_items = {
         {
             type = "MIN_MAX",
-            title = "Speed",
+            title = "Spikeyness",
             id = 1,
             min = 1,
-            max = 64,
-            increment_step = 2,
+            max = 23,
+            increment_step = 1,
             uom = "",
-            default = 32
+            default = 12
          }
     }
 }
@@ -27,17 +27,14 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = ettot.block_waves
+    channels["block"] = ettot.block_rhythm
     ettot.setupblock(channels)
 end
 
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["freq"]["rate"] = min_max_val
-        channels[chan]["width"]["rate"] = min_max_val
-        channels[chan]["freq"]["changed"] = true
-        channels[chan]["width"]["changed"] = true
+        channels[chan]["gate"]["rate"] = min_max_val
     end
 end
 
