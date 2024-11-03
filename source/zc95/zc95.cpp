@@ -247,6 +247,12 @@ int main()
     display.init(); // This takes some time - not far off a second
     hw_check.set_display(&display);
 
+    // Show the splash screen & start the update of the display via DMA. To avoid briefly
+    // showing rubbish, wait for that inital update to complete, then turn on the backlight.
+    display.show_splash_screen(); 
+    sleep_ms(25);
+    port_expander.set_lcd_backlight(true);
+
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
     CRoutines::get_routines(routines);
@@ -296,7 +302,7 @@ int main()
 
     uint64_t start = time_us_64();
     led.loop();
-    port_expander.set_lcd_backlight(true);
+    //port_expander.set_lcd_backlight(true);
     uint64_t last_analog_check = 0;
     display.set_battery_percentage(batteryGauge.get_battery_percentage());
 

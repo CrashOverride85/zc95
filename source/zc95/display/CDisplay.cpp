@@ -27,6 +27,7 @@
 
 #include "../globals.h"
 #include "../CTimingTest.h"
+#include "../git_version.h"
 
 /*
  * Basic display management. Updates the screen, draws the soft button boxes + text and power level graphs.
@@ -82,8 +83,6 @@ uint8_t CDisplay::get_font_height()
  void CDisplay::init()
  {
     _hagl_backend = hagl_init();
-    hagl_clear(_hagl_backend);
-    update();
  }
 
  void CDisplay::update()
@@ -545,3 +544,35 @@ void CDisplay::draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_col
         }
     }
 }
+
+void CDisplay::show_splash_screen()
+{
+    hagl_clear(_hagl_backend);
+    hagl_color_t colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00);
+
+    uint8_t y_offset = 15;
+
+    for (uint8_t y=0; y < SPLASH_Y; y++)
+    {
+        for (uint8_t x_ar=0; x_ar < SPLASH_X; x_ar++)
+        {
+            for (uint8_t byte_pos=0; byte_pos < 8; byte_pos++)
+            {
+                if (!(splash_screen[(y * SPLASH_X) + x_ar] & (1 << (7-byte_pos))))
+                {
+                    hagl_put_pixel(_hagl_backend, (x_ar * 8) + byte_pos, y + y_offset, colour);
+                }
+            }
+        }
+    }
+
+    // Show firmware version at bottom of screen
+    hagl_color_t text_colour = hagl_color(_hagl_backend, 0x99, 0x99, 0x99); // grey
+    uint16_t fw_string_width_px = strlen(kGitHash) * _font_width;
+    uint16_t x = ((MIPI_DISPLAY_WIDTH-1)/2) - (fw_string_width_px/2);
+    
+    put_text(kGitHash, x, (MIPI_DISPLAY_HEIGHT-1) - _font_height, text_colour);
+
+    hagl_flush(_hagl_backend);
+}
+
