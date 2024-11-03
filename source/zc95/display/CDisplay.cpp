@@ -27,6 +27,7 @@
 
 #include "../globals.h"
 #include "../CTimingTest.h"
+#include "../git_version.h"
 
 /*
  * Basic display management. Updates the screen, draws the soft button boxes + text and power level graphs.
@@ -565,5 +566,13 @@ void CDisplay::show_splash_screen()
         }
     }
 
+    // Show firmware version at bottom of screen
+    hagl_color_t text_colour = hagl_color(_hagl_backend, 0x99, 0x99, 0x99); // grey
+    uint16_t fw_string_width_px = strlen(kGitHash) * _font_width;
+    uint16_t x = ((MIPI_DISPLAY_WIDTH-1)/2) - (fw_string_width_px/2);
+    
+    put_text(kGitHash, x, (MIPI_DISPLAY_HEIGHT-1) - _font_height, text_colour);
+
     hagl_flush(_hagl_backend);
 }
+
