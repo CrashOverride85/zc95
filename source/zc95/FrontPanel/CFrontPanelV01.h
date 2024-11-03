@@ -23,6 +23,8 @@ class CFrontPanelV01 : public CFrontPanel
         uint8_t _last_port_exp_read;
         int16_t _power_level[MAX_CHANNELS];
         CRotEnc _rot_encoder;
+        bool _last_rot_button_state;
+        uint64_t _last_rot_button_state_change;
         int16_t _adjust_value;
         volatile bool _interrupt;
 

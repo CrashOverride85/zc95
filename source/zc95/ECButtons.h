@@ -7,7 +7,8 @@
         A = 0,     // Top left
         B = 1,     // Bottom left
         C = 2,     // Top right
-        D = 3      // Bottom right
+        D = 3,     // Bottom right
+        ROT = 5    // Rotary encoder button
       };
 
 #endif

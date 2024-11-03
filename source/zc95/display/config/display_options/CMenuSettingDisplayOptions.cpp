@@ -61,6 +61,7 @@ void CMenuSettingDisplayOptions::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+            case Button::ROT:
                 _last_selection = _settings_list->get_current_selection();
                 show_selected_setting();
                 break;
@@ -103,6 +104,18 @@ void CMenuSettingDisplayOptions::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
+    else
+    {
+        if (change >= 1)
+        {
+            _settings_list->down();
+        }
+        else if (change <= 1)
+        {
+            _settings_list->up();
+        }
+
+    }
 }
 
  void CMenuSettingDisplayOptions::draw()

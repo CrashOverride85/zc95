@@ -66,6 +66,9 @@ void CDisplayMessage::button_pressed(Button button)
 
             case Button::D:
                 break;
+
+            case Button::ROT:
+                break;
         }
     }
 }
