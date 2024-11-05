@@ -36,7 +36,7 @@ This is used to control audio functionality, and has 3 options
     - Off - hide audio functionality even if audio input board found
 
 2. Aux port use. 
-With the audio board present, the zc95 has the ability to switch the use of the port between serial I/O and audio input. At present, the only use for the serial option is outputting debugging info, but in the future some patterns may make use of it. Two options:
+With the audio board present, the zc95 has the ability to switch the use of the port between serial I/O (for remote control or debugging output) and audio input. Two options:
     - Audio input - Default. Port is used for audio input
     - Serial I/O - port is used for serial I/O
 
