@@ -24,7 +24,11 @@ Additional parts required for this board are on the "Audio input" tab of the [Bo
 ### Assembly notes
 The assembled PCB received from JLCPCB should look something like this:
 
+![AI board 0.4]
+
 Solder on the two pin sockets:
+
+![AI board header 0.4]
 
 ### Install
 Once assembled, plug the audio board into the main board, with the text ("Audio input for ZC95") towards the front / near the front panel. Be careful to line it up correctly with the headers, it is possible to insert it misaligned. 
@@ -86,5 +90,7 @@ Assembled board:
 If the digipot was fitted (U1) it should "just work", and the audio pattern(s) and "Audio input" menu should appear. If it wasn't fitted use the hardware config menu (see [audio operation notes](./AudioInput-Operation.md)) to set the Audio to "On (no gain)".
 
 [AI board]: images/ai_populated.jpg "Assembled audio input board"
+[AI board 0.4]: images/ai_populated_04.jpg "Audio input board as received from JLCPCB"
+[AI board header 0.4]: images/ai_headers_04.jpg "Headers on audio input board"
 [AI diagram]: images/AudioInput.png "Audio input diagram"
 
