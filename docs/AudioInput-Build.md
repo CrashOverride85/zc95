@@ -5,36 +5,37 @@ Two changes are required:
   1. Remove the jumpers on J8
   2. Fit a 10 way 2.54mm pin header on J17
 
-## Ordering
-Parts required for this board are on the "Audio input" tab of the [BoM (openoffice format)](BoM.fods) spreadsheet. 
-When building the board, there are two choices for gain control:
 
-1. Internal adjustment only - fit RV1 and RV2
-2. (Recommended) Variable from menu - Fit U1. Also allows the presence of the board to be auto-detected
+## V0.4 - SMD version
+### Ordering
+As with the Output and front panel boards, the audio input board is designed with JLCPCB's SMT assembly service in mind, with only the two pin sockets requiring hand assembly.
 
-The downside of fitting U1 is cost, plus it's an SMD part (and whilst not hard, it's also not the easiest part to solder if you've never done anything SMD before). Also it's the sort of part that might go out of stock at any moment...
+Order the board using [these gerbers](../pcb/AudioInput/GERBER-AudioInput.zip) and the default options as per the other boards.
 
-Order the blank PCB from JLC using the [AudioInput](../pcb/AudioInput.zip) gerbers and the default settings (FR-4, 1.6mm thick, 1oz, etc.)
+Select the "SMT Assembly" option at the bottom - pick "Assemble top side" and Tooling holes "Added by JLCPCB". 
+On the next page, add the BOM and CPL files:
+* [BOM-AudioInput.csv](../pcb/AudioInput/BOM-AudioInput.csv)
+* [CPL-AudioInput.csv](../pcb/AudioInput/CPL-AudioInput.csv)
 
-## Assembly notes
+The next page should show a list of all parts found / matched. 
 
-Unfortunately I didn't manage to fit the component values on the silkscreen, so the best way to assemble the board is probably just going through the BoM which lists component references & values; a printout of the [board outline and silkscreen](./AudioOutput.pdf) may help.
+Additional parts required for this board are on the "Audio input" tab of the [BoM (openoffice format)](BoM.fods) spreadsheet; this is just two pin headers.
 
-Mistakes on silkscreen of v0.3 PCB: 
-- The footprints for Q1 & Q3 (P Channel MOSFETs) are backwards
-- Didode D3 (under the relay) is also backwards - the cathode should go in the hole labelled A
+### Assembly notes
+The assembled PCB received from JLCPCB should look something like this:
 
-Assembled board:
+![AI board 0.4]
 
-![AI board]
+Solder on the two pin sockets:
 
-**TODO**: Fix photo, D3, Q1 & Q3 are wrong
+![AI board header 0.4]
 
+### Install
 Once assembled, plug the audio board into the main board, with the text ("Audio input for ZC95") towards the front / near the front panel. Be careful to line it up correctly with the headers, it is possible to insert it misaligned. 
 
-If the digipot was fitted (U1) it should "just work", and the audio pattern(s) and "Audio input" menu should appear. If it wasn't fitted use the hardware config menu (see [audio operation notes](./AudioInput-Operation.md)) to set the Audio to "On (no gain)".
+The board should be auto-detected on power up, and previously hidden audio patterns appear on the list. If not, make sure the Audio option is set to "Auto" - see [audio operation notes](./AudioInput-Operation.md).
 
-## Brief description
+### Brief description
 Hopefully not needed for the assembly & use of the board, but maybe a few notes about what this board is doing is good idea.
 
 Without the board fitted, the jumpers fitted to J8 on the main board send the RS232 output from the UT232A IC to the 3.5mm "Aux" socket on the front panel. With the board fitted, the relay can be used to switch the Aux socket between the UT232A, and (ultimately) the ADC inputs present on header J1.
@@ -56,5 +57,40 @@ There seem to be two common types of microphones (ignoring expensive stuff):
 This audio input board works best with electret mics - there's not quite enough gain for dynamic mics - although R9 & R10 in the mic preamp could almost certainly be adjusted to make them work well enough.
 
 
+
+## V0.3 - Old (mostly) through hole version
+### Ordering
+Parts required for this board are on the "Audio input" tab of the [BoM (openoffice format)](BoM.fods) spreadsheet. 
+When building the board, there are two choices for gain control:
+
+1. Internal adjustment only - fit RV1 and RV2
+2. (Recommended) Variable from menu - Fit U1. Also allows the presence of the board to be auto-detected
+
+The downside of fitting U1 is cost, plus it's an SMD part (and whilst not hard, it's also not the easiest part to solder if you've never done anything SMD before). Also it's the sort of part that might go out of stock at any moment...
+
+Order the blank PCB from JLC using the [AudioInput](../pcb/AudioInput.zip) gerbers and the default settings (FR-4, 1.6mm thick, 1oz, etc.)
+
+### Assembly notes
+
+Unfortunately I didn't manage to fit the component values on the silkscreen, so the best way to assemble the board is probably just going through the BoM which lists component references & values; a printout of the [board outline and silkscreen](./AudioOutput.pdf) may help.
+
+Mistakes on silkscreen of v0.3 PCB: 
+- The footprints for Q1 & Q3 (P Channel MOSFETs) are backwards
+- Didode D3 (under the relay) is also backwards - the cathode should go in the hole labelled A
+
+Also do not fit R27 - it can stop the relay from functioning.
+
+Assembled board:
+
+![AI board]
+
+**TODO**: Fix photo, D3, Q1 & Q3 are wrong
+
+### Install 
+If the digipot was fitted (U1) it should "just work", and the audio pattern(s) and "Audio input" menu should appear. If it wasn't fitted use the hardware config menu (see [audio operation notes](./AudioInput-Operation.md)) to set the Audio to "On (no gain)".
+
 [AI board]: images/ai_populated.jpg "Assembled audio input board"
+[AI board 0.4]: images/ai_populated_04.jpg "Audio input board as received from JLCPCB"
+[AI board header 0.4]: images/ai_headers_04.jpg "Headers on audio input board"
 [AI diagram]: images/AudioInput.png "Audio input diagram"
+
