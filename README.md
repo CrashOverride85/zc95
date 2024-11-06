@@ -15,6 +15,8 @@ Additionally, if a 433MHz transmitter is fitted it can be used to control certai
 
 The main board is built using through hole parts, with the output and front panel PCBs being mostly SMD (requiring hand-soldering of a few through hole parts) - but using parts available through the JLCPCB SMT assembly service.
 
+The ZC95 now has a channel on [Joanne's E-Stim Community discord](https://discord.gg/HbGKY2t), see Estim control boxes -> zc95. Please drop by and say hello 🙂
+
 ### Assembled ZC95
 ![zc95]
 
