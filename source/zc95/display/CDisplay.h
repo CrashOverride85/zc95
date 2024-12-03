@@ -49,6 +49,7 @@ class CDisplay
         void set_active_pattern(std::string pattern);
         void set_update_required();
         hagl_backend_t* get_hagl_backed();
+        void show_splash_screen();
 
     private:
         struct power_levels_t

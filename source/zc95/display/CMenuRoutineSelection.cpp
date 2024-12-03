@@ -54,6 +54,9 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _wifi = wifi;
     _bluetooth = bluetooth;
     _radio = radio;
+
+    _populate_pattern_list = true;
+    populate_routine_list();
 }
 
 CMenuRoutineSelection::~CMenuRoutineSelection()
@@ -89,7 +92,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
     }
     else
         {
-        if (button == Button::A) // Select
+        if (button == Button::A || button == Button::ROT ) // Select
         {
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
             CRoutines::Routine routine = _routines[routine_id];
@@ -101,6 +104,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
         if (button == Button::B) // "Config"
         {
             set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio));
+            _populate_pattern_list = true; // If remote access has been used - accessed via the config menu - the pattern list may have changed
         }
         
         if (button == Button::C) // "Up"
@@ -119,6 +123,17 @@ void CMenuRoutineSelection::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
+    else
+    {
+        if (change >= 1)
+        {
+            _routine_display_list->down();
+        }
+        else if (change <= -1)
+        {
+            _routine_display_list->up();
+        }
+    }
 }
 
 void CMenuRoutineSelection::draw()
@@ -133,6 +148,28 @@ void CMenuRoutineSelection::show()
     _display->set_option_c("Up");
     _display->set_option_d("Down");
 
+    if (_populate_pattern_list)
+    {
+        populate_routine_list();
+        _populate_pattern_list = false;
+    }
+    
+    // If we've already been in a routine and come back to this menu, pre-select that routine, instead
+    // of going back to the top of the list
+    if (_last_selection > 0)
+    {
+        _routine_display_list->set_selected(_last_selection);
+    }
+}
+
+// If a routine has any menu item that uses audio, return true
+bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
+{
+    return (conf.audio_processing_mode != audio_mode_t::OFF);
+}
+
+void CMenuRoutineSelection::populate_routine_list()
+{
     // Get a list of routines to show
     _routine_display_list->clear_options();
     int index=0;
@@ -167,17 +204,4 @@ void CMenuRoutineSelection::show()
         index++;
         delete routine;
     }
-
-    // If we've already been in a routine and come back to this menu, pre-select that routine, instead
-    // of going back to the top of the list
-    if (_last_selection > 0)
-    {
-        _routine_display_list->set_selected(_last_selection);
-    }
-}
-
-// If a routine has any menu item that uses audio, return true
-bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
-{
-    return (conf.audio_processing_mode != audio_mode_t::OFF);
 }

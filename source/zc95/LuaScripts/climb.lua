@@ -2,8 +2,6 @@
 
 require("ettot")
 
-block_climb, block_climb5, block_climb6, block_climb7, block_climb8, block_climb9, block_climb10 = 50, 5, 6, 7, 8, 9, 10
-
 Config = {
     name = "Climb",
     menu_items = {
@@ -11,66 +9,33 @@ Config = {
             type = "MIN_MAX",
             title = "Frequency",
             id = 1,
-            min = 15,
-            max = 255,
-            increment_step = 8,
+            min = 1,
+            max = 100,
+            increment_step = 5,
             uom = "",
-            default = 135
+            default = 50
          }
     }
 }
 
 function Setup(time_ms)
-    print("SETUP")
-
     channels = {}
     for chan = 1, 4, 1
     do
         channels[chan] = {}
-        channels[chan]["width"] = {}
-        channels[chan]["freq"] = {}
-        channels[chan]["intensity"] = {}        
         ettot.setupdefaults(channels[chan])
-        
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = block_climb
+    channels["block"] = ettot.block_climb
     ettot.setupblock(channels)
 end
 
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["freq"]["value"] = min_max_val
+        channels[chan]["freq"]["rate"] = min_max_val
         channels[chan]["freq"]["changed"] = true
-    end
-end
-
-
-function at244hz()
-    for chan = 1, 2, 1
-    do
-        ettot.handleblock(channels[chan]["freq"])
-        if channels[chan]["freq"]["changed"] then
-           zc.SetFrequency(chan, 3750/channels[chan]["freq"]["value"])
-           zc.SetFrequency(chan+2, 3750/channels[chan]["freq"]["value"])           
-           channels[chan]["freq"]["changed"] = false           
-        end
-
-        ettot.handleblock(channels[chan]["width"])
-        if channels[chan]["width"]["changed"] then        
-            zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
-            zc.SetPulseWidth(chan+2, channels[chan]["width"]["value"], channels[chan]["width"]["value"])            
-            channels[chan]["width"]["changed"] = false            
-        end
-
-        ettot.handleblock(channels[chan]["intensity"])        
-        if channels[chan]["intensity"]["changed"] then
-            zc.SetPower(chan, channels[chan]["intensity"]["value"]*1000/255)
-            zc.SetPower(chan+2, channels[chan]["intensity"]["value"]*1000/255)            
-            channels[chan]["width"]["intensity"] = false            
-        end        
     end
 end
 
@@ -79,23 +44,11 @@ _loop_count = 0
 _last_244 = 0
 
 function Loop(time_ms)
-
--- Lets run a function at 244Hz
--- Since we found Loop runs about 600 times a second we can just assume it's more than 244 times a second and this should work fine
-
+-- Lets run a function at 244Hz. Assume Loop runs faster (it does, about 600 a second)
     local hz244 = math.floor(time_ms/(1000/244))
     if hz244 ~= _last_244 then
        _last_244 = hz244
-       at244hz()
+       ettot.at244hz(2)
        _loop_count = _loop_count + 1
-    end
-
--- Just a debug tick to make sure everything was working
-
-    local elapsed_ms = time_ms - _last_ms
-    if elapsed_ms >= 1000 then
-       _last_ms = time_ms
---       print("******* tick", elapsed_ms, _loop_count, channels["block"], channels[1]["width"]["min"])
-       _loop_count = 0
     end
 end

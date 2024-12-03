@@ -58,6 +58,7 @@ void CMenuBluetoothScan::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+            case Button::ROT:
                 if (_options_list->count() > 0)
                 {
                     _last_selection = -1;
@@ -87,6 +88,17 @@ void CMenuBluetoothScan::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
+    else
+    {
+        if (change >= 1)
+        {
+            _options_list->down();
+        }
+        else if (change <= 1)
+        {
+            _options_list->up();
+        }
+    }
 }
 
  void CMenuBluetoothScan::draw()

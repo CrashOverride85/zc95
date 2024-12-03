@@ -57,6 +57,7 @@ void CMenuCollarConfigSelected::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // Regenerate / toggle / test 
+            case Button::ROT:
                 button_a_pressed();
                 break;
 
@@ -116,6 +117,19 @@ void CMenuCollarConfigSelected::adjust_rotary_encoder_change(int8_t change)
     if (_submenu_active)
     {
         _submenu_active->adjust_rotary_encoder_change(change);
+    }
+    else
+    {
+        if (change >= 1)
+        {
+            _options_list->down();
+            set_button_a_text();
+        }
+        else if (change<=1)
+        {
+            _options_list->up();
+            set_button_a_text();
+        }
     }
 }
 

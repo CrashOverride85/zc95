@@ -9,7 +9,7 @@ Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA
 
 The box can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it, either using RS232 serial or WiFi if a Pico-W is used for the main MCU.
 
-Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It has [bluetooth support](docs/Bluetooth.md)  and, _so far_, is missing most of the patterns of the 312. Audio input is possible with an extra/optional board.
+Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It has [bluetooth support](docs/Bluetooth.md) and many of the patterns of the 312. Audio input is possible with an extra/optional board.
 
 Additionally, if a 433MHz transmitter is fitted it can be used to control certain types of shock collars from some patterns.
 
@@ -67,7 +67,7 @@ May do some of this, all of this, or none of this!
    - Probably remove "Aux" socket and swap for separate "Serial" and "Audio" sockets
    - Use a lithium battery pack instead of a 12v SLA
    - Use a USB charger
-   - Maybe a smaller, 3D printed case. Probably keeping the same width/weight though
+   - Maybe a smaller, 3D printed case. Probably keeping the same width/height though
 
 ## Known issues
    - Can hang on entering WiFi setup (AP) mode due to bad choice of MOSFET Q1 (see [#25][gh25] & [#46][gh46]). 

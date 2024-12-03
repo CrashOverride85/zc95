@@ -2,6 +2,7 @@
 #define _CMAINBOARDPORTEXP_H
 
 #include <stdio.h>
+#include <cstdint>
 #include "CGetButtonState.h"
 #include "ECButtons.h"
 

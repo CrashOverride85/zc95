@@ -1,9 +1,9 @@
--- "Waves" - kindly contributed by someone who perfers to remain anonymous
+-- "Combo" - kindly contributed by someone who perfers to remain anonymous
 
 require("ettot")
 
 Config = {
-    name = "Waves",
+    name = "Combo",
     menu_items = {
         {
             type = "MIN_MAX",
@@ -27,17 +27,14 @@ function Setup(time_ms)
         zc.ChannelOn(chan)
         zc.SetPower(chan, 1000)
     end
-    channels["block"] = ettot.block_waves
+    channels["block"] = ettot.block_combo
     ettot.setupblock(channels)
 end
 
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["freq"]["rate"] = min_max_val
-        channels[chan]["width"]["rate"] = min_max_val
-        channels[chan]["freq"]["changed"] = true
-        channels[chan]["width"]["changed"] = true
+        channels[chan]["gate"]["rate"] = min_max_val*8
     end
 end
 

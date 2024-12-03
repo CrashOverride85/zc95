@@ -27,7 +27,7 @@ class CLuaLoad
         uint8_t *_lua_buffer = NULL;
         size_t _lua_slot_size = 0;
         uint8_t _lua_slot_section = 0;
-        uint _lua_buffer_postion = 0;
+        uint32_t _lua_buffer_postion = 0;
         int _index = -1;
         CLuaStorage *_lua_storage;
 };

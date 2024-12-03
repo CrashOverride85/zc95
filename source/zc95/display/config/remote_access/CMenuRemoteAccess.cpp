@@ -76,6 +76,7 @@ void CMenuRemoteAccess::button_pressed(Button button)
         switch (button)
         {
             case Button::A: // "Select"
+            case Button::ROT:
                 _last_selection = _options_list->get_current_selection();
                 show_selected_setting();
                 break;
@@ -141,6 +142,17 @@ void CMenuRemoteAccess::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
         _submenu_active->adjust_rotary_encoder_change(change);
+    else
+    {
+        if (change >= 1)
+        {
+            _options_list->down();
+        }
+        else if (change <= -1)
+        {
+            _options_list->up();
+        }
+    }
 }
 
  void CMenuRemoteAccess::draw()
