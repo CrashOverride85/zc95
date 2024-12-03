@@ -80,16 +80,16 @@ endif()
 
 if(UNIX)
     if(NOT EMSCRIPTEN)
-        find_library(LIBM m)
-        #TODO: Redo this with find_package
-        if(NOT LIBM)
-            message(FATAL_ERROR "libm not found and is required by lua")
-        endif()
-        target_link_libraries(lua_internal INTERFACE m)
+    #    find_library(LIBM m)
+    #    #TODO: Redo this with find_package
+    #    if(NOT LIBM)
+    #        message(FATAL_ERROR "libm not found and is required by lua")
+    #    endif()
+    #    target_link_libraries(lua_internal INTERFACE m)
 
-        target_compile_definitions(lua_internal 
-            INTERFACE LUA_USE_POSIX
-        )
+        #target_compile_definitions(lua_internal 
+        #    INTERFACE LUA_USE_POSIX
+        #)
         if(LUA_SUPPORT_DL)
             target_compile_definitions(lua_internal INTERFACE "LUA_USE_DLOPEN")
             target_link_libraries(lua_internal INTERFACE dl)
