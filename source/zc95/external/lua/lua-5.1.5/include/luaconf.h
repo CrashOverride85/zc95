@@ -11,7 +11,6 @@
 #include <limits.h>
 #include <stddef.h>
 
-
 /*
 ** ==================================================================
 ** Search for "@@" to find all configurable definitions.
@@ -768,7 +767,7 @@ union luai_Cast { double l_d; long l_l; };
 #define LUA_OPTIMIZE_MEMORY				2
 #endif
 
-#if LUA_OPTIMIZE_MEMORY == 2 && LUA_USE_POPEN
+#if LUA_OPTIMIZE_MEMORY == 2 && defined(LUA_USE_POPEN)
 #error "Pipes not supported in aggresive optimization mode (LUA_OPTIMIZE_MEMORY=2)"
 #endif
 
