@@ -55,6 +55,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _bluetooth = bluetooth;
     _radio = radio;
 
+    _populate_pattern_list = true;
     populate_routine_list();
 }
 
@@ -103,6 +104,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
         if (button == Button::B) // "Config"
         {
             set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio));
+            _populate_pattern_list = true; // If remote access has been used - accessed via the config menu - the pattern list may have changed
         }
         
         if (button == Button::C) // "Up"
@@ -146,6 +148,12 @@ void CMenuRoutineSelection::show()
     _display->set_option_c("Up");
     _display->set_option_d("Down");
 
+    if (_populate_pattern_list)
+    {
+        populate_routine_list();
+        _populate_pattern_list = false;
+    }
+    
     // If we've already been in a routine and come back to this menu, pre-select that routine, instead
     // of going back to the top of the list
     if (_last_selection > 0)

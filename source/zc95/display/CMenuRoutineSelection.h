@@ -65,6 +65,7 @@ class CMenuRoutineSelection : public CMenu
         CWifi *_wifi;
         CBluetooth *_bluetooth;
         CRadio *_radio;
+        bool _populate_pattern_list = false;
 };
 
 #endif
