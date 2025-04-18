@@ -23,11 +23,11 @@
 #include "../../../config.h"
 
 
-CMenuChannelConfig::CMenuChannelConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
+CMenuChannelConfig::CMenuChannelConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
 {
     printf("CMenuChannelConfig() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
 

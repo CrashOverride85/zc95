@@ -3,10 +3,12 @@
 
 #include <stdio.h>
 
-#include "CLedControl.h"
+#include "IPortExpander.h"
+#include "../CLedControl.h"
+#include "../ZcTypes.h"
 #include "EExtInputPort.h"
-#include "core1/CRoutineOutput.h"
-#include "core1/routines/CRoutine.h"
+#include "../core1/CRoutineOutput.h"
+#include "../core1/routines/CRoutine.h"
 
 class CExtInputPortExp
 {
@@ -17,7 +19,7 @@ class CExtInputPortExp
             Trigger2
         };
 
-        CExtInputPortExp(uint8_t address, CLedControl *led, CRoutineOutput *routine_output);
+        CExtInputPortExp(CLedControl *led, CRoutineOutput **routine_output, IPortExpander* port_exp);
         void process(bool force_update);
         bool input_state(enum ExtInputPort input);
 
@@ -29,6 +31,14 @@ class CExtInputPortExp
 
     
     private:
+        enum mkII_port_exp_reg_t
+        {
+            INPUT_PORT,
+            OUTPUT_PORT,
+            POLARITY_INVERSION,
+            CONFIGURATION
+        };
+        
         void update_led_for_trigger_port(Trigger trigger);
         bool has_input_state_changed(enum ExtInputPort input, bool *new_state);
         void update_trigger_leds();
@@ -38,14 +48,14 @@ class CExtInputPortExp
         uint8_t _last_read;
         uint8_t _input_states_at_last_check;
 
-        uint8_t _address;
+        IPortExpander* _port_exp;
         int8_t _old_state;
         CLedControl *_led;
-        CRoutineOutput *_routine_output;
+        CRoutineOutput **_routine_output;
         volatile bool _interrupt;
         uint64_t _input_last_change_time_us[8];
-        uint8_t _output_mask = 0xFF;
         uint64_t _debounce_recheck_time_us;
+        zc95_version_t _hardware_version;
 };
 
 #endif

@@ -19,11 +19,11 @@
 #include "CMenuSettingAbout.h"
 #include "../git_version.h"
 
-CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, CGetButtonState *buttons, CHwCheck *hwCheck)
+CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, IHal *hal, CHwCheck *hwCheck)
 {
     printf("CMenuSettingAbout() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _hwCheck = hwCheck;
 }
 

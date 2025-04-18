@@ -4,18 +4,21 @@
 #include "../../../CSavedSettings.h"
 #include "../../../Bluetooth/CBluetooth.h"
 #include "../../../RemoteAccess/CBtGatt.h"
+#include "../../../PowerManagement/IPowerManagement.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuRemoteAccessBLE : public CMenu
 {
     public:
         CMenuRemoteAccessBLE(
             CDisplay* display,
-            CGetButtonState *buttons, 
+            IHal *hal, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
             std::vector<CRoutines::Routine> &routines,
-            CRadio *radio);
+            CRadio *radio,
+            IPowerManagement* power_management);
         ~CMenuRemoteAccessBLE();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -27,10 +30,11 @@ class CMenuRemoteAccessBLE : public CMenu
 
         CDisplay* _display;
         display_area _disp_area;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CRadio *_radio;
         CBtGatt *_gatt_server;
+        IPowerManagement* _power_management;
 
 };

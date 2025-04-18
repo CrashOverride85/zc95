@@ -21,14 +21,14 @@
 
 CMenuRemoteAccessConnectWifi::CMenuRemoteAccessConnectWifi(
     CDisplay* display,
-    CGetButtonState *buttons,
+    IHal *hal,
     CSavedSettings *saved_settings,
     CWifi *wifi,
     CRoutineOutput *routine_output)
 {
     printf("CMenuRemoteAccessConnectWifi() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _wifi = wifi;
     _disp_area = _display->get_display_area();

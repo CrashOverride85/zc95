@@ -6,11 +6,12 @@
 #include "../../../core1/output/COutputChannel.h"
 #include "../../../core1/routines/CRoutine.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuChannelConfig : public CMenu
 {
     public:
-        CMenuChannelConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
+        CMenuChannelConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
         ~CMenuChannelConfig();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -33,7 +34,7 @@ class CMenuChannelConfig : public CMenu
         COptionsList *_channel_choices_list = NULL;
         struct display_area _area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         display_area _channel_choice_area;
         CSavedSettings *_saved_settings;
         channel_choice get_channel_choice(CChannel_types::channel_type, uint8_t index);

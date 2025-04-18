@@ -13,7 +13,7 @@
  * The 4 buttons are connected to a port expander on the main board.
  */
 
-CFrontPanelV01::CFrontPanelV01(CSavedSettings *saved_settings, CMainBoardPortExp *main_board_port_exp)
+CFrontPanelV01::CFrontPanelV01(CMainBoardPortExp *main_board_port_exp)
 {
     _main_board_port_exp = main_board_port_exp;
     memset(_power_level, 0, sizeof(_power_level));
@@ -175,4 +175,9 @@ bool CFrontPanelV01::has_button_state_changed(enum Button button, bool *new_stat
     {
         return _main_board_port_exp->has_button_state_changed(button, new_state);
     }
+}
+
+front_panel_version_t CFrontPanelV01::verion()
+{
+    return front_panel_version_t::v0_1;
 }

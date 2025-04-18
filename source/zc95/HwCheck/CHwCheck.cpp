@@ -23,21 +23,21 @@
 #include <font6x9.h>
 #include "CHwCheck.h"
 #include "i2c_scan.h"
-#include "config.h"
-#include "CUtil.h"
-#include "ECButtons.h"
-#include "LuaScripts/LuaScripts.h"
+#include "../config.h"
+#include "../CUtil.h"
+#include "../ECButtons.h"
+#include "../LuaScripts/LuaScripts.h"
 
 /*
  * Check for the presence of all expected i2c devices. If any are missing, flash the LEDs and try to display an 
  * error on screen indicating what's missing. The backlight pin of the display is connected to the U7 port
  * expander, so if that's not working, the display might not be visible. 
  */
-CHwCheck::CHwCheck(CBatteryGauge *batteryGauge)
+CHwCheck::CHwCheck(IHal* hal, CLedControl *led)
 {
+    _hal = hal;
+    _led = led;
     _zc624_comms = new CZC624Comms(ZC624_SPI_PORT, I2C_PORT);
-
-    _batteryGauge = batteryGauge;
 }
 
 CHwCheck::~CHwCheck()
@@ -49,16 +49,26 @@ CHwCheck::~CHwCheck()
     }
 }
 
-void CHwCheck::set_expected_devices(CHwCheck::front_panel_version_t ver)
+void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw_ver)
 {
     _devices.clear();
 
     // These parts should always be present
-    _devices.push_front(device(EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
-    _devices.push_front(device(CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
     _devices.push_front(device(EEPROM_ADDR, "EEPROM (read)", "EEPROM"));
     _devices.push_front(device(EEPROM_ADDR+1, "EEPROM (write)", "EEPROM"));
     _devices.push_front(device(ZC624_ADDR, "ZC624 output board", "ZC624"));
+
+    // The MkI uses a different type of port expander on different addresses to the MKII
+    if (hw_ver == zc95_version_t::MKI)
+    {
+        _devices.push_front(device(MK1_EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
+        _devices.push_front(device(MK1_CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
+    }
+    else
+    {
+        _devices.push_front(device(MK2_EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U1)", "Port exp U1"));
+        _devices.push_front(device(MK2_PORT_EXP_ADDR, "Port expander for charger & audio (U28)", "Port exp U28"));
+    }
     
     // There ICs are on the front panel, but which set depends on the front panel version
     // v0.1
@@ -77,7 +87,8 @@ void CHwCheck::set_expected_devices(CHwCheck::front_panel_version_t ver)
     }
 
     // optional parts
-    _devices.push_front(device(AUDIO_DIGIPOT_ADDR, "Digital potentiometer on audio board", "Audio digipot", true));
+    _devices.push_front(device(AUDIO_DIGIPOT_ADDR , "Digital potentiometer on audio board", "Audio digipot", true));
+    _devices.push_front(device(BQ72441_I2C_ADDRESS, "BQ72441 Fuel/gas gauge", "Fuel gauge", true));
 }
 
 void CHwCheck::check_part1()
@@ -93,25 +104,24 @@ void CHwCheck::check_part1()
 
     running_on_picow();
 
-    for (uint x=0; x < 10; x++)
-        get_battery_readings();
-
-    // Check battery isn't flat
-    uint8_t batt_percentage = _batteryGauge->get_battery_percentage();
-    printf("Battery: %d%%\n", batt_percentage);
-    if (batt_percentage == 0)
-    {
-        printf("Battery is flat!\n");
-        ok = false;
-        cause = Cause::BATTERY;
-    }
-
     printf("I2C scan:\n");
     i2c_scan::scan(i2c0);
     printf("\n");
 
-    front_panel_version_t fp_version = determine_front_panel_version();
-    set_expected_devices(fp_version);
+    // Check battery isn't flat
+    if (_hal->hardware_version() == zc95_version_t::MKI) // Mk2 has hardware low voltage cutoff
+    {
+        uint8_t batt_percentage = _hal->power_management()->get_battery_percentage();
+        printf("Battery: %d%%\n", batt_percentage);
+        if (batt_percentage == 0)
+        {
+            printf("Battery is flat!\n");
+            ok = false;
+            cause = Cause::BATTERY;
+        }
+    }
+
+    set_expected_devices(_hal->front_panel()->verion(), _hal->hardware_version());
 
     std::list<device>::iterator it;
     for (it = _devices.begin(); it != _devices.end(); ++it)
@@ -138,9 +148,15 @@ void CHwCheck::check_part1()
         }
     }
 
-    if (fp_version == front_panel_version_t::UNKNOWN)
+    if (_hal->front_panel()->verion() == front_panel_version_t::UNKNOWN)
     {
         cause = Cause::NO_FP_ADC;
+        ok = false;
+    }
+
+    if (_hal->hardware_version() == zc95_version_t::UNKNOWN)
+    {
+        cause = Cause::HW_VER_UNKNOWN;
         ok = false;
     }
 
@@ -151,18 +167,16 @@ void CHwCheck::check_part1()
     else
     {
         printf("Status: FAILED\n\n");
-        CLedControl led = CLedControl(PIN_LED, NULL);
-        led.init();
-        hw_check_failed(cause, &led, NULL); // this never returns
+        hw_check_failed(cause); // this never returns
     }
 
-    clear_eeprom_if_requested(fp_version); // if appropriate button is held down, clears eeprom then halts
+    clear_eeprom_if_requested(_hal->front_panel()->verion()); // if appropriate button is held down, clears eeprom then halts
 
 }
 
 // The ZC624 output board takes a while to initialize from power on, so check its status much later when it should be ready.
 // By the time this is called, the display and LEDs should be initialized, so need these passed in (CMainBoardPortExp controls display backlight)
-void CHwCheck::check_part2(CLedControl *ledControl, CMainBoardPortExp *controls)
+void CHwCheck::check_part2()
 {
     uint8_t ver_minor = 0;
     uint8_t ver_major = 0;
@@ -228,7 +242,7 @@ void CHwCheck::check_part2(CLedControl *ledControl, CMainBoardPortExp *controls)
     printf("\n");
     if (error)
     {
-        hw_check_failed(cause, ledControl, controls); // this never returns
+        hw_check_failed(cause); // this never returns
     }
 }
 
@@ -261,7 +275,7 @@ void CHwCheck::show_error_text_missing(int y)
     }    
 }
 
-void CHwCheck::die(CLedControl *led_control, std::string error_message)
+void CHwCheck::die(std::string error_message)
 {
     int y = 0;
     hagl_clear(_hagl_backend);
@@ -273,23 +287,22 @@ void CHwCheck::die(CLedControl *led_control, std::string error_message)
 
     hagl_flush(_hagl_backend);
 
-    halt(led_control);
+    halt();
 }
 
-void CHwCheck::hw_check_failed(enum Cause cause, CLedControl *ledControl, CMainBoardPortExp *controls)
+void CHwCheck::hw_check_failed(enum Cause cause)
 {
     int y = 0;
-    ledControl->set_all_led_colour(LedColour::Red);
-    ledControl->loop();
+    _led->set_all_led_colour(LedColour::Red);
+    _led->loop();
 
-    if (controls == NULL)
+    if (_hagl_backend == NULL)
     {  
         _hagl_backend = hagl_init();
     }
-    else
-    {
-        controls->set_lcd_backlight(true);
-    }
+
+    _hal->set_backlight(true);
+    
 
     hagl_clear(_hagl_backend);
 
@@ -328,7 +341,13 @@ void CHwCheck::hw_check_failed(enum Cause cause, CLedControl *ledControl, CMainB
             show_error_text_message(&y, "Unable to determine");
             show_error_text_message(&y, "front panel version");
             break;
-        
+
+        case Cause::HW_VER_UNKNOWN:
+            // Not been able to figure out if running on a MKI or MKII
+            show_error_text_message(&y, "Unable to determine");
+            show_error_text_message(&y, "hardware version   ");
+            break;
+
         default:
             show_error_text_message(&y, "Unknown error");
             break;
@@ -336,7 +355,7 @@ void CHwCheck::hw_check_failed(enum Cause cause, CLedControl *ledControl, CMainB
 
     hagl_flush(_hagl_backend);
 
-    halt(ledControl);
+    halt();
 }
 
 void CHwCheck::report_zc624_fault(int *y)
@@ -398,18 +417,18 @@ bool CHwCheck::running_on_picow()
     return on_pi_w;
 }
 
-void CHwCheck::halt(CLedControl *led_control)
+void CHwCheck::halt()
 {
     printf("Core0: HALT.\n");
     while(1)
     {
         sleep_ms(1000);
-        led_control->set_all_led_colour(LedColour::Black);
-        led_control->loop();
+        _led->set_all_led_colour(LedColour::Black);
+        _led->loop();
         
         sleep_ms(1000);
-        led_control->set_all_led_colour(LedColour::Red);
-        led_control->loop();
+        _led->set_all_led_colour(LedColour::Red);
+        _led->loop();
     };
 }
 
@@ -425,24 +444,6 @@ void CHwCheck::put_text(std::string text, int16_t x, int16_t y, hagl_color_t col
 
     std::wstring widestr = std::wstring(text.begin(), text.end());
     hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, font6x9);
-}
-
-void CHwCheck::get_battery_readings()
-{
-    uint8_t readings[10];
-
-    adc_init();
-    adc_gpio_init(26);
-    adc_select_input(0);
-
-    // get 10 readings
-    for (uint8_t reading_count=0; reading_count < sizeof(readings); reading_count++)
-    {
-        uint16_t reading = adc_read();
-        readings[reading_count] = reading >> 4; // Convert 12bit ADC reading to 8bit (later reads via DMA are 8bit, so need to be consistant)
-    }
-
-    _batteryGauge->add_raw_adc_readings(readings, sizeof(readings));
 }
 
 // Returns true if (only) the top right button (C) is pressed.
@@ -475,10 +476,10 @@ void CHwCheck::clear_eeprom_if_requested(front_panel_version_t fp_version)
     // Ok, button is held down indicating eeprom should be cleared. Show confirmation screen.
     // From this point on, the only way out is a power-cycle - either with or without
     // clearing eeprom first
-    CLedControl led = CLedControl(PIN_LED, NULL);
-    led.init();
-    led.set_all_led_colour(LedColour::Blue);
-    led.loop();
+    _led->set_all_led_colour(LedColour::Blue);
+    _led->loop();
+
+    _hal->set_backlight(true);
 
     _hagl_backend = hagl_init();
     put_text("Clear saved settings?", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
@@ -503,7 +504,7 @@ void CHwCheck::clear_eeprom_if_requested(front_panel_version_t fp_version)
             hagl_clear(_hagl_backend);
             put_text("EEPROM cleared!", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
             hagl_flush(_hagl_backend);
-            halt(&led);
+            halt();
         }
         else if (button_pressed == (int)Button::D) // Clear user settings in Flash
         {
@@ -526,7 +527,7 @@ void CHwCheck::clear_eeprom_if_requested(front_panel_version_t fp_version)
             put_text("User settings in", 0, 0, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
             put_text("flash cleared!"  , 0, 8, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
             hagl_flush(_hagl_backend);
-            halt(&led);
+            halt();
         }
     }
 }
@@ -570,7 +571,7 @@ uint8_t CHwCheck::get_button_states_from_port_expander(front_panel_version_t fp_
     if (fp_version == front_panel_version_t::v0_1)
     {
         uint8_t pin_states = 0;
-        retval = i2c_read(__func__, CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
+        retval = i2c_read(__func__, MK1_CONTROLS_PORT_EXP_ADDR, &pin_states, 1, false);
         if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
         {
             printf("CHwCheck::get_button_states_from_port_expander i2c read error!\n");
@@ -604,94 +605,7 @@ uint8_t CHwCheck::get_button_states_from_port_expander(front_panel_version_t fp_
     }
 }
 
-void CHwCheck::process()
-{
-
-}
-
 void CHwCheck::set_display(CDisplay *display)
 {
     _hagl_backend = display->get_hagl_backed();
-}
-
-// Try to determine the front panel version.
-// Identify v0.1 by the presence of the I/O expander on 0x26 (on v0.2 the I/O expander is on 0x38, but needs to be written to before it'll respond)
-// Identify v0.2 by the presence of the ADC 0x49
-CHwCheck::front_panel_version_t CHwCheck::determine_front_panel_version()
-{
-    uint8_t rx_data = 0;
-
-    bool v0_1 = (i2c_read_timeout_us(i2c0, FP_0_1_PORT_EXP_ADDR, &rx_data, 1, false, 1000) > 0);
-    bool v0_2 = (i2c_read_timeout_us(i2c0, FP_0_2_ADC_ADDR, &rx_data, 1, false, 1000) > 0);
-
-    if (v0_1 && v0_2)
-    {
-        printf("ERROR: unable to determine front panel version: device found at address 0x%x (v0.1 IO expander) AND address 0x%x (v0.2 ADC) ?!\n", 
-            FP_0_1_PORT_EXP_ADDR, FP_0_2_ADC_ADDR);
-        printf("       (only one - either - expected)\n");
-        _front_panel_version = front_panel_version_t::UNKNOWN;
-    }
-    else if (v0_1)
-    {
-        printf("Front panel version 0.1\n");
-        _front_panel_version = front_panel_version_t::v0_1;
-    }
-    else if (v0_2)
-    {
-        printf("Front panel version 0.2\n");
-        init_v0_2_front_panel();
-        _front_panel_version = front_panel_version_t::v0_2;
-    }
-    else
-    {
-        printf("ERROR: unable to determine front panel version: No device found on either address 0x%x (v0.1 IO expander) or address 0x%x (v0.2 ADC)\n",
-             FP_0_1_PORT_EXP_ADDR, FP_0_2_ADC_ADDR);
-        _front_panel_version = front_panel_version_t::UNKNOWN;
-    }
-
-    return _front_panel_version;
-}
-
-// v0.2 of the front panel has the reset line of the LED driver connected to the I/O expander
-// without a pullup (rookie error!). So to get the LED driver out of reset (and responding on
-// the i2c bus), we need to get the I/O expander to set that high. 
-// The LED driver, by default, also responds on the i2c address 0x48 as well as the configured
-// one, so disable that feature too.
-// This all wants doing now, in the H/W check, so the next step finds the LED driver, and if we 
-// restart without a power cycle (i.e. via debugger), the LED driver also showing up on 0x48 
-// doesn't get confused with the ADC in v0.1 of the front panel, which is on 0x48 too :(
-void CHwCheck::init_v0_2_front_panel()
-{
-    uint8_t txbuf[2] = {0};
-    txbuf[0] = 0x03;    // Configuration register
-    txbuf[1] = ~(0x10); // Set p4 (only) to output
-
-    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf , 2, false , 1000);
-
-    // As the reset line was floating, pull it low before high, just to make sure it's correctly reset.
-
-    // Set p4 to low
-    txbuf[0] = 0x01;  // Output port register
-    txbuf[1] = 0x00;  // Set all low
-    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf, 2, false, 1000);
-    sleep_ms(1);
-
-    // Set high (exit reset)
-    txbuf[1] = 0x10;  // Set p4 (only) to high
-    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf, 2, false, 1000);
-    sleep_ms(1);
-
-    // Init LED driver. Don't respond on the ALLCALL address of "90h". Which is really 
-    // the 7bit address 0x48 - the same as the ADC on v0.1 of the front panel...
-    txbuf[0] = 0x00;  // MODE1
-    txbuf[1] = 0x00; 
-    if (i2c_write_timeout_us(i2c0, FP_0_2_BUTTON_LED_DRV_ADDR, txbuf, 2, false, 1000) < 0)
-    {
-        printf("init_v0_2_front_panel: i2c write error\n");
-    }
-}
-
-CHwCheck::front_panel_version_t CHwCheck::get_front_panel_version()
-{
-    return _front_panel_version;
 }

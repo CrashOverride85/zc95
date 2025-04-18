@@ -12,6 +12,7 @@
 #include "../CGetButtonState.h"
 #include "../AudioInput/CAudio.h"
 #include "../Bluetooth/CBluetooth.h"
+#include "../Hal/IHal.h"
 
 #include <string>
 #include <vector>
@@ -22,7 +23,7 @@ class CMenuRoutineAdjust : public CMenu
         CMenuRoutineAdjust(
                 CDisplay* display, 
                 CRoutines::Routine routine, 
-                CGetButtonState *buttons, 
+                IHal* hal,
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
@@ -50,7 +51,7 @@ class CMenuRoutineAdjust : public CMenu
         struct routine_conf _active_routine_conf;
         bool _bt_enabled = false;
         queue_t _bt_keypress_queue = {0};
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CRoutineOutput *_routine_output;
         CAudio *_audio;
         CBluetooth *_bluetooth = NULL;

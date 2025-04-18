@@ -21,11 +21,11 @@
 #include "../config.h"
 #include "../core1/output/collar/CCollarComms.h"
 
-CMenuCollarConfig::CMenuCollarConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
+CMenuCollarConfig::CMenuCollarConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
 {
     printf("CMenuCollarConfig() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
 
@@ -52,7 +52,7 @@ void CMenuCollarConfig::button_pressed(Button button)
         {
             case Button::A: // "Select"
             case Button::ROT:
-                set_active_menu(new CMenuCollarConfigSelected(_display, _buttons, _saved_settings, _collar_list->get_current_selection(), _routine_output));
+                set_active_menu(new CMenuCollarConfigSelected(_display, _hal, _saved_settings, _collar_list->get_current_selection(), _routine_output));
                 break;
 
             case Button::B: // "Back"

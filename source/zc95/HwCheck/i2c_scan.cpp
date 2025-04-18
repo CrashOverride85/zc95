@@ -12,6 +12,7 @@ bool i2c_scan::reserved_addr(uint8_t addr)
 
 void i2c_scan::scan(i2c_inst_t *i2c)
 {
+    printf("\n   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
     for (int addr = 0; addr < (1 << 7); ++addr) 
     {
         if (addr % 16 == 0) 

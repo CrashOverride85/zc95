@@ -9,11 +9,12 @@
 #include "../../../RemoteAccess/QR-Code-generator/c/qrcodegen.h"
 #include "../../../CSavedSettings.h"
 #include "../../../CAnalogueCapture.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuApMode : public CMenu
 {
     public:
-        CMenuApMode(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture);
+        CMenuApMode(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture);
         ~CMenuApMode();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -48,7 +49,7 @@ class CMenuApMode : public CMenu
         };
 
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CSavedSettings *_saved_settings;
         CAnalogueCapture *_analogueCapture;
         uint8_t _selected_item;

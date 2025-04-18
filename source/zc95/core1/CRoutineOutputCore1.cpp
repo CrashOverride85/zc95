@@ -27,16 +27,16 @@
 #include <inttypes.h>
 
 
-#include "../EExtInputPort.h"
+#include "../PortExpanders/EExtInputPort.h"
 #include "CRoutineOutputCore1.h"
 #include "Core1Messages.h"
 
 
-CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio *audio)
+CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, IHal *hal, CAudio *audio)
 {
     _display = display;
     _led_control = led_control;
-    _ext_port_exp = ext_port_exp;
+    _hal = hal;
     _audio = audio;
 }
 
@@ -407,14 +407,14 @@ void CRoutineOutputCore1::audio_intensity_change(uint8_t left_chan, uint8_t righ
 
 void CRoutineOutputCore1::reset_acc_port()
 {
-    if (*_ext_port_exp)
-        (*_ext_port_exp)->reset_acc_port();
+    if (_hal)
+        _hal->acc_port_reset();
 }
 
 void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
 {
-    if (*_ext_port_exp)
-        (*_ext_port_exp)->set_acc_io_port_state(output, high);
+    if (_hal)
+        _hal->acc_port_set_io_port_state(output, high);
 }
 
  lua_script_state_t CRoutineOutputCore1::get_lua_script_state()

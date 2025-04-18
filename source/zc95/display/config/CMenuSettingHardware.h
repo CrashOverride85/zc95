@@ -4,14 +4,16 @@
 #include "../CSavedSettings.h"
 #include "../CChannel_types.h"
 #include "../AudioInput/CAudio.h"
+#include "../Hal/IHal.h"
 #include "../core1/output/COutputChannel.h"
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
+#include "../Hal/IHal.h"
 
 class CMenuSettingHardware : public CMenu
 {
     public:
-        CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio);
+        CMenuSettingHardware(CDisplay* display, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio, IHal* hal);
         ~CMenuSettingHardware();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -52,7 +54,7 @@ class CMenuSettingHardware : public CMenu
 
         struct display_area _area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         display_area _setting_choice_area;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;

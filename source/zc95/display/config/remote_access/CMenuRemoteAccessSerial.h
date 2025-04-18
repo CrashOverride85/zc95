@@ -6,6 +6,7 @@
 #include "../../../RemoteAccess/CWifi.h"
 #include "../../../RemoteAccess/CSerialConnection.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Hal/IHal.h"
 
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
@@ -16,7 +17,7 @@ class CMenuRemoteAccessSerial : public CMenu
     public:
         CMenuRemoteAccessSerial(
             CDisplay* display,
-            CGetButtonState *buttons, 
+            IHal *hal, 
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
             std::vector<CRoutines::Routine> &routines,
@@ -32,7 +33,7 @@ class CMenuRemoteAccessSerial : public CMenu
 
         CDisplay* _display;
         display_area _disp_area;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CSerialConnection *_serial_connection;

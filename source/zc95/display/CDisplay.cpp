@@ -39,7 +39,7 @@ const uint8_t status_bar_height = 9;  // battery level + mode at bottom
 const uint8_t bar_width = 10;         // individual power level bar width 
 
 
-CDisplay::CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth)
+CDisplay::CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth, IPowerManagement* power_management)
 {
     printf("CDisplay()\n");
     memset(_channel_power, 0, sizeof (_channel_power));
@@ -53,11 +53,11 @@ CDisplay::CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth)
 
     _font_width = glyph.width;
     _font_height = glyph.height;
-    _battery_percentage = 0;
     _active_pattern = "";
     _remote_mode_active = false;
     _front_panel = front_panel;
     _bluetooth = bluetooth;
+    _power_management = power_management;
 }
 
 CDisplay::~CDisplay()
@@ -208,16 +208,6 @@ struct display_area CDisplay::get_display_area()
     return area;
 }
 
-void CDisplay::set_battery_percentage(uint8_t bat)
-{
-    _battery_percentage = bat;
-}
-
-uint8_t CDisplay::get_battery_percentage()
-{
-    return _battery_percentage;
-}
-
 void CDisplay::set_active_pattern(std::string pattern)
 {
     _active_pattern = pattern;
@@ -326,11 +316,40 @@ void CDisplay::draw_status_bar()
         current_mode = _current_menu->get_title();
     }
 
-    // Draw battery percent with icon, and name of currently running pattern (if any)
+    battery_state_t state;
+    IPowerManagement::power_status_t power_status = _power_management->power_status();
+    if (power_status == IPowerManagement::power_status_t::OnBattery)
+        state = battery_state_t::Discharging;
+    else if (_power_management->charging_status() == IPowerManagement::charging_status_t::Charging)
+        state = battery_state_t::OnCharge;
+    else if (_power_management->charging_status() == IPowerManagement::charging_status_t::Charged)
+        state = battery_state_t::Changed;
+    else if (power_status == IPowerManagement::power_status_t::NA)
+        // MK1: Hardware not capable of detecting if plugged in / charging / charged, so just assume discharging
+        state = battery_state_t::Discharging;
+    else
+        state = battery_state_t::Fault;
+
+    if (_power_management->get_battery_percentage() == 0xFF || _power_management->power_status() == IPowerManagement::power_status_t::Unknown)
+        state = battery_state_t::Fault;
+
+    // Draw battery percent with icon
     uint16_t y = (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2;
-    snprintf(buffer, sizeof(buffer)-1, "%d   %s", _battery_percentage, current_mode.c_str());
+    draw_battery_icon(0, y, state);
+    if (state == battery_state_t::Fault)
+    {
+        // Can't figure out what's going on with the battery (maybe it's missing?)...
+        snprintf(buffer, sizeof(buffer)-1, "?");
+    }
+    else
+    {
+        snprintf(buffer, sizeof(buffer)-1, "%d", _power_management->get_battery_percentage());
+    }
+
     put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
-    draw_battery_icon(0, y);
+
+    // Draw name of currently running pattern (if any)
+    put_text(current_mode, 26, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
     // Draw H/M/L power indicator (always)
     uint16_t x = MIPI_DISPLAY_WIDTH - 8;
@@ -372,20 +391,63 @@ void CDisplay::draw_power_level_indicator(int16_t x, int16_t y)
     put_text(power_level, x, y, colour, false, font5x7);
 }
 
-void CDisplay::draw_battery_icon(int16_t x, int16_t y)
+void CDisplay::draw_battery_icon(int16_t x, int16_t y, battery_state_t state)
 {
     hagl_color_t colour;
-    if (_battery_percentage >= 65)
-        colour = hagl_color(_hagl_backend, 0x00, 0x70, 0x00); // Green
-    else if (_battery_percentage >= 20)
-        colour = hagl_color(_hagl_backend, 0xFF, 0xFB, 0x00); // Amber
-    else
-        colour = hagl_color(_hagl_backend, 0xAA, 0x00, 0x00); // Red
 
-    // Battery icon is split into three 8x9 (WxH) sections
-    for (uint8_t sec = 0; sec < 3; sec++)
-    {
-        draw_logo(bat_logo[sec], x + (sec * 8), y-1, colour);
+    switch(state)
+    {    
+        case battery_state_t::Discharging:
+        {
+            int battery_percentage = _power_management->get_battery_percentage();
+            if (battery_percentage >= 65)
+                colour = hagl_color(_hagl_backend, 0x00, 0x70, 0x00); // Green
+            else if (battery_percentage >= 20)
+                colour = hagl_color(_hagl_backend, 0xFF, 0xFB, 0x00); // Amber
+            else
+                colour = hagl_color(_hagl_backend, 0xAA, 0x00, 0x00); // Red
+
+            // Battery icon is split into three 8x9 (WxH) sections
+            for (uint8_t sec = 0; sec < 3; sec++)
+            {
+                draw_logo(bat_logo[sec], x + (sec * 8), y-1, colour);
+            }
+        }
+        break;
+
+        case battery_state_t::Changed:
+        {
+            colour = hagl_color(_hagl_backend, 0x00, 0x70, 0x00); // Green
+
+            for (uint8_t sec = 0; sec < 3; sec++)
+            {
+                draw_logo(bat_logo_filled[sec], x + (sec * 8), y-1, colour);
+            }
+        }
+        break;
+
+        case battery_state_t::OnCharge:
+        {
+            colour = hagl_color(_hagl_backend, 0xFF, 0xFB, 0x00); // Amber
+
+            for (uint8_t sec = 0; sec < 3; sec++)
+            {
+                draw_logo(bat_logo_filled[sec], x + (sec * 8), y-1, colour);
+            }
+        }
+        break;
+
+        case battery_state_t::Fault:
+        {
+            colour = hagl_color(_hagl_backend, 0xFF, 0x00, 0x00); // Red
+
+            for (uint8_t sec = 0; sec < 3; sec++)
+            {
+                draw_logo(bat_logo_filled[sec], x + (sec * 8), y-1, colour);
+            }
+        }
+        break;
+
     }
 }
 

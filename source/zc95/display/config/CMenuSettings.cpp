@@ -27,12 +27,12 @@
 #include "CMenuSettingAudio.h"
 #include "CMenuSettingHardware.h"
 #include "CMenuSettingOutput.h"
+#include "CMenuSettingBatteryInfo.h"
 
 #include "../core1/routines/CRoutine.h"
 
 CMenuSettings::CMenuSettings(
         CDisplay* display, 
-        CGetButtonState *buttons, 
         CSavedSettings *saved_settings, 
         CRoutineOutput *routine_output, 
         CHwCheck *hwCheck, 
@@ -41,11 +41,11 @@ CMenuSettings::CMenuSettings(
         CWifi *wifi,
         std::vector<CRoutines::Routine> &routines,
         CBluetooth *bluetooth,
-        CRadio *radio) : _routines(routines)
+        CRadio *radio,
+        IHal* hal) : _routines(routines)
 {
     printf("CMenuSettings() \n");
     _display = display;
-    _buttons = buttons;
     _saved_settings = saved_settings;
     _exit_menu = false;
     _routine_output = routine_output;
@@ -56,6 +56,7 @@ CMenuSettings::CMenuSettings(
     _wifi = wifi;
     _bluetooth = bluetooth;
     _radio = radio;
+    _hal = hal;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -111,39 +112,43 @@ void CMenuSettings::show_selected_setting()
     switch (_settings[_settings_list->get_current_selection()].id)
     {
         case setting_id::CHANNEL_CONFIG:
-            set_active_menu(new CMenuChannelConfig(_display, _buttons, _saved_settings, _routine_output));
+            set_active_menu(new CMenuChannelConfig(_display, _hal, _saved_settings, _routine_output));
             break;
 
         case setting_id::COLLAR_CONFIG:
-            set_active_menu(new CMenuCollarConfig(_display, _buttons, _saved_settings, _routine_output));
+            set_active_menu(new CMenuCollarConfig(_display, _hal, _saved_settings, _routine_output));
             break;
 
         case setting_id::DISPLAY_OPTIONS:
-            set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings, _hwCheck));
+            set_active_menu(new CMenuSettingDisplayOptions(_display, _saved_settings, _hal));
             break;
 
         case setting_id::OUTPUT:
-            set_active_menu(new CMenuSettingOutput(_display, _buttons, _saved_settings));
+            set_active_menu(new CMenuSettingOutput(_display, _hal, _saved_settings));
             break;
 
         case setting_id::AUDIO:
-            set_active_menu(new CMenuSettingAudio(_display, _buttons, _audio, _saved_settings));
+            set_active_menu(new CMenuSettingAudio(_display, _hal, _audio, _saved_settings));
             break;
 
         case setting_id::HARDWARE:
-            set_active_menu(new CMenuSettingHardware(_display, _buttons, _saved_settings, _routine_output, _audio));
+            set_active_menu(new CMenuSettingHardware(_display, _saved_settings, _routine_output, _audio, _hal));
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _buttons, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio));
+            set_active_menu(new CMenuRemoteAccess(_display, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio, _hal));
             break;
 
         case setting_id::ABOUT:
-            set_active_menu(new CMenuSettingAbout(_display, _buttons, _hwCheck));
+            set_active_menu(new CMenuSettingAbout(_display, _hal, _hwCheck));
             break;
 
         case setting_id::BLUETOOTH:
             set_active_menu(new CMenuBluetooth(_display, _saved_settings, _bluetooth));
+            break;
+
+        case setting_id::BATTERY:
+            set_active_menu(new CMenuSettingBatteryInfo(_display, _hal->power_management()));
             break;
     }
 }
@@ -194,6 +199,7 @@ void CMenuSettings::show()
         _settings.push_back(CMenuSettings::setting(setting_id::AUDIO,          "Audio input"));
     
     _settings.push_back(CMenuSettings::setting(setting_id::HARDWARE,       "Hardware config"));
+    _settings.push_back(CMenuSettings::setting(setting_id::BATTERY,        "Battery info   "));
     _settings.push_back(CMenuSettings::setting(setting_id::ABOUT,          "About"          ));  
     
    _settings_list->clear_options();

@@ -6,15 +6,14 @@
 #include "Core1.h"
 #include "../display/CDisplay.h"
 #include "../CLedControl.h"
-#include "../CExtInputPortExp.h"
-#include "../EExtInputPort.h"
+#include "../Hal/IHal.h"
 #include "../AudioInput/CAudio.h"
 
 
 class CRoutineOutputCore1 : public CRoutineOutput
 {
     public:
-        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio* audio);
+        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, IHal *hal, CAudio* audio);
         void set_front_panel_power(uint8_t channel, uint16_t power);
         void set_remote_power(uint8_t channel, uint16_t power);
         void enable_remote_power_mode();
@@ -59,7 +58,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         Core1 *_core1 = NULL;
         CDisplay *_display;
         CLedControl *_led_control;
-        CExtInputPortExp **_ext_port_exp;
+        IHal *_hal;
         uint16_t _front_pannel_power[MAX_CHANNELS] = {0};
         uint16_t _remote_power[MAX_CHANNELS] = {0};
         uint16_t _output_power[MAX_CHANNELS] = {0};

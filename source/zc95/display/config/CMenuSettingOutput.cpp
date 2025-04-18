@@ -22,11 +22,11 @@
 #include "../config.h"
 
 
-CMenuSettingOutput::CMenuSettingOutput(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings)
+CMenuSettingOutput::CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings)
 {
     printf("CMenuSettingOutput()\n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
 
     _exit_menu = false;

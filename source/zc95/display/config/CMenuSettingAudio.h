@@ -6,11 +6,12 @@
 #include "../CHorzBarGraph.h"
 #include "../CSavedSettings.h"
 #include "../AudioInput/CAudio.h"
+#include "../../Hal/IHal.h"
 
 class CMenuSettingAudio : public CMenu
 {
     public:
-        CMenuSettingAudio(CDisplay* display, CGetButtonState *buttons, CAudio *audio, CSavedSettings *saved_settings);
+        CMenuSettingAudio(CDisplay* display, IHal *hal, CAudio *audio, CSavedSettings *saved_settings);
         ~CMenuSettingAudio();
         void button_pressed(Button button);
         void draw();
@@ -24,7 +25,7 @@ class CMenuSettingAudio : public CMenu
         void set_menu_labels();
         bool show_stereo();
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CAudio *_audio;
         CHorzBarGraph *_bar_graph = NULL;
         struct display_area _bar_graph_area;

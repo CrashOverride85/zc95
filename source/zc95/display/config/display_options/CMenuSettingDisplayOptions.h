@@ -2,7 +2,7 @@
 #include "../../CDisplay.h"
 #include "../../COptionsList.h"
 #include "../../../CSavedSettings.h"
-#include "../../../CHwCheck.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuSettingDisplayOptions : public CMenu
 {
@@ -10,7 +10,7 @@ class CMenuSettingDisplayOptions : public CMenu
         CMenuSettingDisplayOptions(
             CDisplay* display, 
             CSavedSettings *saved_settings,
-            CHwCheck *hw_check);
+            IHal *hal);
 
         ~CMenuSettingDisplayOptions();
         void button_pressed(Button button);
@@ -48,5 +48,5 @@ class CMenuSettingDisplayOptions : public CMenu
         
         CDisplay* _display;
         CSavedSettings *_saved_settings;
-        CHwCheck *_hw_check;
+        IHal *_hal;
 };

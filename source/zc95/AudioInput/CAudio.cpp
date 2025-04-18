@@ -27,18 +27,18 @@
 
 #include "ESP32_fft.h"
 
-CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CMainBoardPortExp *controls)
+CAudio::CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, IHal* hal)
 {
     printf("CAudio()\n");
     _analogueCapture = analogueCapture;
     _mcp4651 = mcp4651;
-    _controlsPortExp = controls;
     _routine_output = NULL;
     _last_audio_capture_time_us = 0;
     _fundamental_freq = 0;
     _audio_update_available = false;
     _saved_settings = NULL;
     _digipot_found = false;
+    _hal = hal;
 
     _audio3_process[AUDIO_LEFT ] = new CAudio3Process(0, analogueCapture);
     _audio3_process[AUDIO_RIGHT] = new CAudio3Process(1, analogueCapture);
@@ -85,28 +85,13 @@ void CAudio::set_gain(CAnalogueCapture::channel chan, uint8_t value)
     }
 }
 
-void CAudio::mic_preamp_enable(bool enable)
-{
-    _controlsPortExp->mic_preamp_enable(enable);
-}
-
-void CAudio::mic_power_enable(bool enable)
-{
-    _controlsPortExp->mic_power_enable(enable);
-}
-
-void CAudio::audio_input_enable(bool enable)
-{
-    _controlsPortExp->audio_input_enable(enable);
-}
-
 void CAudio::init(CSavedSettings *saved_settings, CDisplay *display)
 {
     _display = display;
     set_gain(CAnalogueCapture::channel::LEFT,  saved_settings->get_audio_gain_left ());
     set_gain(CAnalogueCapture::channel::RIGHT, saved_settings->get_audio_gain_right());
-    mic_power_enable (saved_settings->get_mic_power_enabled ());
-    mic_preamp_enable(saved_settings->get_mic_preamp_enabled());
+    _hal->mic_power_enable (saved_settings->get_mic_power_enabled ());
+    _hal->mic_preamp_enable(saved_settings->get_mic_preamp_enabled());
     _saved_settings = saved_settings;
     _gain_l = _saved_settings->get_audio_gain_left();
     _gain_r = _saved_settings->get_audio_gain_right();

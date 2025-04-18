@@ -21,20 +21,22 @@
 
 CMenuRemoteAccessBLE::CMenuRemoteAccessBLE(
     CDisplay* display,
-    CGetButtonState *buttons,
+    IHal *hal,
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
     std::vector<CRoutines::Routine> &routines,
-    CRadio *radio)
+    CRadio *radio,
+    IPowerManagement* power_management)
 {
     printf("CMenuRemoteAccessBLE() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _disp_area = _display->get_display_area();
     _exit_menu = false;
     _routine_output = routine_output;
     _radio = radio;
+    _power_management = power_management;
     
     if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
         _routine_output->enable_remote_power_mode();
@@ -142,7 +144,7 @@ void CMenuRemoteAccessBLE::draw()
     y += 10;
 
     
-    _gatt_server->set_battery_percentage(_display->get_battery_percentage());
+    _gatt_server->set_battery_percentage(_power_management->get_battery_percentage());
     _gatt_server->loop();
 }
 
@@ -156,5 +158,5 @@ void CMenuRemoteAccessBLE::show()
     _exit_menu = false;
 
     _radio->bluetooth(true);
-    _gatt_server->init(_display->get_battery_percentage());
+    _gatt_server->init(_power_management->get_battery_percentage());
 }

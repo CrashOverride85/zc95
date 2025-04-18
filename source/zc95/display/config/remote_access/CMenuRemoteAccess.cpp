@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2023  CrashOverride85
+ * Copyright (C) 2025  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,28 +22,28 @@
 #include "CMenuRemoteAccessBleConfig.h"
 #include "CMenuApMode.h"
 #include "../../CDisplayMessage.h"
-#include "../CHwCheck.h"
+#include "../HwCheck/CHwCheck.h"
 
 CMenuRemoteAccess::CMenuRemoteAccess(
     CDisplay* display, 
-    CGetButtonState *buttons, 
     CSavedSettings *saved_settings, 
     CWifi *wifi, 
     CAnalogueCapture *analogueCapture, 
     CRoutineOutput *routine_output,
     std::vector<CRoutines::Routine> &routines,
     CBluetooth *bluetooth,
-    CRadio *radio) : _routines(routines)
+    CRadio *radio,
+    IHal* hal) : _routines(routines)
 {
     printf("CMenuRemoteAccess() \n");
     _display = display;
-    _buttons = buttons;
     _saved_settings = saved_settings;
     _wifi = wifi;
     _analogueCapture = analogueCapture;
     _routine_output = routine_output;
     _bluetooth = bluetooth;
     _radio = radio;
+    _hal = hal;
 
     _exit_menu = false;
     _options_list = new COptionsList(display, display->get_display_area());
@@ -101,39 +101,39 @@ void CMenuRemoteAccess::show_selected_setting()
     switch (_options[_options_list->get_current_selection()].id)
     {
         case option_id::AP_MODE:
-            set_active_menu(new CMenuApMode(_display, _buttons, _saved_settings, _wifi, _analogueCapture));
+            set_active_menu(new CMenuApMode(_display, _hal, _saved_settings, _wifi, _analogueCapture));
             break;
 
         case option_id::CONNECT_WIFI:
-            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _buttons, _saved_settings, _wifi, _routine_output));
+            set_active_menu(new CMenuRemoteAccessConnectWifi(_display, _hal, _saved_settings, _wifi, _routine_output));
             break;
 
         case option_id::CLEAR_SAVED_CREDS:
             _saved_settings->clear_wifi_credentials();
             _saved_settings->save();
-            set_active_menu(new CDisplayMessage(_display, _buttons, "Saved WiFi credentials cleared"));
+            set_active_menu(new CDisplayMessage(_display, _hal, "Saved WiFi credentials cleared"));
             break;
 
         case option_id::REGEN_AP_PSK:
             _saved_settings->clear_saved_ap_psk();
             _saved_settings->save();
-            set_active_menu(new CDisplayMessage(_display, _buttons, "New PSK for AP mode will be generated when AP mode next started"));
+            set_active_menu(new CDisplayMessage(_display, _hal, "New PSK for AP mode will be generated when AP mode next started"));
             break;
 
         case option_id::BLE_GATT:
-            set_active_menu(new CMenuRemoteAccessBLE(_display, _buttons, _saved_settings, _routine_output, _routines, _radio));
+            set_active_menu(new CMenuRemoteAccessBLE(_display, _hal, _saved_settings, _routine_output, _routines, _radio, _hal->power_management()));
             break;
 
         case option_id::BLE_CONFIG:
-            set_active_menu(new CMenuRemoteAccessBleConfig(_display, _buttons, _saved_settings, _routine_output));
+            set_active_menu(new CMenuRemoteAccessBleConfig(_display, _hal, _saved_settings, _routine_output));
             break;
 
         case option_id::SERIAL_ACCESS:
             std::string config_error = get_serial_config_error();
             if (config_error == "")
-                set_active_menu(new CMenuRemoteAccessSerial(_display, _buttons, _saved_settings, _routine_output, _routines, _bluetooth));
+                set_active_menu(new CMenuRemoteAccessSerial(_display, _hal, _saved_settings, _routine_output, _routines, _bluetooth));
             else
-                set_active_menu(new CDisplayMessage(_display, _buttons, config_error));
+                set_active_menu(new CDisplayMessage(_display, _hal, config_error));
             break;
     }
 }
@@ -177,7 +177,7 @@ void CMenuRemoteAccess::show()
         _options.push_back(CMenuRemoteAccess::option(option_id::BLE_GATT         ,  "BLE remote access"));
         _options.push_back(CMenuRemoteAccess::option(option_id::BLE_CONFIG       ,  "BLE config"));
     }
-    _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access (Aux)"));
+    _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access"));
 
 
    _options_list->clear_options();
@@ -210,18 +210,31 @@ std::string CMenuRemoteAccess::get_serial_config_error()
     bool serial_disabled = aux_setting    != CSavedSettings::setting_aux_port_use::SERIAL;
     bool debug_enabled   = debug_setting  == CSavedSettings::setting_debug::AUX_PORT;
 
-    if (serial_disabled || debug_enabled)
+    if (_hal->hardware_version() == zc95_version_t::MKI)
     {
-        std::string message = "Error: Config not valid for serial control. Need to: ";
+        if (serial_disabled || debug_enabled)
+        {
+            std::string message = "Error: Config not valid for serial control. Need to: ";
 
-        int i = 1;
-        if (serial_disabled)
-            message += std::to_string(i++) + ") Set Aux = Serial ";
+            int i = 1;
+            if (serial_disabled)
+                message += std::to_string(i++) + ") Set Aux = Serial ";
 
+            if (debug_enabled)
+                message += std::to_string(i++) + ") Set debug != Aux ";
+        
+            return message;
+        }
+    }
+
+    else
+    {
+        // MKII's have separate serial and audio sockets, so only need to check that debugging
+        // output hasn't been directed to the 3.5mm serial socket.
         if (debug_enabled)
-            message += std::to_string(i++) + ") Set debug != Aux ";
-    
-        return message;
+        {
+            return "Error: Config not valid for serial control. Debug destination cannot be Serial";
+        }
     }
 
     return "";

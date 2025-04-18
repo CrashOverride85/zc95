@@ -20,7 +20,7 @@
 #include "string.h"
 #include "config.h"
 #include "core1/output/collar/CCollarComms.h"
-#include "CHwCheck.h"
+#include "HwCheck/CHwCheck.h"
 
 /*
  * Manage access and updating of settings saved to EEPROM.

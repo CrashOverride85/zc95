@@ -5,15 +5,23 @@
 #include <list>
 #include <string>
 #include <inttypes.h>
+#include "IPowerManagement.h"
 
 #define BAT_AVG_COUNT 50
 
-class CBatteryGauge
+class CPowerManagementMk1 : public IPowerManagement
 {
     public:
-        CBatteryGauge();
-        uint8_t get_battery_percentage();
+        CPowerManagementMk1();
         void add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len);
+        void get_battery_readings();
+
+        // for IPowerManagement
+        void loop();
+        power_status_t power_status();
+        charging_status_t charging_status();
+        bool get_stat(int16_t* stat, power_stat_t type);
+        uint8_t get_battery_percentage();
 
     private:
         static int cmpfunc (const void *a, const void *b);
@@ -26,6 +34,7 @@ class CBatteryGauge
         uint64_t _last_update;
         uint8_t _batt_percentage[BAT_AVG_COUNT] = {0};
         uint8_t _batt_reading_idx = 0;
+        float _battery_voltage = 0;
         bool _inital_startup = true;
 };
 

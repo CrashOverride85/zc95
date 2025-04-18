@@ -23,11 +23,11 @@
 #include "CDisplayMessage.h"
 #include <algorithm>
 
-CDisplayMessage::CDisplayMessage(CDisplay* display, CGetButtonState *buttons, std::string message)
+CDisplayMessage::CDisplayMessage(CDisplay* display, IHal *hal, std::string message)
 {
     printf("CDisplayMessage()\n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _display_string = word_wrap(message, 19);
     _disp_area = _display->get_display_area();
 

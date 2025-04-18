@@ -40,16 +40,12 @@ add_custom_command(
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
   CAnalogueCapture.cpp
-  CBatteryGauge.cpp
   CChannel_types.cpp
   CDebugOutput.cpp
   CEeprom.cpp
-  CExtInputPortExp.cpp
-  CHwCheck.cpp 
   CLedControl.cpp 
   CLedControl.h 
   CLuaStorage.cpp
-  CMainBoardPortExp.cpp 
   CRadio.cpp
   CSavedSettings.cpp
   CTimingTest.cpp
@@ -57,7 +53,6 @@ add_executable(zc95
   FlashHelper.cpp
   globals.cpp
   gDebugCounters.cpp
-  i2c_scan.cpp
   zc95.cpp
 
   AudioInput/CMCP4651.cpp
@@ -122,6 +117,7 @@ add_executable(zc95
   display/config/CMenuSettingAudio.cpp
   display/config/CMenuSettingHardware.cpp
   display/config/CMenuSettingOutput.cpp
+  display/config/CMenuSettingBatteryInfo.cpp
 
   display/config/bluetooth_peripherals/CMenuBluetooth.cpp
   display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp
@@ -148,8 +144,24 @@ add_executable(zc95
   FrontPanel/CFrontPanelV01.cpp
   FrontPanel/CFrontPanelV02.cpp
   
+  Hal/HalMk1.cpp
+  Hal/HalMk2.cpp
+
+  HwCheck/CHwCheck.cpp 
+  HwCheck/CDetermineHardwareVersion.cpp
+  HwCheck/i2c_scan.cpp
+
   LuaScripts/LuaScripts.S
   LuaScripts.cpp
+
+  PortExpanders/CExtInputPortExp.cpp
+  PortExpanders/CMainBoardPortExp.cpp 
+  PortExpanders/TCA9534.cpp
+  PortExpanders/PCF8574.cpp
+
+  PowerManagement/bq27441.c
+  PowerManagement/CPowerManagementMk1.cpp
+  PowerManagement/CPowerManagementMk2.cpp
 
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c
@@ -241,7 +253,7 @@ target_compile_definitions(zc95 PRIVATE
  #MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ=12000000
   MIPI_DISPLAY_PIN_CS=17
   MIPI_DISPLAY_PIN_DC=20
-  MIPI_DISPLAY_PIN_RST=2
+  MIPI_DISPLAY_PIN_RST=-1
   MIPI_DISPLAY_PIN_BL=-1
   MIPI_DISPLAY_PIN_CLK=18
   MIPI_DISPLAY_PIN_MOSI=19

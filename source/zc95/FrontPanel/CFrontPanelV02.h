@@ -6,7 +6,7 @@
 class CFrontPanelV02 : public CFrontPanel
 {
     public:
-        CFrontPanelV02(CSavedSettings *saved_settings);
+        CFrontPanelV02(CSavedSettings **saved_settings);
         void process(bool always_update);
         uint16_t get_channel_power_level(uint8_t channel);
         int8_t get_adjust_control_change();
@@ -14,6 +14,7 @@ class CFrontPanelV02 : public CFrontPanel
         bool button_state(enum Button button);
         bool has_button_state_changed(enum Button button, bool *new_state);
         void set_button_in_use(enum Button button, bool in_use);
+        front_panel_version_t verion();
 
     private:
         enum adc_reg_t
@@ -89,8 +90,10 @@ class CFrontPanelV02 : public CFrontPanel
         void write_led_register(led_reg_t reg, uint8_t value);
         void update_button_led_states();
         void update_button_led_state(enum Button button, uint8_t old_state, uint8_t new_state, led_reg_t reg, bool always_update);
+        uint8_t get_button_brightness();
+        void init_v0_2_front_panel();
 
-        CSavedSettings *_saved_settings;
+        CSavedSettings **_saved_settings;
         uint8_t _last_port_exp_read;
         int16_t _power_level[MAX_CHANNELS];
         CRotEnc _rot_encoder;

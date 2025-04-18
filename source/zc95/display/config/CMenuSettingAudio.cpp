@@ -20,11 +20,11 @@
 #include "../git_version.h"
 #include "../globals.h"
 
-CMenuSettingAudio::CMenuSettingAudio(CDisplay* display, CGetButtonState *buttons, CAudio *audio, CSavedSettings *saved_settings)
+CMenuSettingAudio::CMenuSettingAudio(CDisplay* display, IHal *hal, CAudio *audio, CSavedSettings *saved_settings)
 {
     printf("CMenuSettingAudio() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _audio = audio;
     _saved_settings = saved_settings;
     
@@ -38,8 +38,8 @@ CMenuSettingAudio::CMenuSettingAudio(CDisplay* display, CGetButtonState *buttons
     _gain = _saved_settings->get_audio_gain_left();
     set_gain(_gain, false);
 
-    _audio->mic_power_enable(mic_power_enabled());
-    _audio->mic_preamp_enable(mic_preamp_enabled());
+    _hal->mic_power_enable(mic_power_enabled());
+    _hal->mic_preamp_enable(mic_preamp_enabled());
 }
 
 CMenuSettingAudio::~CMenuSettingAudio()
@@ -68,14 +68,14 @@ void CMenuSettingAudio::button_pressed(Button button)
                     // Disable mic preamp & mic power
                     _saved_settings->set_mic_preamp_enabled(false);
                     _saved_settings->set_mic_power_enabled(false);
-                    _audio->mic_preamp_enable(false);
-                    _audio->mic_power_enable(false);
+                    _hal->mic_preamp_enable(false);
+                    _hal->mic_power_enable(false);
                 }
                 else
                 {
                     // enable mic preamp
                     _saved_settings->set_mic_preamp_enabled(true);
-                    _audio->mic_preamp_enable(true);
+                    _hal->mic_preamp_enable(true);
                 }
                 
                 set_menu_labels();
@@ -94,12 +94,12 @@ void CMenuSettingAudio::button_pressed(Button button)
                 if (mic_power_enabled())
                 {
                     _saved_settings->set_mic_power_enabled(false);
-                    _audio->mic_power_enable(false);
+                    _hal->mic_power_enable(false);
                 }
                 else
                 {
                     _saved_settings->set_mic_power_enabled(true);
-                    _audio->mic_power_enable(true);
+                    _hal->mic_power_enable(true);
                 }
                 
                 set_menu_labels();

@@ -22,11 +22,11 @@
 #include "../config.h"
 
 
-CMenuRemoteAccessBleConfig::CMenuRemoteAccessBleConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
+CMenuRemoteAccessBleConfig::CMenuRemoteAccessBleConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output)
 {
     printf("CMenuRemoteAccessBleConfig()\n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
 

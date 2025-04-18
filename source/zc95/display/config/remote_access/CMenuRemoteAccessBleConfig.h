@@ -6,11 +6,12 @@
 #include "../core1/output/COutputChannel.h"
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
+#include "../Hal/IHal.h"
 
 class CMenuRemoteAccessBleConfig : public CMenu
 {
     public:
-        CMenuRemoteAccessBleConfig(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
+        CMenuRemoteAccessBleConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output);
         ~CMenuRemoteAccessBleConfig();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -50,7 +51,7 @@ class CMenuRemoteAccessBleConfig : public CMenu
 
         struct display_area _area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         display_area _setting_choice_area;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;

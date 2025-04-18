@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2025  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,20 @@
 
 #include "CExtInputPortExp.h"
 #include "hardware/gpio.h"
-#include "globals.h"
+#include "../globals.h"
 
 #include <string.h>
 
 /*
- * Deal with port expander U8, which is connected to:
+ * Deal with port expander (MKI: U8, MKII: U1), which is connected to:
  *   - GPIO1/2/3 on the accessory port
  *   - Trigger1/2 sockets - each socket is "stereo", and is connected to two I/O lines to allow for dual inputs per socket
  */ 
 
-CExtInputPortExp::CExtInputPortExp(uint8_t address, CLedControl *led, CRoutineOutput *routine_output)
+CExtInputPortExp::CExtInputPortExp(CLedControl* led, CRoutineOutput** routine_output, IPortExpander* port_exp)
 {
-    _address = address;
+    _port_exp = port_exp;
+
     _old_state = 3;
     _last_read = 0;    
     _input_states_at_last_check = 0;
@@ -45,14 +46,14 @@ CExtInputPortExp::CExtInputPortExp(uint8_t address, CLedControl *led, CRoutineOu
 // Can't do this in the constructor as i2c won't have been initialised 
 void CExtInputPortExp::clear_input()
 {
-    int retval = i2c_read(__func__, _address, &_last_read, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-      printf("CExtInputPortExp::clear_intput i2c read error!\n");
-    }
+    _port_exp->read_port_expander(&_last_read);
 
     _input_states_at_last_check = _last_read;
     update_trigger_leds();
+
+    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_1);
+    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_2);
+    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_3);
 }
 
 void CExtInputPortExp::interrupt()
@@ -72,15 +73,9 @@ void CExtInputPortExp::process(bool force_update)
     {
         _interrupt = false;
         uint8_t buffer[1];
-             
-        int retval = i2c_read(__func__, _address, buffer, 1, false);
-        if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-        {
-            printf("CExtInputPortExp::process i2c read error!\n");
-            _interrupt = true;
-            return;
-        }
 
+        _port_exp->read_port_expander(buffer);
+    
         if ((buffer[0] != _last_read) || force_update)
         {
             _last_read = buffer[0];
@@ -186,23 +181,20 @@ void CExtInputPortExp::update_active_routine_trigger(enum ExtInputPort input, tr
     bool state;
     if (has_input_state_changed(input, &state))
     {
-        // At this point, because there are pull ups on the input lines and trigging one gounds it, a 1/high read from the 
+        // At this point, because there are pull ups on the input lines and trigging one grounds it, a 1/high read from the 
         // the port expander means a trigger isn't active (or just isn't plugged in).
         // A low means it's been triggered (button pushed, or whatever)
         // But for routines, it makes far more sense for that to be flipped, i.e. active=true means pressed/triggered
-        _routine_output->trigger(socket, part, !state);
+        if (*_routine_output != NULL)
+            (*_routine_output)->trigger(socket, part, !state);
     }
 }
 
 void CExtInputPortExp::reset_acc_port()
 {
-    _output_mask = 0xFF;
-
-    int retval = i2c_write(__func__, _address, &_output_mask, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-        printf("CExtInputPortExp::set_acc_io_port_state i2c write error!\n");
-    }
+    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_1, true);
+    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_2, true);
+    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_3, true);
 }
 
 void CExtInputPortExp::set_acc_io_port_state(enum ExtInputPort output, bool high)
@@ -212,20 +204,7 @@ void CExtInputPortExp::set_acc_io_port_state(enum ExtInputPort output, bool high
         case ExtInputPort::ACC_IO_1:
         case ExtInputPort::ACC_IO_2:
         case ExtInputPort::ACC_IO_3:
-            if (high)
-                _output_mask |= (1 << (uint8_t)output);
-            else
-                _output_mask &= ~(1 << (uint8_t)output);
-        
+            _port_exp->set_pin_state((int)output, high);
             break;
-        
-        default:
-            return;
-    }
-    
-    int retval = i2c_write(__func__, _address, &_output_mask, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-      printf("CExtInputPortExp::set_acc_io_port_state i2c write error!\n");
     }
 }

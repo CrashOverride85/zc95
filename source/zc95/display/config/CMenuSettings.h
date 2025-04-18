@@ -2,9 +2,10 @@
 #include "../CDisplay.h"
 #include "../COptionsList.h"
 #include "../AudioInput/CAudio.h"
-#include "../CHwCheck.h"
+#include "../HwCheck/CHwCheck.h"
 #include "../CSavedSettings.h"
 #include "../CAnalogueCapture.h"
+#include "../Hal/IHal.h"
 #include "../RemoteAccess/CWifi.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/output/COutputChannel.h"
@@ -17,7 +18,6 @@ class CMenuSettings : public CMenu
     public:
         CMenuSettings(
             CDisplay* display, 
-            CGetButtonState *buttons, 
             CSavedSettings *saved_settings, 
             CRoutineOutput *routine_output, 
             CHwCheck *hwCheck, 
@@ -26,7 +26,8 @@ class CMenuSettings : public CMenu
             CWifi *wifi,
             std::vector<CRoutines::Routine> &routines,
             CBluetooth *bluetooth,
-            CRadio *radio);
+            CRadio *radio,
+            IHal* hal);
 
         ~CMenuSettings();
         void button_pressed(Button button);
@@ -61,7 +62,8 @@ class CMenuSettings : public CMenu
             HARDWARE       = 6,
             REMOTE_ACCESS  = 7,
             ABOUT          = 8,
-            BLUETOOTH      = 9
+            BLUETOOTH      = 9,
+            BATTERY        = 10
         };
 
         std::vector<setting> _settings;
@@ -70,7 +72,6 @@ class CMenuSettings : public CMenu
         struct display_area _area;
         
         CDisplay* _display;
-        CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CHwCheck *_hwCheck;
@@ -80,4 +81,5 @@ class CMenuSettings : public CMenu
         std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
         CRadio *_radio;
+        IHal* _hal;
 };

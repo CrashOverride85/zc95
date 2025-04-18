@@ -22,13 +22,13 @@
 #include "../config.h"
 
 
-CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio)
+CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CSavedSettings *saved_settings, CRoutineOutput *routine_output, CAudio *audio, IHal* hal)
 {
     printf("CMenuSettingHardware()\n");
     _display = display;
-    _buttons = buttons;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
+    _hal = hal;
 
     _exit_menu = false;
     display_area area = display->get_display_area();
@@ -131,9 +131,9 @@ void CMenuSettingHardware::save_setting(uint8_t setting_menu_index, uint8_t choi
         case setting_id::AUX_USE:
             _saved_settings->set_aux_port_use((CSavedSettings::setting_aux_port_use)choice_id.id);
             if (choice_id.id == (uint8_t)CSavedSettings::setting_aux_port_use::AUDIO)
-                _audio->audio_input_enable(true);
+                _hal->audio_input_enable(true);
             else
-                _audio->audio_input_enable(false);
+                _hal->audio_input_enable(false);
             break;
     }
 }
@@ -160,8 +160,12 @@ void CMenuSettingHardware::show()
 
     _settings.clear();
     _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUDIO  , "Audio"));
-    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::DEBUG  , "Debug output"));
-    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUX_USE, "Aux port use"));
+    _settings.push_back(CMenuSettingHardware::setting_t(setting_id::DEBUG  , "Debug destination"));
+
+    // MKI's have an aux port that is dual use: for audio or serial depending on the AUX_USE setting. 
+    // MKII's have separate serial and audio sockets so this setting is meaningless.
+    if (_hal->hardware_version() == zc95_version_t::MKI)
+        _settings.push_back(CMenuSettingHardware::setting_t(setting_id::AUX_USE, "Aux port use"));
 
     _settings_list->clear_options();
     for (std::vector<CMenuSettingHardware::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
@@ -177,6 +181,7 @@ void CMenuSettingHardware::set_options_on_multi_choice_list(uint8_t setting_id)
 {
     _setting_choices.clear();
     uint8_t current_choice_id = 0;
+    std::string port_name = _hal->hardware_version() == zc95_version_t::MKI ? "Aux" : "Serial"; // MKI has single Aux port, MKII has Serial+Audio
 
     switch (setting_id)
     {
@@ -189,7 +194,7 @@ void CMenuSettingHardware::set_options_on_multi_choice_list(uint8_t setting_id)
 
         case setting_id::DEBUG:
             _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::ACC_PORT, "Accessory port"));
-            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::AUX_PORT, "Aux port"      ));
+            _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::AUX_PORT, port_name ));
             _setting_choices.push_back(CMenuSettingHardware::setting_t((uint8_t)CSavedSettings::setting_debug::OFF     , "Off"           ));
             current_choice_id = (uint8_t)_saved_settings->get_debug_dest();
             break;

@@ -22,7 +22,7 @@
 CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CDisplay* display, 
                 CRoutines::Routine routine, 
-                CGetButtonState *buttons, 
+                IHal* hal,
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
@@ -31,7 +31,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _exit_menu = false;
     _area = display->get_display_area();
     _audio = audio;

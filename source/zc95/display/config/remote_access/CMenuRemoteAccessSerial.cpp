@@ -21,7 +21,7 @@
 
 CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CDisplay* display,
-    CGetButtonState *buttons,
+    IHal *hal,
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
     std::vector<CRoutines::Routine> &routines,
@@ -29,7 +29,7 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
 {
     printf("CMenuRemoteAccessSerial() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _disp_area = _display->get_display_area();
     _exit_menu = false;

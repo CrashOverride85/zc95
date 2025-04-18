@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2025  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,71 +16,82 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "globals.h"
-#include "CUtil.h"
+#include "../globals.h"
+#include "../CUtil.h"
 #include "hardware/gpio.h"
 #include <string.h>
 #include "CMainBoardPortExp.h"
 
 /*
- * Deal with port expander U7 on the main board, which:
- *   - V0.1 front panel only: reads input from front panel buttons A, B, C & D.
- *     For front panels >= v0.2, p0-p3 are unused, and the buttons are connected 
- *     to a separate I/O expander on the front panel itself
+ * MKI (PCB <= v0.2)
+ *   Deal with port expander U7 on the main board, which:
+ *     - V0.1 front panel only: reads input from front panel buttons A, B, C & D.
+ *       For front panels >= v0.2, p0-p3 are unused, and the buttons are connected 
+ *       to a separate I/O expander on the front panel itself
  * 
- *   - is connected to IO1/2/3 on expansion header J17 (for optional audio input board)
+ *     - is connected to IO1/2/3 on expansion header J17 (for optional audio input board)
  * 
- *   - controls the LCD backlight
+ *     - controls the LCD backlight
  * 
- *  P4 - EXPAN_I03 - Mic pre-amp
- *  P5 - EXPAN_I02 - Mic power disable
- *  P6 - EXPAN_I01 - Audio enable (relay)
- *  P7 - LCD back light
+ *    P4 - EXPAN_I03 - Mic pre-amp
+ *    P5 - EXPAN_I02 - Mic power disable
+ *    P6 - EXPAN_I01 - Audio enable (relay)
+ *    P7 - LCD back light
+ * 
+ * MKII (PCB >= v2.0)
+ *   Deal with port expander U28, which is connected to:
+ *    P0 - TP4056 charger IC - standby
+ *    P1 - TP4056 charger IC - charging
+ *    P2 - N/C
+ *    P3 - N/C
+ *    P4 - Microphone preamp enable
+ *    P5 - Microphone power enable (for electret mics)
+ *    P6 - N/C
+ *    P7 - N/C
  */
 
-CMainBoardPortExp::CMainBoardPortExp(uint8_t address)
+CMainBoardPortExp::CMainBoardPortExp(zc95_version_t hardware_version, IPortExpander* port_exp)
 {
-    _address = address;
+    _hardware_version = hardware_version;
+    _port_exp = port_exp;
+
     _old_state = 3;
     _last_read = 0;    
     _button_states_at_last_check = 0;
     memset(_last_state_change, 0, sizeof(_last_state_change));
+    clear_input();
+    process(true);
 }
 
 // Clear any pending input. has_button_been_pressed, etc., should return false after this has been called.
-// Can't do this in the constructor as i2c won't have been initialised 
 void CMainBoardPortExp::clear_input()
 {
-    int retval = i2c_read(__func__, _address, &_last_read, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-      printf("CControlsPortExp::clear_input i2c read error!\n");
-    }
+    // Do init here too
+    _port_exp->set_pin_as_output(MicPreampEnablePin);
+    _port_exp->set_pin_as_output(MicPowerDisablePin);
 
+    if (_hardware_version == zc95_version_t::MKI)
+    {
+        _port_exp->set_pin_as_output(AudioInputEnablePin);
+        _port_exp->set_pin_as_output(BackLightPin);
+    }
+    
+    _port_exp->read_port_expander(&_last_read);
     _button_states_at_last_check = _last_read;
 }
 
 void CMainBoardPortExp::interrupt()
 {
-  _interrupt = true;
+    _interrupt = true;
 }
 
 void CMainBoardPortExp::process(bool always_update)
 {
-  if (_interrupt || always_update)
-  {
-    _interrupt = false;
-    uint8_t buffer[1];
-
-    int retval = i2c_read(__func__, _address, buffer, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
+    if (_interrupt || always_update)
     {
-      printf("CControlsPortExp::process i2c read error!\n");
-      return;
+        _interrupt = false;
+        _port_exp->read_port_expander(&_last_read);
     }
-    
-    _last_read = buffer[0];
-  }
 }
 
 bool CMainBoardPortExp::button_state(enum Button button)
@@ -118,8 +129,7 @@ bool CMainBoardPortExp::has_button_state_changed(enum Button button, bool *new_s
  */
 void CMainBoardPortExp::mic_preamp_enable(bool enable)
 {
-    const int MicPreampEnablePin = 4;
-    set_pin_state(MicPreampEnablePin, enable);
+    _port_exp->set_pin_state(MicPreampEnablePin, enable);
 }
 
 /*
@@ -128,43 +138,40 @@ void CMainBoardPortExp::mic_preamp_enable(bool enable)
  */
 void CMainBoardPortExp::mic_power_enable(bool enable)
 {
-    const int MicPowerDisablePin = 5;
-    set_pin_state(MicPowerDisablePin, !enable);
+    _port_exp->set_pin_state(MicPowerDisablePin, !enable);
 }
 
-/* 
+/* Applies to MKI only where there's a single shared port for audio and serial.
+ * MK2 has separate audio and serial ports so there is no switching.
  * Enabled  = 3.5mm socket used for Audio input
  * Disabled = 3.5mm socket used for RS232 serial
  */
 void CMainBoardPortExp::audio_input_enable(bool enable)
 {
-    if (enable)
-      printf("Enabling audio input\n");
-    else
-      printf("Disabling audio input\n");
+    if (_hardware_version == zc95_version_t::MKI)
+    {
+        if (enable)
+            printf("Enabling audio input\n");
+        else
+            printf("Disabling audio input\n");
 
-    const int AudioInputEnablePin = 6;
-    set_pin_state(AudioInputEnablePin, enable);
+        _port_exp->set_pin_state(AudioInputEnablePin, enable);
+    }
 }
 
+// MKI only. On MKII backlight is connected directly to Pico
 void CMainBoardPortExp::set_lcd_backlight(bool on)
 {
-    const int BackLightPin = 7;
-    set_pin_state(BackLightPin, on);
+    if (_hardware_version == zc95_version_t::MKI)
+        _port_exp->set_pin_state(BackLightPin, on);
 }
 
-int CMainBoardPortExp::set_pin_state(uint8_t pin, bool state)
+bool CMainBoardPortExp::get_tp4056_charge_status()
 {
-    if (state)
-        _data_out |= (1 << pin);
-    else
-        _data_out &= ~(1 << pin);
+    return _port_exp->get_pin_state(ChargePin);
+}
 
-    int retval = i2c_write(__func__, _address, &_data_out, 1, false);
-    if (retval == PICO_ERROR_GENERIC || retval == PICO_ERROR_TIMEOUT)
-    {
-        printf("CControlsPortExp::set_pin_state i2c write error! (%d)\n", retval);
-    }
-
-    return retval;
+bool CMainBoardPortExp::get_tp4056_standby_status()
+{
+    return _port_exp->get_pin_state(StandbyPin);
 }

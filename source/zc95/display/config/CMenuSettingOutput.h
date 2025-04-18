@@ -4,11 +4,12 @@
 #include "../CSavedSettings.h"
 #include "../CChannel_types.h"
 #include "../CHorzBarGraph.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuSettingOutput : public CMenu
 {
     public:
-        CMenuSettingOutput(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings);
+        CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings);
         ~CMenuSettingOutput();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -55,7 +56,7 @@ class CMenuSettingOutput : public CMenu
 
         struct display_area _area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         display_area _setting_choice_area;
         CSavedSettings *_saved_settings;
         CHorzBarGraph *_bar_graph = NULL;

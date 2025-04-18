@@ -7,12 +7,12 @@
 
 #include "CMCP4651.h"
 #include "CAudio3Process.h"
-#include "../CMainBoardPortExp.h"
 #include "../CAnalogueCapture.h"
 #include "../CSavedSettings.h"
 #include "../CUtil.h"
 #include "../core1/CRoutineOutput.h"
 #include "../display/CHorzBarGraph.h"
+#include "../Hal/IHal.h"
 
 #define FFT_N       256  // Must be a power of 2. Also needs to be <= (CAPTURE_DEPTH/3), i.e. the number of audio samples available (/3 for L, R & battery monitoring)
 #define SAMPLEFREQ  (SAMPLES_PER_SECOND/6)
@@ -20,7 +20,7 @@
 class CAudio
 {
     public:
-        CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, CMainBoardPortExp *controls);
+        CAudio(CAnalogueCapture *analogueCapture, CMCP4651 *mcp4651, IHal* hal);
         ~CAudio();
         void set_audio_digipot_found(bool found);
         void init(CSavedSettings *saved_settings, CDisplay *display);
@@ -74,12 +74,11 @@ class CAudio
         uint8_t _gain_l = 0;
         uint8_t _gain_r = 0;
         CInteruptableSection _interruptable_section;
+        IHal* _hal;
 
         CAnalogueCapture *_analogueCapture; // Captures audio using ADC
         CMCP4651 *_mcp4651; // controls digital potentiometer for setting gain
-        CMainBoardPortExp *_controlsPortExp; // Port expander used to (amongst other things) enable/disable microphone power and preamp
         CDisplay *_display;
-
 };
 
 #endif
