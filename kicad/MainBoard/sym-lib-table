@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name MainBoard-rescue)(type Legacy)(uri ${KIPRJMOD}/MainBoard-rescue.lib)(options "")(descr ""))
+  (lib (name "zc95")(type "KiCad")(uri "${KIPRJMOD}/zc95.kicad_sym")(options "")(descr ""))
+  (lib (name "zclib")(type "KiCad")(uri "${KIPRJMOD}/libs/ZcLib.kicad_sym")(options "")(descr ""))
 )

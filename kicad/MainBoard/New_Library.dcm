@@ -1,8 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP UT232A
-D UT232A
-K rs232 uart transceiver
-$ENDCMP
-#
-#End Doc Library

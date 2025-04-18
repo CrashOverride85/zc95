@@ -1,0 +1,36 @@
+(footprint "BH-26650-A5BJ001" (version 20211014) (generator pcbnew)
+  (layer "F.Cu")
+  (tedit 0)
+  (descr "26650 battery holder - MYOUNG BH-26650-A5BJ001 ")
+  (attr through_hole)
+  (fp_text reference "REF**" (at -20.45 -17.3 unlocked) (layer "F.SilkS")
+    (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 654f0a8b-e75c-4749-b717-220dccf6de2e)
+  )
+  (fp_text value "BH-26650-A5BJ001" (at 1.1 -2.1 unlocked) (layer "F.Fab")
+    (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 56efab0d-7e92-41df-912d-79c758c27096)
+  )
+  (fp_text user "+" (at -42.4 -0.7 unlocked) (layer "F.SilkS")
+    (effects (font (size 4 4) (thickness 0.3)))
+    (tstamp c86b6d75-52f9-4be0-b842-e7f5344cc819)
+  )
+  (fp_rect (start -38.6 -15.25) (end 40.4 13.6) (layer "F.SilkS") (width 0.12) (fill none) (tstamp 3aea753d-9160-4388-9897-16eb6ffc9a86))
+  (pad "" thru_hole circle (at 28.705 -0.825) (size 3.5 3.5) (drill 3) (layers *.Cu *.Mask) (tstamp 5d4b7b10-6f34-419d-8474-d2a9463b8b86))
+  (pad "" thru_hole circle (at -26.905 -0.825) (size 3.5 3.5) (drill 3) (layers *.Cu *.Mask) (tstamp 7ad70c5b-0a15-4e55-a5e6-6906829c6e4c))
+  (pad "1" thru_hole circle (at -36.255 -0.825) (size 3 3) (drill oval 1 2) (layers *.Cu *.Mask) (tstamp c6aa770e-86d3-4108-b1f1-6875b0f26af3))
+  (pad "2" thru_hole circle (at 38.055 -0.825) (size 3 3) (drill oval 1 2) (layers *.Cu *.Mask) (tstamp 9f387f14-cb69-48fe-b076-e989462d6f1a))
+  (group "" (id 0501b9ad-c07d-46ac-aa52-6e44dba63871)
+    (members
+      9f387f14-cb69-48fe-b076-e989462d6f1a
+      c6aa770e-86d3-4108-b1f1-6875b0f26af3
+    )
+  )
+  (group "" (id 320379e6-f464-419f-84fe-454947ae26f9)
+    (members
+      56efab0d-7e92-41df-912d-79c758c27096
+      5d4b7b10-6f34-419d-8474-d2a9463b8b86
+      7ad70c5b-0a15-4e55-a5e6-6906829c6e4c
+    )
+  )
+)
