@@ -3,7 +3,7 @@
 ## Capability
 Lua scripts can be written / uploaded (see [Remote Access](./RemoteAccess.md) for how to upload) to add new patterns to the ZC95. These scripts are able to switch each channel on/off, set the frequency and pulse width, and set the power level (scaled to what the front panel is set to - i.e. a Lua script can't set the output power to higher than set on the front panel).
 They can also receive notification of settings being changed via the menu, and inputs from the external trigger inputs along with the top left soft button being pressed.
-There is also limited support for audio - so far only reacting to volume, and no audio wave display when running over Wifi (and no audio support at all over serial due to using the same aux socket)
+There is also limited support for audio - so far only reacting to volume, and no audio wave display when running over Wifi (and no audio support at all over serial).
 
 
 ## Example scripts

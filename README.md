@@ -3,36 +3,54 @@
 
 **Note**: This repo has submodules, so if cloning, it's best to use the recursive option.
 
+## ZC95 MkII
+
+This branch holds the ZC95 MkII. As I write this, I'm the only person to have built it. It's smaller, and condenses 3 of the PCBs into 1 to make the build a bit cheaper and much quicker than the Mk1.
+
+These are the main changes from the MkI:
+ - Much smaller - the mainboard is less than half the size
+ - Output, Audio and main board are now combined
+ - USB-C charger input instead of 15v barrel jack
+ - 26650 cell instead of 12v SLA battery (similar capacity)
+ - "Aux" socket swapped for separate "Serial" and "Audio" sockets
+ - Output sockets changed from 2.5mm to 3.5mm
+ - Serial selectable (via jumpers) between 3.3v TTL and RS232
+ - Display no longer briefly flashes white on power on
+ - Removed: 12v output on accessory port
+
+Hopefully at some point this branch will become the main branch, and I'll remove this section.
+
 ## Introduction
-The ZC95 is a DIY four channel EStim box with similar form factor & output design to the MK312-BT (which in turn is a clone of the ET-312B).
-Unlike the 312B, it uses 2x Raspberry Pico microcontrollers instead of an ATMEGA16, and the firmware is open source and mostly written in C++.
+The ZC95 is a DIY four channel EStim box with similar output design and feel to the MK312-BT (which in turn is a clone of the ET-312B).
 
-The box can be controlled remotely via a Python GUI, and run Lua scripts uploaded to it, either using RS232 serial or WiFi if a Pico-W is used for the main MCU.
-
-Compared to an MK312-BT, it has 2 extra channels, two trigger inputs (think predicament bondage), and an accessory port. It has [bluetooth support](docs/Bluetooth.md) and many of the patterns of the 312. Audio input is possible with an extra/optional board.
-
-Additionally, if a 433MHz transmitter is fitted it can be used to control certain types of shock collars from some patterns.
-
-The main board is built using through hole parts, with the output and front panel PCBs being mostly SMD (requiring hand-soldering of a few through hole parts) - but using parts available through the JLCPCB SMT assembly service.
-
-The ZC95 now has a channel on [Joanne's E-Stim Community discord](https://discord.gg/HbGKY2t), see Estim control boxes -> zc95. Please drop by and say hello 🙂
-
-### Assembled ZC95
 ![zc95]
 
+The box is primarily intended for standalone use (i.e. not used whilst connected to phone/laptop/tablet), but can be controlled remotely via a Python GUI, and run Lua scripts that have been uploaded to it over serial or WiFi.
 
-## Overview
-The ZC95 consists of 4-5 PCBs:
+Main features:
+- 4 isolated channels 
+- [Audio input](./docs/AudioInput-Operation.md) - line level for estim tracks or microphone input (selectable via menu)
+- [Many inbuilt patterns](./docs/Patterns.md) - around 14, not counting audio and more esoteric stuff
+- Custom patterns can be written in [Lua](./docs/LuaNotes.md)
+- Two stereo 3.5mm trigger input sockets, allowing for up to 4 external inputs (e.g. remote buttons, foot pedals, etc.)
+- Support for many [BLE remote/camera buttons](./docs//BluetoothPeripherals.md), e.g. to trigger output when the button is pressed
+- [Remote control](./docs/RemoteAccess.md) over WiFi or serial using a python app
+- Allows limited control of a certain type of 433MHz shock collar
+- Somewhat experimental [BLE steaming](./docs/BleStreaming.md) - allows for per-pulse level control from laptop or other device, with an example in python
+- An accessory port with 3 output lines that can be controlled from Lua scripts, to allow interacting with other devices
 
-* Front panel - no traces, just text / mounting holes
-* Front panel controls - 4x POTs and associated ADC, 1x rotary encoder and 6 serial RGB LEDs. Designed for production using the SMT assembly service at JLCPCB, with a handful of extra through hole parts also requiring hand soldering.
-* Main board - power supply / charging, MCU for display / pattern generation, button input etc
-* Output board ("ZC624 Output module") - 4 channel output generation controlled via SPI from the main board. Designed for production using the SMT assembly service at JLCPCB, with a handful of extra through hole parts also requiring hand soldering.
-* (Optional) audio input board - allows the 3.5mm "Aux" port on the front panel to be used for audio input
-
-The primary reason for having separate PCBs for the main and output board is for future flexibility - most of the time & expense is the firmware, case, display, controls, etc., so being able to test new output designs whilst being able to keep all of that should be an advantage. I'm well aware the output design currently used is known to have flaws, mostly stemming from its lack of feedback (which applies equally to the 312b it was taken from). A challenge for another day.
-
-The zc624 output module can also be used standalone and [controlled from an Arduino](./misc/Arduino/libraries/Zc624Output/README.md) (tested with an ESP32), but this is not ideal for a few reasons, and not the focus of this project.
+Technical details:
+- Has been designed with the JLC PCB assembly service in mind, and is mostly an SMD design with a few though hole parts
+- Uses 2x Raspberry Picos
+- Firmware is open source and mostly C++, and makes use of many [3rd party libraries](./docs/Credits.md)
+- 22650 cell for power
+- KiCad project files included in repo, not just gerbers
+- Audio input includes microphone preamp that can be toggled via menu, along with variable gain
+- Consists of 3 PCBs:
+   * Front panel - no traces, just text / mounting holes
+   * Front panel controls - 4x POTs and associated ADC, 1x rotary encoder and 6 serial RGB LEDs. Designed for production using the SMT assembly service at JLCPCB, with a handful of extra through hole parts also requiring hand soldering.
+   * Main board - power supply / charging, pattern generation, button input, output signal generation, audio input
+- Case is either an off the shelf Hammond 1598DBK (larger), or a 3D printed case (step/stl files provided)
 
 ## [Build guide](docs/Build.md)
 
@@ -52,36 +70,54 @@ The zc624 output module can also be used standalone and [controlled from an Ardu
 
 ## [Credits](docs/Credits.md)
 
+# Miscellaneous  
+## History
+The ZC95 is very heavily inspired by the MK312-BT, which is a reversed engineered version of the ET-312. The original repo for that project is long gone, but there is a fork [here](https://github.com/CrashOverride85/mk312-bt).
+
+The ZC95 mk1 was made public in late 2021, and had a similar form factor to the MK312. That version has been built successfully by many.
+
+The mk1 zc95 had the output stage on a separate PCB. It's no longer part of the zc95 build, but could still be built and used to add 4 channel estim output to an Arduino (with notes for & tested with an ESP32).
+The PCB / BoM / build notes for it are [here](./misc/OutputModule/).
+
+## Support, feedback, etc.
+The ZC95 project is provided 'as is' without warranty of any kind, either express or implied. The project is provided for your use at your own risk.
+
+Having said that, if you run into difficulties or have questions, the two best places to try are:
+- Github [discussions](https://github.com/CrashOverride85/zc95/discussions) or [issues](https://github.com/CrashOverride85/zc95/issues)
+- The ZC95 channel on [Joanne's E-Stim Community discord](https://discord.gg/HbGKY2t), see Estim control boxes -> zc95
+  - I'd highly recommend joining this discord server anyway, the zc95 chanel is a _tiny_ part of what's there
+
+
+## Other projects
+Other related projects that are worth checking out:
+
+- [NeoDK](https://github.com/Onwrikbaar/NeoDK) - Advanced electrostimulation machine development kit. In active development, and also has a chanel on [Joanne's E-Stim Community discord](https://discord.gg/HbGKY2t)
+
+- MK-312BT - Project the ZC95 was inspired by, and shares lot in common with (original repo gone, but there are many [forks](https://github.com/CrashOverride85/mk312-bt))
+
+- [WT-312](https://github.com/WendyTeslaburger/WT-312) - 312 style driver, intended for integration into other projects
+
+- [FOC-Stim](https://github.com/diglet48/FOC-Stim) - In development, checkout the foc-stim channel on [Joanne's E-Stim Community discord](https://discord.gg/HbGKY2t) for the latest
+
+
 # TODO
 ## Firmware
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
    - Save pattern settings on exit?
+   - Disable when plugged in / switch to charging screen (maybe a setting in the menu to disable)
+   - Allow Lua scripts to interact with shock collars
+   - Accessory port doesn't do much - just 3 output lines. There's a serial interface there too, which could be exposed in the Lua environment
 
 ## Hardware
-   - Maybe a better power switch? although still being able to get all the parts for the main board from LCSC is good
-   - Low battery shutoff
-
-## Long term road map
-May do some of this, all of this, or none of this!
-   - Combine main, output and audio boards into one, and probably switch to almost all SMD so it can be assembled by JLCPCB
-   - Probably remove "Aux" socket and swap for separate "Serial" and "Audio" sockets
-   - Use a lithium battery pack instead of a 12v SLA
-   - Use a USB charger
-   - Maybe a smaller, 3D printed case. Probably keeping the same width/height though
+   - More suitable charge controller instead of TP4056
+   - Improved 3D printed case?
 
 ## Known issues
-   - Can hang on entering WiFi setup (AP) mode due to bad choice of MOSFET Q1 (see [#25][gh25] & [#46][gh46]). 
-     
-     Fix:
-     * Fit a Schottky diode (e.g. 1N5819) in place of Q1 - see build notes
+   - Excessive capacitance on USB power input. Doesn't seem to cause a problem with USB chargers, and the USB socket is for charging only.
+   - When plugged in, all power is drawn from the USB input. Things can go wrong if it tries to draw more power than the charger can supply, which is especially likely if using the box whilst it's also charging,  A future firmware version might make the box change-only when plugged in. 
+   - Both issues could likely be addressed by swapping to more suitable charge controller for this application (e.g. BQ24075)
+   - A bit slow to charge; it currently charges at ~780mA, which for a 5300mAh cell means a charge time from 0% to 100% of around 7 hours
 
-     Workarounds:
-     * Power the Pico over USB whilst entering AP mode (power box on first, then connect USB)
-     * Directly connect VSYS on the Pico to 5v. Do not connect the box to USB whilst switched on if doing this.
-   
-   - Battery gauge is pretty hopeless
-   - Depending on the pattern, the LEDs aren't very useful - either Red or Green, with no dimming depending on power
-
-[zc95]: docs/images/zc95.jpg "Assembled ZC95"
+[zc95]: docs/images/powered_up.jpg "Assembled ZC95"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
 [gh46]: https://github.com/CrashOverride85/zc95/issues/46

@@ -1,106 +1,131 @@
 # Hardware build notes 
 
-There is now an optional audio [input board](./AudioInput-Build.md) too.
-
 ## Prerequisites 
 These notes assume a reasonable amount of experience assembling electronic kits. I suggest having a read though these notes before ordering anything.
 
+Not covered, but assumes you have a crimp tool for molex kk style connectors, something to make up IDC cables (I just use a mini-vice) and the usual tools.
+
 ## PCB + Parts ordering
+
+The ZC95 is made up of 3 PCBs:
+1. Main board
+2. Front panel controls - board with potentiometers, LEDs etc on it
+3. Front panel - no components, previous board is mounted to the back of it
+
+1 + 2 have CPL & BOM files as well as gerbers, and are aimed at JLCPCB SMT assembly service. 
+
 ### PCBs
-For these 2 boards, order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.) except where noted:
-* [Front panel](../pcb/FrontPanel.zip). Suggest ordering in black
-* [Main board](../pcb/MainBoard.zip)
 
-#### Output board
-The output board ("ZC624 Output module") has been designed with the JLCPCB SMT assembly service in mind, although the footprints are the hand-solder versions where applicable, and some (through hole) parts still need hand assembly.
-Order the board using [these gerbers](../pcb/OutputModule/OutputBoard-gerbers.zip) and the default options as per the other boards.
+#### 1. Main board
+Order from JLCPCB using the linked gerbers and default settings (FR-4, 1.6mm thick, 1oz, etc.):
 
-This time, select the "SMT Assembly" option at the bottom - pick "Assemble top side" and Tooling holes "Added by JLCPCB". 
+* [Main board](../pcb/MainBoard/GERBER-main.zip)
+
+Select the "SMT Assembly" option at the bottom - pick "Assemble top side" and Tooling holes "Added by JLCPCB". 
 On the next page, add the BOM and CPL files:
-* [output_bom_jlc.csv](../pcb/OutputModule/output_bom_jlc.csv)
-* [output_cpl_jlc.csv](../pcb/OutputModule/output_cpl_jlc.csv)
 
-The next page should show a list of all parts found / matched. The BoM/CPL file also includes some through hole parts - I'd suggest un-ticking these and soldering them yourself as it's cheaper.
+* [BOM-main.csv](../pcb/MainBoard/BOM-main.csv)
+* [CPL-main.csv](../pcb/MainBoard/CPL-main.csv)
 
-#### Front panel controls
-v0.2 of this board is also designed with the JLCPCB assembly service in mind, with a few though hole parts also requiring hand assembly
-
-Order the board using [these gerbers](../pcb/FrontPanelControls-v0.2/GERBER-PanelControls.zip) and the default options as per the other boards.
+#### 2. Front panel controls
+Order the board using [these gerbers](../pcb/FrontPanelControls/GERBER-PanelControls.zip) and the default options as per the main board.
 
 Select the "SMT Assembly" option again at the bottom - pick "Assemble **BOTTOM** side" (this is _not_ the default) and Tooling holes "Added by JLCPCB". 
 On the next page, add the BOM and CPL files:
-* [BOM-PanelControls.csv](../pcb/FrontPanelControls-v0.2/BOM-PanelControls.csv)
-* [CPL-PanelControls.csv](../pcb/FrontPanelControls-v0.2/CPL-PanelControls.csv)
+* [BOM-PanelControls.csv](../pcb/FrontPanelControls/BOM-PanelControls.csv)
+* [CPL-PanelControls.csv](../pcb/FrontPanelControls/CPL-PanelControls.csv)
 
-The next page should show a list of all parts found / matched. The BoM/CPL file also includes the through hole part J5 - I'd suggest un-ticking it and soldering it yourself as it's cheaper.
-
-### Transformers
-The ZC624 output board was originally designed and tested with 42TL004 transformers in mind. However, v0.2 is designed so that the larger/more powerful 42TU200 transformers _should_ also fit. Unfortunately, at the time of writing, these are out of stock, so is completely untested. I recommend sticking with the 42TL004's listed in the BoM. 
+#### 3. Front panel
+Order the board using [these gerbers](../pcb/GERBER-FrontPanel.zip). As the board forms the front of the case, I would suggest **ordering in black**; or at least, think about what colour you want the front panel to be and don't just go with the default of green unless that's what you really want. Keep the other options as default.
 
 ### PCB Parts
-All parts required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:
+All remaining parts not covered by the JLC PCB assembly service required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:
 
 [BoM (openoffice format)](BoM.fods)
 
-As with the MK312-BT, the PFETs (IRF9Z24NPBF) in particular should not be substituted with anything similar, the exact part should be used.
+#### Part substitutions
+A few parts in particular are likely to cause problems if substituted:
+
+* Transformers. The zc95 is designed around the 42TL004, and that's what all my testing (Mk1 & Mk2) has been with. The larger 42TU200's would _likely_ also work, but I'm not sure if they'll physically fit - there is space / mounting holes on the main PCB for them, but I suspect there wouldn't be enough clearance between them and the front panel. Expect problems using other transformers unless they are very close match.
+
+* IRF9Z24NPBF P-chanel MOSFETs - if out of stock with JLC, I strongly advise either obtaining these elsewhere and fitting yourself, or waiting. The design is _very_ sensitive to any changes to this particular part. 
+
+* The WS2812D LEDs - watch out, not all have the same pinout
+
+### Case
+There are two options for a case:
+1. Hammond 1598DBK - same case as Mk1
+2. 3D printed case - works, but somewhat of a work in progress
+
+The Hammond case is just over twice as deep as the 3D printed case, but if size isn't a concern, it's a good option as it's strong/well made, readily available and quite affordable.
+
+#### 3D printed case
+The case is based on a design for the Mk1 case by [@liselotte111](https://github.com/CrashOverride85/zc95/discussions/84), that I've modified for the Mk2.
+I've not got a 3D printer, and editing the case to fit the Mk2 is my first attempt at doing something like that, so beware! 
+
+There are three parts:
+
+1. [Top section](../misc/Mk2Case/top.step) STEP
+2. [Bottom section](../misc/Mk2Case/bottom.step) STEP
+3. [End plate](../misc/Mk2Case/endplate.stl) STL
+
+I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black option. No idea if that's the most suitable, but the result seemed ok.
 
 ### Misc parts
-[The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (case, display, etc.).
+[The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (battery, display, etc.).
+
+* Battery: Use a **protected** 26650 cell. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway).
+
+* Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
+
+* Buttons: Consider what colour you want the buttons. The BoM lists LP1OA1A**B** for blue (as I used for the Mk1), but for this Mk2 I've gone with LP1OA1A**R** for red. Still not sure which I prefer ¯\_(ツ)_/¯
 
 ### LED riser
 _Optional_: Order or 3d print LED riser: [STL file](../misc/led-riser/led-riser.stl).
 
 ## Assembly
 
+### Case
+Applies to the 3D printed case; there's nothing extra to do for the Hammond one.
+
+If you're familiar with 3D printing stuff, you probably have a better idea than me here. But what I've done:
+
+- The bottom part of the case has two rows of 4 PCB standoffs - the back row is pretty much cut off and (intentionally) mostly missing, ignore them. Of the front row, only the left and right most holes are used and line up with the PCB.
+
+- Use M4 heat set inserts on the left and right most PCB stand offs at the front, leave the rest unused / empty
+
+- Use M3 heatset inserts in the two screw holes used to hold the case together. Not sure how you're supposed to use them, but after installing them I ended up using (I think) a 2.5mm drill though the holes and down ~1cm, then running an M3 tap though the insert and into the hole so the length of screw used didn't matter as much.
+
+- The back plate doesn't quite fit the way around I think it's supposed to fit due to the PCB being right up against the edge of the case - you need to have the side with cross pattern facing outwards
+
 ### Main board
 Photo of board as it arrived from JLCPCB:
 
 ![main board]
 
-* For Q1 (BS250), fit a 1N5819 diode instead, as shown:
+* Solder four 20-pin pin sockets for the two Picos
 
-  ![q1]
+* Configure jumpers. There is a serial interface on the "Serial" 3.5mm socket and on the 9pin accessory port - both can be independently changed between TTL & RS232 signalling. This is much easier to do before the front panel is attached and it's in a case!
+My suggestion would be to have the 3.5mm socket as 3.3v TTL level as compatible serial cables are cheap on aliexpress. If you have one, a 2B cable should also work if set to TTL.
 
-  (See [#25][gh25] & [#46][gh46] if interested in why)
+3.5mm set for TTL and accessory set for RS232:
 
-* Be sure not to mix up U3 (LM2941T, top left) and U6 (LM2576T-5, top middle), these have the same footprint and quite similar names
-* Fit the IC sockets (if ordered) instead of directly soldering the ICs to the board
-* J8 should have jumpers between pins 1+2, 3+4, 7+8, 9+10, like so:
+![main board_jumpers]
 
-  ![jumpers]
+* Fit the 4 transformers. These have the "P" facing towards the front of the case. Note that the transformers are used "backwards" - the side labelled primary goes to outputs.
 
-  Without these the serial port on the front won't work (but it won't affect anything else).
-* Solder short (~12cm or so) wires on to J13, and fit spade connectors on the other end for the battery
-* R14 & D4 (top middle) don't need to be populated. It's for a power LED that has no place on the front panel.
-* J20 (I2C header, bottom left) is for future expansion and doesn't need to be populated
-* J17 (just below battery, to the right) is for the optional audio input board; if building that, fit a 2.54mm pin header, otherwise leave unpopulated
-* J16 "FP-BUTTONS" (below the battery, towards the centre) is no longer used (was used for v0.1 of the front panel), and can be left unpopulated
-* J19 IDC connector should be orientated with the cut out towards the back of the board, like so:
+* Thermistor: Attach two short wires to TH1 (under the left most Pico), and connect to a 10k thermistor. Later this will taped to the battery. For now, thread it through one of the slots in the PCB that lines up with a slot in the battery holder. I'd suggest using heat-shrink to insulate the legs of it.
 
-  ![main board idc]
+![thermistor1]
+
+Given that it's a large protected cell being charged with quite a low current, the thermistor probably isn't really essential. If you skip it, use a 10k resistor across TH1 instead (with nothing, the battery won't charge).
 
 
-Then (optionally) plug a 433MHz transmitter into J11
+* Optional: If you want to use a 433 MHz transmitter with it, solder a 3-pin pin socket onto J9 (top, to the right of the battery holder)
 
-Populated board:
+Populated board, minus Picos:
 
 ![main board populated]
-
-### Output board ("ZC624 Output module")
-Photo of board as it arrived from JLCPCB:
-
-![zc624 smt only]
-
-Notes
-* The pin headers J1, J2 & J3 go on the bottom of the board, J4 ("Serial") on the top. I found it easier to plug the board into the main board, then solder J1, J2 & J3 to be sure they were straight / lined up
-* The 4 transformers have the "P" facing towards the bottom. Note that the transformers are used "backwards" - the side labelled primary goes to outputs.
-* PFETs Q2, Q5, Q8 & Q11 should have the metal back facing towards the left of the board (silkscreen is correct)
-* Solder on both the 1x20 pin sockets for the Pico. The 3 pin header on the right should be unpopulated.
-
-Fully assembled board:
-
-![zc624 populated]
-
 
 ### Front panel controls 
 Photo of board as it arrived from JLCPCB:
@@ -113,7 +138,9 @@ Photo of board as it arrived from JLCPCB:
 
   ![front panel LED riser]:
 
-  (Thanks to @electro991 for this, see [#102][gh102])
+  (Photo shows front panel attached to a mk1)
+
+  Thanks to @electro991 for this, see [#102][gh102].
 
 * Otherwise, getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
 * Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen
@@ -149,7 +176,6 @@ The assembled front panel should look something like this:
 
 ![front panel back]
 
-![front panel assembled]
 
 ### Miscellaneous
 * Create a 10pin F-F cable for the display:
@@ -166,43 +192,55 @@ The assembled front panel should look something like this:
 
 ![front panel attached to main]
 
-* Slot the boards into the case, and screw in place: Screw Length (Excluding Head): 1/4" (6.5mm), Screw Size: No.6 (3.5mm)
 
-* Stick the battery down. Suggest using 3M double sided tape (MNT-FT24MM-16FT)
+* Slot the boards into the case, and screw in place. There are two screw holes, one of which is hiding under the left most Pico
+  - Hammond case: use screw Length (Excluding Head): 1/4" (6.5mm), Screw Size: No.6 (3.5mm)
+  - 3D printed case: I used 6mm M4 screws
 
 * Connect front panel to main board using IDC cable
 
 * Connect LCD to main board using 10pin cable
 
-* Copy main board firmware onto first Pico, or a Pico W if wanting remote access (see section below), then plug into main board (USB socket pointing towards the left / nearest case edge)
+* Copy main board firmware onto PicoW on the left (see section below), then plug into main board (USB socket pointing towards the right / towards case centre). This can be a bit fiddly
 
-* Copy ZC624 firmware onto second Pico (see section below), then plug into ZC624 board (USB socket pointing towards the left)
+* Copy ZC624 firmware onto second Pico (see section below), then plug into the right most Pico socket, USB socket pointing towards the right / edge of the case
 
-* Plug the ZC624 into the main board. Be careful to line it up correctly as it is possible to plug it in misaligned which would be bad
+* Use kapton tape to secure the thermistor to the battery, then insert battery. This is a tight fit! I've found it helps to use pliers to flatten one of the contacts on the battery holder a bit first. The zc95 also might not power up on first switch on even if the battery has sufficient charge (due to battery protection). If this happens, briefly connect a charger then power it up. It should be fine after that until/unless the battery is removed/reinstalled.
 
-* Connect battery
+![battery thermistor]
 
-Assembled ZC95 should look like:
 
-![zc95 assembled]
+Assembled ZC95 should look something like this (3d printed & Hammond 1598DBK):
+
+![zc95 assembled1] ![zc95 assembled2]
+
+### The two Picos
+I feel like some explanation here is required. The ZC95 Mk1 had the output stage on a separate daughter board ("ZC624") with its own Pico, in addition to a Pico on the main board. This Mk2 is very much an evolution of that design, so retains the two Picos, except everything has now been combined onto one PCB to make it smaller, as well as making assembly easier/cheaper.
+
+Quick summary of what they do:
+* Pico on the left, below the battery - UI, pattern generation / Lua interpreter, I/O (serial, accessory, triggers), WiFi, BLE, audio
+* Pico in the top right - signal generation
+
+Any references in the documentation/code/etc to either the "ZC624" or "Output module" is about the pico/circuitry now on the right hand side of the mainboard PCB.
 
 ### Loading firmware
-Download firmware from [Releases](https://github.com/CrashOverride85/zc95/releases).
+Download firmware from [Releases](https://github.com/CrashOverride85/zc95/releases). Use the latest version, but certainly something >= v2.0.
 
 To load firmware onto a Pico:
 * Hold down the BOOTSEL button
 * Connect to PC via USB
 * The Pico should appear as a USB mass storage device. Drag the appropriate uf2 firmware binary onto the drive:
-  - zc95.uf2 - Main board firmware
-  - OutputZc.uf2 - ZC624 firmware
+  - zc95.uf2 - Pico on the left, below the battery (1)
+  - OutputZc.uf2 - Pico at the top right (2)
 
-And don't mix the two up!
-
+{TODO}
 
 ### Power up
 On power up, the LEDs should briefly turn purple (~2s), then turn green as the screen switches on and shows:
 
 ![zc95 powered up]
+
+To vastly improve the accuracy of the battery gauge, I recommend leaving the box on until the battery is flat and it shuts off, then fully charging. 
 
 # Troubleshooting
 ## ZC95 main board
@@ -211,7 +249,7 @@ If any of the I2C devices aren't detected, you should see an error similar to th
 ![hw check fail]
 
 Here, it can't find the two ICs on the front panel (in this case, the IDC cable was unplugged).
-There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel at RS232 levels.
+There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel. Either 3v3 TTL or RS232, depending on jumper settings.
 
 ### Clearing saved settings / EEPROM
 So far I've never found it necessary, but the EEPROM and user settings in flash can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking what should be reset:
@@ -222,10 +260,10 @@ Once reset, there should be a confirmation message, followed by flashing red lig
 
 Before showing the confirmation screen, the box will have confirmed the EEPROM IC can be detected, but no saved settings will have been used. 
 
-## ZC624 output module
-If the ZC624 passes its self test, the OK LED should light (which should be ~1-2 seconds after power on). If it fails, this light should flash.
+## Output section
+If the output section passes its self test, the OK LED, which is just above the left corner of the right most pico, should light (which should be ~1-2 seconds after power on). If it fails, this light should flash.
 
-There is also debugging output from the ZC624 board on the serial header. Note that is at 3v3 level, and RS232 levels would damage it.
+There is also debugging output from the output pico on a 2 pin serial header next to it. Note that is at 3v3 level, and RS232 levels would damage it.
 
 Connect a 3.3v TTL serial to USB adapter to the pins labelled Tx and GND on the header, connect at 115200 baud, and power it on. 
 After the output of an I2C scan and a few other bits, it should output something similar to this on success:
@@ -250,7 +288,7 @@ HALT.
 ### Self calibration notes
 The purpose of the self calibration is to figure out exactly when the P-channel MOSFET for each channel starts to switch on, as this can vary slightly due to variances between parts, etc. It also serves as a basic self-test.
 
-This probably needs a brief explanation about how the output board is working. The two n-channel MOSFETs per chanel are used to generate +ve/-ve pulses (in the range of 10-255 microseconds). In normal operation, only one is switched on at once, but during calibration both are switched on so that there is little/no estim output.
+This probably needs a brief explanation about how the output stage is working. The two n-channel MOSFETs per chanel are used to generate +ve/-ve pulses (in the range of 10-255 microseconds). In normal operation, only one is switched on at once, but during calibration both are switched on so that there is little/no estim output.
 
 The P-channel MOSFET is connected to the DAC via an op-amp, and is used to set the output power. With the maximum DAC value (4096) the MOSFET will (should) be fully OFF, and at 0 fully ON (i.e. maximum power).
 
@@ -284,16 +322,19 @@ Possible causes (not exhaustive!) for calibration to fail:
 * Bad/incorrect PFET - e.g. not an IRF9Z24**NPBF**
 * Too low value sense resistor (if DAC value is 2400), or too high (if DAC value is 3400)
 * Incorrect resistor value in the opamp circuit - likely if the final voltage is wildly off. Also suspect a bad/cracked resistor or poor solder joint if the final voltage keeps changing between power cycles 
+* If either chanel 1+2 or 3+4 fail with the same figures, take a close look at the corresponding ADC input pin on the Pico (pin 31/ADC0 for chan 1+2 or 32/ADC1 for chan 3+4) for bad solder joints.
 
 
-**Note**: If calibration fails, the 9v supply is switched off, so this not being present after a calibration failure is not a fault.
+**Note**: If calibration/self test fails, the 9v supply is switched off, so this not being present after a calibration failure is likely a symptom not a cause.
 
-[jumpers]: images/jumpers.jpg "J8 with jumpers fitted"
 [main board]: images/main_board.jpg "Unpopulated main board"
+[main board_jumpers]: images/main_board_jumpers.jpg "Main board with jumpers set"
+
+[thermistor1]: images/thermistor1.jpg "Thermistor attached"
+
+
 [main board populated]: images/main_board_populated.jpg "Populated main board"
-[main board idc]: images/main_board_idc.jpg "IDC socket on main board"
-[zc624 smt only]: images/zc624.jpg "ZC624 as received from JLCPCB"
-[zc624 populated]: images/zc624_populated.jpg "Fully populated ZC624"
+
 [front panel controls-bottom]: images/fpc_bottom.jpg "Unpopulated front panel controls board - bottom"
 [front panel controls-top]: images/fpc_top.jpg "Unpopulated front panel controls board - top"
 [front panel controls-top-populated]: images/fpc_top_populated.jpg "Populated front panel controls board - top"
@@ -303,11 +344,12 @@ Possible causes (not exhaustive!) for calibration to fail:
 [button connections]: images/button_connection.png "Front panel buttons to fpc board connection"
 [front panel buttons]: images/fp-abcd.jpg "Front panel with buttons labelled"
 [front panel back]: images/fp_back.jpg "Back of front panel with LCD and buttons attached"
-[front panel assembled]: images/fp_assembled.jpg "Front panel with LCD, buttons and controls attached"
 [10pin F-F cable]: images/10pinFF.jpg "10 pin F-F cable"
 [8w IDC]: images/8w_idc.jpg "2x4 IDC cable"
 [front panel attached to main]: images/fp_attached_to_main.jpg "Front panel attached to main board"
-[zc95 assembled]: images/assembled.jpg "Fully assembled ZC95, minus cover"
+[battery thermistor]: images/battery_thermistor.jpg "Thermistor taped to battery"
+[zc95 assembled1]: images/assembled_3dprinted.jpg "Fully assembled ZC95 in 3d printed case, minus cover"
+[zc95 assembled2]: images/assembled_hammond.jpg "Fully assembled ZC95 in 1598DBK case, minus cover"
 [zc95 powered up]: images/powered_up.jpg "Fully assembled ZC95 powered up"
 [hw check fail]: images/hw_check_fail.jpg "Power up error"
 [q1]: images/build_Q1.jpg "Use diode for Q1"

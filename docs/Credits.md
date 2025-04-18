@@ -216,4 +216,17 @@ https://github.com/higaski/Lua-5.1.5-TR
 ### Use:
 Running uploaded Lua scripts
 
+----
 
+### Library/code: 
+BQ27441 LiPo Fuel Gauge
+    
+### License:
+    * Apache-2.0 license 
+    * Copyright (c) 2020 Vitaliy Nimych (Cvetaev) @ cvetaevvitaliy@gmail.com
+
+### URL:
+https://github.com/cvetaevvitaliy/bq27441
+ 
+### Use:
+Battery monitoring
