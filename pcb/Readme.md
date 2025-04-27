@@ -33,6 +33,10 @@ First public version
 First public version
 
 ## MainBoard
+
+### v2.1
+Fixed solder mask minimum width setting - restore to KiCad default of 0
+
 ### v2.0
 Mk2. Many changes:
  - Now includes functionality that was previously on separate output & audio boards

@@ -50,7 +50,6 @@
       (dielectric_constraints no)
     )
     (pad_to_mask_clearance 0.051)
-    (solder_mask_min_width 0.25)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
       (disableapertmacros false)
@@ -19174,7 +19173,7 @@
   (gr_text "P" (at 161.32 98.63) (layer "F.SilkS") (tstamp 44df15fe-4872-430e-ba13-ab39e86d84b8)
     (effects (font (size 2 2) (thickness 0.3)))
   )
-  (gr_text "ZC95 Mark II v2.0 - CrashOverride85" (at 189.56 59.36) (layer "F.SilkS") (tstamp 4a533491-3681-411b-ac6a-389a54004191)
+  (gr_text "ZC95 Mark II v2.1 - CrashOverride85" (at 189.56 59.36) (layer "F.SilkS") (tstamp 4a533491-3681-411b-ac6a-389a54004191)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
   (gr_text "OK" (at 158.7 59.3) (layer "F.SilkS") (tstamp 4f6b8c65-fb4d-4579-868f-f26da8f0edf8)
