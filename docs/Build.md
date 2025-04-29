@@ -36,7 +36,11 @@ On the next page, add the BOM and CPL files:
 * [CPL-PanelControls.csv](../pcb/FrontPanelControls/CPL-PanelControls.csv)
 
 #### 3. Front panel
-Order the board using [these gerbers](../pcb/GERBER-FrontPanel.zip). As the board forms the front of the case, I would suggest **ordering in black**; or at least, think about what colour you want the front panel to be and don't just go with the default of green unless that's what you really want. Keep the other options as default.
+Order the board using [these gerbers](../pcb/GERBER-FrontPanel.zip). Not essential, but as the board forms the front of the case, I would suggest:
+* **Order in black**; or at least, think about what colour you want the front panel to be and don't just go with the default of green unless that's what you really want
+* For "Mark on PCB" in the "High-spec Options" section, pick "Order Number (Specify Position)". This is makes sure the order number is put on the back of the PCB (the placeholder is already on the back of the board for this)
+
+Keep the other options as default.
 
 ### PCB Parts
 All remaining parts not covered by the JLC PCB assembly service required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:

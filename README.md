@@ -77,7 +77,7 @@ The ZC95 is very heavily inspired by the MK312-BT, which is a reversed engineere
 The ZC95 mk1 was made public in late 2021, and had a similar form factor to the MK312. That version has been built successfully by many.
 
 The mk1 zc95 had the output stage on a separate PCB. It's no longer part of the zc95 build, but could still be built and used to add 4 channel estim output to an Arduino (with notes for & tested with an ESP32).
-The PCB / BoM / build notes for it are [here](./misc/OutputModule/).
+The PCB / BoM / build notes for it are [here](./misc/OutputBoard/README.md).
 
 ## Support, feedback, etc.
 The ZC95 project is provided 'as is' without warranty of any kind, either express or implied. The project is provided for your use at your own risk.
@@ -114,9 +114,10 @@ Other related projects that are worth checking out:
 
 ## Known issues
    - Excessive capacitance on USB power input. Doesn't seem to cause a problem with USB chargers, and the USB socket is for charging only.
-   - When plugged in, all power is drawn from the USB input. Things can go wrong if it tries to draw more power than the charger can supply, which is especially likely if using the box whilst it's also charging,  A future firmware version might make the box change-only when plugged in. 
-   - Both issues could likely be addressed by swapping to more suitable charge controller for this application (e.g. BQ24075)
+   - When plugged in, all power is drawn from the USB input. Things can go wrong if it tries to draw more power than the charger can supply, which is especially likely if using the box whilst it's also charging. A future firmware version might make the box change-only when plugged in. 
+   - Both issues could likely be addressed by swapping to more suitable charge controller for this application (e.g. BQ25601, or BQ25630 when widley available)
    - A bit slow to charge; it currently charges at ~780mA, which for a 5300mAh cell means a charge time from 0% to 100% of around 7 hours
+   - Silkscreen around J6 doesn't make the intended orientation clear. Getting this backwards isn't a serious issue, it just needs to match the connector soldered onto to the display
 
 [zc95]: docs/images/powered_up.jpg "Assembled ZC95"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
