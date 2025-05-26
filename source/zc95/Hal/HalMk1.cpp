@@ -27,8 +27,8 @@ HalMk1::HalMk1(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     gpio_init(PIN_CONTROLS_INT);
     gpio_set_dir(PIN_CONTROLS_INT, GPIO_IN);
 
-    front_panel_version_t front_panel_version = CDetermineHardwareVersion::get_front_panel_version();
-    if (front_panel_version == front_panel_version_t::v0_2)
+    _front_panel_version = CDetermineHardwareVersion::get_front_panel_version();
+    if (_front_panel_version == front_panel_version_t::v0_2)
         _front_panel = new CFrontPanelV02(saved_settings);
     else
         _front_panel = new CFrontPanelV01(_main_board_port_exp);
@@ -155,4 +155,9 @@ void HalMk1::mic_preamp_enable(bool enable)
 void HalMk1::mic_power_enable(bool enable)
 {
     _main_board_port_exp->mic_power_enable(enable);
+}
+
+front_panel_version_t HalMk1::front_panel_version()
+{
+    return _front_panel_version;
 }

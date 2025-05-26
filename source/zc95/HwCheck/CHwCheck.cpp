@@ -23,6 +23,7 @@
 #include <font6x9.h>
 #include "CHwCheck.h"
 #include "i2c_scan.h"
+#include "../git_version.h"
 #include "../config.h"
 #include "../CUtil.h"
 #include "../ECButtons.h"
@@ -308,7 +309,7 @@ void CHwCheck::hw_check_failed(enum Cause cause)
 
     put_text("Hardware check failed", (y++ * 10), 10, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
-    y += 2;
+    y += 1;
 
     switch (cause)
     {
@@ -352,6 +353,9 @@ void CHwCheck::hw_check_failed(enum Cause cause)
             show_error_text_message(&y, "Unknown error");
             break;
     }
+
+    // Put status line at bottom with detected hardware version and firmware version
+    fail_status_line();
 
     hagl_flush(_hagl_backend);
 
@@ -609,3 +613,53 @@ void CHwCheck::set_display(CDisplay *display)
 {
     _hagl_backend = display->get_hagl_backed();
 }
+
+// Show a status bar at the bottom of the hw check failed screen.
+// Shows a grey horizontal bar, the firmware version on one line, 
+// then the detected hardware version (mkl or 2) and front panel 
+// version on the 2nd line.
+void CHwCheck::fail_status_line()
+{
+    hagl_color_t line_colour = hagl_color(_hagl_backend, 0x70, 0x70, 0x70); // grey
+    hagl_draw_rectangle(_hagl_backend, 0, MIPI_DISPLAY_HEIGHT-19, (MIPI_DISPLAY_WIDTH-1), MIPI_DISPLAY_HEIGHT-18, line_colour);
+
+    hagl_color_t text_colour = hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF);
+   
+    put_text("F/W: " + std::string(kGitHash), 0, (MIPI_DISPLAY_HEIGHT-1) - 16, text_colour);
+
+    std::string hw_ver;
+    std::string front_panel_version;
+
+    switch (_hal->hardware_version())
+    {
+        case zc95_version_t::MKI:
+            hw_ver = "I";
+            break;
+
+        case zc95_version_t::MKII:
+            hw_ver = "II";
+            break;
+
+        default:
+            hw_ver = "?";
+    }
+
+    switch (_hal->front_panel_version())
+    {
+        case front_panel_version_t::v0_1:
+            front_panel_version = "0.1";
+            break;
+
+        case front_panel_version_t::v0_2:
+            front_panel_version = "0.2+";
+            break;
+
+        default:
+            front_panel_version = "?";
+            break;
+    }
+
+
+    put_text("MK:" + hw_ver + ", FP: " + front_panel_version, 0, (MIPI_DISPLAY_HEIGHT-1) - 9, text_colour);
+}
+

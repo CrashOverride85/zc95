@@ -19,6 +19,7 @@ class IHal
     public:
         virtual IPowerManagement* power_management() = 0;
         virtual CFrontPanel* front_panel() = 0;
+        virtual front_panel_version_t front_panel_version() = 0;
 
         virtual void set_backlight(bool on) = 0;
         virtual zc95_version_t hardware_version() = 0;

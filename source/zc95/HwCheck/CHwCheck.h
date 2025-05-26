@@ -49,6 +49,7 @@ class CHwCheck
         void init_v0_2_front_panel();
         int  get_button_press(front_panel_version_t fp_version);
         uint8_t get_button_states_from_port_expander(front_panel_version_t fp_version);
+        void fail_status_line();
 
         class device
         {

@@ -19,6 +19,7 @@ class HalMk1 : public IHal
         CExtInputPortExp* external_input_port_exp();
         CMainBoardPortExp* mainboard_port_exp();
         CFrontPanel* front_panel();
+        front_panel_version_t front_panel_version();
 
         void set_backlight(bool on);
         zc95_version_t hardware_version();
@@ -45,7 +46,7 @@ class HalMk1 : public IHal
         CSavedSettings **_saved_settings = NULL;
         static HalMk1* _this;
         CFrontPanel* _front_panel = NULL;
-
+        front_panel_version_t _front_panel_version = front_panel_version_t::UNKNOWN;
         time_t _last_loop_time = 0;
 };
 

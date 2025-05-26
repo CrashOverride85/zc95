@@ -18,6 +18,7 @@ class HalMk2 : public IHal
         CExtInputPortExp* external_input_port_exp();
         CMainBoardPortExp* mainboard_port_exp();
         CFrontPanel* front_panel();
+        front_panel_version_t front_panel_version();
 
         void set_backlight(bool on);
         zc95_version_t hardware_version();
@@ -44,6 +45,7 @@ class HalMk2 : public IHal
         static HalMk2* _this;
         CFrontPanel* _front_panel = NULL;
         time_t _last_loop_time = 0;
+        front_panel_version_t _front_panel_version = front_panel_version_t::v0_2; // MKII's can't work with v0.1 FPs
 };
 
 #endif

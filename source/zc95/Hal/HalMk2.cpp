@@ -143,3 +143,8 @@ void HalMk2::mic_power_enable(bool enable)
 {
     _main_board_port_exp->mic_power_enable(enable);
 }
+
+front_panel_version_t HalMk2::front_panel_version()
+{
+    return _front_panel_version;
+}
