@@ -14,7 +14,7 @@
 #define FP_0_1_ADC_ADDR             0x48 // ADC on v0.1 of front panel, used for power control dials
 #define FP_0_2_ADC_ADDR             0x49 // ADC on v0.2 of front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 // EEPROM
-#define BQ72441_I2C_ADDRESS         0x55 // MKII: Fuel/gas gauge
+#define BQ27441_I2C_ADDRESS         0x55 // MKII: Fuel/gas gauge
 
 #define MK2_PORT_EXP_ADDR           0x21 // MKII: port expander used for charger and audio control (replaces MK1_CONTROLS_PORT_EXP_ADDR)
 #define MK2_EXT_INPUT_PORT_EXP_ADDR 0x22 // MKII: port expander used for 3x acc io lines and trigger inputs (replaces MK1_EXT_INPUT_PORT_EXP_ADDR)

@@ -18,7 +18,6 @@
 
 #include "../config.h"
 
-//#define BQ72441_I2C_ADDRESS             0x55 // Default I2C address of the BQ27441-G1A
 
 /********************************
  * General Constants

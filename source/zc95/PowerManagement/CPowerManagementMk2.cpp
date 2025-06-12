@@ -5,7 +5,7 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp)
 {
     _mainboard_port_exp = mainboard_port_exp;
     BQ27441_ctx_t _BQ27441 = {
-            .BQ27441_i2c_address = BQ72441_I2C_ADDRESS,
+            .BQ27441_i2c_address = BQ27441_I2C_ADDRESS,
             .write_reg = s_BQ27441_i2cWriteBytes,       // i2c write callback 
             .read_reg = s_BQ27441_i2cReadBytes          // i2c read callback 
     };

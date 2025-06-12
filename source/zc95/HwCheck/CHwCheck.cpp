@@ -89,7 +89,7 @@ void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw
 
     // optional parts
     _devices.push_front(device(AUDIO_DIGIPOT_ADDR , "Digital potentiometer on audio board", "Audio digipot", true));
-    _devices.push_front(device(BQ72441_I2C_ADDRESS, "BQ72441 Fuel/gas gauge", "Fuel gauge", true));
+    _devices.push_front(device(BQ27441_I2C_ADDRESS, "BQ27441 Fuel/gas gauge", "Fuel gauge", true));
 }
 
 void CHwCheck::check_part1()
