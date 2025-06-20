@@ -242,7 +242,7 @@ target_compile_definitions(zc95 PRIVATE
   PICO_STACK_SIZE=8192
   PICO_CORE1_STACK_SIZE=0 # stack is malloc'd
   PICO_USE_STACK_GUARDS   # would rather die instantly on stack overflow, than get weird, hard to debug, errors
-  
+  SYS_CLK_MHZ=200
   # For Lua. If a Lua script consumes all the memory, Lua can handle that and give an OOM error, which is better 
   # than crashing with a Panic. Ideally Lua would use a seperate alloc function that didn't panic, whilst everything
   # else did. Not quite sure how to manage that yet; multicore/malloc mutex complicates things.

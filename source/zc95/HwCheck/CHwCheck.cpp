@@ -111,6 +111,7 @@ void CHwCheck::check_part1()
     printf("======================\n");
 
     running_on_picow();
+    printf("sysclk: %lu\n", clock_get_hz(clk_sys));
 
     printf("I2C scan:\n");
     _i2c_device_count = i2c_scan::scan(i2c0);
