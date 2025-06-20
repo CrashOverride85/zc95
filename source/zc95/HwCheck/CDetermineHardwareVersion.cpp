@@ -45,8 +45,6 @@ zc95_version_t CDetermineHardwareVersion::get_hardware_version()
 
     if (buffer[0] == buffer[1])
     {
-        printf("Hardware version: MKII\n");
-
         // restore config register to power on default
         buffer[0] = 3; // config reg
         buffer[1] = 0xFF;
@@ -56,7 +54,6 @@ zc95_version_t CDetermineHardwareVersion::get_hardware_version()
     }
     else
     {
-        printf("Hardware version: MKI\n");
         buffer[0] = 0xFF; // restore power on default if MK1
         bytes_written = i2c_write(__func__, MK1_EXT_INPUT_PORT_EXP_ADDR, buffer, 1, false);
         return zc95_version_t::MKI;

@@ -4,7 +4,7 @@
 class i2c_scan
 {
     public:
-        static void scan(i2c_inst_t *i2c);
+        static uint8_t scan(i2c_inst_t *i2c);
 
     private:
         static bool reserved_addr(uint8_t addr);

@@ -59,16 +59,19 @@ void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw
     _devices.push_front(device(EEPROM_ADDR+1, "EEPROM (write)", "EEPROM"));
     _devices.push_front(device(ZC624_ADDR, "ZC624 output board", "ZC624"));
 
-    // The MkI uses a different type of port expander on different addresses to the MKII
     if (hw_ver == zc95_version_t::MKI)
     {
         _devices.push_front(device(MK1_EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U8)", "Port exp U8"));
         _devices.push_front(device(MK1_CONTROLS_PORT_EXP_ADDR, "Port expander for buttons (U7)", "Port exp U7"));
     }
-    else
+    else if (hw_ver == zc95_version_t::MKII)
     {
         _devices.push_front(device(MK2_EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U1)", "Port exp U1"));
         _devices.push_front(device(MK2_PORT_EXP_ADDR, "Port expander for charger & audio (U28)", "Port exp U28"));
+    }
+    else
+    {
+        printf("Check is incomplete due to unknown hardware version (MKI or MKII)\n");
     }
     
     // There ICs are on the front panel, but which set depends on the front panel version
@@ -80,15 +83,19 @@ void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw
     }
 
     // >= v0.2
-    if (ver == front_panel_version_t::v0_2)
+    else if (ver == front_panel_version_t::v0_2)
     {
         _devices.push_front(device(FP_0_2_ADC_ADDR, "Front panel (v0.2) ADC", "FP ADC U1"));
         _devices.push_front(device(FP_0_2_PORT_EXP_ADDR, "Front panel (v0.2) port expander (U2)", "FP Port Exp U2"));
         _devices.push_front(device(FP_0_2_BUTTON_LED_DRV_ADDR, "Front panel (v0.2) LED driver (U9)", "FP LED drv U9"));
     }
+    else
+    {
+        printf("Check is incomplete due to unknown front panel version\n");
+    }
 
     // optional parts
-    _devices.push_front(device(AUDIO_DIGIPOT_ADDR , "Digital potentiometer on audio board", "Audio digipot", true));
+    _devices.push_front(device(AUDIO_DIGIPOT_ADDR , "Digital potentiometer for audio", "Audio digipot", true));
     _devices.push_front(device(BQ27441_I2C_ADDRESS, "BQ27441 Fuel/gas gauge", "Fuel gauge", true));
 }
 
@@ -106,7 +113,7 @@ void CHwCheck::check_part1()
     running_on_picow();
 
     printf("I2C scan:\n");
-    i2c_scan::scan(i2c0);
+    _i2c_device_count = i2c_scan::scan(i2c0);
     printf("\n");
 
     // Check battery isn't flat
@@ -122,7 +129,10 @@ void CHwCheck::check_part1()
         }
     }
 
-    set_expected_devices(_hal->front_panel()->verion(), _hal->hardware_version());
+    front_panel_version_t fp_version = front_panel_version_t::UNKNOWN;
+    if (_hal->front_panel() != NULL)
+        fp_version = _hal->front_panel()->verion();
+    set_expected_devices(fp_version, _hal->hardware_version());
 
     std::list<device>::iterator it;
     for (it = _devices.begin(); it != _devices.end(); ++it)
@@ -149,7 +159,7 @@ void CHwCheck::check_part1()
         }
     }
 
-    if (_hal->front_panel()->verion() == front_panel_version_t::UNKNOWN)
+    if (fp_version == front_panel_version_t::UNKNOWN)
     {
         cause = Cause::NO_FP_ADC;
         ok = false;
@@ -309,11 +319,12 @@ void CHwCheck::hw_check_failed(enum Cause cause)
 
     put_text("Hardware check failed", (y++ * 10), 10, hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
 
-    y += 1;
+    y += 2;
 
     switch (cause)
     {
         case Cause::MISSING:
+            y--;
             show_error_text_missing(y);
             break;
 
@@ -341,12 +352,18 @@ void CHwCheck::hw_check_failed(enum Cause cause)
             // With no ADC found, can't tell which version of the FP is connected, so don't know what other devices to look for
             show_error_text_message(&y, "Unable to determine");
             show_error_text_message(&y, "front panel version");
+            y++;
+            show_error_text_message(&y, "i2c device count: " + std::to_string(_i2c_device_count));
             break;
 
         case Cause::HW_VER_UNKNOWN:
             // Not been able to figure out if running on a MKI or MKII
             show_error_text_message(&y, "Unable to determine");
             show_error_text_message(&y, "hardware version   ");
+            y++;
+            show_error_text_message(&y, "MKI  : Check U8    ");
+            show_error_text_message(&y, "NKII : Check U1    ");
+            show_error_text_message(&y, "i2c device count: " + std::to_string(_i2c_device_count));
             break;
 
         default:
@@ -660,6 +677,6 @@ void CHwCheck::fail_status_line()
     }
 
 
-    put_text("MK:" + hw_ver + ", FP: " + front_panel_version, 0, (MIPI_DISPLAY_HEIGHT-1) - 9, text_colour);
+    put_text("MK : " + hw_ver + ", FP : " + front_panel_version, 0, (MIPI_DISPLAY_HEIGHT-1) - 9, text_colour);
 }
 

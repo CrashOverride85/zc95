@@ -10,8 +10,9 @@ bool i2c_scan::reserved_addr(uint8_t addr)
     return (addr & 0x78) == 0 || (addr & 0x78) == 0x78;
 }
 
-void i2c_scan::scan(i2c_inst_t *i2c)
+uint8_t i2c_scan::scan(i2c_inst_t *i2c)
 {
+    uint8_t dev_count = 0;
     printf("\n   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
     for (int addr = 0; addr < (1 << 7); ++addr) 
     {
@@ -44,8 +45,20 @@ void i2c_scan::scan(i2c_inst_t *i2c)
             ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
         }
 
-        printf(ret < 0 ? "." : "@");
+        if (ret < 0)
+        {
+            printf(".");
+        }
+        else
+        {
+            printf("@");
+            dev_count++;
+        }
+        
         printf(addr % 16 == 15 ? "\n" : "  ");
     }
-    printf("Done.\n");
+
+    printf("Done - %d responses.\n", dev_count);
+
+    return dev_count;
 }

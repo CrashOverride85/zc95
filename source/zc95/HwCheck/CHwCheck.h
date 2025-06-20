@@ -77,6 +77,7 @@ class CHwCheck
         hagl_backend_t *_hagl_backend = NULL;
         uint8_t _zc624_status = 0;
         front_panel_version_t _front_panel_version = front_panel_version_t::UNKNOWN;
+        uint8_t _i2c_device_count = 0;
 };
 
 #endif

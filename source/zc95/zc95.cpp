@@ -39,6 +39,7 @@
 #include "Hal/IHal.h"
 #include "Hal/HalMk1.h"
 #include "Hal/HalMk2.h"
+#include "Hal/HalDummy.h"
 
 #include "CEeprom.h"
 #include "CSavedSettings.h"
@@ -176,11 +177,18 @@ int main()
 
     if (hardware_version == zc95_version_t::MKII)
     {
+        printf("Hardware version: MKII\n");
         _hal = new HalMk2(&led, &routine_output, &_analogueCapture, &settings);
+    }
+    else if (hardware_version == zc95_version_t::MKI)
+    {
+        printf("Hardware version: MKI\n");
+        _hal = new HalMk1(&led, &routine_output, &_analogueCapture, &settings);
     }
     else
     {
-        _hal = new HalMk1(&led, &routine_output, &_analogueCapture, &settings);
+        printf("Hardware version: Unknown!\n");
+        _hal = new HalDummy();
     }
     _hal->set_backlight(false);
 

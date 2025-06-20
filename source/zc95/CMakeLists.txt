@@ -146,6 +146,7 @@ add_executable(zc95
   
   Hal/HalMk1.cpp
   Hal/HalMk2.cpp
+  Hal/HalDummy.cpp
 
   HwCheck/CHwCheck.cpp 
   HwCheck/CDetermineHardwareVersion.cpp
