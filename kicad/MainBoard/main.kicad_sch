@@ -3660,7 +3660,7 @@
     (effects (font (size 1 1)) (justify left bottom))
     (uuid b1c14dee-126d-4cba-bcc5-a5606fdd67ac)
   )
-  (text "Port expander for acc. port GPIO and \n2x 3.5mm trigger inputs addr = 0x3A"
+  (text "Port expander for acc. port GPIO and \n2x 3.5mm trigger inputs addr = 0x22"
     (at 187.325 119.38 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid cd7057f6-ec85-43c9-b35c-b67c82344c1b)
@@ -3673,7 +3673,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e243c875-188f-42d8-afd2-dd68b97343c7)
   )
-  (text "Port expander for bat charge monitor\nand audio in control\naddr = 0x39"
+  (text "Port expander for bat charge monitor\nand audio in control\naddr = 0x21"
     (at 123.825 121.285 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid eb78366a-0e64-498f-8e2e-c361c47b0bce)
