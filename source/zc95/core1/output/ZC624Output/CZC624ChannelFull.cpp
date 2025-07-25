@@ -79,6 +79,18 @@ void CZC624ChannelFull::off()
     _comms->send_message(msg);
 }
 
+void CZC624ChannelFull::link_channel(uint8_t channel, uint8_t offset_percentage)
+{
+    CZC624Comms::message msg;
+
+    msg.command = (uint8_t)CZC624Comms::spi_command_t::SyncChanel;
+    msg.arg0 = _channel_id;
+    msg.arg1 = channel;
+    msg.arg2 = offset_percentage;
+
+    _comms->send_message(msg);
+}
+
 void CZC624ChannelFull::set_absolute_power(uint16_t power)
 {
     // The ZC624 output module also expects power levels 0-1000, so no scaling required

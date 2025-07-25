@@ -264,6 +264,14 @@ class CRoutine
             }
         }
 
+        void full_channel_link_channel(uint8_t lead_channel, uint8_t linked_channel, uint8_t offset_percent)
+        {
+            if (lead_channel < MAX_CHANNELS && _full_channel[lead_channel] != NULL)
+            {
+                _full_channel[lead_channel]->link_channel(linked_channel, offset_percent);
+            }
+        }
+
         void set_channel_isolation(bool enabled)
         {
             routine_conf conf;

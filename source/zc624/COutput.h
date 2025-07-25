@@ -26,16 +26,28 @@ class COutput
         void loop();
         void power_down();
         uint8_t get_channel_led_state();
+        void sync_chanel(uint8_t channel_lead, uint8_t channel_linked, uint8_t offset_percent);
 
     private:
+        struct triphase_conf_t
+        {
+            uint8_t linked_channel;
+            uint8_t offset_percent;
+        };
+
+        void reset_chanel_triphase(uint8_t chan);
+        bool is_linked_channel(uint8_t channel);
+        void unlink_if_linked(uint8_t channel);
         bool is_channel_valid(uint8_t channel);
         void setup_gpio(uint8_t pin);
         COutputChannel *_channel[4];
+        triphase_conf_t _channel_triphase[4];
         PIO _pio;
         uint _pio_program_offset;
         CMsgDac _dac = CMsgDac();
         CI2cSlave *_i2c_slave;
         CPulseQueue *_pulse_queue = NULL;
+        bool _channel_isolation_last_value;
 };
 
 #endif

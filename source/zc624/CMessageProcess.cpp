@@ -75,6 +75,10 @@ void CMessageProcess::loop()
             _i2c_slave->set_value((uint8_t)CI2cSlave::reg::TestVal, msg.arg0);
             break;
 
+        case command::SyncChanel:
+             sync_channel(msg);
+             break;
+
         default:
             printf("ERR: command = %d, arg 0=%d, 1=%d, 2=%d\n", msg.command, msg.arg0, msg.arg1, msg.arg2);
             break;
@@ -145,4 +149,15 @@ void CMessageProcess::on(message msg)
 void CMessageProcess::off(message msg)
 {
     _output->off(msg.arg0);
+}
+
+// sync_chanel - Sync one chanel to another, but with a configurable offset in percent. For triphase effects.
+// Args:
+// 0 = channel (0-3) to be sync'd to another
+// 1 = channel (0-3) to sync to / follow, or 0xFF to clear syncing
+// 2 = Offset in percent. 0% means pulse for sync'd channel starts immediately
+//     after the other channels finishes. 100% means they overlap completely 
+void CMessageProcess::sync_channel(message msg)
+{
+    _output->sync_chanel(msg.arg0, msg.arg1, msg.arg2);
 }

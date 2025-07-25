@@ -21,7 +21,7 @@ class CFullOutputChannel : public COutputChannel
         virtual void set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_width_neg_us) = 0;
         virtual void on() = 0;
         virtual void off() = 0;
-
+        virtual void link_channel(uint8_t channel, uint8_t offset_percentage) = 0;
 
         virtual void loop(uint64_t time_us) {};
         virtual void init() {};

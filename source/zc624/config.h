@@ -36,7 +36,7 @@
 
 #define DEVICE_TYPE   624
 #define VERSION_MAJOR   2
-#define VERSION_MINOR   0
+#define VERSION_MINOR   1
 
 
 

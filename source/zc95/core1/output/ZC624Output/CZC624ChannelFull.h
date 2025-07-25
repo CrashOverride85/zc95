@@ -23,6 +23,7 @@ class CZC624ChannelFull : public CFullOutputChannel
         void set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_width_neg_us);
         void on();
         void off();
+        void link_channel(uint8_t channel, uint8_t offset_percentage);
         bool set_channel_isolation(bool on);
 
 
