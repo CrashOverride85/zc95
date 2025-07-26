@@ -25,7 +25,7 @@ class COutputChannel
         void set_pulse_width(uint8_t pos, uint8_t neg);
         void on();
         void off();
-        void queue_pulse(uint8_t pos_us, uint8_t neg_us);
+        void queue_pulse(uint8_t pos_us, uint8_t neg_us, uint64_t delay_until_us = 0);
         void do_pulse(uint8_t pos_us, uint8_t neg_us);
         status get_status();
         void diag_run_dac_sweep();

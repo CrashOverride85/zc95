@@ -17,7 +17,7 @@ class COutput
     public:
         COutput(PIO pio, CI2cSlave *i2c_slave);
         ~COutput();
-        void pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us);
+        void pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us, uint64_t delay_until_us = 0);
         void set_power(uint8_t channel, uint16_t power);
         void set_freq(uint8_t channel, uint16_t freq);
         void set_pulse_width(uint8_t channel, uint8_t pos, uint8_t neg);

@@ -21,13 +21,14 @@ CPulseQueue::~CPulseQueue()
     queue_free(&_pulse_queue);
 }
 
-void CPulseQueue::queue_pulse(uint sm, uint8_t pos, uint8_t neg)
+void CPulseQueue::queue_pulse(uint sm, uint8_t pos, uint8_t neg, uint64_t delay_until_us)
 {
     element_t element = 
     {
             .sm = sm,
             .pos_us = pos,
-            .neg_us = neg
+            .neg_us = neg,
+            .delay_until_us = delay_until_us
     };    
     
     if (!queue_try_add(&_pulse_queue, &element))
@@ -38,6 +39,8 @@ void CPulseQueue::queue_pulse(uint sm, uint8_t pos, uint8_t neg)
 
 bool CPulseQueue::get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg)
 {
+    element_t element;
+
     bool channel_isolation = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
     if (channel_isolation != _channel_isolation_last_value)
     {
@@ -45,8 +48,20 @@ bool CPulseQueue::get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg)
         _channel_isolation_last_value = channel_isolation;
     }
 
-    if (queue_is_empty(&_pulse_queue))
-        return false;  
+    if (queue_try_peek(&_pulse_queue, &element))
+    {
+        if (element.delay_until_us > time_us_64()) // delay_until_us will normally be 0 - i.e. generate pulse ASAP 
+        {
+            // Next pulse not due yet
+            return false;
+        }
+    }
+    else
+    {
+        // Queue is empty
+        return false;
+    }
+
    
     if (channel_isolation)
     {
@@ -55,7 +70,7 @@ bool CPulseQueue::get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg)
             return false;
     }
 
-    element_t element;
+    
     queue_remove_blocking(&_pulse_queue, &element);
 
     _next_pulse = time_us_64() + element.pos_us + element.neg_us + 150;

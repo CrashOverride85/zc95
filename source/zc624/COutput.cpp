@@ -96,12 +96,12 @@ void COutput::reset_chanel_triphase(uint8_t chan)
     _channel_triphase[chan].offset_percent = 0xFF;
 }
 
-void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
+void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us, uint64_t delay_until_us)
 {
     if (!is_channel_valid(channel))
         return;
 
-    _channel[channel]->queue_pulse(pos_us, neg_us);
+    _channel[channel]->queue_pulse(pos_us, neg_us, delay_until_us);
 }
 
 void COutput::set_power(uint8_t channel, uint16_t power)
@@ -169,11 +169,11 @@ void COutput::loop()
         _channel[sm]->do_pulse(pos, neg);
 
         if (!channel_isolation_on && is_channel_valid(_channel_triphase[sm].linked_channel) && _channel_triphase[sm].offset_percent <= 100)
-        {
+        {           
             uint16_t pulse_duration_us = pos + neg;
             uint16_t delay_us = (float)_channel_triphase[sm].offset_percent * ((float)pulse_duration_us/(float)100); // max delay = 512 us
-            sleep_us(delay_us);
-            _channel[_channel_triphase[sm].linked_channel]->do_pulse(pos, neg);
+            
+            pulse(_channel_triphase[sm].linked_channel, pos, neg, time_us_64() + delay_us);
         }
     }
 }
