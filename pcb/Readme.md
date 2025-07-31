@@ -34,6 +34,18 @@ First public version
 
 ## MainBoard
 
+### v2.3
+Tweaks:
+ - No more vias in pads
+ - Changed charge controller from TP4056 to BQ25601
+ - Added 3.3v LDO powered from 5v rail to supply some of the audio circuitry (reduces noise when using a mic)
+ - Changed footprint of LCD and Debug connectors to make intended orientation clear
+ - Added ability to sense voltage on USB CC lines to determine type of charger connected
+ - Display reset line now connected to port expander instead of pull up to 5v. Fixes intermittent issue where display would show pure white if the box was powered off, then powered up a few seconds later.
+
+### v2.2
+- *Not publicly released*
+
 ### v2.1
 Fixed solder mask minimum width setting - restore to KiCad default of 0
 

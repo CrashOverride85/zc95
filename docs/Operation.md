@@ -13,15 +13,15 @@ Buttons 1 - 4 are soft buttons and the purpose changes dependant on the screen.
 | 3      | Softbutton - Usually scroll up
 | 4      | Softbutton - Usually scroll down
 | 5      | Power. Left is off, right is on. Probably should have labelled that.
-| 6      | Power in. Should be centre positive 15v DC
-| 7      | Either Serial port, or if optional audio input board fitted, can be toggled between serial and audio input. In serial mode, Tip is TX / output from box, Sleeve is ground.
+| 6      | Power in. MKI: Should be centre positive 15v DC. MKII: any USB-C charger
+| 7      | MKI: Either Serial port, or if optional audio input board fitted, can be toggled between serial and audio input. MKII: separate serial and audio sockets (not in photo). Both: In serial mode, Tip is TX / output from box, Sleeve is ground.
 | 8      | Accessory port. Includes power, serial and 3x GPIO pins. See "Accessory port" in misc section. Currently not really used by much.
 | 9      | Trigger input 1. Shorting either Sleeve or Ring to Tip registers trigger. The box can differentiate between S-T and R-T triggers (i.e. each trigger socket can react to two different inputs)
 | 10     | Trigger input 2. As above, except currently unused.
-| 11     | 2.5mm socket for channel 1 output
-| 12     | 2.5mm socket for channel 2 output
-| 13     | 2.5mm socket for channel 3 output
-| 14     | 2.5mm socket for channel 4 output
+| 11     | 2.5mm (MKI) or 3.5mm (MKII) socket for channel 1 output
+| 12     | 2.5mm (MKI) or 3.5mm (MKII) socket for channel 2 output
+| 13     | 2.5mm (MKI) or 3.5mm (MKII) socket for channel 3 output
+| 14     | 2.5mm (MKI) or 3.5mm (MKII) socket for channel 4 output
 | 15     | Adjust - Used to change the setting of on-screen sliders / multi choice options. A blue bar/background in the middle/left section of the screen indicates when the Adjust control can be used
 | 16     | Power control for channel 1
 | 17     | Power control for channel 2
@@ -76,6 +76,13 @@ Configuration options so far:
 
   - Button brightness - controls how bright the LEDs in the 4 front panel buttons are
 
+  - MKII only: Display brightness - as you would expect, changes the display brightness
+
+  - MKII only: Status bar text. What the status bar should show. Options:
+    - Running pattern - name of the currently running pattern, or blank if nothing running. This is what MKI's show
+    - Battery current - current draw from battery in mA. -ve indicates current being drawn from battery, +ve current going into battery (i.e. charging).
+      For PCB versions >= 2.3, this may go negative even when plugged in, as if the charger can't supply enough current, the difference will come from the battery.
+
 * Audio input - Displayed if audio board present by default, depends on "Hardware config > Audio" setting. See [Audio Input](./AudioInput-Operation.md)
 
 * Hardware config - configure various hardware settings. Shouldn't need changing. Options:
@@ -87,11 +94,17 @@ Configuration options so far:
 
     Note that if the Aux port is configured to be used for audio, picking Aux port here is essentially the same as "Off". Also worth noting that when the box is first powered up, debug info is always sent to the accessory port until the configuration is read, before potentially switching to aux or off.
 
-  - Aux port use - what the Aux port on the front is used for. Options:
+  - MKI only: Aux port use - what the Aux port on the front is used for. Options:
     - Audio input
     - Serial I/O
 
     If the audio board isn't present, this menu has no effect, i.e. Aux is always in Serial I/O mode.
+
+  - v2.3+ only: Batt charge current. Set the maximum charge current for the battery between 0 mA and 3000 mA.
+
+      **Caution** : Do not rely on this - the battery must be capable of being _safely_ charged at 2000 mA, even if a lower value is set for battery longevity / power consumption (whatever) reasons. 2000 mA is the default for the charge controller, so it's possible there are some scenarios where the default may get used.
+
+* Battery info - MKI & MKII: Shows battery voltage and state of charge (%). MKII only: Also shows estimated battery capacity and capacity remaining in mAh along with current flow in/out of battery in mA (-ve is out of battery, +ve is in, i.e. charging).
 
 * About - shows firmware version of main board, and zc624 output board
 

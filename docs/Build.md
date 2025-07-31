@@ -78,7 +78,7 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 ### Misc parts
 [The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (battery, display, etc.).
 
-* Battery: Use a **protected** 26650 cell. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway).
+* Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway).
 
 * Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
 
@@ -228,7 +228,7 @@ Quick summary of what they do:
 Any references in the documentation/code/etc to either the "ZC624" or "Output module" is about the pico/circuitry now on the right hand side of the mainboard PCB.
 
 ### Loading firmware
-Download firmware from [Releases](https://github.com/CrashOverride85/zc95/releases). Use the latest version, but certainly something >= v2.0.
+Download firmware from [Releases](https://github.com/CrashOverride85/zc95/releases). Use the latest version, but certainly something >= v2.0-rc2
 
 To load firmware onto a Pico:
 * Hold down the BOOTSEL button

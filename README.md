@@ -5,7 +5,7 @@
 
 ## ZC95 MkII
 
-This branch holds the ZC95 MkII. As I write this, I'm the only person to have built it. It's smaller, and condenses 3 of the PCBs into 1 to make the build a bit cheaper and much quicker than the Mk1.
+This branch holds the ZC95 MkII. A few people have now reported successfully building this using PCB v2.0 & v2.1. Compared to the MKI, it's smaller, and condenses 3 of the PCBs into 1 to make the build a bit cheaper and much quicker than the MkI.
 
 These are the main changes from the MkI:
  - Much smaller - the mainboard is less than half the size
@@ -18,7 +18,7 @@ These are the main changes from the MkI:
  - Display no longer briefly flashes white on power on
  - Removed: 12v output on accessory port
 
-Hopefully at some point this branch will become the main branch, and I'll remove this section.
+At some point soon this branch will become the main branch, and I'll (re)move this section.
 
 ## Introduction
 The ZC95 is a DIY four channel EStim box with similar output design and feel to the MK312-BT (which in turn is a clone of the ET-312B).
@@ -43,7 +43,7 @@ Technical details:
 - Has been designed with the JLC PCB assembly service in mind, and is mostly an SMD design with a few though hole parts
 - Uses 2x Raspberry Picos
 - Firmware is open source and mostly C++, and makes use of many [3rd party libraries](./docs/Credits.md)
-- 22650 cell for power
+- 26650 cell for power
 - KiCad project files included in repo, not just gerbers
 - Audio input includes microphone preamp that can be toggled via menu, along with variable gain
 - Consists of 3 PCBs:
@@ -102,23 +102,18 @@ Other related projects that are worth checking out:
 
 # TODO
 ## Firmware
+   - Triphase support from Lua 
+   - Allow Lua scripts to interact with shock collars
    - Combo pattern? Having, e.g., waves on channels 1+2 plus something like TENS on 3+4 would be good
    - Save pattern settings on exit?
    - Disable when plugged in / switch to charging screen (maybe a setting in the menu to disable)
-   - Allow Lua scripts to interact with shock collars
    - Accessory port doesn't do much - just 3 output lines. There's a serial interface there too, which could be exposed in the Lua environment
 
 ## Hardware
-   - More suitable charge controller instead of TP4056
    - Improved 3D printed case?
 
 ## Known issues
-   - Excessive capacitance on USB power input. Doesn't seem to cause a problem with USB chargers, and the USB socket is for charging only.
-   - When plugged in, all power is drawn from the USB input. Things can go wrong if it tries to draw more power than the charger can supply, which is especially likely if using the box whilst it's also charging. A future firmware version might make the box change-only when plugged in. 
-   - Both issues could likely be addressed by swapping to more suitable charge controller for this application (e.g. BQ25601, or BQ25630 when widley available)
-   - A bit slow to charge; it currently charges at ~780mA, which for a 5300mAh cell means a charge time from 0% to 100% of around 7 hours
-   - Silkscreen around J6 doesn't make the intended orientation clear. Getting this backwards isn't a serious issue, it just needs to match the connector soldered onto to the display
+   - Will charge faster if switched on when plugged in, and not switched off for at least 10 seconds (or just left on)
+   - Sometimes when finished charging (battery icon showing solid green), the battery percentage will only show ~95% despite being fully charged. Should be fixed in a future firmware version. 
 
 [zc95]: docs/images/powered_up.jpg "Assembled ZC95"
-[gh25]: https://github.com/CrashOverride85/zc95/discussions/25
-[gh46]: https://github.com/CrashOverride85/zc95/issues/46
