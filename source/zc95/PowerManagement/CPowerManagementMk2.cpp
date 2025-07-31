@@ -26,15 +26,24 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
 
             BQ27441_enterConfig(true);
             const uint16_t battery_capacity_mah = 5300;
-            const uint16_t tp4056_charge_current_ma = 780;
 
             BQ27441_setCapacity(battery_capacity_mah);
             BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
             BQ27441_setTerminateVoltageMin(2900); // From U14 / HY2111-GB
 
             // Mostly from "Quickstart Guide for bq27441-G1" (SLUUAP7)
-            // Also TP4056's terminate charge when current drops below 10% of the programmed charge current
-            uint16_t taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
+            uint16_t taper_rate;
+            if (_variant == hw_variant_t::V2_0)
+            {
+                // TP4056's terminate charge when current drops below 10% of the programmed charge current
+                const uint16_t tp4056_charge_current_ma = 780;
+                taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
+            }
+            else
+            {
+                const uint16_t bq25601_termination_current_ma = 180; // default value for bq25601, which isn't changed
+                taper_rate = (float)battery_capacity_mah / (0.1f * (bq25601_termination_current_ma * 1.15f));
+            }
             BQ27441_setTaperRateTime(taper_rate);
 
             BQ27441_exitConfig(true);
@@ -56,8 +65,11 @@ void CPowerManagementMk2::print_status()
     printf("* BAT: SoC       : %d%%\n"  , BQ27441_soc(soc_measure::FILTERED));
     printf("* BAT: cap remain: %d mAh\n", BQ27441_capacity(capacity_measure::REMAIN));
 
-    printf("* CHG: %s\n", _mainboard_port_exp->get_tp4056_charge_status()  ? "YES" : "NO");
-    printf("* STB: %s\n", _mainboard_port_exp->get_tp4056_standby_status() ? "YES" : "NO");
+    if (_variant == hw_variant_t::V2_0)
+    {
+        printf("* CHG: %s\n", _mainboard_port_exp->get_tp4056_charge_status()  ? "YES" : "NO");
+        printf("* STB: %s\n", _mainboard_port_exp->get_tp4056_standby_status() ? "YES" : "NO");
+    }
 }
 
 int16_t CPowerManagementMk2::s_BQ27441_i2cWriteBytes(uint8_t DevAddress, uint8_t subAddress, uint8_t* src, uint8_t count)
@@ -168,44 +180,101 @@ void CPowerManagementMk2::loop()
         _remaining_capacity_mah = BQ27441_capacity(capacity_measure::REMAIN);
         _full_capacity_mah = BQ27441_capacity(capacity_measure::FULL_F);
 
-        if (_current_mA > 0)
-        {
-            _charging_status = charging_status_t::Charging;
-            _power_status = power_status_t::OnExternalPower;
-        }
-        else if (_current_mA == 0)
-        {
-            // If nothing's coming out of the battery, must be on external power
-            _power_status = power_status_t::OnExternalPower;
-
-            if (_battery_percentage == 100)
-            {
-                _charging_status = charging_status_t::Charged; 
-            }
-            else
-            {
-                if (_mainboard_port_exp->get_tp4056_charge_status())
-                {
-                    _charging_status = charging_status_t::Charging; 
-                }
-                else
-                {
-                    // On external power, battery isn't charged, but also isn't charging
-                    _charging_status = charging_status_t::Unknown; 
-                }
-            }
-        }
-        else // current < 0 i.e. battery is discharging
-        {
-            _charging_status = charging_status_t::Unknown;
-            _power_status = power_status_t::OnBattery;
-        }
+        if (_variant == hw_variant_t::V2_0)
+            loop_v2_0();
+        else
+            loop_v2_2();
 
         _last_batt_param_refresh = time_us_64();
 
         // print_status();
 
         _usb_power.loop();
+    }
+}
+
+void CPowerManagementMk2::loop_v2_0()
+{
+    // For PCB v2.0/2.1. there's a TP4056 for the charge controller, with its Changed and Standby outputs going to
+    // a pair of LEDs, as well as being monitored by a port expander. 
+    // When the box is plugged in, the incoming 5v directly supplies the box (i.e. bypassing the TP4056), as well as
+    // going to the TP4056 so it can charge the battery.
+    // There is no supplement mode, and things won't go well if the charger can't supply enough current to charge the
+    // battery, and power the box.
+
+    if (_current_mA > 0)
+    {
+        _charging_status = charging_status_t::Charging;
+        _power_status = power_status_t::OnExternalPower;
+    }
+    else if (_current_mA == 0)
+    {
+        // If nothing's coming out of the battery, must be on external power
+        _power_status = power_status_t::OnExternalPower;
+
+        if (_battery_percentage == 100)
+        {
+            _charging_status = charging_status_t::Charged; 
+        }
+        else
+        {
+            if (_mainboard_port_exp->get_tp4056_charge_status())
+            {
+                _charging_status = charging_status_t::Charging; 
+            }
+            else
+            {
+                // On external power, battery isn't charged, but also isn't charging
+                _charging_status = charging_status_t::Unknown; 
+            }
+        }
+    }
+    else // current < 0 i.e. battery is discharging
+    {
+        _charging_status = charging_status_t::Unknown;
+        _power_status = power_status_t::OnBattery;
+    }
+}
+
+void CPowerManagementMk2::loop_v2_2()
+{
+    // For PCBs >= v2.2, there's a BQ25601 charge controller. This is on the I2C bus, so it's possible to get
+    // more information out of it.
+    // Power always goes through the BQ25601, whether plugged in or on battery. If plugged into to a charger
+    // that can't supply much current with a high system load, the box can draw some power from the battery 
+    // despite being plugged in. I.e. just because current is flowing out of the battery, doesn't mean we 
+    // aren't plugged in.
+
+    bool on_ext_power = _usb_power.ext_power_good();
+    BQ25601::charge_status_enum charge_status = _usb_power.charge_status();
+
+    if (on_ext_power)
+    {
+        _power_status = power_status_t::OnExternalPower;
+
+        switch(charge_status)
+        {
+            case BQ25601::charge_status_enum::FAST_CHARGING:
+            case BQ25601::charge_status_enum::PRE_CHARGE:
+                _charging_status = charging_status_t::Charging;
+                break;
+
+            case BQ25601::charge_status_enum::CHARGE_TERM:
+                _charging_status = charging_status_t::Charged;
+                break;
+
+            case BQ25601::charge_status_enum::NOT_CHARGING:
+            default:
+                // Many possible reasons: e.g. no battery, battery too hot/cold, charge current set to 0, etc.
+                _charging_status = charging_status_t::Unknown;
+                break;
+        }
+    }
+    else
+    {
+        // No (or possibly unusable) charger attached
+        _power_status = power_status_t::OnBattery;
+        _charging_status = charging_status_t::Unknown;
     }
 }
 

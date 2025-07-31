@@ -35,6 +35,8 @@ class CPowerManagementMk2 : public IPowerManagement
         static int16_t s_BQ27441_i2cReadBytes(uint8_t DevAddress, uint8_t subAddress, uint8_t* dest, uint8_t count);
 
         void set_adc0_source(CMainBoardPortExp::adc0_select_t adc_source);
+        void loop_v2_0();
+        void loop_v2_2();
 
         CMainBoardPortExp* _mainboard_port_exp = NULL;
         hw_variant_t _variant;

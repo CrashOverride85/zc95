@@ -15,6 +15,8 @@ class CUsbPower
         CUsbPower(hw_variant_t variant);
         void set_cc1_voltage_mV(int16_t mv);
         void set_cc2_voltage_mV(int16_t mv);
+        bool ext_power_good();
+        BQ25601::charge_status_enum charge_status();
         void loop();
 
     private:

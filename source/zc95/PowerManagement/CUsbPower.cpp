@@ -47,6 +47,24 @@ void CUsbPower::loop()
     }
 }
 
+bool CUsbPower::ext_power_good()
+{
+    if (!_active)
+        return false;
+
+    _charge_ctl.read_register(BQ25601_REG0A);
+    return _charge_ctl.vbus_power_good();
+}
+
+BQ25601::charge_status_enum CUsbPower::charge_status()
+{
+    if (!_active)
+        return BQ25601::charge_status_enum::NOT_CHARGING;
+
+    _charge_ctl.read_register(BQ25601_REG08);
+    return _charge_ctl.charge_status();
+}
+
 void CUsbPower::set_cc1_voltage_mV(int16_t mv)
 {
     _cc1_voltage = mv;
