@@ -9,6 +9,7 @@
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
 #include "../Hal/IHal.h"
+#include "../CHorzBarGraph.h"
 
 class CMenuSettingHardware : public CMenu
 {
@@ -21,35 +22,20 @@ class CMenuSettingHardware : public CMenu
         void show();
 
     private:
-        class setting_t
-        {
-            public:
-                setting_t(int id, std::string text)
-                {
-                    this->id = id;
-                    this->text = text;
-                }
-
-                int id;
-                std::string text;
-        };
-
         void show_selected_setting();
 
         enum setting_id
         {
             AUDIO          = 0,
             DEBUG          = 1,
-            AUX_USE        = 2
+            AUX_USE        = 2,
+            CHARGE_CURRENT = 3
         };
 
-        std::vector<setting_t> _settings;
         COptionsList *_settings_list = NULL;
-
-        std::vector<setting_t> _setting_choices;
         COptionsList *_settings_choice_list = NULL;
         
-        void set_options_on_multi_choice_list(uint8_t setting_id);
+        void set_options_for_selection(uint8_t setting_id);
         void save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index);
 
         struct display_area _area;
@@ -59,4 +45,6 @@ class CMenuSettingHardware : public CMenu
         CSavedSettings *_saved_settings;
         CRoutineOutput *_routine_output;
         CAudio *_audio;
+        CHorzBarGraph *_bar_graph = NULL;
+        int16_t _charge_current_ma = 0;
 };

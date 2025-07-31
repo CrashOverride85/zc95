@@ -31,9 +31,16 @@ class HalMk2 : public IHal
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
 
+        hw_variant_t hardware_variant();
+
         static void s_gpio_callback(uint gpio, uint32_t events);
 
     private:
+        void set_mkII_variant();
+        void set_display_brightness();
+        void init_pwm_pin(uint8_t gpio);
+        hw_variant_t _variant;
+        
         TCA9534* _tca9534_ext = NULL;
         TCA9534* _tca9534_main = NULL;
         CExtInputPortExp* _ext_input_port_exp = NULL;
@@ -46,6 +53,8 @@ class HalMk2 : public IHal
         CFrontPanel* _front_panel = NULL;
         time_t _last_loop_time = 0;
         front_panel_version_t _front_panel_version = front_panel_version_t::v0_2; // MKII's can't work with v0.1 FPs
+        uint8_t _display_brightness_percent = 0xFF;
+        bool _display_on = false;
 };
 
 #endif

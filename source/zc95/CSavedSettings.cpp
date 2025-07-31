@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2025  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -489,6 +489,52 @@ void CSavedSettings::set_power_level(CSavedSettings::power_level_t power_level)
     _eeprom_contents[(uint8_t)setting::PowerLevel] = (uint8_t)power_level;
 }
 
+// Warning: charge_current is divided by 60 before saving, then multiplied by 60 when retrieved - i.e. there is a significant 
+//          loss of precision. The values that can be stored do include everything a BQ25601 can be set to, though.
+void CSavedSettings::set_batt_charge_current(uint16_t charge_current)
+{
+    charge_current /= 60;
+    if (charge_current > 255)
+    {
+        printf("CSavedSettings::set_batt_charge_current(): Attempted to save invalid charge current: %d mA\n", charge_current);
+        return;
+    }
+
+    _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = (uint8_t)charge_current;
+}
+
+uint16_t CSavedSettings::get_batt_charge_current_mA()
+{
+    uint8_t stored_cc = _eeprom_contents[(uint8_t)setting::BatChargeCurrent];
+    uint16_t current_mA = stored_cc * 60;
+    return current_mA;
+}
+
+CSavedSettings::status_bar_text_t CSavedSettings::get_status_bar_option()
+{
+    return (status_bar_text_t)(_eeprom_contents[(uint8_t)setting::StatusBarOption]);
+}
+
+void CSavedSettings::set_status_bar_option(status_bar_text_t status_bar_option)
+{
+    _eeprom_contents[(uint8_t)setting::StatusBarOption] = (uint8_t)status_bar_option;
+}
+
+uint8_t CSavedSettings::get_display_brightness_percent()
+{
+    uint8_t percent = (_eeprom_contents[(uint8_t)setting::DisplayBrightness]);
+    
+    // Don't allow switching off display. Also when upgrading, the eeprom value will have been 0.
+    if (percent == 0)
+        percent = 100;
+    return percent;
+}
+
+void CSavedSettings::set_display_brightness_percent(uint8_t percent)
+{
+    _eeprom_contents[(uint8_t)setting::DisplayBrightness] = percent;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);
@@ -542,6 +588,9 @@ void CSavedSettings::eeprom_initialise()
         initialise_collar(collar_id);
 
     _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
+    _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
+    _eeprom_contents[(uint8_t)setting::StatusBarOption]  = (uint8_t)status_bar_text_t::RUNNING_PATTERN;
+
 
     // Save changes
     save();

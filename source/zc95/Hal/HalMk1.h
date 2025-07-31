@@ -23,6 +23,7 @@ class HalMk1 : public IHal
 
         void set_backlight(bool on);
         zc95_version_t hardware_version();
+        hw_variant_t hardware_variant() {return hw_variant_t::NA;}
 
         void loop();
 

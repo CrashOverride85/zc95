@@ -16,7 +16,8 @@ class COptionsList
         void draw();
         void up();
         void down();
-        void set_selected(uint8_t selection);
+        void set_selected(uint8_t selection); // by index
+        void set_selected_by_id(uint8_t selection);
         uint8_t get_current_selection();
         int get_current_selection_id();
         uint8_t count();

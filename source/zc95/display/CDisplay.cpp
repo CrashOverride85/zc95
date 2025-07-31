@@ -348,8 +348,26 @@ void CDisplay::draw_status_bar()
 
     put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
-    // Draw name of currently running pattern (if any)
-    put_text(current_mode, 26, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
+    // Status text: either running pattern or battery current draw
+
+    // Draw status bar text, depending on configured option
+    std::string status_text;
+    if (g_SavedSettings->get_status_bar_option() == CSavedSettings::status_bar_text_t::RUNNING_PATTERN)
+    {
+        // name of currently running pattern (if any)
+        status_text = current_mode;
+    }
+    else if (g_SavedSettings->get_status_bar_option() == CSavedSettings::status_bar_text_t::BATTERY_CURRENT)
+    {
+        int16_t current_ma = 0;
+        _power_management->get_stat(&current_ma, IPowerManagement::power_stat_t::BatCurrent);
+        status_text = std::to_string(current_ma) + " mA";
+    }
+    else
+    {
+        status_text = "?";
+    }
+    put_text(status_text, 26, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
     // Draw H/M/L power indicator (always)
     uint16_t x = MIPI_DISPLAY_WIDTH - 8;

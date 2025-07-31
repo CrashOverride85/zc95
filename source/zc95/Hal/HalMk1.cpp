@@ -12,7 +12,7 @@ HalMk1::HalMk1(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     _saved_settings = saved_settings;
     _routine_output = routine_output;
     _pcf8574_main = new PCF8574(MK1_CONTROLS_PORT_EXP_ADDR);
-    _main_board_port_exp = new CMainBoardPortExp(zc95_version_t::MKI, _pcf8574_main);
+    _main_board_port_exp = new CMainBoardPortExp(zc95_version_t::MKI, hw_variant_t::NA, _pcf8574_main);
     _mk1_pm = new CPowerManagementMk1();
     _pcf8574_ext = new PCF8574(MK1_EXT_INPUT_PORT_EXP_ADDR);
     _ext_input_port_exp = new CExtInputPortExp(led, routine_output, _pcf8574_ext);

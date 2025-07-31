@@ -23,6 +23,8 @@ class IHal
 
         virtual void set_backlight(bool on) = 0;
         virtual zc95_version_t hardware_version() = 0;
+        virtual hw_variant_t hardware_variant() = 0;
+        
         virtual void loop() = 0;
         
         // accessory port

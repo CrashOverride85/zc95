@@ -36,9 +36,11 @@ class CMenuSettingDisplayOptions : public CMenu
 
         enum setting_id
         {
-            LED_BRIGHTNESS = 0,
+            LED_BRIGHTNESS      = 0,
             POWER_LEVEL_DISPLAY = 1,
-            BUTTON_BRIGHTNESS = 2      
+            BUTTON_BRIGHTNESS   = 2,
+            STATUS_BAR_TEXT     = 3,
+            DISPLAY_BRIGHTNESS  = 4
         };
 
         std::vector<setting> _settings;

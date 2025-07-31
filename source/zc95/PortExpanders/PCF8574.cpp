@@ -1,6 +1,7 @@
 #include "PCF8574.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "../CUtil.h"
 
 /* This is used for the two port expanders on the main board of a MK1, 
  * and the port expander on v0.1 of the front panel.

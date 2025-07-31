@@ -15,6 +15,7 @@
 #define FP_0_2_ADC_ADDR             0x49 // ADC on v0.2 of front panel, used for power control dials
 #define EEPROM_ADDR                 0x50 // EEPROM
 #define BQ27441_I2C_ADDRESS         0x55 // MKII: Fuel/gas gauge
+#define BQ25601_CHARGE_CONTROLLER   0x6B // MKII, for main board PCB version >= 2.2 only: BQ25601 charge controller
 
 #define MK2_PORT_EXP_ADDR           0x21 // MKII: port expander used for charger and audio control (replaces MK1_CONTROLS_PORT_EXP_ADDR)
 #define MK2_EXT_INPUT_PORT_EXP_ADDR 0x22 // MKII: port expander used for 3x acc io lines and trigger inputs (replaces MK1_EXT_INPUT_PORT_EXP_ADDR)
@@ -40,6 +41,7 @@
 #define PIN_CONTROLS_INT   7 // front panel controls port expander interrupt pin
 #define PIN_EXT_INPUT_INT 21 // external inputs port expander interrupt pin
 #define PIN_433TX          3 // 433Mhz transmitter pin
+#define PIN_SD_CS         22 // Chip select for SD card reader on LCD module. Unused.
 
 #define PIN_FP_INT1       11 // front panel interrupt 1 (U1) - 4x channel rot encoders
 #define PIN_FP_INT2        6 // front panel interrupt 2 (U2) - 5x rot encoder buttons & 1x adjust rot encoder (+ 1x unused line)

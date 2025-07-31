@@ -1,9 +1,11 @@
 #include "CPowerManagementMk2.h"
 #include <string.h>
 
-CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp)
+CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, hw_variant_t variant) : _usb_power(variant)
 {
     _mainboard_port_exp = mainboard_port_exp;
+    _variant = variant;
+
     BQ27441_ctx_t _BQ27441 = {
             .BQ27441_i2c_address = BQ27441_I2C_ADDRESS,
             .write_reg = s_BQ27441_i2cWriteBytes,       // i2c write callback 
@@ -42,6 +44,8 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp)
     }
     else
         printf("CPowerManagementMk2(): BQ27441 init FAILURE\n");
+
+    set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_VBUS);
 }
 
 void CPowerManagementMk2::print_status()
@@ -89,7 +93,7 @@ void CPowerManagementMk2::add_raw_adc_readings(const uint8_t *raw_adc_readings_b
 
     // On initial startup all the readings in _batt_percentage will be 0, so try and set them to something better
     // as quick as possible.
-    if (_inital_startup || (time_us_64() - _last_vbus_update > 1000000)) // 1sec
+    if (_inital_startup || (time_us_64() - _last_adc0_read > 500000)) // 0.5 sec
     {
         if (buffer_array_len < readings_len)
         {
@@ -113,11 +117,29 @@ void CPowerManagementMk2::add_raw_adc_readings(const uint8_t *raw_adc_readings_b
         // Convert average ADC reading to voltage seen at ADC input
         const float conversion_factor = 3.3f / (1 << 8);
         float adc_voltage = avg * conversion_factor;
-        
-        // Convert to millivolts. Using a 100k-100k voltage divider, so double the voltage, then x1000 for V -> mV
-        _vbus_voltage = (adc_voltage * 2) * 1000;
 
-        _last_vbus_update = time_us_64();
+        switch (_adc0_source)
+        {
+            case CMainBoardPortExp::adc0_select_t::USB_VBUS:
+                // Convert to millivolts. Using a 100k-100k voltage divider, so double the voltage, then x1000 for V -> mV
+                _vbus_voltage = (adc_voltage * 2) * 1000;
+
+                if (_variant == hw_variant_t::V2_2)
+                    set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_CC1);
+                break;
+                
+            case CMainBoardPortExp::adc0_select_t::USB_CC1:
+                _usb_power.set_cc1_voltage_mV(adc_voltage * 1000);
+                set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_CC2);
+                break;
+    
+            case CMainBoardPortExp::adc0_select_t::USB_CC2:
+                _usb_power.set_cc2_voltage_mV(adc_voltage * 1000);
+                set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_VBUS);
+                break;
+        }
+
+        _last_adc0_read = time_us_64();
     }
 }
 
@@ -182,6 +204,8 @@ void CPowerManagementMk2::loop()
         _last_batt_param_refresh = time_us_64();
 
         // print_status();
+
+        _usb_power.loop();
     }
 }
 
@@ -247,5 +271,11 @@ uint8_t CPowerManagementMk2::get_battery_percentage()
     }
 
     return _battery_percentage;
+}
+
+void CPowerManagementMk2::set_adc0_source(CMainBoardPortExp::adc0_select_t source)
+{
+    _adc0_source = source;
+    _mainboard_port_exp->set_adc0_source(source);
 }
 

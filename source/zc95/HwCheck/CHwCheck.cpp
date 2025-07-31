@@ -68,6 +68,9 @@ void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw
     {
         _devices.push_front(device(MK2_EXT_INPUT_PORT_EXP_ADDR, "Trigger+Acc port expander (U1)", "Port exp U1"));
         _devices.push_front(device(MK2_PORT_EXP_ADDR, "Port expander for charger & audio (U28)", "Port exp U28"));
+
+        // PCB versions 2.0 & 2.1 used a TP4056 instead of the BQ25601
+        _devices.push_front(device(BQ25601_CHARGE_CONTROLLER, "PCB >= v2.2: BQ25601 charge controller (U2)", "BQ25601 U2", true));
     }
     else
     {

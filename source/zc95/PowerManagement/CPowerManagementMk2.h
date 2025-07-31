@@ -7,14 +7,16 @@
 #include <inttypes.h>
 #include "IPowerManagement.h"
 #include "bq27441.h"
+
 #include "globals.h"
 #include "CUtil.h"
+#include "CUsbPower.h"
 #include "../PortExpanders/CMainBoardPortExp.h"
 
 class CPowerManagementMk2 : public IPowerManagement
 {
     public:
-        CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp);
+        CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, hw_variant_t variant);
         void print_status();
 
         // for IPowerManagement
@@ -26,16 +28,20 @@ class CPowerManagementMk2 : public IPowerManagement
 
         void add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len);
 
-        private:
+    private:
         static int s_cmpfunc (const void *a, const void *b);
         static int s_cmpfunc_uint8_t (const void *a, const void *b);
         static int16_t s_BQ27441_i2cWriteBytes(uint8_t DevAddress, uint8_t subAddress, uint8_t* src, uint8_t count);
         static int16_t s_BQ27441_i2cReadBytes(uint8_t DevAddress, uint8_t subAddress, uint8_t* dest, uint8_t count);
 
+        void set_adc0_source(CMainBoardPortExp::adc0_select_t adc_source);
+
         CMainBoardPortExp* _mainboard_port_exp = NULL;
+        hw_variant_t _variant;
         BQ27441_ctx_t _BQ27441;
         bool _BQ27441_init_success = false;
 
+        CUsbPower _usb_power;
         power_status_t _power_status = power_status_t::Unknown;
         charging_status_t _charging_status = charging_status_t::Unknown;
         
@@ -46,8 +52,11 @@ class CPowerManagementMk2 : public IPowerManagement
         uint16_t _full_capacity_mah;
         int16_t _vbus_voltage = -1;
 
+        uint16_t _input_limit = 0;
+
         uint64_t _last_batt_param_refresh = 0;
-        uint64_t _last_vbus_update;
+        uint64_t _last_adc0_read;
+        CMainBoardPortExp::adc0_select_t _adc0_source;
         bool _inital_startup = true;
 };
 

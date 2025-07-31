@@ -1,3 +1,5 @@
+#include "pico/stdlib.h"
+#include "hardware/pwm.h"
 #include "HalMk2.h"
 #include "../HwCheck/CDetermineHardwareVersion.h"
 #include "../FrontPanel/CFrontPanelV02.h"
@@ -7,20 +9,24 @@ HalMk2 *HalMk2::_this = NULL;
 HalMk2::HalMk2(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCapture* analogue_capture, CSavedSettings** saved_settings)
 {
     _this = this;
+    set_mkII_variant();
     _analogue_capture = analogue_capture;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
     _tca9534_main = new TCA9534(MK2_PORT_EXP_ADDR);
-    _main_board_port_exp = new CMainBoardPortExp(zc95_version_t::MKII, _tca9534_main);
-    _mk2_pm = new CPowerManagementMk2(_main_board_port_exp);
+    _main_board_port_exp = new CMainBoardPortExp(zc95_version_t::MKII, _variant, _tca9534_main);
+    _mk2_pm = new CPowerManagementMk2(_main_board_port_exp, _variant);
     _tca9534_ext = new TCA9534(MK2_EXT_INPUT_PORT_EXP_ADDR);
     _ext_input_port_exp = new CExtInputPortExp(led, routine_output, _tca9534_ext);
 
-    gpio_init(PIN_MK2_DISP_BL);
-    gpio_set_dir(PIN_MK2_DISP_BL, GPIO_OUT);
+    init_pwm_pin(PIN_MK2_DISP_BL);
 
     gpio_init(PIN_CONTROLS_INT);
     gpio_set_dir(PIN_CONTROLS_INT, GPIO_IN);
+
+    gpio_init(PIN_SD_CS);
+    gpio_set_dir(PIN_SD_CS, GPIO_OUT);
+    gpio_put(PIN_SD_CS, true);
 
     // MKII's don't support v0.1 front panels, as these require the buttons to 
     // be plugged into a socket on the main board that no longer exists
@@ -40,6 +46,9 @@ HalMk2::HalMk2(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     gpio_set_irq_enabled_with_callback(PIN_EXT_INPUT_INT, GPIO_IRQ_EDGE_FALL, true, &s_gpio_callback);
     _ext_input_port_exp->clear_input();
     _ext_input_port_exp->process(true);
+
+    // Reset LCD
+    _main_board_port_exp->lcd_reset();
 }
 
 HalMk2::~HalMk2()
@@ -53,6 +62,32 @@ HalMk2::~HalMk2()
     delete _tca9534_main;
 }
 
+void HalMk2::init_pwm_pin(uint8_t gpio)
+{
+    gpio_set_function(gpio, GPIO_FUNC_PWM);
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv(&config, 4.f);
+    pwm_init(slice_num, &config, true);
+}
+
+void HalMk2::set_mkII_variant()
+{
+    uint8_t rx_data = 0;
+    bool charge_controller_found = (i2c_read_timeout_us(i2c0, BQ25601_CHARGE_CONTROLLER, &rx_data, 1, false, 1000) > 0);
+
+    if (charge_controller_found)
+        _variant = hw_variant_t::V2_2;
+    else
+        _variant = hw_variant_t::V2_0;
+}
+
+hw_variant_t HalMk2::hardware_variant()
+{
+    return _variant;
+}
+
 void HalMk2::loop()
 {
     // On the Mk2, voltage_readings corresponds to USB VBUS voltage (but needs scaling in mk2_pm)
@@ -64,6 +99,7 @@ void HalMk2::loop()
     }
 
     _mk2_pm->loop();
+    set_display_brightness();
 
     if (time_us_64() - _last_loop_time > 1000000) // every second
     {
@@ -76,6 +112,18 @@ void HalMk2::loop()
         _ext_input_port_exp->process(false);
         _main_board_port_exp->process(false);
         _front_panel->process(false);
+    }
+}
+
+void HalMk2::set_display_brightness()
+{
+    uint8_t new_brightness = _display_on ? g_SavedSettings->get_display_brightness_percent() : 0;
+
+    if (new_brightness != _display_brightness_percent)
+    {
+        uint32_t val = (65535/100) * new_brightness;
+        pwm_set_gpio_level(PIN_MK2_DISP_BL, val);
+        _display_brightness_percent = new_brightness;
     }
 }
 
@@ -101,7 +149,8 @@ CFrontPanel* HalMk2::front_panel()
 
 void HalMk2::set_backlight(bool on)
 {
-    gpio_put(PIN_MK2_DISP_BL, on);
+    _display_on = on;
+    set_display_brightness();
 }
 
 zc95_version_t HalMk2::hardware_version()

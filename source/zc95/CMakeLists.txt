@@ -132,6 +132,8 @@ add_executable(zc95
   display/config/display_options/CMenuSettingButtonBrightness.cpp
   display/config/display_options/CMenuSettingPowerLevelDisplay.cpp
   display/config/display_options/CMenuSettingLedBrightnes.cpp
+  display/config/display_options/CMenuSettingsStatusBarText.cpp
+  display/config/display_options/CMenuSettingDisplayBrightness.cpp
 
   display/config/remote_access/CMenuRemoteAccess.cpp
   display/config/remote_access/CMenuRemoteAccessConnectWifi.cpp
@@ -161,6 +163,8 @@ add_executable(zc95
   PortExpanders/PCF8574.cpp
 
   PowerManagement/bq27441.c
+  PowerManagement/BQ25601.cpp
+  PowerManagement/CUsbPower.cpp
   PowerManagement/CPowerManagementMk1.cpp
   PowerManagement/CPowerManagementMk2.cpp
 
@@ -213,6 +217,7 @@ target_link_libraries(zc95
         hardware_dma
         hardware_pio
         hardware_adc
+        hardware_pwm
         pico_multicore
         pico_float
         hardware_flash

@@ -50,10 +50,11 @@
  *    P7 - N/C
  */
 
-CMainBoardPortExp::CMainBoardPortExp(zc95_version_t hardware_version, IPortExpander* port_exp)
+CMainBoardPortExp::CMainBoardPortExp(zc95_version_t hardware_version, hw_variant_t mkII_variant, IPortExpander* port_exp)
 {
     _hardware_version = hardware_version;
     _port_exp = port_exp;
+    _mkII_variant = mkII_variant;
 
     _old_state = 3;
     _last_read = 0;    
@@ -74,6 +75,13 @@ void CMainBoardPortExp::clear_input()
     {
         _port_exp->set_pin_as_output(AudioInputEnablePin);
         _port_exp->set_pin_as_output(BackLightPin);
+    }
+
+    if (_mkII_variant == hw_variant_t::V2_2)
+    {
+        _port_exp->set_pin_as_output(UsbCcSelectPin);
+        _port_exp->set_pin_as_output(UsbSenseSelectPin);
+        _port_exp->set_pin_as_output(LcdResetPin);
     }
     
     _port_exp->read_port_expander(&_last_read);
@@ -168,10 +176,61 @@ void CMainBoardPortExp::set_lcd_backlight(bool on)
 
 bool CMainBoardPortExp::get_tp4056_charge_status()
 {
-    return _port_exp->get_pin_state(ChargePin);
+    if (_mkII_variant == hw_variant_t::V2_0)
+        return _port_exp->get_pin_state(ChargePin);
+    else
+        return false;
 }
 
 bool CMainBoardPortExp::get_tp4056_standby_status()
 {
-    return _port_exp->get_pin_state(StandbyPin);
+    if (_mkII_variant == hw_variant_t::V2_0)
+        return _port_exp->get_pin_state(StandbyPin);
+    else
+        return false;
+}
+
+// MKII only. Set where ADC0 comes from.
+// V2.2 boards have the ability to switch between sending CC1, CC2 and 
+// VBUS to ADC0. Earlier boards have no switch, so it's always VBUS.
+void CMainBoardPortExp::set_adc0_source(adc0_select_t source)
+{
+    switch(_mkII_variant)
+    {
+        case hw_variant_t::NA:
+            printf("MainBoardPortExp::set_adc0_source: Error - attempt to set adc0 source on MKI\n");
+            return;
+
+        case hw_variant_t::V2_0:
+            if (source != adc0_select_t::USB_VBUS)
+                printf("MainBoardPortExp::set_adc0_source: Error - attempt to set adc0 source to CC line on MKII < v2.2 \n");
+            return;
+
+        case hw_variant_t::V2_2:
+        {
+            if (source == adc0_select_t::USB_CC1 || source == adc0_select_t::USB_CC2)
+            {
+                _port_exp->set_pin_state(UsbSenseSelectPin, false);
+                _port_exp->set_pin_state(UsbCcSelectPin, source == adc0_select_t::USB_CC2);
+            }
+            else
+            {
+                _port_exp->set_pin_state(UsbSenseSelectPin, true);
+                // With UsbSenseSelect (SW_SENSE2) high, the ouput from the CC line
+                // goes nowhere, so the setting of UsbCcSelect is irelevent.
+            }
+
+            return;
+        }
+    }
+}
+
+void CMainBoardPortExp::lcd_reset()
+{
+    if (_hardware_version == zc95_version_t::MKII)
+    {
+        _port_exp->set_pin_state(LcdResetPin, false);
+        sleep_ms(10);
+        _port_exp->set_pin_state(LcdResetPin, true);
+    }
 }

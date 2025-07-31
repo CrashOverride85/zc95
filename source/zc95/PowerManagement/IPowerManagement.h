@@ -34,7 +34,8 @@ class IPowerManagement
             BatCurrent,         // milliamps. -ve is battery discharging, +ve is charging
             RemainingCapacity,  // mAh
             FullCapacity,       // mAh held by battery when full
-            VbusVoltage         // millivolts
+            VbusVoltage,        // millivolts
+            InputCurrentLimit   // milliamps
         };
 
         /**

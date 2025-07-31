@@ -15,6 +15,13 @@ enum class zc95_version_t
     MKII
 };
 
+enum class hw_variant_t
+{
+    NA  , // Not a MKII
+    V2_0, // Main board PCB versions 2.0 & 2.1
+    V2_2  // Main board PCB versions >= 2.2
+};
+
 typedef uint64_t time_us_t;
 
 #endif
