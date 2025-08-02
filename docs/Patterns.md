@@ -88,6 +88,18 @@ Continuous output on channels 1 & 2, with 3 & 4 switching/toggling.
 
 
 
+## TriFade
+Triphase effect - fades triphase effect in and out at the selected speed.
+
+Only uses channel 1 & 2, and assumes they are connected together with a common electrode. Without the common electrode, the triphase effect won't be felt.
+
+### Menu options
+* Cycle time - controls how long, in milliseconds, it takes for a full cycle/fade in-out. Lower is faster.
+
+*Warning*: Enables triphase mode / disables channel isolation, so should not be used above the waist. 
+
+
+
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
 Can be used with shock collars.
