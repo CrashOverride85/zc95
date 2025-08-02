@@ -30,7 +30,8 @@ class CZC624Comms
             SwitchOff = 7,
             NoOp = 8,
             SetTestVal = 9,
-            Pulse = 10
+            Pulse = 10,
+            SyncChanel = 11
         };
 
         enum class i2c_reg_t

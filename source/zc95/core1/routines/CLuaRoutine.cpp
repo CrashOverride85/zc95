@@ -112,6 +112,8 @@ void CLuaRoutine::load_lua_script_if_required()
             { "SetFrequency"  , &dispatch<&CLuaRoutine::lua_set_freq> },
             { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
             { "AccIoWrite"    , &dispatch<&CLuaRoutine::lua_acc_io_write> },
+            { "EnableTriphase", &dispatch<&CLuaRoutine::lua_enable_triphase> },
+            { "LinkChannels"  , &dispatch<&CLuaRoutine::lua_link_channel> },
             { NULL, NULL }
         };
         luaL_register(_lua_state, "zc", zc_regs);
@@ -179,6 +181,7 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
 
         conf->button_text[(int)soft_button::BUTTON_A] = get_string_field("soft_button");
         conf->bluetooth_remote_passthrough = get_bool_field("bluetooth_remote_passthrough");
+        conf->force_channel_isolation = !get_bool_field("allow_triphase");
         int loop_freq = get_int_field("loop_freq_hz");
 
         if (loop_freq < 0 || loop_freq > 400)
@@ -815,3 +818,29 @@ int CLuaRoutine::lua_acc_io_write(lua_State *L)
     return 1;
 }
 
+// Params:
+// bool: State - true=enabled, false=disabled
+int CLuaRoutine::lua_enable_triphase(lua_State *L)
+{
+    bool state = lua_toboolean(L, 2);
+    set_channel_isolation(state);
+    return 1;
+}
+
+// Params:
+// int : Lead channel
+// int : Linked channel
+// int : offset percent / how much the channels pulses will overlap. 0% offset = fully overlap
+int CLuaRoutine::lua_link_channel(lua_State *L)
+{
+    int lead   = lua_tointeger(L, 1);
+    int linked = lua_tointeger(L, 2);
+    int offset = lua_tointeger(L, 3);
+
+    if (!is_channel_number_valid(lead)) return 0;
+    if (linked < 0 || linked > 255) return 0;
+    if (offset < 0 || offset > 100) return 0;
+
+    full_channel_link_channel(lead-1, linked-1, offset);
+    return 1;
+}

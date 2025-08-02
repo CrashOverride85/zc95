@@ -17,11 +17,12 @@ class CPulseQueue
             uint sm; // aka channel
             uint8_t pos_us;
             uint8_t neg_us;
+            uint64_t delay_until_us;
         } element_t;
 
         CPulseQueue(CI2cSlave *i2c_slave);
         ~CPulseQueue();
-        void queue_pulse(uint sm, uint8_t pos, uint8_t neg);
+        void queue_pulse(uint sm, uint8_t pos, uint8_t neg, uint64_t delay_until_us = 0);
         bool get_queued_pulse(uint *sm, uint8_t *pos, uint8_t *neg);
 
     private:

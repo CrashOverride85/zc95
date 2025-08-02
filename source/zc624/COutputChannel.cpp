@@ -221,9 +221,9 @@ bool COutputChannel::timer_callback(repeating_timer_t *rt)
     }
 }
 
-void COutputChannel::queue_pulse(uint8_t pos_us, uint8_t neg_us)
+void COutputChannel::queue_pulse(uint8_t pos_us, uint8_t neg_us, uint64_t delay_until_us)
 {
-    _pulse_queue->queue_pulse(_sm, pos_us, neg_us);
+    _pulse_queue->queue_pulse(_sm, pos_us, neg_us, delay_until_us);
 }
 
 void COutputChannel::do_pulse(uint8_t pos_us, uint8_t neg_us)

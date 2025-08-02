@@ -11,6 +11,11 @@ COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
     _pio_program_offset = pio_add_program(_pio, &pulse_gen_program);
     _i2c_slave = i2c_slave;
     _pulse_queue = new CPulseQueue(i2c_slave);
+    reset_chanel_triphase(0);
+    reset_chanel_triphase(1);
+    reset_chanel_triphase(2);
+    reset_chanel_triphase(3);
+    _channel_isolation_last_value = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
 
     setup_gpio(PIN_9V_ENABLE);
     setup_gpio(PIN_CHAN1_GATE_A);
@@ -82,12 +87,21 @@ COutput::~COutput()
     }
 }
 
-void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
+void COutput::reset_chanel_triphase(uint8_t chan)
+{
+    if (!is_channel_valid(chan))
+        return;
+
+    _channel_triphase[chan].linked_channel = 0xFF;
+    _channel_triphase[chan].offset_percent = 0xFF;
+}
+
+void COutput::pulse(uint8_t channel, uint8_t pos_us, uint8_t neg_us, uint64_t delay_until_us)
 {
     if (!is_channel_valid(channel))
         return;
 
-    _channel[channel]->queue_pulse(pos_us, neg_us);
+    _channel[channel]->queue_pulse(pos_us, neg_us, delay_until_us);
 }
 
 void COutput::set_power(uint8_t channel, uint16_t power)
@@ -119,6 +133,7 @@ void COutput::on(uint8_t channel)
     if (!is_channel_valid(channel))
         return;
 
+    unlink_if_linked(channel);
     _channel[channel]->on();
 }
 
@@ -135,12 +150,31 @@ void COutput::loop()
     uint sm = 0;
     uint8_t pos = 0;
     uint8_t neg = 0;
+
+    bool channel_isolation_on = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
+    if (_channel_isolation_last_value != channel_isolation_on)
+    {
+        reset_chanel_triphase(0);
+        reset_chanel_triphase(1);
+        reset_chanel_triphase(2);
+        reset_chanel_triphase(3);
+        _channel_isolation_last_value = channel_isolation_on;
+    }
+
     if (_pulse_queue->get_queued_pulse(&sm, &pos, &neg))
     {
         if (!is_channel_valid(sm))
             return;
 
         _channel[sm]->do_pulse(pos, neg);
+
+        if (!channel_isolation_on && is_channel_valid(_channel_triphase[sm].linked_channel) && _channel_triphase[sm].offset_percent <= 100)
+        {           
+            uint16_t pulse_duration_us = pos + neg;
+            uint16_t delay_us = (float)_channel_triphase[sm].offset_percent * ((float)pulse_duration_us/(float)100); // max delay = 512 us
+            
+            pulse(_channel_triphase[sm].linked_channel, pos, neg, time_us_64() + delay_us);
+        }
     }
 }
 
@@ -159,6 +193,59 @@ uint8_t COutput::get_channel_led_state()
     state |= (1 << 5);
     
     return state;
+}
+
+void COutput::sync_chanel(uint8_t channel_lead, uint8_t channel_linked, uint8_t offset_percent)
+{
+    bool channel_isolation_on = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
+    if (!is_channel_valid(channel_lead) || channel_lead==channel_linked || offset_percent > 100 || channel_isolation_on)
+    {
+        printf("Rejecting SyncChanel message\n");
+        return;
+    }
+
+    // Don't allow a linked channel to be linked to another. E.g. if 1 is linked to 2, don't allow 
+    // 2 to be linked to anything. This is mostly to prevent loops (e.g. 1 -> 2 -> 1). We could be 
+    // smarter in the future and explicitly look for (and stop) creating loops, but not yet.
+    for (uint8_t chan=0; chan++; chan < 4)
+    {
+        if (_channel_triphase[chan].linked_channel == channel_lead)
+        {
+            printf("Rejecting SyncChanel message: channel already linked\n");
+            return;
+        }
+    }
+
+    if (!is_channel_valid(channel_linked))
+    {
+        reset_chanel_triphase(channel_lead);
+        return;
+    }
+
+    off(channel_linked);
+
+    _channel_triphase[channel_lead].linked_channel = channel_linked;
+    _channel_triphase[channel_lead].offset_percent = offset_percent;
+}
+
+bool COutput::is_linked_channel(uint8_t channel)
+{
+    for (uint8_t c=0; c < 4; c++)
+    {
+        if (_channel_triphase[c].linked_channel == channel)
+            return true;
+    }
+
+    return false;
+}
+
+void COutput::unlink_if_linked(uint8_t channel)
+{
+    for (uint8_t c=0; c < 4; c++)
+    {
+        if (_channel_triphase[c].linked_channel == channel)
+            reset_chanel_triphase(c);
+    }
 }
 
 void COutput::power_down()
