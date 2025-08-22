@@ -247,7 +247,25 @@ On power up, the LEDs should briefly turn purple (~2s), then turn green as the s
 To vastly improve the accuracy of the battery gauge, I recommend leaving the box on until the battery is flat and it shuts off, then fully charging. 
 
 # Troubleshooting
-## ZC95 main board
+## Doesn't power on without charger attached
+For the first power on after installing a battery, a USB-C charger needs to be connected - this is to be expected and not a fault.
+
+Applies to PCB v2.3: If the ZC95 doesn't power on after having being switched off for more than a few minutes, fit a 100uF capacitor (this is on the BoM) between the right most switch contact (as viewed from the top, with the switch towards you) and the top of the USB-C connector, like so:
+
+![fix1 100uF]
+
+If C64 & C65 are fitted, also remove them:
+
+![fix1 C64 C65]
+
+(these were removed from the BoM/CPL files 2025-08-18)
+
+That should fix the issue. In the unlikely event it doesn't, try fitting something like a 22uF 1210 capacitor between the same switch contact as before and a ground on the bottom of the PCB, e.g.:
+
+![fix1 22uF]
+
+
+## Hardware check failed
 If any of the I2C devices aren't detected, you should see an error similar to the below:
 
 ![hw check fail]
@@ -255,7 +273,10 @@ If any of the I2C devices aren't detected, you should see an error similar to th
 Here, it can't find the two ICs on the front panel (in this case, the IDC cable was unplugged).
 There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel. Either 3v3 TTL or RS232, depending on jumper settings.
 
-### Clearing saved settings / EEPROM
+## Battery gauge is wrong
+If the battery gauge is showing filled green to indicate finished charging, but the percentage is some way off 100%, the best approach is to disconnect the charger, leave the box on until it shuts off due to low battery, then fully charge it (this should only need doing once). If you're impatient, removing the battery, leaving it a few minutes (maybe 15 to be sure), then reinstalling it and connecting the charger will probably improve it. But a full discharge/recharge cycle is best if you want it to be accurate. 
+
+## Clearing saved settings / EEPROM
 So far I've never found it necessary, but the EEPROM and user settings in flash can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking what should be reset:
 * EEPROM - reset to defaults all settings that can be changed via the menus
 * Flash  - clear any uploaded Lua scripts along with a section used by the btstack library for some bluetooth pairing data
@@ -356,6 +377,9 @@ Possible causes (not exhaustive!) for calibration to fail:
 [zc95 assembled2]: images/assembled_hammond.jpg "Fully assembled ZC95 in 1598DBK case, minus cover"
 [zc95 powered up]: images/powered_up.jpg "Fully assembled ZC95 powered up"
 [hw check fail]: images/hw_check_fail.jpg "Power up error"
+[fix1 C64 C65]: images/fix_c64_c65.jpg "C64 and C65 location on PCB"
+[fix1 100uF]: images/fix_cap1.jpg "100uF capacitor between switch and USB-C"
+[fix1 22uF]: images/fix_cap2.jpg "22uF capacitor on underside of PCB"
 [q1]: images/build_Q1.jpg "Use diode for Q1"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
 [gh46]: https://github.com/CrashOverride85/zc95/issues/46
