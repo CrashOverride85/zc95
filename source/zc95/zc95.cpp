@@ -144,6 +144,9 @@ void set_leds_to_black(CLedControl* led)
 
 int main()
 {
+    // Debugging with picoprobe causes cyw43_arch_init() to hang without this. JLink doesn't need it though ¯\_(ツ)_/¯
+    timer_hw->dbgpause = 0; 
+
     CSavedSettings* settings = NULL;
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;

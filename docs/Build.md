@@ -343,11 +343,11 @@ calibrate for sm=3 FAILED! final voltage = 1.541235, dac_value = 3400 (expecting
 means the opposite - at the starting value of 3400, the voltage across the sense resistor (and therefore current flow though the PFET & transformer) was already way above what it should be.
 
 Possible causes (not exhaustive!) for calibration to fail:
-* If all channels are showing a similar and very low voltage (~0.01v) at a DAC value of 2400, suspect the 9v supply (and in turn, the 12v supply it's derived from)
+* If all channels are showing a similar and very low voltage (~0.01v) at a DAC value of 2400, suspect the 9v supply
 * Bad/incorrect PFET - e.g. not an IRF9Z24**NPBF**
 * Too low value sense resistor (if DAC value is 2400), or too high (if DAC value is 3400)
 * Incorrect resistor value in the opamp circuit - likely if the final voltage is wildly off. Also suspect a bad/cracked resistor or poor solder joint if the final voltage keeps changing between power cycles 
-* If either chanel 1+2 or 3+4 fail with the same figures, take a close look at the corresponding ADC input pin on the Pico (pin 31/ADC0 for chan 1+2 or 32/ADC1 for chan 3+4) for bad solder joints.
+* If either chanel 1+2 or 3+4 fail with the same figures, take a close look at the corresponding ADC input pin on the Pico (pin 31/ADC0 for chan 1+2 or 32/ADC1 for chan 3+4) for bad solder joints. Also inspect the DAC (U7) and look for any bridged pins
 
 
 **Note**: If calibration/self test fails, the 9v supply is switched off, so this not being present after a calibration failure is likely a symptom not a cause.

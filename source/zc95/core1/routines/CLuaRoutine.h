@@ -51,6 +51,8 @@ class CLuaRoutine: public CRoutine
         bool is_channel_number_valid(int channel_number);
         bool runnable();
         int pcall (int nargs, int nresults, int errfunc);
+        int run_lua_loop (double time_ms);
+        int run_lua_loop_thread(double time_ms);
         void channel_pulse_processing();
 
         static void s_lua_hook(lua_State *L, lua_Debug *ar);
@@ -67,6 +69,12 @@ class CLuaRoutine: public CRoutine
         int lua_acc_io_write(lua_State *L);
         int lua_enable_triphase(lua_State *L);
         int lua_link_channel(lua_State *L);
+        int lua_delay_ms(lua_State *L);
+
+        lua_State* _lua_loop_thread = NULL;
+        uint64_t _suspend_lua_loop_execution_until_us = 0;
+        bool _lua_loop_suspended = false;
+
         uint16_t _loop_freq_hz = 0;
         uint32_t _last_loop = 0;
 

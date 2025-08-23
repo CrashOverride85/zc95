@@ -114,6 +114,7 @@ void CLuaRoutine::load_lua_script_if_required()
             { "AccIoWrite"    , &dispatch<&CLuaRoutine::lua_acc_io_write> },
             { "EnableTriphase", &dispatch<&CLuaRoutine::lua_enable_triphase> },
             { "LinkChannels"  , &dispatch<&CLuaRoutine::lua_link_channel> },
+            { "DelayMs"       , &dispatch<&CLuaRoutine::lua_delay_ms> },
             { NULL, NULL }
         };
         luaL_register(_lua_state, "zc", zc_regs);
@@ -427,33 +428,6 @@ void CLuaRoutine::loop(uint64_t time_us)
     if (!runnable())
         return;
 
-    double time_ms = (double)time_us/(double)1000;
-
-    if (_loop_freq_hz)
-    {
-        uint32_t loop_freq = floor(time_ms/((double)1000/(double)_loop_freq_hz));
-        if (loop_freq == _last_loop)
-            return;
-
-        _last_loop = loop_freq;
-    }
-
-    lua_getglobal(_lua_state, "Loop");
-    if (lua_isfunction(_lua_state, -1))
-    {
-        lua_pushnumber(_lua_state, time_ms);
-        pcall(1, 0, 0);
-    }
-    else
-    {
-        // There must be a loop function, or the script isn't going to work
-        printf("CLuaRoutine::loop(): No loop function in script!\n");
-        print(text_type_t::ERROR, "Script stopped... no Loop function found in script!");
-        _script_valid = ScriptValid::INVALID;
-        stop();
-        return;
-    }
-
     if (_get_raw_bt_hid_events)
     {
         uint8_t count = 0;
@@ -470,6 +444,19 @@ void CLuaRoutine::loop(uint64_t time_us)
             }
         }
     }
+
+    double time_ms = (double)time_us/(double)1000;
+
+    if (_loop_freq_hz)
+    {
+        uint32_t loop_freq = floor(time_ms/((double)1000/(double)_loop_freq_hz));
+        if (loop_freq == _last_loop)
+            return;
+
+        _last_loop = loop_freq;
+    }
+
+    run_lua_loop(time_ms);
 }
 
 void CLuaRoutine::channel_pulse_processing()
@@ -523,6 +510,72 @@ int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
     }
 
     return retval;
+} 
+
+int CLuaRoutine::run_lua_loop(double time_ms)
+{
+    if (_suspend_lua_loop_execution_until_us == 0 )
+    {
+        // Not suspended
+        _lua_loop_thread = lua_newthread(_lua_state);
+        run_lua_loop_thread(time_ms);
+    }
+
+    else if (_suspend_lua_loop_execution_until_us > time_us_64())
+    {
+        // Suspended, not time to resume yet
+    }
+
+    else
+    {
+        // Suspended, now time to resume
+        _suspend_lua_loop_execution_until_us = 0;
+        run_lua_loop_thread(time_ms);
+    }
+
+    return 0;
+}
+
+int CLuaRoutine::run_lua_loop_thread(double time_ms)
+{
+    lua_getglobal(_lua_loop_thread, "Loop");
+    if (lua_isfunction(_lua_loop_thread, -1))
+    {
+        lua_pushnumber(_lua_loop_thread, time_ms);
+            
+        _instruction_count = 0;
+        int retval = lua_resume(_lua_loop_thread, 1);
+        if (retval == LUA_YIELD)
+        {
+            if (_suspend_lua_loop_execution_until_us == 0) // Only expecting LUA_YIELD if zc.DelayMs() was used, which would set _suspend_lua_loop_execution_until_us.
+                _suspend_lua_loop_execution_until_us = 1;
+        }
+        else if (retval)
+        {
+            // Not LUA_YIELD and non-zero means error
+            const char *err = lua_tostring(_lua_loop_thread, -1);
+            printf("CLuaRoutine::run_lua_loop_thread error: %s (retval = %d)\n", err, retval);
+            print(text_type_t::ERROR, "Script stopped... error: \n%s", err);
+            _script_valid = ScriptValid::INVALID;
+            stop();
+        }
+        else
+        {
+            // successful completion of _lua_loop_thread, remove from main _lua_state
+            lua_pop(_lua_state, 1);
+        }
+    }
+    else
+    {
+        // There must be a loop function, or the script isn't going to work
+        printf("CLuaRoutine::loop(): No loop function in script!\n");
+        print(text_type_t::ERROR, "Script stopped... no Loop function found in script!");
+        _script_valid = ScriptValid::INVALID;
+        stop();
+        return -1;
+    }
+
+    return 0;
 }
 
 void CLuaRoutine::s_lua_hook(lua_State *L, lua_Debug *ar)
@@ -843,4 +896,17 @@ int CLuaRoutine::lua_link_channel(lua_State *L)
 
     full_channel_link_channel(lead-1, linked-1, offset);
     return 1;
+}
+
+// Params:
+// int : Milliseconds to suspend execution for (0 - 10000, i.e. 0 to 10 seconds)
+int CLuaRoutine::lua_delay_ms(lua_State *L)
+{
+    int delay_ms   = lua_tointeger(L, 1);
+
+    if (delay_ms < 0 || delay_ms > 10000) return 0;
+
+    _suspend_lua_loop_execution_until_us = time_us_64() + (delay_ms * 1000);
+
+    return lua_yield(L, 0);
 }

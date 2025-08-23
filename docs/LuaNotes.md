@@ -338,6 +338,12 @@ Minimal example for using the accessory port to control 3 LEDs. Can be used with
 
 ![acc port]
 
+### DelayMs
+```
+Params:
+    * Delay in milliseconds (0 - 10000)
+```
+Delay/sleep for the specified number of milliseconds. During the delay, other events (e.g. `MinMaxChange`, `SoftButton`) will still fire, so be sure the script is written to expect that.
 
 ## Special functions
 These are functions that will be automatically called when applicable whilst the Lua script is running. With the exception of `Loop()`, all are optional. 
@@ -375,9 +381,9 @@ Note that unlike `SoftButton` and `ExternalTrigger`, there is only a single even
 If `bluetooth_remote_passthrough = false` (or is absent), this function is never called, and key presses from a connected bluetooth remote are interpreted according to the configured mappings. E.g. if SHUTTER is mapped to "`Top left soft`", pressing the shutter button will cause `SoftButton(true)` immediately followed by `SoftButton(false)` to be called.
 
 ### BluetoothHidEvent (usage_page, usage, value)
-Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project [HidExample](../misc/Bluetooth/HidExample/).
+Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project that can be paired with the ZC95 and use this functionality [HidExample](../misc/Bluetooth/HidExample/).
 
-When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particular familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
+When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particularly familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
 
 ### AudioIntensityChange(left_chan, right_chan, virt_chan)
 Receive audio data from aux socket.
@@ -427,7 +433,7 @@ As recap, "triphase" is where two channels are linked together with a common ele
 
 In normal operation, the ZC95 will never generate two pulses at same time - if the channels have been configured with frequencies that would cause two pulses to overlap, one is delayed. This is done as pulses overlapping in an uncontrolled/unintended manner can cause unexpected spikes if electrodes are in close proximately, and certainly if two have been joined together in a triphase configuration.
 
-The triphase support is used to allow the ZC95 to internationally generate pulses that overlap, but in a controlled manner with consistent results. 
+The triphase support is used to allow the ZC95 to intentionally generate pulses that overlap, but in a controlled manner with consistent results. 
 
 At present, it only allows one channel to be linked to another, where a pulse on the linked linked channel is generated with a set overlap with the lead channel (further options likely to follow in the future).
 
