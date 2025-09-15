@@ -58,3 +58,7 @@ target_link_libraries(OutputZc
 
 pico_add_extra_outputs(OutputZc)
 add_subdirectory(external/pico_i2c_slave)
+
+target_compile_definitions(OutputZc PRIVATE
+  SYS_CLK_MHZ=200
+)
