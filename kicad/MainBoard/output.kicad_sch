@@ -4,6 +4,12 @@
 
   (paper "A4" portrait)
 
+  (title_block
+    (title "ZC95 MKII")
+    (rev "2.5")
+    (company "CrashOverride85")
+  )
+
   (lib_symbols
     (symbol "Amplifier_Operational:LM324" (pin_names (offset 0.127)) (in_bom yes) (on_board yes)
       (property "Reference" "U" (id 0) (at 0 5.08 0)
