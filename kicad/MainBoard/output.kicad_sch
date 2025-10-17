@@ -6658,7 +6658,7 @@
   (symbol (lib_id "Device:R_Small") (at 92.71 26.035 180) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 9a4b7665-2e91-4b1d-8893-67aacc71bc94)
-    (property "Reference" "R37" (id 0) (at 88.9 26.035 0)
+    (property "Reference" "R37" (id 0) (at 86.995 26.035 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "100k" (id 1) (at 86.36 28.575 0)
