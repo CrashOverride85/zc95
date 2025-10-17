@@ -130,6 +130,8 @@ Q12,IRF9Z24NPBF,TO-220-3_Vertical,239.08,-110.18,-90.0,top
 Q13,AO3400A,SOT-23_Handsoldering,229.2,-101.86,90.0,top
 Q14,AO3401A,SOT-23_Handsoldering,102.4,-88.65,0.0,top
 Q15,AO3401A,SOT-23_Handsoldering,96.8,-88.61,0.0,top
+Q16,AO3401A,SOT-23_Handsoldering,149.575,-100.75,90.0,top
+Q17,AO3400A,SOT-23_Handsoldering,155.075,-94.45,90.0,top
 Q18,AO3401A,SOT-23_Handsoldering,199.1,-75.3,90.0,top
 Q19,AO3400A,SOT-23_Handsoldering,199.55,-68.0,90.0,top
 R1,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,182.8112,-123.2536,-90.0,top
@@ -168,7 +170,7 @@ R33,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,88.72,-95.78,180.0,top
 R34,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,90.04,-91.45,0.0,top
 R35,100R,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,139.29,-67.5,0.0,top
 R36,0.5R,R_2512_6332Metric_Pad1.40x3.35mm_HandSolder,224.6,-97.15,90.0,top
-R37,100k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,233.3498,-81.9912,0.0,top
+R37,100k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,232.3,-81.9912,0.0,top
 R38,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,216.925,-90.8875,90.0,top
 R39,100k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,229.89445,-78.7908,90.0,top
 R40,100k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,208.175,-61.975,180.0,top
@@ -286,6 +288,7 @@ R151,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,53.475,-119.75,0.0,top
 R152,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,154.975,-65.725,-90.0,top
 R153,330K,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,146.77,-84.81,0.0,top
 R154,4k7,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,145.4,-92.47,90.0,top
+R155,10k,R_0603_1608Metric_Pad0.98x0.95mm_HandSolder,155.675,-99.1875,-90.0,top
 SW1,SW_SPDT,SS-12D06L5,60.3302,-127.5645,0.0,top
 U1,TCA9534,TSSOP-16_4.4x5mm_P0.65mm,157.3212,-117.0936,180.0,top
 U2,BQ25601,Texas_S-PWQFN-N24_EP2.7x2.7mm_ThermalVias,64.3375,-110.7,180.0,top

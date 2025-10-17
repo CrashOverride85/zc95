@@ -34,13 +34,16 @@ First public version
 
 ## MainBoard
 
-### v2.4
+### v2.5
 Fix:
  - Update power switch so that it toggles the power enable pin of the voltage regulators, instead of directly switching the power as before. To avoid over current fault / shutdown of BQ25601.
 
  Tweaks:
  - Changed 500mΩ sense resistors from 1218 to 2512 footprint for availability reasons
  - Sleeve and Ring of output TRS jacks are now connected together. Previously Ring was unconnected.
+
+### v2.4
+- *Not publicly released*
 
 ### v2.3
 Tweaks:

@@ -250,7 +250,7 @@ To vastly improve the accuracy of the battery gauge, I recommend leaving the box
 ## Doesn't power on without charger attached
 For the first power on after installing a battery, a USB-C charger needs to be connected - this is to be expected and not a fault.
 
-Applies to PCB v2.3: If the ZC95 doesn't power on after having being switched off for more than a few minutes, fit a 100uF capacitor (this is on the BoM) between the right most switch contact (as viewed from the top, with the switch towards you) and the top of the USB-C connector, like so:
+Applies to PCB v2.3 (only): If the ZC95 doesn't power on after having being switched off for more than a few minutes, fit a 100uF capacitor (this is on the BoM) between the right most switch contact (as viewed from the top, with the switch towards you) and the top of the USB-C connector, like so:
 
 ![fix1 100uF]
 
