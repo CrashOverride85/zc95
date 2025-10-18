@@ -1,3 +1,5 @@
+**2025/09/14 - There is an issue with the box not always powering on when not connected to a charger, which sometimes isn't resolved by the extra capacitor mentioned in the troubleshooting section. Should be fixed in PCB v2.4 shortly. For the time being, I'd suggest holding off building a MKII**
+
 # Hardware build notes 
 
 ## Prerequisites 
