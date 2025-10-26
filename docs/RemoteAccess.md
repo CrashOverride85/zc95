@@ -55,8 +55,8 @@ At this point, the Python GUI and scripts to list/upload Lua scripts should work
 ## Serial control
 The ZC95 can also be controlled using RS-232 serial via the Aux port. Pin out:
 
-* Tip = Transmit (ZC95 output)
-* Ring = Receive
+* Tip = Receive
+* Ring = Transmit (ZC95 output)
 * Sleeve = Ground
 
 Before this mode can be used, the hardware configuration needs to be set to:
