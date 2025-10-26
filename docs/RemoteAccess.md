@@ -61,7 +61,6 @@ Pin out:
 * Tip = Receive
 * Ring = Transmit (ZC95 output)
 * Sleeve = Ground
- should work if given the IP displayed on screen.
 
 Before this mode can be used, the hardware configuration needs to be set to:
 * Debug output = `Accessory port` or `Off`
