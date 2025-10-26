@@ -53,15 +53,19 @@ Select the "Connect to WiFi" option, and it should connect to the WiFi network p
 At this point, the Python GUI and scripts to list/upload Lua scripts should work if given the IP displayed on screen.
 
 ## Serial control
-The ZC95 can also be controlled using RS-232 serial via the Aux port. Pin out:
+The ZC95 can also be controlled using serial via the 3.5mm aux/serial port. 
+For the MKI, this is always RS-232. For the MKII, it is either TTL or RS-232 depending on the position of jumpers on J5 (see build notes).
+
+Pin out:
 
 * Tip = Receive
 * Ring = Transmit (ZC95 output)
 * Sleeve = Ground
+ should work if given the IP displayed on screen.
 
 Before this mode can be used, the hardware configuration needs to be set to:
 * Debug output = `Accessory port` or `Off`
-* Aux port use = `Serial I/O`
+* MKI only: Aux port use = `Serial I/O`
 
 (see Hardware config section in [Operation notes](./Operation.md))
 
