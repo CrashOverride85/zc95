@@ -17,8 +17,8 @@
 #define BQ27441_I2C_ADDRESS         0x55 // MKII: Fuel/gas gauge
 #define BQ25601_CHARGE_CONTROLLER   0x6B // MKII, for main board PCB version >= 2.2 only: BQ25601 charge controller
 
-#define MK2_PORT_EXP_ADDR           0x21 // MKII: port expander used for charger and audio control (replaces MK1_CONTROLS_PORT_EXP_ADDR)
-#define MK2_EXT_INPUT_PORT_EXP_ADDR 0x22 // MKII: port expander used for 3x acc io lines and trigger inputs (replaces MK1_EXT_INPUT_PORT_EXP_ADDR)
+#define MK2_PORT_EXP_ADDR           0x39 // MKII: port expander used for charger and audio control (replaces MK1_CONTROLS_PORT_EXP_ADDR)
+#define MK2_EXT_INPUT_PORT_EXP_ADDR 0x3A // MKII: port expander used for 3x acc io lines and trigger inputs (replaces MK1_EXT_INPUT_PORT_EXP_ADDR)
 
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
