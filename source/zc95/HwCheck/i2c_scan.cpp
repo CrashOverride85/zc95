@@ -33,14 +33,11 @@ uint8_t i2c_scan::scan(i2c_inst_t *i2c)
             ret = PICO_ERROR_GENERIC;
         else
         {
-            if (addr == FP_0_2_PORT_EXP_ADDR)
-            {
-                // The TCA9534 I/O expander used on the front panel is weird in that it 
-                // ignores reads unless there's a write first.
-                // So we need a special case to detect it.
-                rxdata = 0;
-                ret = i2c_write_blocking(i2c, addr, &rxdata, 1, false);
-            }
+            // The TCA9534 I/O expander used on the front panel is weird in that it 
+            // ignores reads unless there's a write first.
+            // So write something first.
+            rxdata = 0;
+            ret = i2c_write_blocking(i2c, addr, &rxdata, 1, false);
             
             ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
         }
