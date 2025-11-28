@@ -252,6 +252,11 @@ target_compile_definitions(zc95 PRIVATE
   # than crashing with a Panic. Ideally Lua would use a seperate alloc function that didn't panic, whilst everything
   # else did. Not quite sure how to manage that yet; multicore/malloc mutex complicates things.
   PICO_MALLOC_PANIC=0
+
+  # For SDK 2.2.0: This seemingly unrelated and undocumented setting is required to avoid the compilation error:
+  #   section `.stack_dummy' will not fit in region `SCRATCH_Y'
+  # when specifying "PICO_STACK_SIZE=8192". See #147.
+  PICO_CRT0_ALLOCATE_SPACERS=0
 )
 
 target_compile_definitions(zc95 PRIVATE
