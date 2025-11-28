@@ -1634,10 +1634,10 @@
       <text:p>C50</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce77" office:value-type="string" calcext:value-type="string">
-      <text:p>4.7nF</text:p>
+      <text:p>47nF</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce77" office:value-type="string" calcext:value-type="string">
-      <text:p>C53987</text:p>
+      <text:p>C1622</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce77" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
