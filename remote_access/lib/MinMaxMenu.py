@@ -24,6 +24,11 @@ class MinMaxMenu:
       self.current_val = self.min_val
       
     self.update_display()
+
+  def set_value(self, value):
+    if value >= self.min_val and value <= self.max_val:
+      self.current_val = value;
+      self.update_display()
       
   def update_display(self):
     # progress bars always go from 0..max, but pattern needs min..max

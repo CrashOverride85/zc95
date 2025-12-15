@@ -51,6 +51,7 @@ CRoutineRun::CRoutineRun(
     _routine_output = routine_output;
 
     _routine_output->set_text_callback_function(std::bind(&CRoutineRun::script_output, this, std::placeholders::_1));
+    _routine_output->set_menu_change_callback_function(std::bind(&CRoutineRun::menu_changed_callback, this, std::placeholders::_1));
 
     for (uint8_t channel=0; channel < MAX_CHANNELS; channel++)
     {
@@ -63,6 +64,7 @@ CRoutineRun::CRoutineRun(
 CRoutineRun::~CRoutineRun()
 {
     printf("~CRoutineRun()\n");
+    _routine_output->set_menu_change_callback_function(NULL);
     _routine_output->stop_routine();
     _routine_output->set_text_callback_function(NULL);
 
@@ -87,7 +89,9 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         }
 
         _routine_output->activate_routine(index);
+        set_pattern_config(index);
         pattern_start = true;
+        _running = true;
     }
 
     else if (msgType == "PatternMinMaxChange")
@@ -129,6 +133,7 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         // Return value of true means CWsConnection knows we're done and will delete this object.
         // Destructor will then call _routine_output->stop_routine();
         send_ack("OK", msgId);
+        _running = false;
         return true;
     }
 
@@ -252,5 +257,67 @@ void CRoutineRun::script_output(pattern_text_output_t output)
 
     std::string generatedJson;
     serializeJson(script_output, generatedJson);
+    _send(generatedJson);
+}
+
+void CRoutineRun::set_pattern_config(uint8_t index)
+{
+    CRoutines::Routine routine = _routines[index];
+    CRoutine* routine_ptr = routine.routine_maker(routine.param);
+    routine_ptr->get_config(&_pattern_conf);
+    delete routine_ptr;
+}
+
+void CRoutineRun::menu_changed_callback(menu_change_msg_t msg)
+{
+    if (!_running)
+        return;
+
+    for (uint8_t idx=0; idx < _pattern_conf.menu.size(); idx++)
+    {
+        if (_pattern_conf.menu[idx].id == msg.menu_id)
+        {
+            menu_entry* entry = &_pattern_conf.menu[idx];
+            switch (entry->menu_type)
+            {
+                case menu_entry_type::MIN_MAX:
+                    if (msg.new_value >= entry->minmax.min && msg.new_value <= entry->minmax.max)
+                    {
+                        _routine_output->menu_min_max_change(entry->id, msg.new_value);
+                        send_menu_change_update(entry->id, msg.new_value);
+                    }
+                    return;
+
+                case menu_entry_type::MULTI_CHOICE:
+                    {
+                        // confirm choice id is valid
+                        for (uint8_t c=0; c < entry->multichoice.choices.size(); c++)
+                        {
+                            if (entry->multichoice.choices[c].choice_id == msg.new_value)
+                            {
+                                _routine_output->menu_multi_choice_change(entry->id, msg.new_value);
+                                send_menu_change_update(entry->id, msg.new_value);
+                                return;
+                            }
+                        }
+                    }
+                    break;
+            }
+            break;
+        }
+    }
+}
+
+void CRoutineRun::send_menu_change_update(uint8_t menu_id, uint16_t value)
+{
+    DynamicJsonDocument status_message(500);
+
+    status_message["Type"] = "MenuOptionChanged";
+    status_message["MsgId"] = -1;
+    status_message["MenuId"] = menu_id;
+    status_message["Value"] = value;
+
+    std::string generatedJson;
+    serializeJson(status_message, generatedJson);
     _send(generatedJson);
 }

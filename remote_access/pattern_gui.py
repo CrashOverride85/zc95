@@ -174,6 +174,9 @@ class ZcPatternGui:
       
       self.PowerDisplays[channel_number].update_display_if_required()
 
+  def ProcessMenuOptionChangedMessage(self, message):
+      self.min_max_menus[message["MenuId"]].set_value(message["Value"])
+
   def ProcessLuaScriptOutputMessage(self, message):
     if message["TextType"] == "Print":
       self.WriteToLog(message["Text"], False)
@@ -206,6 +209,9 @@ class ZcPatternGui:
           self.ProcessPowerStatusMessage(message)
         elif message["Type"] == "LuaScriptOutput":
           self.ProcessLuaScriptOutputMessage(message)
+        elif message["Type"] == "MenuOptionChanged":
+          self.ProcessMenuOptionChangedMessage(message)
+
 
     self.root.after(20, self.TaskProcessWsRecvQueue)
     
