@@ -43,6 +43,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void set_acc_io_port_state(enum ExtInputPort output, bool high);
         lua_script_state_t get_lua_script_state();
         void set_text_callback_function(std::function<void(pattern_text_output_t)> cb);
+        void set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb);
 
     private:
         union __attribute__((packed)) message
@@ -66,6 +67,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         bool _remote_mode_active = false;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
         std::function<void(pattern_text_output_t)> _text_output_callback = NULL;
+        std::function<void(menu_change_msg_t)> _menu_change_callback = NULL;
         CAudio* _audio;
 };
 

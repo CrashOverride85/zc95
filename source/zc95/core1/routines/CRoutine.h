@@ -319,6 +319,20 @@ class CRoutine
             }
         }
 
+        // Set value for a menu. This isn't the usual flow, it's only called when a pattern
+        // wants to change its own settings, and have that updated setting show in the UI.
+        // Which currently, no internal patterns do (but uploaded Lua scripts can).
+        void set_menu_value(uint8_t menu_id, uint16_t value)
+        {
+            message msg = {0};
+            msg.msg8[0] = MESSAGE_SET_MENU_VALUE;
+            msg.msg8[1] = menu_id;
+            msg.msg8[2] = value & 0xFF;
+            msg.msg8[3] = (value >> 8) & 0xFF;
+
+            multicore_fifo_push_blocking(msg.msg32);
+        }
+
         void print(text_type_t text_type, const char *format, ...)
         {
             pattern_text_output_t text_message;

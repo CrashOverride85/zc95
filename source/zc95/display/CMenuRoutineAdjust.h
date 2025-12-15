@@ -43,6 +43,7 @@ class CMenuRoutineAdjust : public CMenu
         void decrement_gain(uint8_t by);
         void draw_bad_script_screen();
         void process_bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
+        void menu_changed_callback(menu_change_msg_t msg);
 
         COptionsList *_routine_adjust_display_list = NULL;
         COptionsList *_routine_multi_choice_list = NULL;

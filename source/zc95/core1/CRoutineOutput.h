@@ -38,6 +38,7 @@ class CRoutineOutput
         virtual void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0) = 0;
         virtual lua_script_state_t get_lua_script_state() = 0;
         virtual void set_text_callback_function(std::function<void(pattern_text_output_t)> cb) = 0;
+        virtual void set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb) = 0;
 };
 
 #endif
