@@ -70,6 +70,7 @@ class CLuaRoutine: public CRoutine
         int lua_enable_triphase(lua_State *L);
         int lua_link_channel(lua_State *L);
         int lua_delay_ms(lua_State *L);
+        int lua_set_menu_option(lua_State *L);
 
         lua_State* _lua_loop_thread = NULL;
         uint64_t _suspend_lua_loop_execution_until_us = 0;

@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2023  CrashOverride85
+ * Copyright (C) 2025  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,6 +115,7 @@ void CLuaRoutine::load_lua_script_if_required()
             { "EnableTriphase", &dispatch<&CLuaRoutine::lua_enable_triphase> },
             { "LinkChannels"  , &dispatch<&CLuaRoutine::lua_link_channel> },
             { "DelayMs"       , &dispatch<&CLuaRoutine::lua_delay_ms> },
+            { "SetMenuOption" , &dispatch<&CLuaRoutine::lua_set_menu_option> },
             { NULL, NULL }
         };
         luaL_register(_lua_state, "zc", zc_regs);
@@ -909,4 +910,25 @@ int CLuaRoutine::lua_delay_ms(lua_State *L)
     _suspend_lua_loop_execution_until_us = time_us_64() + (delay_ms * 1000);
 
     return lua_yield(L, 0);
+}
+
+// Update a menu entry from a script.
+// Params:
+// int : menu id - as set in Config.menu_items.id in script
+// int : value   - value for setting. For MIN_MAX types, should be between the configured 
+//                 min & max, for MULTI_CHOICE should match one of the choice_id's
+int CLuaRoutine::lua_set_menu_option(lua_State *L)
+{
+    int menu_id = lua_tointeger(L, 1);
+    int value   = lua_tointeger(L, 2);
+    
+    if (menu_id > 0xFF || menu_id < 0)
+        return 0;
+
+    if (value > 0xFFFF || value < 0)
+        return 0;
+
+    set_menu_value(menu_id, value);
+
+    return 1;
 }
