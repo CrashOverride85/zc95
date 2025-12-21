@@ -276,6 +276,21 @@ Params:
 Sets the pulse width used for the channel, defaults to 150us, but this default may move into the config menus at some point.
 For symmetric pulses (as used by most/all inbuilt patterns), these two values should be the same. 
 
+### SetMenuOption
+```
+Params:
+    * menu_id
+    * value
+```
+This can be used to allow a Lua script to change the setting of one of its menu options.
+MenuId must match an `id` in the menu_items section of the Config block.
+
+For MIN_MAX type menu entries, the `value` must be between the configured `min` and `max` for that menu entry.
+
+For MULTI_CHOICE type menu entries, `value` must match one of the `choice_id`s. 
+
+**Important**: The change will result in the scripts `MinMaxChange` or `MultiChoiceChange` function being called asynchronously when the update takes effect. After calling `SetMenuOption`, it is possible (but not guaranteed) that the `Loop` function could be called many times _before_ the menu is updated.
+
 ### ChannelPulseMs
 ```
 Params:
