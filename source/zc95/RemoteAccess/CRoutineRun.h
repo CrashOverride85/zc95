@@ -29,7 +29,7 @@ class CRoutineRun
         void send_power_status_update();
         void send_menu_change_update(uint8_t menu_id, uint16_t value);
         void send_lua_script_error_message();
-        void send_ack(std::string result, int msg_count);
+        void send_ack(std::string result, int msg_count, std::string error = "");
         void script_output(pattern_text_output_t output);
         void set_pattern_config(uint8_t index);
         void menu_changed_callback(menu_change_msg_t msg);

@@ -3,12 +3,13 @@
 ***Warning***: All remote access and Lua stuff is somewhat experimental at this point
 
 ## Summary
-The ZC95 can be controlled remotely either using RS232 serial (Aux port) or using WiFi if a Pico-W is used for the MCU on the main board.
+The ZC95 can be controlled remotely either using serial (Aux port) or using WiFi if a Pico-W is used for the MCU on the main board.
 
 The remote access options can be used to:
 * Upload Lua scripts (of which 5 can be stored)
 * Control the box remotely with a Python GUI
 * Limited control using an Arduino/ESP32 with the [ZC95 Arduino library][ArduinoLib].
+* Custom app using the [JSON interface](./JSON.md)
 
 ## Connecting using WiFi
 If a Pico-W is used, the Config -> Remote Access menu should include options relating to WiFi.

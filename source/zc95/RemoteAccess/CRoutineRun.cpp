@@ -137,6 +137,12 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         return true;
     }
 
+    else
+    {
+        send_ack("ERROR", msgId, "Unexpected message");
+        return false;
+    }
+
     send_ack("OK", msgId);
 
     if (pattern_start)
@@ -226,9 +232,9 @@ void CRoutineRun::send_power_status_update()
     _send(generatedJson);
 }
 
-void CRoutineRun::send_ack(std::string result, int msg_count)
+void CRoutineRun::send_ack(std::string result, int msg_count, std::string error)
 {
-    _send_ack(result, msg_count, "");
+    _send_ack(result, msg_count, error);
 }
 
 void CRoutineRun::script_output(pattern_text_output_t output)
