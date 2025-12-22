@@ -224,6 +224,7 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     else
     {
         printf("CLuaLoad: Unexpected message type: %s\n", msgType.c_str());
+        errorMessage = "Unexpected message";
         retval = true;
     }
 

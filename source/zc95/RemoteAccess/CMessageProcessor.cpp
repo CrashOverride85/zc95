@@ -255,7 +255,7 @@ void CMessageProcessor::loop()
         {
             printf("Unknown or unexpected message type: %s\n", msgType.c_str());
             int msgId = doc["MsgId"];
-            send_ack("ERROR", msgId);
+            send_ack("ERROR", msgId, "Unexpected message");
         }
 
         doc.clear();
