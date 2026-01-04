@@ -1,6 +1,6 @@
 _pulse_width_us = 150
 
-Mode = {BURST = 1, CONSTANT = 2, PULSE_RATE_MOD = 3}
+Mode = {BURST = 1, CONSTANT = 2, PULSE_RATE_MOD = 3, PULSE_WID_MOD_40 = 4, PULSE_WID_MOD_70 = 5}
 MenuId = {BURST_FREQ = 1, FREQ = 2, PULSE_WIDTH = 3, MODE = 4, PULSE_TYPE = 5}
 PulseType = {BI = 1, MONO = 2}
 
@@ -9,14 +9,14 @@ _mode = Mode.BURST
 _pulse_type  = PulseType.BI
 
 _burst_freq_dhz = 30
-_burst_duration_ms = 80
+_burst_duration_ms = 80 -- const
 _burst_next_burst_ms = 0
 
-_pulse_rate_mod_cycle_start_ms = 0
-_pulse_rate_mod_cycle_duration_ms = 10000
+_pulse_rate_mod_cycle_duration_ms = 10000 -- const
+_pulse_rate_mod_last_freq_hz = 10
 
-
-_temp_int_freq_hz = 10
+_pulse_width_mod_cycle_duration_ms = 10000 -- const
+_pulse_width_mod_last_us = 80
 
 _freq_hz = 150
 
@@ -58,11 +58,11 @@ Config = {
             title = "Mode",
             id = MenuId.MODE,
             choices = {
-                {choice_id = Mode.BURST         , description = "Burst"},
-                {choice_id = Mode.CONSTANT      , description = "Constant"},
-                {choice_id = Mode.PULSE_RATE_MOD, description = "Pusle rate mod"},
-                {choice_id = 4, description = "Pusle wid mod 40%"},
-                {choice_id = 5, description = "Pusle wid mod 70%"}
+                {choice_id = Mode.BURST           , description = "Burst"},
+                {choice_id = Mode.CONSTANT        , description = "Constant"},
+                {choice_id = Mode.PULSE_RATE_MOD  , description = "Pusle rate mod"},
+                {choice_id = Mode.PULSE_WID_MOD_40, description = "Pusle wid mod 40%"},
+                {choice_id = Mode.PULSE_WID_MOD_70, description = "Pusle wid mod 70%"}
             }
          },
          {
@@ -76,7 +76,6 @@ Config = {
          }
     }
 }
-
 
 function MinMaxChange(menu_id, min_max_val)
     if (menu_id == MenuId.BURST_FREQ)
@@ -95,7 +94,7 @@ function MinMaxChange(menu_id, min_max_val)
     elseif (menu_id == MenuId.PULSE_WIDTH)
     then
         _pulse_width_us = min_max_val
-        SetWidth()
+        SetWidth(_pulse_width_us)
     end
 end
 
@@ -106,17 +105,25 @@ function MultiChoiceChange(menu_id, choice_id)
 
         if (choice_id == Mode.BURST)
         then
-            BurstStart()
-
-        elseif (choice_id == Mode.PULSE_RATE_MOD)
-        then
-            zc.ChannelOn(1)
+            _burst_next_burst_ms = 0
+            PowerOff()
+        else
+            PowerOn()
         end
+
+        SetWidth(_pulse_width_us)
+        SetFreq(_freq_hz)
 
     elseif (menu_id == MenuId.PULSE_TYPE)
     then
         _pulse_type = choice_id
-        SetWidth()
+
+        if (_mode == Mode.PULSE_WID_MOD_40 or _mode == Mode.PULSE_WID_MOD_70)
+        then
+            SetWidth(_pulse_width_mod_last_us)
+        else
+            SetWidth(_pulse_width_us)
+        end
     end
 end
 
@@ -129,12 +136,15 @@ function Loop(time_ms)
     elseif (_mode == Mode.PULSE_RATE_MOD)
     then
         PulRateModLoop(time_ms)
-    end
-end
 
-function BurstStart()
-    _burst_next_burst_ms = 0
-    zc.ChannelOff(1)
+    elseif (_mode == Mode.PULSE_WID_MOD_40)
+    then
+        PulWidModLoop(time_ms, 40)
+
+    elseif (_mode == Mode.PULSE_WID_MOD_70)
+    then
+        PulWidModLoop(time_ms, 70)
+    end
 end
 
 function BurstLoop(time_ms)
@@ -148,6 +158,9 @@ function BurstLoop(time_ms)
     if (time_ms > _burst_next_burst_ms)
     then
         zc.ChannelPulseMs(1, _burst_duration_ms)
+        zc.ChannelPulseMs(2, _burst_duration_ms)
+        zc.ChannelPulseMs(3, _burst_duration_ms)
+        zc.ChannelPulseMs(4, _burst_duration_ms)
         _burst_next_burst_ms = _burst_next_burst_ms + ((1 / _burst_freq_dhz) * 10000)
     end
 end
@@ -161,13 +174,29 @@ function PulRateModLoop(time_ms)
     freq = ((vary_hz / math.pi) * math.asin( math.sin( (2 * math.pi / period ) * time_ms )  )) + (vary_hz / 2) + lower_hz
 
     local freq_floor = math.floor(freq)
-    if (freq_floor ~= _temp_int_freq_hz)
+    if (freq_floor ~= _pulse_rate_mod_last_freq_hz)
     then
-        print(freq)
-        _temp_int_freq_hz = freq_floor
+        _pulse_rate_mod_last_freq_hz = freq_floor
         SetFreq(freq_floor)
     end
 end
+
+function PulWidModLoop(time_ms, vary_percent)
+    local lower_us = _pulse_width_us * ((100 - vary_percent) / 100)
+    local vary_us = _pulse_width_us - lower_us
+    local period = _pulse_width_mod_cycle_duration_ms
+
+    -- Generate triangle wave, going between the configured pulse width (_pulse_width_us), and the configured pulse width minus vary_percent (lower_us)
+    freq = ((vary_us / math.pi) * math.asin( math.sin( (2 * math.pi / period ) * time_ms )  )) + (vary_us / 2) + lower_us
+
+    local us_floor = math.floor(freq)
+    if (us_floor ~= _pulse_width_mod_last_us)
+    then
+        _pulse_width_mod_last_us = us_floor
+        SetWidth(us_floor)
+    end
+end
+
 
 function SetFreq(freq_hz)
     zc.SetFrequency(1, freq_hz)
@@ -176,17 +205,30 @@ function SetFreq(freq_hz)
     zc.SetFrequency(4, freq_hz)
 end
 
-function SetWidth()
+function SetWidth(pulse_width_us)
     if (_pulse_type == PulseType.MONO)
     then
         neg_wid = 1
     else
-        neg_wid = _pulse_width_us
+        neg_wid = pulse_width_us
     end
 
-    zc.SetPulseWidth(1, _pulse_width_us, neg_wid)
-    zc.SetPulseWidth(2, _pulse_width_us, neg_wid)
-    zc.SetPulseWidth(3, _pulse_width_us, neg_wid)
-    zc.SetPulseWidth(4, _pulse_width_us, neg_wid)
+    zc.SetPulseWidth(1, pulse_width_us, neg_wid)
+    zc.SetPulseWidth(2, pulse_width_us, neg_wid)
+    zc.SetPulseWidth(3, pulse_width_us, neg_wid)
+    zc.SetPulseWidth(4, pulse_width_us, neg_wid)
 end
 
+function PowerOn()
+    zc.ChannelOn(1)
+    zc.ChannelOn(2)
+    zc.ChannelOn(3)
+    zc.ChannelOn(4)
+end
+
+function PowerOff()
+    zc.ChannelOff(1)
+    zc.ChannelOff(2)
+    zc.ChannelOff(3)
+    zc.ChannelOff(4)
+end
