@@ -127,12 +127,19 @@ Can be used with shock collars.
 ## TENS
 Approximation of TENs style output, with all channels outputting the same.
 Can NOT be used with shock collars.
-If the aim is solely to achieve absolute maximum intensity, this is the mode to use.
 
 ### Menu options
-* Pulse width - Pulse width in microseconds. Lower is weaker. Most other modes use 150us.
-* Frequency - Frequency in Hz of signal. Most other modes use 150Hz
+* Mode - one of:
+  - Burst - bursts of pulses at the rate configured by the "Burst frequency" option
+  - Constant - continuous output at configured frequency / pulse width
+  - Pulse rate mod - Pulse rate (frequency) modulation. The same as constant, except the frequency is varied between the configured frequency and 40% less
+  - Pulse wid mod 40% - Pulse width modulation. The same as constant, except the pulse width is varied between the configured pulse width and 40% less
+  - Pulse wid mod 70% - Pulse width modulation. The same as constant, except the pulse width is varied between the configured pulse width and 70% less
 
+* Frequency - Frequency in Hz of signal, 20hz - 150hz. Most other modes use 150Hz
+* Pulse width - Pulse width in microseconds. 10 - 255 us. Lower is weaker. Most other modes use 150us.
+* Pulse type - Biphasic or Monophasic output. Other patterns generate Biphasic output, most TENS units generate Monophasic output
+* Burst frequency - 0.1hz - 5hz. Applies only in "Burst" modes
 
 
 ## Triggered Climb

@@ -5,7 +5,6 @@
 #include "CWaves.h"
 #include "CToggle.h"
 #include "CRoundRobin.h"
-#include "CTens.h"
 #include "CClimb.h"
 #include "CTriggeredClimb.h"
 #include "CFire.h"
@@ -43,7 +42,7 @@ class CRoutines
          // routines.push_back({&(CWaves::create)         , 0}); now a lua script
             routines.push_back({&(CToggle::create)        , 0});
             routines.push_back({&(CRoundRobin::create)    , 0});
-            routines.push_back({&(CTens::create)          , 0});
+        //  routines.push_back({&(CTens::create)          , 0}); now a lua script
         //  routines.push_back({&(CClimb::create)         , 0}); now a lua script
             routines.push_back({&(CTriggeredClimb::create), 0});
             routines.push_back({&(CFire::create)          , 0});
