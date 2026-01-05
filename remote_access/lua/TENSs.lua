@@ -1,11 +1,11 @@
-_pulse_width_us = 150
 
 Mode = {BURST = 1, CONSTANT = 2, PULSE_RATE_MOD = 3, PULSE_WID_MOD_40 = 4, PULSE_WID_MOD_70 = 5}
-MenuId = {BURST_FREQ = 1, FREQ = 2, PULSE_WIDTH = 3, MODE = 4, PULSE_TYPE = 5}
+MenuId = {MODE = 1, FREQ = 2, PULSE_WIDTH = 3, PULSE_TYPE = 4, BURST_FREQ = 5}
 PulseType = {BI = 1, MONO = 2}
 
+_pulse_width_us = 150
+_freq_hz = 100
 _mode = Mode.BURST
-
 _pulse_type  = PulseType.BI
 
 _burst_freq_dhz = 30
@@ -18,20 +18,20 @@ _pulse_rate_mod_last_freq_hz = 10
 _pulse_width_mod_cycle_duration_ms = 10000 -- const
 _pulse_width_mod_last_us = 80
 
-_freq_hz = 150
-
 Config = {
     name = "TENS",
     menu_items = {
-        {
-            type = "MIN_MAX",
-            title = "Burst frequency",
-            id = MenuId.BURST_FREQ,
-            min = 1,
-            max = 50,
-            increment_step = 1,
-            uom = "dHz", -- Deci-hertz
-            default = _burst_freq_dhz
+         {
+            type = "MULTI_CHOICE",
+            title = "Mode",
+            id = MenuId.MODE,
+            choices = {
+                {choice_id = Mode.BURST           , description = "Burst"},
+                {choice_id = Mode.CONSTANT        , description = "Constant"},
+                {choice_id = Mode.PULSE_RATE_MOD  , description = "Pusle rate mod"},
+                {choice_id = Mode.PULSE_WID_MOD_40, description = "Pusle wid mod 40%"},
+                {choice_id = Mode.PULSE_WID_MOD_70, description = "Pusle wid mod 70%"}
+            }
         },
         {
             type = "MIN_MAX",
@@ -52,20 +52,8 @@ Config = {
             increment_step = 5,
             uom = "us",
             default = _pulse_width_us
-         },
-         {
-            type = "MULTI_CHOICE",
-            title = "Mode",
-            id = MenuId.MODE,
-            choices = {
-                {choice_id = Mode.BURST           , description = "Burst"},
-                {choice_id = Mode.CONSTANT        , description = "Constant"},
-                {choice_id = Mode.PULSE_RATE_MOD  , description = "Pusle rate mod"},
-                {choice_id = Mode.PULSE_WID_MOD_40, description = "Pusle wid mod 40%"},
-                {choice_id = Mode.PULSE_WID_MOD_70, description = "Pusle wid mod 70%"}
-            }
-         },
-         {
+        },
+        {
             type = "MULTI_CHOICE",
             title = "Pulse type",
             id = MenuId.PULSE_TYPE,
@@ -73,9 +61,30 @@ Config = {
                 {choice_id = PulseType.BI  , description = "Biphasic"},
                 {choice_id = PulseType.MONO, description = "Monophasic"}
             }
-         }
+        },
+        {
+            type = "MIN_MAX",
+            title = "Burst frequency",
+            id = MenuId.BURST_FREQ,
+            min = 1,
+            max = 50,
+            increment_step = 1,
+            uom = "dHz", -- Deci-hertz
+            default = _burst_freq_dhz
+        }
     }
 }
+
+function Setup()
+
+    SetWidth(_pulse_width_us)
+    SetFreq(_freq_hz)
+    zc.SetPower(1, 1000)
+    zc.SetPower(2, 1000)
+    zc.SetPower(3, 1000)
+    zc.SetPower(4, 1000)
+    PowerOn()
+end
 
 function MinMaxChange(menu_id, min_max_val)
     if (menu_id == MenuId.BURST_FREQ)
