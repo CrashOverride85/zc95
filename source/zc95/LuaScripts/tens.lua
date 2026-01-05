@@ -28,9 +28,9 @@ Config = {
             choices = {
                 {choice_id = Mode.BURST           , description = "Burst"},
                 {choice_id = Mode.CONSTANT        , description = "Constant"},
-                {choice_id = Mode.PULSE_RATE_MOD  , description = "Pusle rate mod"},
-                {choice_id = Mode.PULSE_WID_MOD_40, description = "Pusle wid mod 40%"},
-                {choice_id = Mode.PULSE_WID_MOD_70, description = "Pusle wid mod 70%"}
+                {choice_id = Mode.PULSE_RATE_MOD  , description = "Pulse rate mod"},
+                {choice_id = Mode.PULSE_WID_MOD_40, description = "Pulse wid mod 40%"},
+                {choice_id = Mode.PULSE_WID_MOD_70, description = "Pulse wid mod 70%"}
             }
         },
         {
@@ -76,7 +76,6 @@ Config = {
 }
 
 function Setup()
-
     SetWidth(_pulse_width_us)
     SetFreq(_freq_hz)
     zc.SetPower(1, 1000)
