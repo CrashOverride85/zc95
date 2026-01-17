@@ -41,6 +41,9 @@ HalMk1::HalMk1(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     gpio_set_irq_enabled_with_callback(PIN_FP_INT1, GPIO_IRQ_EDGE_FALL, true, &s_gpio_callback);
     gpio_set_irq_enabled_with_callback(PIN_FP_INT2, GPIO_IRQ_EDGE_FALL, true, &s_gpio_callback);
 
+    if (_front_panel_version == front_panel_version_t::v0_1)
+        gpio_set_irq_enabled_with_callback(PIN_CONTROLS_INT, GPIO_IRQ_EDGE_FALL, true, &s_gpio_callback);
+
     // External intput - triggers and acc port I/O lines
     gpio_init(PIN_EXT_INPUT_INT);
     gpio_set_dir(PIN_EXT_INPUT_INT, GPIO_IN);
