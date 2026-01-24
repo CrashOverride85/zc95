@@ -5,13 +5,12 @@
 #include "../CChannel_types.h"
 #include "../CHorzBarGraph.h"
 #include "../../../Hal/IHal.h"
-#include "CMenuSettingOutputExtRamp.h"
 
-class CMenuSettingOutput : public CMenu
+class CMenuSettingOutputExtRamp : public CMenu
 {
     public:
-        CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings);
-        ~CMenuSettingOutput();
+        CMenuSettingOutputExtRamp(CDisplay* display, IHal *hal, CSavedSettings *saved_settings);
+        ~CMenuSettingOutputExtRamp();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
         void draw();
@@ -20,16 +19,14 @@ class CMenuSettingOutput : public CMenu
     private:
         enum setting_id_t
         {
-            POWER_LEVEL          = 0,
-            INITIAL_RAMP_TIME    = 1,
-            EXTENDED_RAMP        = 2
+            RAMP_LEVEL          = 0,
+            RAMP_TIME           = 1
         };
 
         enum setting_kind_t
         {
             MULTI_CHOICE        = 0,
-            MIN_MAX             = 1,
-            EXT_RAMP            = 2
+            MIN_MAX             = 1
         };
 
         setting_kind_t get_setting_kind(setting_id_t setting_id);
@@ -61,9 +58,11 @@ class CMenuSettingOutput : public CMenu
         CDisplay* _display;
         IHal *_hal;
         display_area _setting_choice_area;
+        display_area _duration_area;
         CSavedSettings *_saved_settings;
         CHorzBarGraph *_bar_graph = NULL;
         int16_t _min_max_value = 0;
         int16_t _min_max_value_min = 0;
         int16_t _min_max_value_max = 0;
+        std::string _min_max_uom = "";
 };

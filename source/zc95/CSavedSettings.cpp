@@ -535,6 +535,34 @@ void CSavedSettings::set_display_brightness_percent(uint8_t percent)
     _eeprom_contents[(uint8_t)setting::DisplayBrightness] = percent;
 }
 
+uint8_t CSavedSettings::get_extended_ramp_level()
+{
+    uint8_t level = _eeprom_contents[(uint8_t)setting::ExtendedRampLevel];
+    if (level == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
+        return 70;
+    else
+        return level;
+}
+
+void CSavedSettings::set_extended_ramp_level(uint8_t percent)
+{
+    _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = percent;
+}
+
+uint8_t CSavedSettings::get_extended_ramp_time_seconds()
+{
+    uint8_t seconds = _eeprom_contents[(uint8_t)setting::ExtenedRampTime];
+    if (seconds == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
+        return 20;
+    else
+        return seconds;
+}
+
+void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)
+{
+    _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = seconds;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);
@@ -591,6 +619,8 @@ void CSavedSettings::eeprom_initialise()
     _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
     _eeprom_contents[(uint8_t)setting::StatusBarOption]  = (uint8_t)status_bar_text_t::RUNNING_PATTERN;
 
+    _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = 70;
+    _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = 20;
 
     // Save changes
     save();

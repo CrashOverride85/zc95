@@ -116,6 +116,7 @@ add_executable(zc95
   display/config/CMenuSettingAudio.cpp
   display/config/CMenuSettingHardware.cpp
   display/config/CMenuSettingOutput.cpp
+  display/config/CMenuSettingOutputExtRamp.cpp
   display/config/CMenuSettingBatteryInfo.cpp
 
   display/config/bluetooth_peripherals/CMenuBluetooth.cpp
