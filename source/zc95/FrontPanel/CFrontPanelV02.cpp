@@ -277,13 +277,20 @@ void CFrontPanelV02::read_adc()
         // Failing to read from the ADC (having successfully read it during the hw check at power on) might
         // suggest a loose connection. It's probably best to stop because a poor connection could lead 
         // unexpected power levels being set. 
+        _adc_read_error_count++;
+        printf("*** Error reading front panel ADC (%d / %d)\n", _adc_read_error_count, FailAfterAdcErrorCount);
 
-        printf("Error reading front panel ADC\n");
-        gErrorString = "Front panel fault, \nerror reading ADC.";
-        gFatalError = true;
+        if (_adc_read_error_count >= FailAfterAdcErrorCount)
+        {
+            printf("Too many ADC read errors.\n");
+            gErrorString = "Front panel fault, \nerror reading ADC.";
+            gFatalError = true;
+        }
 
         return;
     }
+
+    _adc_read_error_count = 0;
 
     int16_t adc_value = (int16_t)val;
     if (adc_value < 0)

@@ -109,4 +109,7 @@ class CFrontPanelV02 : public CFrontPanel
         uint64_t _last_state_change[MAX_BUTTON_IDX];
         uint8_t _button_states_at_last_check;
         uint8_t _buttons_in_use = 0;
+
+        const uint8_t FailAfterAdcErrorCount = 3;
+        uint8_t _adc_read_error_count = 0; // Many times has a read of the ADC failed. Reset to 0 after a successful read.
 };
