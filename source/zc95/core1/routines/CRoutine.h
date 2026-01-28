@@ -28,7 +28,8 @@ enum class menu_entry_type
     AUDIO_VIEW_WAVE,
     AUDIO_VIEW_INTENSITY_STEREO,
     AUDIO_VIEW_INTENSITY_MONO,
-    AUDIO_VIEW_VIRTUAL_3
+    AUDIO_VIEW_VIRTUAL_3,
+    BLANK
 };
 
 enum class trigger_socket

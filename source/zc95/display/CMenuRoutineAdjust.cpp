@@ -44,6 +44,24 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
 
+    if (_show_ramp_start)
+    {
+        menu_entry ramp_menu;
+        ramp_menu.id = MENU_ID_RAMP;
+        ramp_menu.menu_type = menu_entry_type::BLANK;
+        ramp_menu.title = "Ramp start";
+        _active_routine_conf.menu.emplace(_active_routine_conf.menu.begin(), ramp_menu);
+
+        if (_active_routine_conf.menu.size() == 1)
+        {
+            menu_entry no_options;
+            no_options.id = MENU_ID_NO_PARAMS;
+            no_options.menu_type = menu_entry_type::BLANK;
+            no_options.title = "<no parameters>";
+            _active_routine_conf.menu.push_back(no_options);
+        }
+    }
+
     // Bluetooth doesn't work well with analogue capture for audio running, so for now, don't allow bluetooth 
     // and audio at the same time.
     _bt_enabled = _saved_settings->get_bluethooth_enabled() && _active_routine_conf.audio_processing_mode == audio_mode_t::OFF;
@@ -109,10 +127,17 @@ void CMenuRoutineAdjust::button_pressed(Button button)
 {
     uint8_t menu_selection = _routine_adjust_display_list->get_current_selection_id();
 
-    // "A" button is passed onto routines, that may or may not use it
     if (button == Button::A)
     {
-        _routine_output->soft_button_pressed(soft_button::BUTTON_A, true);
+        if (_show_ramp_start && _routine_adjust_display_list->get_current_selection_id() == MENU_ID_RAMP)
+        {
+            // TODO
+        }
+        else
+        {
+            // "A" button is passed onto routines, that may or may not use it
+            _routine_output->soft_button_pressed(soft_button::BUTTON_A, true);
+        }
     }
 
     if (button == Button::B) // "Back"
@@ -145,6 +170,14 @@ void CMenuRoutineAdjust::button_pressed(Button button)
         {
             struct menu_entry *menu_item = &(_active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()]);
             _routine_output->menu_selected(menu_item->id);
+        }
+
+        if (_show_ramp_start)
+        {
+            if (_routine_adjust_display_list->get_current_selection_id() == MENU_ID_RAMP)
+                _display->set_option_a("Start");
+            else
+                _display->set_option_a(_active_routine_conf.button_text[(int)soft_button::BUTTON_A]);
         }
     }
 }
@@ -430,7 +463,13 @@ void CMenuRoutineAdjust::show()
 
     for (std::vector<menu_entry>::iterator it = _active_routine_conf.menu.begin(); it != _active_routine_conf.menu.end(); it++)
     {
-        _routine_adjust_display_list->add_option(it->title);
+        _routine_adjust_display_list->add_option(it->title, it->id);
+    }
+
+    // If the ramp menu is enabled, pre select the first pattern param, so the ramp option is "up"
+    if (_show_ramp_start)
+    {
+        _routine_adjust_display_list->set_selected(1);
     }
 
     set_options_on_multi_choice_list();
