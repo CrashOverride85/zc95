@@ -162,7 +162,7 @@ class CSavedSettings
         void set_power_step_interval(uint8_t power_step);
 
         // Power ramp up time, seconds
-        uint8_t get_ramp_up_time_seconds();
+        uint8_t get_initial_ramp_up_time_seconds();
         void set_ramp_up_time_seconds(uint8_t time_secs);
 
         // Gain for audio input

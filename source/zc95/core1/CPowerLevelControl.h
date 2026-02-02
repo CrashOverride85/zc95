@@ -2,6 +2,7 @@
 #define _CPOWERLEVELCONTROL_H
 
 #include <inttypes.h>
+#include "CPowerLevelRamp.h"
 #include "../CSavedSettings.h"
 #include "../config.h"
 
@@ -46,7 +47,11 @@ class CPowerLevelControl
         // (this is the top of blue bar on the graph, which during ramp up, will be floating)
         uint16_t get_target_max_power_level(uint8_t channel);
         
-        void ramp_start();
+        // Start the inital ramp up. This (always) happens the moment a pattern is started, and lasts a few seconds
+        void initial_ramp_start();
+
+        // Start the extended ramp. This is started from the menu and can last from a few minutes to over an hour (config dependant)
+        void extended_ramp_start();
 
         void zero_power_level();
 
@@ -59,13 +64,14 @@ class CPowerLevelControl
         uint16_t _routine_power[MAX_CHANNELS];
         uint16_t _output_power[MAX_CHANNELS];
 
-        uint8_t  _ramp_percent = 0; // 100=full power
-        uint64_t _ramp_last_increment_us = 0;
-        uint16_t _ramp_increment_period_ms = 0;
-        bool _ramp_in_progress = false;
+        uint8_t  _initial_ramp_percent = 0; // 100=full power
+        uint64_t _initial_ramp_last_increment_us = 0;
+        uint16_t _initial_ramp_increment_period_ms = 0;
+        bool _initial_ramp_in_progress = false;
         bool _remote_mode_active = false;
 
         CSavedSettings *_saved_settings;
+        CPowerLevelRamp _extended_ramp;
 };
 
 #endif

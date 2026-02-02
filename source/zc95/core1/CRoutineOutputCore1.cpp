@@ -210,6 +210,14 @@ void CRoutineOutputCore1::bluetooth_remote_passthrough(CBluetoothRemote::keypres
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::extended_ramp_start()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_EXTENDED_RAMP_START;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::loop()
 {
     // Process inbound messages from Core1

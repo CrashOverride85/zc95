@@ -131,7 +131,7 @@ void CMenuRoutineAdjust::button_pressed(Button button)
     {
         if (_show_ramp_start && _routine_adjust_display_list->get_current_selection_id() == MENU_ID_RAMP)
         {
-            // TODO
+            _routine_output->extended_ramp_start();
         }
         else
         {

@@ -182,7 +182,7 @@ void CMenuSettingOutput::draw()
         case setting_kind_t::MIN_MAX:
         {
             hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
-            _bar_graph->draw_horz_bar_graph(_setting_choice_area, _min_max_value_min, _min_max_value_max, _saved_settings->get_ramp_up_time_seconds(), "sec", bar_colour);
+            _bar_graph->draw_horz_bar_graph(_setting_choice_area, _min_max_value_min, _min_max_value_max, _saved_settings->get_initial_ramp_up_time_seconds(), "sec", bar_colour);
         }
             break;
         
@@ -233,7 +233,7 @@ void CMenuSettingOutput::set_options_for_setting(setting_id_t setting_id)
             _display->set_option_a("");
             _min_max_value_min = 1;
             _min_max_value_max = RAMP_UP_TIME_MAXIMUM_SECS;
-            _min_max_value = _saved_settings->get_ramp_up_time_seconds();
+            _min_max_value = _saved_settings->get_initial_ramp_up_time_seconds();
             break;
 
         case setting_id_t::EXTENDED_RAMP:

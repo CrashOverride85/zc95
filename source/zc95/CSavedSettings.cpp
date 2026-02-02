@@ -105,7 +105,7 @@ void CSavedSettings::set_power_step_interval(uint8_t power_step)
     _eeprom_contents[(uint8_t)setting::PowerStep] = power_step;
 }
 
-uint8_t CSavedSettings::get_ramp_up_time_seconds()
+uint8_t CSavedSettings::get_initial_ramp_up_time_seconds()
 {
     return _eeprom_contents[(uint8_t)setting::RampUpTimeSecs];
 }

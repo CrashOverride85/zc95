@@ -69,6 +69,7 @@ add_executable(zc95
   core1/Core1.cpp
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
+  core1/CPowerLevelRamp.cpp
   core1/CRoutineOutputCore1.cpp
   core1/CRoutineOutput.cpp
 
