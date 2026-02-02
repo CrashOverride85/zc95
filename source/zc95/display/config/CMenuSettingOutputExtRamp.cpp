@@ -157,6 +157,10 @@ void CMenuSettingOutputExtRamp::save_setting(uint8_t setting_menu_index, uint8_t
         case setting_id_t::RAMP_TIME:
             _saved_settings->set_extended_ramp_time_seconds(_min_max_value);
             break;
+
+        case setting_id_t::RAMP_SHOW:
+            _saved_settings->set_extended_ramp_show(choice_id.id);
+            break;
     }
 }
 
@@ -186,12 +190,16 @@ void CMenuSettingOutputExtRamp::draw()
     };
 
     // Show calculated ramp duration at bottom
-    uint8_t steps = 100 - _saved_settings->get_extended_ramp_level();
-    int duration_seconds = steps * _saved_settings->get_extended_ramp_time_seconds();
-    float duration_minutes = (float)duration_seconds / (float)60;
-    std::ostringstream oss;
-    oss << "Dur.: " << std::fixed << std::setprecision(1) << duration_minutes << " mins";
-    _display->put_text(oss.str(), _duration_area.x0, _duration_area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0x55, 0x55, 0x55));
+    if (_settings_list->get_current_selection_id() == setting_id_t::RAMP_LEVEL || 
+        _settings_list->get_current_selection_id() == setting_id_t::RAMP_TIME)
+    {
+        uint8_t steps = 100 - _saved_settings->get_extended_ramp_level();
+        int duration_seconds = steps * _saved_settings->get_extended_ramp_time_seconds();
+        float duration_minutes = (float)duration_seconds / (float)60;
+        std::ostringstream oss;
+        oss << "Dur.: " << std::fixed << std::setprecision(1) << duration_minutes << " mins";
+        _display->put_text(oss.str(), _duration_area.x0, _duration_area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0x55, 0x55, 0x55));
+    }
 }
 
 void CMenuSettingOutputExtRamp::show()
@@ -202,17 +210,18 @@ void CMenuSettingOutputExtRamp::show()
     _display->set_option_d("Down");
 
     _settings.clear();
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHOW , "Show ramp start"));
     _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_LEVEL, "Start level"));
     _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_TIME , "Time per p.p."));
 
     _settings_list->clear_options();
     for (std::vector<CMenuSettingOutputExtRamp::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
     {
-        _settings_list->add_option((*it).text);
+        _settings_list->add_option((*it).text, (*it).id);
     }
 
     _exit_menu = false;
-    set_options_for_setting(setting_id_t::RAMP_LEVEL);
+    set_options_for_setting(setting_id_t::RAMP_SHOW);
 }
 
 void CMenuSettingOutputExtRamp::set_options_for_setting(setting_id_t setting_id)
@@ -222,6 +231,12 @@ void CMenuSettingOutputExtRamp::set_options_for_setting(setting_id_t setting_id)
 
     switch (setting_id)
     {
+        case setting_id_t::RAMP_SHOW:
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(false, "No" ));
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(true , "Yes"));
+            current_choice_id = _saved_settings->get_extended_ramp_show();
+            break;
+
         case setting_id_t::RAMP_LEVEL:
             _min_max_value_min = 1;
             _min_max_value_max = 100; 
@@ -258,6 +273,9 @@ CMenuSettingOutputExtRamp::setting_kind_t CMenuSettingOutputExtRamp::get_setting
 {
     switch (setting_id)
     {
+        case setting_id_t::RAMP_SHOW:
+            return setting_kind_t::MULTI_CHOICE;
+
         case setting_id_t::RAMP_LEVEL:
         case setting_id_t::RAMP_TIME:
         default:

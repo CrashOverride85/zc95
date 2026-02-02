@@ -72,7 +72,8 @@ class CSavedSettings
         StatusBarOption  = 226, // What to show in the status bar. Default is running pattern name      
         DisplayBrightness= 227, // Display brightness, in percent
         ExtendedRampLevel= 228, // Extended ramp percent, 1% - 100%
-        ExtenedRampTime  = 229  // Extended ramp time. 1 - 200 (seconds)
+        ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
+        ExtendedRampShow = 230  // Show 'Ramp start' option on all patterns
     };
 
     public:
@@ -258,6 +259,9 @@ class CSavedSettings
         
         uint8_t get_extended_ramp_time_seconds();
         void set_extended_ramp_time_seconds(uint8_t seconds);
+
+        bool get_extended_ramp_show();
+        void set_extended_ramp_show(bool show);
 
         void eeprom_initialise();
 

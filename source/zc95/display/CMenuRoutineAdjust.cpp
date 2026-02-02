@@ -44,6 +44,8 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
 
+    _show_ramp_start = _saved_settings->get_extended_ramp_show();
+
     if (_show_ramp_start)
     {
         menu_entry ramp_menu;

@@ -558,6 +558,16 @@ uint8_t CSavedSettings::get_extended_ramp_time_seconds()
         return seconds;
 }
 
+bool CSavedSettings::get_extended_ramp_show()
+{
+    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] != 0);
+}
+
+void CSavedSettings::set_extended_ramp_show(bool show)
+{
+    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = show;
+}
+
 void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)
 {
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = seconds;

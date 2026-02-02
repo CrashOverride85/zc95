@@ -19,8 +19,9 @@ class CMenuSettingOutputExtRamp : public CMenu
     private:
         enum setting_id_t
         {
-            RAMP_LEVEL          = 0,
-            RAMP_TIME           = 1
+            RAMP_SHOW           = 0,
+            RAMP_LEVEL          = 1,
+            RAMP_TIME           = 2
         };
 
         enum setting_kind_t
