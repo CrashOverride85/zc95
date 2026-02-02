@@ -51,7 +51,7 @@ void CPowerLevelRamp::calc_ramp_percent()
     uint32_t us_per_pp = (uint32_t)_saved_settings->get_extended_ramp_time_seconds() * (uint32_t)1000000;
     uint32_t ramp_progress_us = time_us_64() - _ramp_start_time_us;
 
-    _ramp_percent = ramp_progress_us / us_per_pp;
+    _ramp_percent = (float)ramp_progress_us / (float)us_per_pp;
     _ramp_percent += _saved_settings->get_extended_ramp_level(); // ramp starting %
 
     if (_ramp_percent > 100)
