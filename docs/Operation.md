@@ -59,9 +59,16 @@ Configuration options so far:
 
 * Output - Settings related to signal output. Options:
   - Power level - High (default), Medium or Low
-  - Ramp up time - When starting a pattern, how long it takes to ramp up to the power level set for the channel on the front panel
+  - Start ramp duration - When starting a pattern, how many seconds does it take to ramp up to the power level set for the channel on the front panel
+  - Extended ramp conf. - in addition to the initial ramp up period whenever a pattern is started, the ZC95 can also gradually increase the power level over an extended period of time - from a few minutes to over an hour. The extended ramp configuration menu has these options:
 
-* Channel config - For each channel 1-4, picks if either the internal output (on the 2.5mm connector) should be used, or if a shock collar should be triggered
+    * Show ramp start - Yes or No. If Yes, when running a pattern the top item on the list will always be "Ramp start". To start the ramp up, select this option, and press the top left soft button (labelled "Start"). 
+    * Start level - 1% - 100%. At what percentage of the power selected on the front panel does the ramp start. Setting to 100% effectively disables the ramp function
+    * Time per p.p. - Time taken in seconds to increase the power level by one percentage point. This increase is relatively smooth, and will increase the power level in 0.1% increments to achieve the selected rate.
+
+    With either "Start level" or "Time per p.p." selected, the bottom of the menu will indicate the estimated time in minutes for the ramp to complete.
+
+* Channel config - For each channel 1-4, picks if either the internal output (on the 3.5mm connector) should be used, or if a shock collar should be triggered
 
 * Collar config - Allows 4x shock collars to be configured. Each shock collar needs to be paired to the box, and the bottom option allows for testing the collar with the current settings. The "Chan." option corresponds to the CH button on the original remote, and it probably makes sense to be left as 1 for all collars, as each will have a unique ID anyway. Note that the mode (shock / vibrate / beep) needs to be set here, and won't change outside of this config screen (for the time being, at least)
 
