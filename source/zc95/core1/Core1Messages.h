@@ -21,6 +21,7 @@
 #define MESSAGE_SET_REMOTE_ACCESS_POWER      14
 #define MESSAGE_SET_REMOTE_ACCESS_MODE       15
 #define MESSAGE_BLUETOOTH_REMOTE_KEYPRESS    16
+#define MESSAGE_EXTENDED_RAMP_START          17
 
 // messages from core1 to core0
 #define MESSAGE_SET_DISPLAY_POWER           100

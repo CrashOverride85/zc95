@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2024  CrashOverride85
+ * Copyright (C) 2026  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "CMenuSettingOutput.h"
+#include "CMenuSettingOutputExtRamp.h"
 #include "CMenuSettings.h"
 #include "../CDebugOutput.h"
 #include "../config.h"
 
 
-CMenuSettingOutput::CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings)
+CMenuSettingOutputExtRamp::CMenuSettingOutputExtRamp(CDisplay* display, IHal *hal, CSavedSettings *saved_settings)
 {
-    printf("CMenuSettingOutput()\n");
+    printf("CMenuSettingOutputExtRamp()\n");
     _display = display;
     _hal = hal;
     _saved_settings = saved_settings;
@@ -36,15 +36,19 @@ CMenuSettingOutput::CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSetti
 
     _setting_choice_area = display->get_display_area();
     _setting_choice_area.y0 = _setting_choice_area.y1 - ((_setting_choice_area.y1-_setting_choice_area.y0)/2);
+    _setting_choice_area.y1 -= 10;
     _setting_choice_area.x1 -= 2;
     _settings_choice_list = new COptionsList(display, _setting_choice_area);
+
+    _duration_area = display->get_display_area();
+    _duration_area.y0 = _setting_choice_area.y1;
 
     _bar_graph = new CHorzBarGraph(_display);
 }
 
-CMenuSettingOutput::~CMenuSettingOutput()
+CMenuSettingOutputExtRamp::~CMenuSettingOutputExtRamp()
 {
-    printf("~CMenuSettingOutput()\n");
+    printf("~CMenuSettingOutputExtRamp()\n");
 
     if (_submenu_active)
     {
@@ -71,7 +75,7 @@ CMenuSettingOutput::~CMenuSettingOutput()
     }
 }
 
-void CMenuSettingOutput::button_pressed(Button button)
+void CMenuSettingOutputExtRamp::button_pressed(Button button)
 {
     if (_submenu_active)
     {
@@ -79,12 +83,6 @@ void CMenuSettingOutput::button_pressed(Button button)
     }
     else
     {
-        if (button == Button::A && (get_setting_kind(get_currently_selected_setting_id()) == setting_kind_t::EXT_RAMP)) // "Configure" for extended ramp, otherwise nothing
-        {
-            set_active_menu(new CMenuSettingOutputExtRamp(_display, _hal, _saved_settings));
-            return;
-        }
-
         if (button == Button::B) // "Back"
         {
             _exit_menu = true;
@@ -104,7 +102,7 @@ void CMenuSettingOutput::button_pressed(Button button)
     }
 }
 
-void CMenuSettingOutput::adjust_rotary_encoder_change(int8_t change)
+void CMenuSettingOutputExtRamp::adjust_rotary_encoder_change(int8_t change)
 {
     if (_submenu_active)
     {
@@ -145,24 +143,28 @@ void CMenuSettingOutput::adjust_rotary_encoder_change(int8_t change)
     }
 }
 
-void CMenuSettingOutput::save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index)
+void CMenuSettingOutputExtRamp::save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index)
 {
     setting_t setting = _settings[setting_menu_index];
     setting_t choice_id = _setting_choices[choice_menu_index];
 
     switch (setting.id)
     {
-        case setting_id_t::POWER_LEVEL:
-            _saved_settings->set_power_level((CSavedSettings::power_level_t)choice_id.id);
+        case setting_id_t::RAMP_LEVEL:
+            _saved_settings->set_extended_ramp_level(_min_max_value);
             break;
 
-        case setting_id_t::INITIAL_RAMP_TIME:
-            _saved_settings->set_ramp_up_time_seconds(_min_max_value);
+        case setting_id_t::RAMP_TIME:
+            _saved_settings->set_extended_ramp_time_seconds(_min_max_value);
+            break;
+
+        case setting_id_t::RAMP_SHOW:
+            _saved_settings->set_extended_ramp_show(choice_id.id);
             break;
     }
 }
 
-void CMenuSettingOutput::draw()
+void CMenuSettingOutputExtRamp::draw()
 {
     _settings_list->draw();
 
@@ -182,17 +184,25 @@ void CMenuSettingOutput::draw()
         case setting_kind_t::MIN_MAX:
         {
             hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
-            _bar_graph->draw_horz_bar_graph(_setting_choice_area, _min_max_value_min, _min_max_value_max, _saved_settings->get_initial_ramp_up_time_seconds(), "sec", bar_colour);
+            _bar_graph->draw_horz_bar_graph(_setting_choice_area, _min_max_value_min, _min_max_value_max, _min_max_value, _min_max_uom, bar_colour);
         }
             break;
-        
-        case setting_kind_t::EXT_RAMP:
-            // TODO: show current settings?
-            break;
     };
+
+    // Show calculated ramp duration at bottom
+    if (_settings_list->get_current_selection_id() == setting_id_t::RAMP_LEVEL || 
+        _settings_list->get_current_selection_id() == setting_id_t::RAMP_TIME)
+    {
+        uint8_t steps = 100 - _saved_settings->get_extended_ramp_level();
+        int duration_seconds = steps * _saved_settings->get_extended_ramp_time_seconds();
+        float duration_minutes = (float)duration_seconds / (float)60;
+        std::ostringstream oss;
+        oss << "Dur.: " << std::fixed << std::setprecision(1) << duration_minutes << " mins";
+        _display->put_text(oss.str(), _duration_area.x0, _duration_area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0x55, 0x55, 0x55));
+    }
 }
 
-void CMenuSettingOutput::show()
+void CMenuSettingOutputExtRamp::show()
 {
     _display->set_option_a("");
     _display->set_option_b("Back");
@@ -200,44 +210,45 @@ void CMenuSettingOutput::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuSettingOutput::setting_t(setting_id_t::POWER_LEVEL        , "Power level"));
-    _settings.push_back(CMenuSettingOutput::setting_t(setting_id_t::INITIAL_RAMP_TIME  , "Start ramp duration"));
-    _settings.push_back(CMenuSettingOutput::setting_t(setting_id_t::EXTENDED_RAMP      , "Extended ramp conf."));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHOW , "Show ramp start"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_LEVEL, "Start level"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_TIME , "Time per p.p."));
 
     _settings_list->clear_options();
-    for (std::vector<CMenuSettingOutput::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
+    for (std::vector<CMenuSettingOutputExtRamp::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
     {
-        _settings_list->add_option((*it).text);
+        _settings_list->add_option((*it).text, (*it).id);
     }
 
     _exit_menu = false;
-    set_options_for_setting(setting_id_t::POWER_LEVEL);
+    set_options_for_setting(setting_id_t::RAMP_SHOW);
 }
 
-void CMenuSettingOutput::set_options_for_setting(setting_id_t setting_id)
+void CMenuSettingOutputExtRamp::set_options_for_setting(setting_id_t setting_id)
 {
     _setting_choices.clear();
     uint8_t current_choice_id = 0;
 
     switch (setting_id)
     {
-        case setting_id_t::POWER_LEVEL:
-            _display->set_option_a("");
-            _setting_choices.push_back(CMenuSettingOutput::setting_t((uint8_t)CSavedSettings::power_level_t::LOW   , "Low"   ));
-            _setting_choices.push_back(CMenuSettingOutput::setting_t((uint8_t)CSavedSettings::power_level_t::MEDIUM, "Medium"));
-            _setting_choices.push_back(CMenuSettingOutput::setting_t((uint8_t)CSavedSettings::power_level_t::HIGH  , "High"  ));
-            current_choice_id = (uint8_t)_saved_settings->get_power_level();
+        case setting_id_t::RAMP_SHOW:
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(false, "No" ));
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(true , "Yes"));
+            current_choice_id = _saved_settings->get_extended_ramp_show();
             break;
 
-        case setting_id_t::INITIAL_RAMP_TIME:
-            _display->set_option_a("");
+        case setting_id_t::RAMP_LEVEL:
             _min_max_value_min = 1;
-            _min_max_value_max = RAMP_UP_TIME_MAXIMUM_SECS;
-            _min_max_value = _saved_settings->get_initial_ramp_up_time_seconds();
+            _min_max_value_max = 100; 
+            _min_max_uom = "%";
+            _min_max_value = _saved_settings->get_extended_ramp_level();
             break;
 
-        case setting_id_t::EXTENDED_RAMP:
-            _display->set_option_a("Configure");
+        case setting_id_t::RAMP_TIME:
+            _min_max_value_min = 1;
+            _min_max_value_max = 200;
+            _min_max_uom = "sec";
+            _min_max_value = _saved_settings->get_extended_ramp_time_seconds();
             break;
     }
 
@@ -258,23 +269,21 @@ void CMenuSettingOutput::set_options_for_setting(setting_id_t setting_id)
     }
 }
 
-CMenuSettingOutput::setting_kind_t CMenuSettingOutput::get_setting_kind(setting_id_t setting_id)
+CMenuSettingOutputExtRamp::setting_kind_t CMenuSettingOutputExtRamp::get_setting_kind(setting_id_t setting_id)
 {
     switch (setting_id)
     {
-        case setting_id_t::EXTENDED_RAMP:
-            return setting_kind_t::EXT_RAMP;
+        case setting_id_t::RAMP_SHOW:
+            return setting_kind_t::MULTI_CHOICE;
 
-        case setting_id_t::POWER_LEVEL:
-            return setting_kind_t::MULTI_CHOICE; 
-
-        case setting_id_t::INITIAL_RAMP_TIME:
+        case setting_id_t::RAMP_LEVEL:
+        case setting_id_t::RAMP_TIME:
         default:
             return setting_kind_t::MIN_MAX;        
     };
 }
 
-CMenuSettingOutput::setting_id_t CMenuSettingOutput::get_currently_selected_setting_id()
+CMenuSettingOutputExtRamp::setting_id_t CMenuSettingOutputExtRamp::get_currently_selected_setting_id()
 {
     return (setting_id_t)_settings[_settings_list->get_current_selection()].id;
 }

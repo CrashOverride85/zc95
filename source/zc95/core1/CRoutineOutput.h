@@ -29,6 +29,7 @@ class CRoutineOutput
         virtual void trigger(trigger_socket socket, trigger_part part, bool active) = 0;
         virtual void soft_button_pressed(soft_button button, bool pressed) = 0;
         virtual void bluetooth_remote_passthrough(CBluetoothRemote::keypress_t key) = 0;
+        virtual void extended_ramp_start() = 0;
         virtual void loop() {};
 
         virtual void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power) = 0;

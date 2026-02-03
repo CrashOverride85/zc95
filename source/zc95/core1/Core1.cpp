@@ -70,7 +70,7 @@ Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_se
     _active_routine = NULL;
     _channel_config = NULL;
 
-    power_level_control = new CPowerLevelControl(saved_settings);
+    _power_level_control = new CPowerLevelControl(saved_settings);
 
     memset(_active_channels, 0, sizeof(_active_channels));
     memset(_fullChannelAsSimpleChannels, 0, sizeof(_fullChannelAsSimpleChannels));
@@ -102,7 +102,7 @@ void Core1::init()
         _channel_config = NULL;
     }
 
-    _channel_config = new CChannelConfig(_saved_settings, power_level_control);
+    _channel_config = new CChannelConfig(_saved_settings, _power_level_control);
     _channel_config->configure_channels_from_saved_config(_active_channels);
 
     memset(_fullChannelAsSimpleChannels, 0, sizeof(_fullChannelAsSimpleChannels));
@@ -118,10 +118,10 @@ Core1::~Core1()
     delete _channel_config;
     delete_fullChannelAsSimpleChannels_and_restore_channels();
 
-    if (power_level_control != NULL)
+    if (_power_level_control != NULL)
     {
-        delete power_level_control;
-        power_level_control = NULL;
+        delete _power_level_control;
+        _power_level_control = NULL;
     }
 }
 
@@ -139,7 +139,7 @@ void Core1::loop()
             _active_channels[channel_number]->update_power();
         }
 
-    power_level_control->loop();
+    _power_level_control->loop();
 
     if (_channel_config != NULL)
         _channel_config->loop();
@@ -172,7 +172,7 @@ void Core1::update_power_levels()
     for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
     {
         // Send current power level being output, if changed
-        uint16_t power_level = power_level_control->get_display_power_level(channel_number);
+        uint16_t power_level = _power_level_control->get_display_power_level(channel_number);
         if (power_level != _output_power[channel_number])
         {
             message msg = {0};
@@ -190,7 +190,7 @@ void Core1::update_power_levels()
         }
 
         // Send the current maximum power (this will be increasing automatically during ramp up)
-        uint16_t power_level_max = power_level_control->get_max_power_level(channel_number);
+        uint16_t power_level_max = _power_level_control->get_max_power_level(channel_number);
         if (power_level_max != _output_power_max[channel_number])
         {
             message msg = {0};
@@ -297,7 +297,7 @@ void Core1::process_message(message msg)
         uint8_t channel = msg.msg8[1];
         uint16_t power = msg.msg8[2];
         power |= msg.msg8[3] << 8;
-        power_level_control->set_front_panel_power(channel, power);
+        _power_level_control->set_front_panel_power(channel, power);
         update_channel_power(channel);
         break;
     }
@@ -360,7 +360,7 @@ void Core1::process_message(message msg)
             uint8_t channel = msg.msg8[1];
             uint16_t power = msg.msg8[2];
             power |= msg.msg8[3] << 8;
-            power_level_control->set_remote_power(channel, power);
+            _power_level_control->set_remote_power(channel, power);
             update_channel_power(channel);
             break;
         }
@@ -369,9 +369,9 @@ void Core1::process_message(message msg)
         {
             uint8_t enable = (msg.msg8[1] != 0);
             if (enable)
-                power_level_control->remote_mode_enable();
+                _power_level_control->remote_mode_enable();
             else
-                power_level_control->remote_mode_disable();
+                _power_level_control->remote_mode_disable();
 
             for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
                 update_channel_power(channel);
@@ -382,6 +382,12 @@ void Core1::process_message(message msg)
         {
             CBluetoothRemote::keypress_t button = (CBluetoothRemote::keypress_t)msg.msg8[1];
             bluetooth_remote_keypress(button);
+            break;
+        }
+
+    case MESSAGE_EXTENDED_RAMP_START:
+        {
+            _power_level_control->extended_ramp_start();
             break;
         }
     }
@@ -473,7 +479,7 @@ void Core1::activate_routine(uint8_t routine_id)
                 if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
                 {
                     // Routine wants a simple channel, but that channel is a full one. So use a wrapper to convert it into a simple channel
-                    _fullChannelAsSimpleChannels[channel] = new CFullChannelAsSimpleChannel(_saved_settings, (CFullOutputChannel *)_active_channels[channel], channel, power_level_control);
+                    _fullChannelAsSimpleChannels[channel] = new CFullChannelAsSimpleChannel(_saved_settings, (CFullOutputChannel *)_active_channels[channel], channel, _power_level_control);
                     _active_channels[channel] = _fullChannelAsSimpleChannels[channel];
                 }
 
@@ -508,7 +514,7 @@ void Core1::activate_routine(uint8_t routine_id)
         channel++;
     }
 
-    power_level_control->ramp_start();
+    _power_level_control->initial_ramp_start();
     _active_routine->start();
     set_audio_mode(conf.audio_processing_mode);
     printf("Core1::activate_routine: completed\n");
@@ -550,7 +556,7 @@ void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
         }
     }
 
-    power_level_control->zero_power_level();
+    _power_level_control->zero_power_level();
     update_power_levels();
 }
 
