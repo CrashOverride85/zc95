@@ -1559,7 +1559,7 @@
       <text:p>N</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce72" office:value-type="string" calcext:value-type="string">
-      <text:p>C25,C40,C56,C66,C67,C68,C70,C9</text:p>
+      <text:p>C25,C40,C56,C66,C67,C68,C70,C9,C58</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce77" office:value-type="string" calcext:value-type="string">
       <text:p>10uF</text:p>
@@ -1577,7 +1577,7 @@
       <text:p>N</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce72" office:value-type="string" calcext:value-type="string">
-      <text:p>C27,C57,C58,C62</text:p>
+      <text:p>C27,C57,C62</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce77" office:value-type="string" calcext:value-type="string">
       <text:p>10nF</text:p>
