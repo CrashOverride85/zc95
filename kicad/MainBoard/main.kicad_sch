@@ -7753,6 +7753,9 @@
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/d62f6f34-e423-43e1-b4d5-3bb9a765e8c0"
       (reference "#PWR0142") (unit 1) (value "GND") (footprint "")
     )
+    (path "/19110a61-f4de-4ef1-b1f1-1ce62884cb5e/d2846d53-3a8b-4920-8ded-717632feac4c"
+      (reference "#PWR0143") (unit 1) (value "GND") (footprint "")
+    )
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/53f4d707-46cb-43a6-85a4-c81f59e9bc44"
       (reference "BT1") (unit 1) (value "26650 Cell") (footprint "ProjLib:BH-26650-A5BJ001")
     )
@@ -7969,6 +7972,9 @@
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/a3d30024-e668-429c-9d2c-2ec079775795"
       (reference "C71") (unit 1) (value "DNP") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
+    (path "/3f31ae8f-beda-448d-904b-b027dde59383/948f9609-e973-4a33-a643-9bf77e3211c0"
+      (reference "C72") (unit 1) (value "10uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+    )
     (path "/05181b46-a6ce-4485-95c2-87132c085994"
       (reference "D1") (unit 1) (value "BZX584C3V6") (footprint "Diode_SMD:D_SOD-523")
     )
@@ -8095,8 +8101,8 @@
     (path "/7e1b2806-18f3-4f58-a91f-e94638c09ec3/20775aea-102a-42a0-80d2-c7570bbab0f7"
       (reference "J15") (unit 1) (value "CHAN4") (footprint "ProjLib:PJ-3062-CO")
     )
-    (path "/3f31ae8f-beda-448d-904b-b027dde59383/01b7b36f-018d-4626-8338-180e57ce14ae"
-      (reference "J16") (unit 1) (value "Conn_01x02_Female") (footprint "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical")
+    (path "/19110a61-f4de-4ef1-b1f1-1ce62884cb5e/8703b518-2333-4a81-be7d-e2cdbd715732"
+      (reference "J16") (unit 1) (value "AudioIn") (footprint "Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical")
     )
     (path "/19110a61-f4de-4ef1-b1f1-1ce62884cb5e/71056e94-9f8c-4d6b-b727-ce9ac1fd12a8"
       (reference "J18") (unit 1) (value "AudioJack3_SwitchTR") (footprint "ProjLib:PJ-3062-CO")
@@ -8634,6 +8640,12 @@
     )
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/ca1d726c-5c4d-4470-8bf8-a15a99b60126"
       (reference "R155") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+    )
+    (path "/7e1b2806-18f3-4f58-a91f-e94638c09ec3/8049fdcd-c674-4e4e-aa59-894934814561"
+      (reference "R156") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+    )
+    (path "/7e1b2806-18f3-4f58-a91f-e94638c09ec3/17291f29-3259-4522-b565-e2ccbd996959"
+      (reference "R157") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/1845e032-fcd8-4154-a5a6-3a8bee70f41c"
       (reference "SW1") (unit 1) (value "SW_SPDT") (footprint "ProjLib:SS-12D06L5")
