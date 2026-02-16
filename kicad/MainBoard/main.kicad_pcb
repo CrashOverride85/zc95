@@ -13891,7 +13891,7 @@
     (property "Sheetfile" "power.kicad_sch")
     (property "Sheetname" "Power")
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/92c75efa-7def-43e1-b0da-5684fdb373eb")
-    (attr smd)
+    (attr smd exclude_from_pos_files exclude_from_bom)
     (fp_text reference "C58" (at -2.7708 0.1536) (layer "F.SilkS")
       (effects (font (size 0.7 0.7) (thickness 0.15)))
       (tstamp ce9b6c42-3521-4cd4-aad5-eb265aa7189f)
