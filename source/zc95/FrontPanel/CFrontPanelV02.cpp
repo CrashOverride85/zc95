@@ -278,8 +278,16 @@ void CFrontPanelV02::read_adc()
         // suggest a loose connection. It's probably best to stop because a poor connection could lead 
         // unexpected power levels being set. 
         _adc_read_error_count++;
+        
         printf("*** Error reading front panel ADC (%d / %d)\n", _adc_read_error_count, FailAfterAdcErrorCount);
 
+        // After the second consecutive read error, try an I2C bus reset
+        if (_adc_read_error_count == 2)
+        {
+            i2c_reset(__func__);
+        }
+
+        // After the 3rd failure, give up
         if (_adc_read_error_count >= FailAfterAdcErrorCount)
         {
             printf("Too many ADC read errors.\n");
