@@ -34,6 +34,13 @@ First public version
 
 ## MainBoard
 
+### v2.6
+Fix:
+ - Improve layout: Move input capacitor closer to the BQ25601 charge controller
+
+Tweaks:
+ - Added header for audio input next to the audio jack
+
 ### v2.5
 Fix:
  - Update power switch so that it toggles the power enable pin of the voltage regulators, instead of directly switching the power as before. To avoid over current fault / shutdown of BQ25601.
