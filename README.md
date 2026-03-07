@@ -3,23 +3,6 @@
 
 **Note**: This repo has submodules, so if cloning, it's best to use the recursive option.
 
-## ZC95 MkII
-
-This branch holds the ZC95 MkII. A few people have now reported successfully building this using PCB v2.0 & v2.1. Compared to the MKI, it's smaller, and condenses 3 of the PCBs into 1 to make the build a bit cheaper and much quicker than the MkI.
-
-These are the main changes from the MkI:
- - Much smaller - the mainboard is less than half the size
- - Output, Audio and main board are now combined
- - USB-C charger input instead of 15v barrel jack
- - 26650 cell instead of 12v SLA battery (similar capacity)
- - "Aux" socket swapped for separate "Serial" and "Audio" sockets
- - Output sockets changed from 2.5mm to 3.5mm
- - Serial selectable (via jumpers) between 3.3v TTL and RS232
- - Display no longer briefly flashes white on power on
- - Removed: 12v output on accessory port
-
-At some point soon this branch will become the main branch, and I'll (re)move this section.
-
 ## Introduction
 The ZC95 is a DIY four channel EStim box with similar output design and feel to the MK312-BT (which in turn is a clone of the ET-312B).
 
@@ -74,10 +57,23 @@ Technical details:
 ## History
 The ZC95 is very heavily inspired by the MK312-BT, which is a reversed engineered version of the ET-312. The original repo for that project is long gone, but there is a fork [here](https://github.com/CrashOverride85/mk312-bt).
 
-The ZC95 mk1 was made public in late 2021, and had a similar form factor to the MK312. That version has been built successfully by many.
+The [ZC95 mk1](https://github.com/CrashOverride85/zc95/tree/MKI) was made public in late 2021, and had a similar form factor to the MK312. That version has been built successfully by many.
 
-The mk1 zc95 had the output stage on a separate PCB. It's no longer part of the zc95 build, but could still be built and used to add 4 channel estim output to an Arduino (with notes for & tested with an ESP32).
+The [ZC95 mk1](https://github.com/CrashOverride85/zc95/tree/MKI) had the output stage on a separate PCB. It's no longer part of the zc95 build, but could still be built and used to add 4 channel estim output to an Arduino (with notes for & tested with an ESP32).
 The PCB / BoM / build notes for it are [here](./misc/OutputBoard/README.md).
+
+## MKI vs. MKII
+These are the main changes from the MKI to MKII:
+
+ - Much smaller - the mainboard is less than half the size
+ - Output, Audio and main board are now combined
+ - USB-C charger input instead of 15v barrel jack
+ - 26650 cell instead of 12v SLA battery (similar capacity)
+ - "Aux" socket swapped for separate "Serial" and "Audio" sockets
+ - Output sockets changed from 2.5mm to 3.5mm
+ - Serial selectable (via jumpers) between 3.3v TTL and RS232
+ - Display no longer briefly flashes white on power on
+ - Removed: 12v output on accessory port
 
 ## Support, feedback, etc.
 The ZC95 project is provided 'as is' without warranty of any kind, either express or implied. The project is provided for your use at your own risk.
