@@ -3,12 +3,13 @@
 
 #include "../CMenu.h"
 #include "../CDisplay.h"
-#include "../CHwCheck.h"
+#include "../HwCheck/CHwCheck.h"
+#include "../../Hal/IHal.h"
 
 class CMenuSettingAbout : public CMenu
 {
     public:
-        CMenuSettingAbout(CDisplay* display, CGetButtonState *buttons, CHwCheck *hwCheck);
+        CMenuSettingAbout(CDisplay* display, IHal *hal, CHwCheck *hwCheck);
         ~CMenuSettingAbout();
         void button_pressed(Button button);
         void draw();
@@ -18,7 +19,7 @@ class CMenuSettingAbout : public CMenu
     private:
         void put_text_line(std::string text, int16_t x, int16_t y, uint8_t line, hagl_color_t colour);
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CHwCheck *_hwCheck;
 };
 

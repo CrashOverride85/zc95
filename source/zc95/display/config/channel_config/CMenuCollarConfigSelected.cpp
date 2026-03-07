@@ -21,11 +21,11 @@
 #include "../core1/output/collar/CCollarComms.h" // for CCollarComms::mode_to_string() 
 #include "../core1/CRoutineOutput.h"
 
-CMenuCollarConfigSelected::CMenuCollarConfigSelected(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, uint8_t collar_id, CRoutineOutput *routine_output)
+CMenuCollarConfigSelected::CMenuCollarConfigSelected(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, uint8_t collar_id, CRoutineOutput *routine_output)
 {
     printf("CMenuCollarConfigSelected() \n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _collar_id = collar_id;
     _routine_output = routine_output;

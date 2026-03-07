@@ -234,12 +234,12 @@ void CAnalogueCapture::process_buffer(const uint8_t *capture_buf)
     _last_buffer_update_time_us = time_us_64();
 }
 
-bool CAnalogueCapture::new_battery_readings_available()
+bool CAnalogueCapture::new_voltage_readings_available()
 {
     return _new_battery_readings;
 }
 
-uint8_t *CAnalogueCapture::get_battery_readings(uint8_t *readings_count)
+uint8_t *CAnalogueCapture::get_voltage_readings(uint8_t *readings_count)
 {
     *readings_count = BATTERY_ADC_READINGS;
     _new_battery_readings = false;

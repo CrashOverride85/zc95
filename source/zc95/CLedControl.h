@@ -41,11 +41,10 @@ enum LedColour: uint32_t
 class CLedControl
 {
     public:
-        CLedControl(uint8_t tx_pin, CSavedSettings *settings);
+        CLedControl(uint8_t tx_pin, CSavedSettings** settings);
         ~CLedControl();
         void loop(bool force_update = false);
         void update_leds();
-        void init();
         void set_led_colour(LED led, uint32_t colour);
         uint32_t get_brightness_adjusted_led_colour(uint8_t led);
         void set_all_led_colour(uint32_t colour);
@@ -59,7 +58,7 @@ class CLedControl
         PIO _pio;
         int _sm;
         int8_t _brightness;
-        CSavedSettings *_settings;
+        CSavedSettings** _settings;
         uint64_t _last_led_update = 0;
 };
 

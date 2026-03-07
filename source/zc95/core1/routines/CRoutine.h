@@ -28,7 +28,8 @@ enum class menu_entry_type
     AUDIO_VIEW_WAVE,
     AUDIO_VIEW_INTENSITY_STEREO,
     AUDIO_VIEW_INTENSITY_MONO,
-    AUDIO_VIEW_VIRTUAL_3
+    AUDIO_VIEW_VIRTUAL_3,
+    BLANK
 };
 
 enum class trigger_socket
@@ -264,6 +265,14 @@ class CRoutine
             }
         }
 
+        void full_channel_link_channel(uint8_t lead_channel, uint8_t linked_channel, uint8_t offset_percent)
+        {
+            if (lead_channel < MAX_CHANNELS && _full_channel[lead_channel] != NULL)
+            {
+                _full_channel[lead_channel]->link_channel(linked_channel, offset_percent);
+            }
+        }
+
         void set_channel_isolation(bool enabled)
         {
             routine_conf conf;
@@ -309,6 +318,20 @@ class CRoutine
                     _full_channel[channel]->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
                 }
             }
+        }
+
+        // Set value for a menu. This isn't the usual flow, it's only called when a pattern
+        // wants to change its own settings, and have that updated setting show in the UI.
+        // Which currently, no internal patterns do (but uploaded Lua scripts can).
+        void set_menu_value(uint8_t menu_id, uint16_t value)
+        {
+            message msg = {0};
+            msg.msg8[0] = MESSAGE_SET_MENU_VALUE;
+            msg.msg8[1] = menu_id;
+            msg.msg8[2] = value & 0xFF;
+            msg.msg8[3] = (value >> 8) & 0xFF;
+
+            multicore_fifo_push_blocking(msg.msg32);
         }
 
         void print(text_type_t text_type, const char *format, ...)

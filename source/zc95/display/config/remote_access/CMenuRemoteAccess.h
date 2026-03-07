@@ -5,6 +5,7 @@
 #include "../../../CSavedSettings.h"
 #include "../../../CAnalogueCapture.h"
 #include "../../../RemoteAccess/CWifi.h"
+#include "../../../Hal/IHal.h"
 #include "../../../core1/CRoutineOutput.h"
 #include "../../../Bluetooth/CBluetooth.h"
 
@@ -13,14 +14,14 @@ class CMenuRemoteAccess : public CMenu
     public:
         CMenuRemoteAccess(
             CDisplay* display,
-            CGetButtonState *buttons, 
             CSavedSettings *saved_settings, 
             CWifi *wifi, 
             CAnalogueCapture *analogueCapture, 
             CRoutineOutput *routine_output,
             std::vector<CRoutines::Routine> &routines,
             CBluetooth *bluetooth,
-            CRadio *radio);
+            CRadio *radio,
+            IHal* hal);
 
         ~CMenuRemoteAccess();
         void button_pressed(Button button);
@@ -62,7 +63,6 @@ class CMenuRemoteAccess : public CMenu
         struct display_area _area;
         
         CDisplay* _display;
-        CGetButtonState *_buttons;
         CSavedSettings *_saved_settings;
         CWifi *_wifi;
         CAnalogueCapture *_analogueCapture;
@@ -70,4 +70,5 @@ class CMenuRemoteAccess : public CMenu
         std::vector<CRoutines::Routine>& _routines;
         CBluetooth *_bluetooth;
         CRadio *_radio;
+        IHal* _hal;
 };

@@ -33,8 +33,12 @@
 .global lua_script_torment_end
 .global lua_script_combo_start
 .global lua_script_combo_end
-.global lua_script_random2_start
-.global lua_script_random2_end        
+.global lua_script_random2_start 
+.global lua_script_random2_end
+.global lua_script_trifade_start
+.global lua_script_trifade_end
+.global lua_script_tens_start
+.global lua_script_tens_end
 
 lua_script1_start:
 .balign 4096
@@ -119,3 +123,13 @@ lua_script_random2_start:
 .incbin "LuaScripts/random2.lua"
 .fill 2, 1, 0x00 /* null terminate */
 lua_script_random2_end:
+
+lua_script_trifade_start:
+.incbin "LuaScripts/trifade.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_trifade_end:
+
+lua_script_tens_start:
+.incbin "LuaScripts/tens.lua"
+.fill 2, 1, 0x00 /* null terminate */
+lua_script_tens_end:

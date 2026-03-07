@@ -2,6 +2,7 @@
 #include "CGetButtonState.h"
 #include "../CSavedSettings.h"
 #include "../config.h"
+#include "../ZcTypes.h"
 
 #ifndef _CFRONTPANEL_H
 #define _CFRONTPANEL_H
@@ -21,6 +22,7 @@ class CFrontPanel : CGetButtonState
         virtual bool has_button_state_changed(enum Button button, bool *new_state) = 0;
         virtual void interrupt (interrupt_t i) = 0;
         virtual void set_button_in_use(enum Button button, bool in_use) {};
+        virtual front_panel_version_t verion() = 0; 
 };
 
 #endif

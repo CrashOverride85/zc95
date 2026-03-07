@@ -3,7 +3,7 @@
 ## Capability
 Lua scripts can be written / uploaded (see [Remote Access](./RemoteAccess.md) for how to upload) to add new patterns to the ZC95. These scripts are able to switch each channel on/off, set the frequency and pulse width, and set the power level (scaled to what the front panel is set to - i.e. a Lua script can't set the output power to higher than set on the front panel).
 They can also receive notification of settings being changed via the menu, and inputs from the external trigger inputs along with the top left soft button being pressed.
-There is also limited support for audio - so far only reacting to volume, and no audio wave display when running over Wifi (and no audio support at all over serial due to using the same aux socket)
+There is also limited support for audio - so far only reacting to volume, and no audio wave display when running over Wifi (and no audio support at all over serial).
 
 
 ## Example scripts
@@ -276,6 +276,21 @@ Params:
 Sets the pulse width used for the channel, defaults to 150us, but this default may move into the config menus at some point.
 For symmetric pulses (as used by most/all inbuilt patterns), these two values should be the same. 
 
+### SetMenuOption
+```
+Params:
+    * menu_id
+    * value
+```
+This can be used to allow a Lua script to change the setting of one of its menu options.
+MenuId must match an `id` in the menu_items section of the Config block.
+
+For MIN_MAX type menu entries, the `value` must be between the configured `min` and `max` for that menu entry.
+
+For MULTI_CHOICE type menu entries, `value` must match one of the `choice_id`s. 
+
+**Important**: The change will result in the scripts `MinMaxChange` or `MultiChoiceChange` function being called asynchronously when the update takes effect. After calling `SetMenuOption`, it is possible (but not guaranteed) that the `Loop` function could be called many times _before_ the menu is updated.
+
 ### ChannelPulseMs
 ```
 Params:
@@ -299,6 +314,28 @@ Params:
 ```
 Switch off the specified channel.
 
+### EnableTriphase
+```
+Params:
+    * enabled true/false
+```
+Enables triphase support - see Triphase section further down. Requires `allow_triphase = true` to be present in the config section, and allows the use of `LinkChannels`.
+
+### LinkChannels
+```
+Params:
+    * lead channel 1-4
+    * linked channel 1-4, or 0 to unlink
+    * offset percentage (0-100)
+```
+
+`EnableTriphase(true)` must be called first.
+
+Links `linked` channel to `lead` channel - causes a pulse on the linked channel to be generated to overlap with lead channel. An offset of 0% would generate the pulses simultaneously, where 100% would cause the pulses on the linked channel to be generated as the pulse on the lead finishes.
+Once a channel is linked, the linked chanel should not be controlled directly other than changing its power setting - i.e. don't call `ChannelOn`, `SetPulseWidth` etc. for it - doing so will cause it to be unlinked.
+
+See triphase section later for further details.
+
 ### AccIoWrite
 ```
 Params:
@@ -316,6 +353,12 @@ Minimal example for using the accessory port to control 3 LEDs. Can be used with
 
 ![acc port]
 
+### DelayMs
+```
+Params:
+    * Delay in milliseconds (0 - 10000)
+```
+Delay/sleep for the specified number of milliseconds. During the delay, other events (e.g. `MinMaxChange`, `SoftButton`) will still fire, so be sure the script is written to expect that.
 
 ## Special functions
 These are functions that will be automatically called when applicable whilst the Lua script is running. With the exception of `Loop()`, all are optional. 
@@ -353,9 +396,9 @@ Note that unlike `SoftButton` and `ExternalTrigger`, there is only a single even
 If `bluetooth_remote_passthrough = false` (or is absent), this function is never called, and key presses from a connected bluetooth remote are interpreted according to the configured mappings. E.g. if SHUTTER is mapped to "`Top left soft`", pressing the shutter button will cause `SoftButton(true)` immediately followed by `SoftButton(false)` to be called.
 
 ### BluetoothHidEvent (usage_page, usage, value)
-Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project [HidExample](../misc/Bluetooth/HidExample/).
+Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project that can be paired with the ZC95 and use this functionality [HidExample](../misc/Bluetooth/HidExample/).
 
-When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particular familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
+When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particularly familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
 
 ### AudioIntensityChange(left_chan, right_chan, virt_chan)
 Receive audio data from aux socket.
@@ -398,4 +441,48 @@ All values sent to these functions will be 0-255, so if used to modulate the out
 ### Example
 The `audio.lua` script shows an example of audio support assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency, and channels 3 & 4 react to volume changes
 
+## TriPhase
+The ZC95 now has _limited_ triphase support from Lua.
+
+As recap, "triphase" is where two channels are linked together with a common electrode. There is a good description of it on [Joanne's Reviews](https://www.sexmachinereviews.co.uk/estim-systems-triphase-cable-review.html). Due to the interactions between channels, it is more important to **not make any connections above the waist with triphase enabled.**
+
+In normal operation, the ZC95 will never generate two pulses at same time - if the channels have been configured with frequencies that would cause two pulses to overlap, one is delayed. This is done as pulses overlapping in an uncontrolled/unintended manner can cause unexpected spikes if electrodes are in close proximately, and certainly if two have been joined together in a triphase configuration.
+
+The triphase support is used to allow the ZC95 to intentionally generate pulses that overlap, but in a controlled manner with consistent results. 
+
+At present, it only allows one channel to be linked to another, where a pulse on the linked linked channel is generated with a set overlap with the lead channel (further options likely to follow in the future).
+
+### Setup
+Before triphase can be used, the Config section must include `allow_triphase = true` - without this the triphase commands will be ignored. Setting this flag causes the pattern to be displayed prefixed with a `(!)` on the menu, as a warning that it uses triphase / disables channel isolation.
+
+With that set, `zc.EnableTriphase(true)` can then be called - the best place is probably in the `Setup` function, but it can be anywhere. With triphase enabled, the ZC95 will no longer do anything to stop pulses being generated at the same time, regardless of where the pulses are coming from. So be careful - even unlinked channels will start generating pulses that can overlap if the frequencies set will cause them to clash. For the time being, it's probably best to stick to 2 channels when using triphase until it's expanded to be more configurable.
+
+Finally, link two channel together using `zc.LinkChannels`, e.g. running `zc.LinkChannels(1, 2, 0)`, will link channel 2 to channel 1 (lead channel), and cause a pulses to be generated on channel 2 at the same time as pulses on channel 1. 
+Changing the pulse width & frequency of channel 1 will affect channel 2. Once linked, only the power level of the linked channel should should be changed.
+
+### Example
+See [trifade.lua](../source/zc95/LuaScripts/trifade.lua) for an example Lua script that enables triphase, then continually alters the offset between to the two channels at a speed set from the menu.
+
+A graphic example of what's happening may help.
+
+With channel 1 and 2 linked, using the default pulse width of 150, at three different offsets:
+
+![offset 0]
+
+*0% Offset* - No offset; the pulses on the linked channels are generated at the same time (result of `zc.LinkChannels(1, 2, 0)`)
+
+
+![offset 50]
+
+*50% Offset* - the pulse on the linked channel starts half way through the pulse on the lead channel (result of `zc.LinkChannels(1, 2, 50)`)
+
+
+![offset 100]
+
+*100% Offset* - the pulse on the linked channel starts as the pulse on the lead channel finishes  (result of `zc.LinkChannels(1, 2, 100)`)
+
+
 [acc port]: images/lua_acc_port.png "Accessory port"
+[offset 0]: images/TriphaseOffset0pc.png "zc.LinkChannels(1, 2, 0)"
+[offset 50]: images/TriphaseOffset50pc.png "zc.LinkChannels(1, 2, 50)"
+[offset 100]: images/TriphaseOffset100pc.png "zc.LinkChannels(1, 2, 100)"

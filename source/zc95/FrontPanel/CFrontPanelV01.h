@@ -1,19 +1,19 @@
 #include "CFrontPanel.h"
 #include "CRotEnc.h"
-#include "CMainBoardPortExp.h"
-#include "../CSavedSettings.h"
+#include "PortExpanders/CMainBoardPortExp.h"
 #include "../config.h"
 
 class CFrontPanelV01 : public CFrontPanel
 {
     public:
-        CFrontPanelV01(CSavedSettings *saved_settings, CMainBoardPortExp *main_board_port_exp);
+        CFrontPanelV01(CMainBoardPortExp *main_board_port_exp);
         void process(bool always_update);
         uint16_t get_channel_power_level(uint8_t channel);
         int8_t get_adjust_control_change();
         void interrupt (interrupt_t i);
         bool button_state(enum Button button);
         bool has_button_state_changed(enum Button button, bool *new_state);
+        front_panel_version_t verion();
 
     private:
         void read_adc();

@@ -4,11 +4,13 @@
 #include "../CSavedSettings.h"
 #include "../CChannel_types.h"
 #include "../CHorzBarGraph.h"
+#include "../../../Hal/IHal.h"
+#include "CMenuSettingOutputExtRamp.h"
 
 class CMenuSettingOutput : public CMenu
 {
     public:
-        CMenuSettingOutput(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings);
+        CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings);
         ~CMenuSettingOutput();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -19,13 +21,15 @@ class CMenuSettingOutput : public CMenu
         enum setting_id_t
         {
             POWER_LEVEL          = 0,
-            RAMP_TIME            = 1
+            INITIAL_RAMP_TIME    = 1,
+            EXTENDED_RAMP        = 2
         };
 
         enum setting_kind_t
         {
             MULTI_CHOICE        = 0,
-            MIN_MAX             = 1
+            MIN_MAX             = 1,
+            EXT_RAMP            = 2
         };
 
         setting_kind_t get_setting_kind(setting_id_t setting_id);
@@ -55,7 +59,7 @@ class CMenuSettingOutput : public CMenu
 
         struct display_area _area;
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         display_area _setting_choice_area;
         CSavedSettings *_saved_settings;
         CHorzBarGraph *_bar_graph = NULL;

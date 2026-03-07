@@ -15,6 +15,7 @@
 #include "../config.h"
 #include "../FrontPanel/CFrontPanel.h"
 #include "../Bluetooth/CBluetooth.h"
+#include "../PowerManagement/IPowerManagement.h"
 
 struct display_area
 {
@@ -27,7 +28,7 @@ struct display_area
 class CDisplay
 {
     public:
-        CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth);
+        CDisplay(CFrontPanel *front_panel, CBluetooth *bluetooth, IPowerManagement* power_management);
         ~CDisplay();
         void init();
         void update();
@@ -44,8 +45,7 @@ class CDisplay
         void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false, const uint8_t *font = NULL);
         uint8_t get_font_width();
         uint8_t get_font_height();
-        void set_battery_percentage(uint8_t bat);
-        uint8_t get_battery_percentage();
+
         void set_active_pattern(std::string pattern);
         void set_update_required();
         hagl_backend_t* get_hagl_backed();
@@ -60,6 +60,14 @@ class CDisplay
             int16_t actual_power;  // Power level currently being output. After inital ramp up, usually the same as max_power (but routines can reduce it)
         };
 
+        enum class battery_state_t
+        {
+            Discharging,
+            OnCharge,
+            Changed,
+            Fault
+        };
+
         void draw_soft_buttons();
         void draw_status_bar();
         void draw_power_level();
@@ -69,7 +77,7 @@ class CDisplay
         void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
         void draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour);
         void draw_bt_logo_if_required(int16_t x, int16_t y);
-        void draw_battery_icon(int16_t x, int16_t y);
+        void draw_battery_icon(int16_t x, int16_t y, battery_state_t state);
         void draw_power_level_indicator(int16_t x, int16_t y);
 
         // Soft buttons
@@ -87,7 +95,6 @@ class CDisplay
         uint8_t _font_width;
         uint8_t _font_height;
 
-        uint8_t _battery_percentage;
         std::string _active_pattern;
         bool _update_required;
         CInteruptableSection _interruptable_section;
@@ -97,6 +104,7 @@ class CDisplay
         uint64_t _show_power_level_until = 0;
         CFrontPanel *_front_panel;
         CBluetooth *_bluetooth;
+        IPowerManagement* _power_management;
 };
 
 #endif

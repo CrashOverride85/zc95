@@ -66,7 +66,14 @@ class CSavedSettings
         BtDeviceType     = 220, // Bluetooth device type (HID, GENERIC, etc.)
         BleAllowTriphase = 221, // If enabled, channel isolation can be disabled via BLE remote connect
         BlePowerMode     = 222, // What the front panel power dials do. See ble_power_dial_mode_t.
-        PowerLevel       = 223  // Power level: Low, Medium or High (default)
+        PowerLevel       = 223, // Power level: Low, Medium or High (default)
+        BatChargeCurrent = 224, // Max battery charge current. Multiply value held by 60 to get mA
+     // Reserved         = 225  // Might use this in the future for BatChargeCurrent too
+        StatusBarOption  = 226, // What to show in the status bar. Default is running pattern name      
+        DisplayBrightness= 227, // Display brightness, in percent
+        ExtendedRampLevel= 228, // Extended ramp percent, 1% - 100%
+        ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
+        ExtendedRampShow = 230  // Show 'Ramp start' option on all patterns
     };
 
     public:
@@ -133,6 +140,12 @@ class CSavedSettings
             LOW    = 2
         };
 
+        enum class status_bar_text_t
+        {
+            RUNNING_PATTERN = 0,
+            BATTERY_CURRENT = 1
+        };
+
         CSavedSettings(CEeprom *eeprom);
         ~CSavedSettings();
         void save();
@@ -150,7 +163,7 @@ class CSavedSettings
         void set_power_step_interval(uint8_t power_step);
 
         // Power ramp up time, seconds
-        uint8_t get_ramp_up_time_seconds();
+        uint8_t get_initial_ramp_up_time_seconds();
         void set_ramp_up_time_seconds(uint8_t time_secs);
 
         // Gain for audio input
@@ -230,6 +243,25 @@ class CSavedSettings
         // Power level
         power_level_t get_power_level();
         void set_power_level(power_level_t power_level);
+
+        // Battery charge current
+        uint16_t get_batt_charge_current_mA();
+        void set_batt_charge_current(uint16_t charge_current);
+
+        status_bar_text_t get_status_bar_option();
+        void set_status_bar_option(status_bar_text_t status_bar_option);
+
+        uint8_t get_display_brightness_percent();
+        void set_display_brightness_percent(uint8_t percent);
+
+        uint8_t get_extended_ramp_level();
+        void set_extended_ramp_level(uint8_t percent);
+        
+        uint8_t get_extended_ramp_time_seconds();
+        void set_extended_ramp_time_seconds(uint8_t seconds);
+
+        bool get_extended_ramp_show();
+        void set_extended_ramp_show(bool show);
 
         void eeprom_initialise();
 

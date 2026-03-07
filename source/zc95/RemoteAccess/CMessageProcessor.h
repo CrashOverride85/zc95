@@ -39,6 +39,7 @@ class CMessageProcessor
         void send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        std::string get_serial();
 
         std::function<void(std::string)> _send;
 

@@ -27,16 +27,16 @@
 #include <inttypes.h>
 
 
-#include "../EExtInputPort.h"
+#include "../PortExpanders/EExtInputPort.h"
 #include "CRoutineOutputCore1.h"
 #include "Core1Messages.h"
 
 
-CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio *audio)
+CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, IHal *hal, CAudio *audio)
 {
     _display = display;
     _led_control = led_control;
-    _ext_port_exp = ext_port_exp;
+    _hal = hal;
     _audio = audio;
 }
 
@@ -210,6 +210,14 @@ void CRoutineOutputCore1::bluetooth_remote_passthrough(CBluetoothRemote::keypres
     multicore_fifo_push_blocking(msg.msg32);
 }
 
+void CRoutineOutputCore1::extended_ramp_start()
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_EXTENDED_RAMP_START;
+
+    multicore_fifo_push_blocking(msg.msg32);
+}
+
 void CRoutineOutputCore1::loop()
 {
     // Process inbound messages from Core1
@@ -310,7 +318,21 @@ void CRoutineOutputCore1::process_message(message msg)
         case MESSAGE_SET_AUDIO_MODE:
             _audio->set_audio_mode((audio_mode_t)msg.msg8[1]);
             break;
-    }
+
+        case MESSAGE_SET_MENU_VALUE:
+            {
+                if (_menu_change_callback == NULL) 
+                    break;
+
+                menu_change_msg_t menu_change_msg;
+                menu_change_msg.menu_id = msg.msg8[1];
+                menu_change_msg.new_value  = msg.msg8[2];
+                menu_change_msg.new_value |= msg.msg8[3] << 8;
+
+                _menu_change_callback(menu_change_msg);
+            }
+            break;
+        }
 }
 
 void CRoutineOutputCore1::process_text_message_queue()
@@ -407,22 +429,27 @@ void CRoutineOutputCore1::audio_intensity_change(uint8_t left_chan, uint8_t righ
 
 void CRoutineOutputCore1::reset_acc_port()
 {
-    if (*_ext_port_exp)
-        (*_ext_port_exp)->reset_acc_port();
+    if (_hal)
+        _hal->acc_port_reset();
 }
 
 void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
 {
-    if (*_ext_port_exp)
-        (*_ext_port_exp)->set_acc_io_port_state(output, high);
+    if (_hal)
+        _hal->acc_port_set_io_port_state(output, high);
 }
 
- lua_script_state_t CRoutineOutputCore1::get_lua_script_state()
- {
+lua_script_state_t CRoutineOutputCore1::get_lua_script_state()
+{
     return _lua_script_state;
- }
+}
 
 void CRoutineOutputCore1::set_text_callback_function(std::function<void(pattern_text_output_t)> cb)
 {
     _text_output_callback = cb;
+}
+
+void CRoutineOutputCore1::set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb)
+{
+    _menu_change_callback = cb;
 }

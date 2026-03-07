@@ -20,18 +20,20 @@
 #include "CMenuSettingLedBrightnes.h"
 #include "CMenuSettingPowerLevelDisplay.h"
 #include "CMenuSettingButtonBrightness.h"
+#include "CMenuSettingsStatusBarText.h"
+#include "CMenuSettingDisplayBrightness.h"
 
 CMenuSettingDisplayOptions::CMenuSettingDisplayOptions(
         CDisplay* display, 
         CSavedSettings *saved_settings,
-        CHwCheck *hw_check)
+        IHal *hal)
 {
     printf("CMenuSettingDisplayOptions() \n");
     _display = display;
     _saved_settings = saved_settings;
     _exit_menu = false;
     _settings_list = new COptionsList(display, display->get_display_area());
-    _hw_check = hw_check;
+    _hal = hal;
 }
 
 CMenuSettingDisplayOptions::~CMenuSettingDisplayOptions()
@@ -97,6 +99,14 @@ void CMenuSettingDisplayOptions::show_selected_setting()
         case setting_id::BUTTON_BRIGHTNESS:
             set_active_menu(new CMenuSettingButtonBrightness(_display, _saved_settings));
             break;
+
+        case setting_id::STATUS_BAR_TEXT:
+            set_active_menu(new CMenuSettingsStatusBarText(_display, _saved_settings));
+            break;
+
+        case setting_id::DISPLAY_BRIGHTNESS:
+            set_active_menu(new CMenuSettingDisplayBrightness(_display, _saved_settings));
+            break;
     }
 }
 
@@ -136,9 +146,17 @@ void CMenuSettingDisplayOptions::show()
     _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::POWER_LEVEL_DISPLAY, "Power level display"));
 
     // Illuminated buttons were added for v0.2 of front panel
-    if (_hw_check->get_front_panel_version() == CHwCheck::front_panel_version_t::v0_2)
+    if (_hal->front_panel()->verion() == front_panel_version_t::v0_2)
         _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::BUTTON_BRIGHTNESS  , "Button brightness  "));
-    
+
+    if (_hal->hardware_version() == zc95_version_t::MKII)
+    {
+        _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::DISPLAY_BRIGHTNESS , "Display brightness "));
+
+        // As there is only one option (running pattern name) on MK1's, only show for MK2's
+        _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::STATUS_BAR_TEXT    , "Status bar text    "));
+    }
+
    _settings_list->clear_options();
     for (std::vector<CMenuSettingDisplayOptions::setting>::iterator it = _settings.begin(); it != _settings.end(); it++)
     {

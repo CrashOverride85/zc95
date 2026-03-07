@@ -33,7 +33,7 @@
  *   - output_power_level      - The power level to be sent to output chanel after combining all the above. Also scaled based on power mode (high/medium/low)
  */
 
-CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings)
+CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings) : _extended_ramp(saved_settings)
 {
     _saved_settings = saved_settings;
     memset(_front_panel_power, 0, sizeof(_front_panel_power));
@@ -41,11 +41,11 @@ CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings)
     memset(_output_power, 0, sizeof(_output_power));
     memset(_remote_access_power, 0, sizeof(_remote_access_power));
 
-    _ramp_percent = 0; 
-    _ramp_last_increment_us = 0;
-    _ramp_increment_period_ms = 0;
+    _initial_ramp_percent = 0; 
+    _initial_ramp_last_increment_us = 0;
+    _initial_ramp_increment_period_ms = 0;
         
-    _ramp_in_progress = false;
+    _initial_ramp_in_progress = false;
     _remote_mode_active = false;
 }
 
@@ -164,10 +164,13 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
         selected_power = _front_panel_power[channel];
     }
 
-    if (_ramp_in_progress)
-        return (float)selected_power* ((float)_ramp_percent / (float)100);
-    else
-        return selected_power;
+    if (_initial_ramp_in_progress)
+        selected_power = (float)selected_power * ((float)_initial_ramp_percent / (float)100);
+    
+    if (_extended_ramp.ramp_in_progress())
+        selected_power = (float)selected_power * (_extended_ramp.get_ramp_percent() / (float)100);
+    
+    return selected_power;
 }
 
 // Get the maximum power level (power level set on front panel - 0-1000) that's being ramped up to
@@ -179,21 +182,29 @@ uint16_t CPowerLevelControl::get_target_max_power_level(uint8_t channel)
     return _front_panel_power[channel];
 }
 
-void CPowerLevelControl::ramp_start()
+void CPowerLevelControl::initial_ramp_start()
 {
     // How often should the power level be increased.
-    _ramp_increment_period_ms = (_saved_settings->get_ramp_up_time_seconds() * 10);
+    _initial_ramp_increment_period_ms = (_saved_settings->get_initial_ramp_up_time_seconds() * 10);
     
-    _ramp_percent = 0;
-    _ramp_last_increment_us = 0;
-    _ramp_in_progress = true;
+    _initial_ramp_percent = 0;
+    _initial_ramp_last_increment_us = 0;
+    _initial_ramp_in_progress = true;
+
+    _extended_ramp.reset();
+}
+
+void CPowerLevelControl::extended_ramp_start()
+{
+    _extended_ramp.ramp_start();
 }
 
 void CPowerLevelControl::zero_power_level()
 {
-    _ramp_in_progress = false;
-    _ramp_percent = 0;
-    _ramp_last_increment_us = 0;
+    _extended_ramp.reset();
+    _initial_ramp_in_progress = false;
+    _initial_ramp_percent = 0;
+    _initial_ramp_last_increment_us = 0;
 
     for (int chan=0; chan < MAX_CHANNELS; chan++)
     {
@@ -204,22 +215,30 @@ void CPowerLevelControl::zero_power_level()
 
 void CPowerLevelControl::loop()
 {
-    if (_ramp_in_progress)
-    {
-        if (time_us_64() > _ramp_last_increment_us + (_ramp_increment_period_ms * 1000))
-        {
-            if (_ramp_percent < 100)
-                _ramp_percent++;
-            
-            if (_ramp_percent == 100)
-                _ramp_in_progress = false;
+    bool _recalc_power = false;
 
-            _ramp_last_increment_us = time_us_64();
-        
-            for (int chan=0; chan < MAX_CHANNELS; chan++)
-            {
-                calc_output_power(chan);
-            }
+    if (_initial_ramp_in_progress)
+    {
+        if (time_us_64() > _initial_ramp_last_increment_us + (_initial_ramp_increment_period_ms * 1000))
+        {
+            if (_initial_ramp_percent < 100)
+                _initial_ramp_percent++;
+            
+            if (_initial_ramp_percent == 100)
+                _initial_ramp_in_progress = false;
+
+            _initial_ramp_last_increment_us = time_us_64();
+            _recalc_power = true;
+        }
+    }
+
+    _recalc_power |= _extended_ramp.loop();
+
+    if (_recalc_power)
+    {
+        for (int chan=0; chan < MAX_CHANNELS; chan++)
+        {
+            calc_output_power(chan);
         }
     }
 }
@@ -248,5 +267,7 @@ void CPowerLevelControl::calc_output_power(uint8_t channel)
     if (scaled_power > 1000)
         scaled_power = 1000;
 
-    _output_power[channel] = scaled_power * ((float)_ramp_percent / (float)100);
+    _output_power[channel] = scaled_power 
+                * ((float)_initial_ramp_percent / (float)100)
+                * (_extended_ramp.get_ramp_percent() / (float)100);
 }

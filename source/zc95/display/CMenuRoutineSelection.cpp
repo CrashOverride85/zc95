@@ -29,7 +29,6 @@
 CMenuRoutineSelection::CMenuRoutineSelection(
     CDisplay* display, 
     std::vector<CRoutines::Routine> &routines, 
-    CGetButtonState *buttons, 
     CSavedSettings *settings, 
     CRoutineOutput *routine_output,
     CHwCheck *hwCheck,
@@ -37,14 +36,13 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CAnalogueCapture *analogueCapture,
     CWifi *wifi,
     CBluetooth *bluetooth,
-    CRadio *radio
-    ) : _routines(routines)
+    CRadio *radio,
+    IHal* hal) : _routines(routines)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
     _area = display->get_display_area();
     _routine_display_list = new COptionsList(display, _area);
-    _buttons = buttons;
     _submenu_active = NULL;
     _settings = settings;
     _hwCheck = hwCheck;
@@ -54,6 +52,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _wifi = wifi;
     _bluetooth = bluetooth;
     _radio = radio;
+    _hal = hal;
 
     _populate_pattern_list = true;
     populate_routine_list();
@@ -97,13 +96,13 @@ void CMenuRoutineSelection::button_pressed(Button button)
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
             CRoutines::Routine routine = _routines[routine_id];
             _last_selection = _routine_display_list->get_current_selection();
-            set_active_menu(new CMenuRoutineAdjust(_display, routine, _buttons, _routine_output, _audio, _bluetooth, _settings));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine, _hal, _routine_output, _audio, _bluetooth, _settings));
             _routine_output->activate_routine(routine_id);
         }
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _buttons, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio));
+            set_active_menu(new CMenuSettings(_display, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio, _hal));
             _populate_pattern_list = true; // If remote access has been used - accessed via the config menu - the pattern list may have changed
         }
         

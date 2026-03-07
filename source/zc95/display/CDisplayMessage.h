@@ -4,11 +4,12 @@
 #include "CMenu.h"
 #include "CDisplay.h"
 #include "CDisplayMessage.h"
+#include "../../../Hal/IHal.h"
 
 class CDisplayMessage : public CMenu
 {
     public:
-        CDisplayMessage(CDisplay* display, CGetButtonState *buttons, std::string message);
+        CDisplayMessage(CDisplay* display, IHal *hal, std::string message);
         ~CDisplayMessage();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -22,7 +23,7 @@ class CDisplayMessage : public CMenu
         struct display_area _disp_area;
         
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
 };
 
 #endif

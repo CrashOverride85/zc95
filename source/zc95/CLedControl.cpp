@@ -36,7 +36,7 @@
  */
 
 
-CLedControl::CLedControl(uint8_t tx_pin, CSavedSettings *settings)
+CLedControl::CLedControl(uint8_t tx_pin, CSavedSettings** settings)
 {
     _tx_pin = tx_pin;
     _pio = pio0;
@@ -44,6 +44,12 @@ CLedControl::CLedControl(uint8_t tx_pin, CSavedSettings *settings)
     pio_sm_claim(_pio, _sm);
     _settings = settings;
     _brightness = get_led_brightness();;
+
+    memset((void*)_led_state, 0, sizeof(_led_state));
+    _led_state_changed = true;
+
+    uint offset = pio_add_program(_pio, &ws2812_program);
+    ws2812_program_init(_pio, _sm, offset, _tx_pin, 800000, false);
 }
 
 CLedControl::~CLedControl()
@@ -59,8 +65,8 @@ void CLedControl::put_pixel(uint32_t pixel_rgb)
 
 uint8_t CLedControl::get_led_brightness()
 {
-    if (_settings != NULL)
-        return _settings->get_led_brightness();
+    if ((*_settings) != NULL)
+        return (*_settings)->get_led_brightness();
     else
         return 10;
 }
@@ -73,14 +79,7 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b)
             (uint32_t)  (b);            
 }
 
-void CLedControl::init()
-{
-    memset((void*)_led_state, 0, sizeof(_led_state));
-    _led_state_changed = true;
 
-    uint offset = pio_add_program(_pio, &ws2812_program);
-    ws2812_program_init(_pio, _sm, offset, _tx_pin, 800000, false);
-}
 
 void CLedControl::loop(bool force_update)
 {

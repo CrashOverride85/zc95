@@ -6,11 +6,12 @@
 #include "../../COptionsList.h"
 #include "../../../CSavedSettings.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuCollarConfigSelected : public CMenu
 {
     public:
-        CMenuCollarConfigSelected(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, uint8_t collar_id, CRoutineOutput *routine_output);
+        CMenuCollarConfigSelected(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, uint8_t collar_id, CRoutineOutput *routine_output);
         ~CMenuCollarConfigSelected();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -32,7 +33,7 @@ class CMenuCollarConfigSelected : public CMenu
         void collar_test();
 
         CDisplay* _display;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CSavedSettings *_saved_settings;
         uint8_t _led_brightness=1;
         COptionsList *_options_list = NULL;

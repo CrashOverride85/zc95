@@ -14,11 +14,12 @@
 #include "../CSavedSettings.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
-#include "../CHwCheck.h"
+#include "../HwCheck/CHwCheck.h"
 #include "../AudioInput/CAudio.h"
 #include "../CAnalogueCapture.h"
 #include "../RemoteAccess/CWifi.h"
 #include "../Bluetooth/CBluetooth.h"
+#include "../Hal/IHal.h"
 
 #include <string>
 #include <vector>
@@ -31,7 +32,6 @@ class CMenuRoutineSelection : public CMenu
         CMenuRoutineSelection(
                 CDisplay* display, 
                 std::vector<CRoutines::Routine> &routines, 
-                CGetButtonState *buttons, 
                 CSavedSettings *settings, 
                 CRoutineOutput *routine_output, 
                 CHwCheck *hwCheck, 
@@ -39,7 +39,8 @@ class CMenuRoutineSelection : public CMenu
                 CAnalogueCapture *analogueCapture, 
                 CWifi *wifi, 
                 CBluetooth *bluetooth,
-                CRadio *radio);
+                CRadio *radio,
+                IHal* hal);
 
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
@@ -55,7 +56,6 @@ class CMenuRoutineSelection : public CMenu
         struct display_area _area;
         CDisplay* _display;
         std::vector<CRoutines::Routine>& _routines;
-        CGetButtonState *_buttons;
         CSavedSettings *_settings;
         CRoutineOutput *_routine_output;
         CHwCheck *_hwCheck;
@@ -66,6 +66,7 @@ class CMenuRoutineSelection : public CMenu
         CBluetooth *_bluetooth;
         CRadio *_radio;
         bool _populate_pattern_list = false;
+        IHal* _hal;
 };
 
 #endif

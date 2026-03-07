@@ -12,7 +12,7 @@
    -  TLC59108 LED driver for the 4 illuminated buttons (unrelated to the 6x WS2812D LEDs)
  */
 
-CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
+CFrontPanelV02::CFrontPanelV02(CSavedSettings **saved_settings)
 {
     memset(_power_level, 0, sizeof(_power_level));
     _last_port_exp_read = 0xFF; // Assume buttons aren't pressed to start with
@@ -20,6 +20,8 @@ CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
     _button_states_at_last_check = 0;
     _saved_settings = saved_settings;
     memset(_last_state_change, 0, sizeof(_last_state_change));
+
+    init_v0_2_front_panel();
 
     init_adc();
     init_port_exp();
@@ -35,6 +37,45 @@ CFrontPanelV02::CFrontPanelV02(CSavedSettings *saved_settings)
     write_led_register(led_reg_t::PWM1, 10);
     write_led_register(led_reg_t::PWM2, 10);
     write_led_register(led_reg_t::PWM3, 10);
+}
+
+// v0.2 of the front panel has the reset line of the LED driver connected to the I/O expander
+// without a pullup (rookie error!). So to get the LED driver out of reset (and responding on
+// the i2c bus), we need to get the I/O expander to set that high. 
+// The LED driver, by default, also responds on the i2c address 0x48 as well as the configured
+// one, so disable that feature too.
+// This all wants doing now, in the H/W check, so the next step finds the LED driver, and if we 
+// restart without a power cycle (i.e. via debugger), the LED driver also showing up on 0x48 
+// doesn't get confused with the ADC in v0.1 of the front panel, which is on 0x48 too :(
+void CFrontPanelV02::init_v0_2_front_panel()
+{
+    uint8_t txbuf[2] = {0};
+    txbuf[0] = 0x03;    // Configuration register
+    txbuf[1] = ~(0x10); // Set p4 (only) to output
+
+    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf , 2, false , 1000);
+
+    // As the reset line was floating, pull it low before high, just to make sure it's correctly reset.
+
+    // Set p4 to low
+    txbuf[0] = 0x01;  // Output port register
+    txbuf[1] = 0x00;  // Set all low
+    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf, 2, false, 1000);
+    sleep_ms(1);
+
+    // Set high (exit reset)
+    txbuf[1] = 0x10;  // Set p4 (only) to high
+    i2c_write_timeout_us(i2c0, FP_0_2_PORT_EXP_ADDR, txbuf, 2, false, 1000);
+    sleep_ms(1);
+
+    // Init LED driver. Don't respond on the ALLCALL address of "90h". Which is really 
+    // the 7bit address 0x48 - the same as the ADC on v0.1 of the front panel...
+    txbuf[0] = 0x00;  // MODE1
+    txbuf[1] = 0x00; 
+    if (i2c_write_timeout_us(i2c0, FP_0_2_BUTTON_LED_DRV_ADDR, txbuf, 2, false, 1000) < 0)
+    {
+        printf("init_v0_2_front_panel: i2c write error\n");
+    }
 }
 
 void CFrontPanelV02::init_adc()
@@ -126,7 +167,7 @@ void CFrontPanelV02::update_button_led_states()
     static uint8_t button_states = 0;
     static uint8_t brightness = 0;
 
-    bool brightness_changed = brightness != _saved_settings->get_button_brightness();
+    bool brightness_changed = brightness != get_button_brightness();
 
     if (button_states != _buttons_in_use || brightness_changed)
     {
@@ -136,7 +177,7 @@ void CFrontPanelV02::update_button_led_states()
         update_button_led_state(Button::D, button_states, _buttons_in_use, led_reg_t::PWM3, brightness_changed);
 
         button_states = _buttons_in_use;
-        brightness = _saved_settings->get_button_brightness();
+        brightness = get_button_brightness();
     }
 }
 
@@ -149,13 +190,21 @@ void CFrontPanelV02::update_button_led_state(enum Button button, uint8_t old_sta
     {
         if (button_active_new)
         {
-            write_led_register(reg, _saved_settings->get_button_brightness());
+            write_led_register(reg, get_button_brightness());
         }
         else
         {
             write_led_register(reg, 0);
         }
     }
+}
+
+uint8_t CFrontPanelV02::get_button_brightness()
+{
+    if (_saved_settings && *_saved_settings)
+        return (*_saved_settings)->get_button_brightness();
+    else
+        return 10;
 }
 
 void CFrontPanelV02::interrupt(interrupt_t i)
@@ -228,13 +277,28 @@ void CFrontPanelV02::read_adc()
         // Failing to read from the ADC (having successfully read it during the hw check at power on) might
         // suggest a loose connection. It's probably best to stop because a poor connection could lead 
         // unexpected power levels being set. 
+        _adc_read_error_count++;
+        
+        printf("*** Error reading front panel ADC (%d / %d)\n", _adc_read_error_count, FailAfterAdcErrorCount);
 
-        printf("Error reading front panel ADC\n");
-        gErrorString = "Front panel fault, \nerror reading ADC.";
-        gFatalError = true;
+        // After the second consecutive read error, try an I2C bus reset
+        if (_adc_read_error_count == 2)
+        {
+            i2c_reset(__func__);
+        }
+
+        // After the 3rd failure, give up
+        if (_adc_read_error_count >= FailAfterAdcErrorCount)
+        {
+            printf("Too many ADC read errors.\n");
+            gErrorString = "Front panel fault, \nerror reading ADC.";
+            gFatalError = true;
+        }
 
         return;
     }
+
+    _adc_read_error_count = 0;
 
     int16_t adc_value = (int16_t)val;
     if (adc_value < 0)
@@ -274,6 +338,11 @@ void CFrontPanelV02::read_adc()
             _power_level[0] = power_level;
             break;
     }
+}
+
+front_panel_version_t CFrontPanelV02::verion()
+{
+    return front_panel_version_t::v0_2;
 }
 
 ////////////////////////

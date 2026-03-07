@@ -12,9 +12,13 @@
 #include "../CGetButtonState.h"
 #include "../AudioInput/CAudio.h"
 #include "../Bluetooth/CBluetooth.h"
+#include "../Hal/IHal.h"
 
 #include <string>
 #include <vector>
+
+#define MENU_ID_RAMP      0xFF
+#define MENU_ID_NO_PARAMS 0xFE
 
 class CMenuRoutineAdjust : public CMenu
 {
@@ -22,7 +26,7 @@ class CMenuRoutineAdjust : public CMenu
         CMenuRoutineAdjust(
                 CDisplay* display, 
                 CRoutines::Routine routine, 
-                CGetButtonState *buttons, 
+                IHal* hal,
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
@@ -37,11 +41,12 @@ class CMenuRoutineAdjust : public CMenu
     private:
         void set_options_on_multi_choice_list();
         void draw_horz_bar_graph(int16_t x, int16_t y, uint8_t width, uint8_t height, int16_t min_val, int16_t max_val, int16_t current_val, std::string UoM, hagl_color_t bar_colour);
-        uint8_t choice_id_to_menu_index(struct menu_entry selected_menu, uint8_t choice_id);
+        uint8_t choice_id_to_menu_index(struct menu_entry* selected_menu, uint8_t choice_id);
         void increment_gain(uint8_t by);
         void decrement_gain(uint8_t by);
         void draw_bad_script_screen();
         void process_bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
+        void menu_changed_callback(menu_change_msg_t msg);
 
         COptionsList *_routine_adjust_display_list = NULL;
         COptionsList *_routine_multi_choice_list = NULL;
@@ -50,11 +55,13 @@ class CMenuRoutineAdjust : public CMenu
         struct routine_conf _active_routine_conf;
         bool _bt_enabled = false;
         queue_t _bt_keypress_queue = {0};
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CRoutineOutput *_routine_output;
         CAudio *_audio;
         CBluetooth *_bluetooth = NULL;
         CSavedSettings *_saved_settings;
+
+        bool _show_ramp_start = true;
 };
 
 #endif

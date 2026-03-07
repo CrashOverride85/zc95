@@ -9,6 +9,7 @@ class CGetButtonState
 {
     public:
         virtual bool button_state(enum Button button) = 0;
+        virtual ~CGetButtonState() {}
 };
 
 

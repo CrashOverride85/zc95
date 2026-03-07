@@ -2,11 +2,11 @@
 #include "pico/cyw43_arch.h"
 #include "../RemoteAccess/setupwebinterface.h"
 
-CMenuApMode::CMenuApMode(CDisplay* display, CGetButtonState *buttons, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture)
+CMenuApMode::CMenuApMode(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CWifi *wifi, CAnalogueCapture *analogueCapture)
 {
     printf("CMenuApMode()\n");
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _saved_settings = saved_settings;
     _wifi = wifi;
     _analogueCapture = analogueCapture;

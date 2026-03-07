@@ -21,6 +21,7 @@
 #define MESSAGE_SET_REMOTE_ACCESS_POWER      14
 #define MESSAGE_SET_REMOTE_ACCESS_MODE       15
 #define MESSAGE_BLUETOOTH_REMOTE_KEYPRESS    16
+#define MESSAGE_EXTENDED_RAMP_START          17
 
 // messages from core1 to core0
 #define MESSAGE_SET_DISPLAY_POWER           100
@@ -38,6 +39,7 @@
 
 #define MESSAGE_LUA_SCRIPT_STATE            130
 #define MESSAGE_SET_AUDIO_MODE              131
+#define MESSAGE_SET_MENU_VALUE              132
 
 enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
@@ -65,6 +67,12 @@ struct pattern_text_output_t
     text_type_t text_type;
     char text[150];
     uint64_t time_generated_us;
+};
+
+struct menu_change_msg_t
+{
+    uint8_t menu_id;
+    uint16_t new_value;
 };
 
 #endif

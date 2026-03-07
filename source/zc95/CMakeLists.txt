@@ -40,16 +40,12 @@ add_custom_command(
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
   CAnalogueCapture.cpp
-  CBatteryGauge.cpp
   CChannel_types.cpp
   CDebugOutput.cpp
   CEeprom.cpp
-  CExtInputPortExp.cpp
-  CHwCheck.cpp 
   CLedControl.cpp 
   CLedControl.h 
   CLuaStorage.cpp
-  CMainBoardPortExp.cpp 
   CRadio.cpp
   CSavedSettings.cpp
   CTimingTest.cpp
@@ -57,7 +53,6 @@ add_executable(zc95
   FlashHelper.cpp
   globals.cpp
   gDebugCounters.cpp
-  i2c_scan.cpp
   zc95.cpp
 
   AudioInput/CMCP4651.cpp
@@ -74,6 +69,7 @@ add_executable(zc95
   core1/Core1.cpp
   core1/Core1Messages.cpp
   core1/CPowerLevelControl.cpp
+  core1/CPowerLevelRamp.cpp
   core1/CRoutineOutputCore1.cpp
   core1/CRoutineOutput.cpp
 
@@ -91,7 +87,6 @@ add_executable(zc95
   core1/routines/CWaves.cpp
   core1/routines/CToggle.cpp
   core1/routines/CRoundRobin.cpp
-  core1/routines/CTens.cpp
   core1/routines/CClimb.cpp
   core1/routines/CTriggeredClimb.cpp
   core1/routines/CFire.cpp
@@ -122,6 +117,8 @@ add_executable(zc95
   display/config/CMenuSettingAudio.cpp
   display/config/CMenuSettingHardware.cpp
   display/config/CMenuSettingOutput.cpp
+  display/config/CMenuSettingOutputExtRamp.cpp
+  display/config/CMenuSettingBatteryInfo.cpp
 
   display/config/bluetooth_peripherals/CMenuBluetooth.cpp
   display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp
@@ -136,6 +133,8 @@ add_executable(zc95
   display/config/display_options/CMenuSettingButtonBrightness.cpp
   display/config/display_options/CMenuSettingPowerLevelDisplay.cpp
   display/config/display_options/CMenuSettingLedBrightnes.cpp
+  display/config/display_options/CMenuSettingsStatusBarText.cpp
+  display/config/display_options/CMenuSettingDisplayBrightness.cpp
 
   display/config/remote_access/CMenuRemoteAccess.cpp
   display/config/remote_access/CMenuRemoteAccessConnectWifi.cpp
@@ -148,8 +147,27 @@ add_executable(zc95
   FrontPanel/CFrontPanelV01.cpp
   FrontPanel/CFrontPanelV02.cpp
   
+  Hal/HalMk1.cpp
+  Hal/HalMk2.cpp
+  Hal/HalDummy.cpp
+
+  HwCheck/CHwCheck.cpp 
+  HwCheck/CDetermineHardwareVersion.cpp
+  HwCheck/i2c_scan.cpp
+
   LuaScripts/LuaScripts.S
   LuaScripts.cpp
+
+  PortExpanders/CExtInputPortExp.cpp
+  PortExpanders/CMainBoardPortExp.cpp 
+  PortExpanders/TCA9534.cpp
+  PortExpanders/PCF8574.cpp
+
+  PowerManagement/bq27441.c
+  PowerManagement/BQ25601.cpp
+  PowerManagement/CUsbPower.cpp
+  PowerManagement/CPowerManagementMk1.cpp
+  PowerManagement/CPowerManagementMk2.cpp
 
   RemoteAccess/dhcpserver.c
   RemoteAccess/dnserver.c
@@ -200,6 +218,7 @@ target_link_libraries(zc95
         hardware_dma
         hardware_pio
         hardware_adc
+        hardware_pwm
         pico_multicore
         pico_float
         hardware_flash
@@ -229,11 +248,16 @@ target_compile_definitions(zc95 PRIVATE
   PICO_STACK_SIZE=8192
   PICO_CORE1_STACK_SIZE=0 # stack is malloc'd
   PICO_USE_STACK_GUARDS   # would rather die instantly on stack overflow, than get weird, hard to debug, errors
-  
+  SYS_CLK_MHZ=200
   # For Lua. If a Lua script consumes all the memory, Lua can handle that and give an OOM error, which is better 
   # than crashing with a Panic. Ideally Lua would use a seperate alloc function that didn't panic, whilst everything
   # else did. Not quite sure how to manage that yet; multicore/malloc mutex complicates things.
   PICO_MALLOC_PANIC=0
+
+  # For SDK 2.2.0: This seemingly unrelated and undocumented setting is required to avoid the compilation error:
+  #   section `.stack_dummy' will not fit in region `SCRATCH_Y'
+  # when specifying "PICO_STACK_SIZE=8192". See #147.
+  PICO_CRT0_ALLOCATE_SPACERS=0
 )
 
 target_compile_definitions(zc95 PRIVATE
@@ -241,7 +265,7 @@ target_compile_definitions(zc95 PRIVATE
  #MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ=12000000
   MIPI_DISPLAY_PIN_CS=17
   MIPI_DISPLAY_PIN_DC=20
-  MIPI_DISPLAY_PIN_RST=2
+  MIPI_DISPLAY_PIN_RST=-1
   MIPI_DISPLAY_PIN_BL=-1
   MIPI_DISPLAY_PIN_CLK=18
   MIPI_DISPLAY_PIN_MOSI=19

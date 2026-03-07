@@ -33,6 +33,10 @@ extern uint8_t lua_script_torment_start;
 extern uint8_t lua_script_torment_end;
 extern uint8_t lua_script_random2_start;
 extern uint8_t lua_script_random2_end;
+extern uint8_t lua_script_trifade_start;
+extern uint8_t lua_script_trifade_end;
+extern uint8_t lua_script_tens_start;
+extern uint8_t lua_script_tens_end;
 
 // Lua libraries
 extern uint8_t lua_lib_script_ettot_start;
@@ -71,6 +75,8 @@ const lua_script_in_flash_t lua_scripts[] =
     {((uint32_t)&lua_script_torment_start)  , ((uint32_t)&lua_script_torment_end)   , false},
     {((uint32_t)&lua_script_combo_start)    , ((uint32_t)&lua_script_combo_end)     , false},
     {((uint32_t)&lua_script_random2_start)  , ((uint32_t)&lua_script_random2_end)   , false},
+    {((uint32_t)&lua_script_trifade_start)  , ((uint32_t)&lua_script_trifade_end)   , false},
+    {((uint32_t)&lua_script_tens_start)     , ((uint32_t)&lua_script_tens_end)      , false},
     { 0, 0, 0 }
 };
 

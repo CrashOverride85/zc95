@@ -54,6 +54,20 @@ void COptionsList::set_selected(uint8_t selection)
     }
 }
 
+void COptionsList::set_selected_by_id(uint8_t id)
+{
+    for (size_t i = 0; i < _options.size(); i++)
+    {
+        if (_options[i].Id() == id)
+        {
+            _current_selection = i;
+            return;
+        }
+    }
+
+    printf("COptionsList::set_selected_by_id: Error - passed invalid id %dn", id);
+}
+
 void COptionsList::draw()
 {
     int16_t centre_y;

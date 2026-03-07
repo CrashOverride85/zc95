@@ -22,7 +22,7 @@
 CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CDisplay* display, 
                 CRoutines::Routine routine, 
-                CGetButtonState *buttons, 
+                IHal* hal,
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
@@ -31,7 +31,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
     _display = display;
-    _buttons = buttons;
+    _hal = hal;
     _exit_menu = false;
     _area = display->get_display_area();
     _audio = audio;
@@ -43,6 +43,26 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
     routine_ptr->get_config(&_active_routine_conf);
     delete routine_ptr;
+
+    _show_ramp_start = _saved_settings->get_extended_ramp_show();
+
+    if (_show_ramp_start)
+    {
+        menu_entry ramp_menu;
+        ramp_menu.id = MENU_ID_RAMP;
+        ramp_menu.menu_type = menu_entry_type::BLANK;
+        ramp_menu.title = "Ramp start";
+        _active_routine_conf.menu.emplace(_active_routine_conf.menu.begin(), ramp_menu);
+
+        if (_active_routine_conf.menu.size() == 1)
+        {
+            menu_entry no_options;
+            no_options.id = MENU_ID_NO_PARAMS;
+            no_options.menu_type = menu_entry_type::BLANK;
+            no_options.title = "<no parameters>";
+            _active_routine_conf.menu.push_back(no_options);
+        }
+    }
 
     // Bluetooth doesn't work well with analogue capture for audio running, so for now, don't allow bluetooth 
     // and audio at the same time.
@@ -66,11 +86,14 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
 
     // Set the text used on the status bar
     _title = _active_routine_conf.name;
+
+    _routine_output->set_menu_change_callback_function(std::bind(&CMenuRoutineAdjust::menu_changed_callback, this, std::placeholders::_1));
 }
 
 CMenuRoutineAdjust::~CMenuRoutineAdjust()
 {
     printf("~CMenuRoutineAdjust()\n");
+    _routine_output->set_menu_change_callback_function(NULL);
 
     if (_bt_enabled)
     {
@@ -106,10 +129,17 @@ void CMenuRoutineAdjust::button_pressed(Button button)
 {
     uint8_t menu_selection = _routine_adjust_display_list->get_current_selection_id();
 
-    // "A" button is passed onto routines, that may or may not use it
     if (button == Button::A)
     {
-        _routine_output->soft_button_pressed(soft_button::BUTTON_A, true);
+        if (_show_ramp_start && _routine_adjust_display_list->get_current_selection_id() == MENU_ID_RAMP)
+        {
+            _routine_output->extended_ramp_start();
+        }
+        else
+        {
+            // "A" button is passed onto routines, that may or may not use it
+            _routine_output->soft_button_pressed(soft_button::BUTTON_A, true);
+        }
     }
 
     if (button == Button::B) // "Back"
@@ -142,6 +172,14 @@ void CMenuRoutineAdjust::button_pressed(Button button)
         {
             struct menu_entry *menu_item = &(_active_routine_conf.menu[_routine_adjust_display_list->get_current_selection()]);
             _routine_output->menu_selected(menu_item->id);
+        }
+
+        if (_show_ramp_start)
+        {
+            if (_routine_adjust_display_list->get_current_selection_id() == MENU_ID_RAMP)
+                _display->set_option_a("Start");
+            else
+                _display->set_option_a(_active_routine_conf.button_text[(int)soft_button::BUTTON_A]);
         }
     }
 }
@@ -427,7 +465,13 @@ void CMenuRoutineAdjust::show()
 
     for (std::vector<menu_entry>::iterator it = _active_routine_conf.menu.begin(); it != _active_routine_conf.menu.end(); it++)
     {
-        _routine_adjust_display_list->add_option(it->title);
+        _routine_adjust_display_list->add_option(it->title, it->id);
+    }
+
+    // If the ramp menu is enabled, pre select the first pattern param, so the ramp option is "up"
+    if (_show_ramp_start)
+    {
+        _routine_adjust_display_list->set_selected(1);
     }
 
     set_options_on_multi_choice_list();
@@ -487,22 +531,22 @@ void CMenuRoutineAdjust::set_options_on_multi_choice_list()
             _routine_multi_choice_list->add_option(it->choice_name);
         }
 
-        _routine_multi_choice_list->set_selected(choice_id_to_menu_index(selected, selected.multichoice.current_selection));
+        _routine_multi_choice_list->set_selected(choice_id_to_menu_index(&selected, selected.multichoice.current_selection));
     }
 }
 
 // convert a choice id (whatever id is associated with an option) to a menu option (0 indexed menu item)
-uint8_t CMenuRoutineAdjust::choice_id_to_menu_index(struct menu_entry selected_menu, uint8_t choice_id)
+uint8_t CMenuRoutineAdjust::choice_id_to_menu_index(struct menu_entry* selected_menu, uint8_t choice_id)
 {    
-    for (size_t selected_choice_index = 0; selected_choice_index < selected_menu.multichoice.choices.size(); selected_choice_index++)
+    for (size_t selected_choice_index = 0; selected_choice_index < selected_menu->multichoice.choices.size(); selected_choice_index++)
     {
-        if (selected_menu.multichoice.choices[selected_choice_index].choice_id == choice_id)
+        if (selected_menu->multichoice.choices[selected_choice_index].choice_id == choice_id)
         {
             return selected_choice_index;
         }
     }
 
-    printf("CMenuRoutineAdjust::choice_id_to_menu_index(): Invalid config for menu [%s]\n", selected_menu.title.c_str());
+    printf("CMenuRoutineAdjust::choice_id_to_menu_index(): Invalid config for menu [%s]\n", selected_menu->title.c_str());
     return 0;
 }
 
@@ -556,4 +600,43 @@ void CMenuRoutineAdjust::decrement_gain(uint8_t by)
 
     _audio->set_gain(CAnalogueCapture::channel::LEFT , left );
     _audio->set_gain(CAnalogueCapture::channel::RIGHT, right);
+}
+
+// Called when a menu option is changed by a script
+void CMenuRoutineAdjust::menu_changed_callback(menu_change_msg_t msg)
+{
+    for (uint8_t idx=0; idx < _active_routine_conf.menu.size(); idx++)
+    {
+        if (_active_routine_conf.menu[idx].id == msg.menu_id)
+        {
+            menu_entry* entry = &_active_routine_conf.menu[idx];
+            switch (entry->menu_type)
+            {
+                case menu_entry_type::MIN_MAX:
+                    if (msg.new_value >= entry->minmax.min && msg.new_value <= entry->minmax.max)
+                    {
+                        entry->minmax.current_value = msg.new_value;
+                        _routine_output->menu_min_max_change(entry->id, entry->minmax.current_value);
+                    }
+                    return;
+
+                case menu_entry_type::MULTI_CHOICE:
+                    {
+                        // confirm choice id is valid
+                        for (uint8_t c=0; c < entry->multichoice.choices.size(); c++)
+                        {
+                            if (entry->multichoice.choices[c].choice_id == msg.new_value)
+                            {
+                                entry->multichoice.current_selection = msg.new_value;
+                                _routine_multi_choice_list->set_selected(choice_id_to_menu_index(entry, entry->multichoice.current_selection));
+                                _routine_output->menu_multi_choice_change(entry->id, entry->multichoice.current_selection);
+                                return;
+                            }
+                        }
+                    }
+                    break;
+            }
+            break;
+        }
+    }
 }

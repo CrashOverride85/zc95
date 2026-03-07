@@ -88,6 +88,18 @@ Continuous output on channels 1 & 2, with 3 & 4 switching/toggling.
 
 
 
+## TriFade
+Triphase effect - fades triphase effect in and out at the selected speed.
+
+Only uses channel 1 & 2, and assumes they are connected together with a common electrode. Without the common electrode, the triphase effect won't be felt.
+
+### Menu options
+* Cycle time - controls how long, in milliseconds, it takes for a full cycle/fade in-out. Lower is faster.
+
+*Warning*: Enables triphase mode / disables channel isolation, so should not be used above the waist. 
+
+
+
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
 Can be used with shock collars.
@@ -115,12 +127,19 @@ Can be used with shock collars.
 ## TENS
 Approximation of TENs style output, with all channels outputting the same.
 Can NOT be used with shock collars.
-If the aim is solely to achieve absolute maximum intensity, this is the mode to use.
 
 ### Menu options
-* Pulse width - Pulse width in microseconds. Lower is weaker. Most other modes use 150us.
-* Frequency - Frequency in Hz of signal. Most other modes use 150Hz
+* Mode - one of:
+  - Burst - bursts of pulses at the rate configured by the "Burst frequency" option
+  - Constant - continuous output at configured frequency / pulse width
+  - Pulse rate mod - Pulse rate (frequency) modulation. The same as constant, except the frequency is varied between the configured frequency and 40% less
+  - Pulse wid mod 40% - Pulse width modulation. The same as constant, except the pulse width is varied between the configured pulse width and 40% less
+  - Pulse wid mod 70% - Pulse width modulation. The same as constant, except the pulse width is varied between the configured pulse width and 70% less
 
+* Frequency - Frequency in Hz of signal, 20hz - 150hz. Most other modes use 150Hz
+* Pulse width - Pulse width in microseconds. 10 - 255 us. Lower is weaker. Most other modes use 150us.
+* Pulse type - Biphasic or Monophasic output. Other patterns generate Biphasic output, most TENS units generate Monophasic output
+* Burst frequency - 0.1hz - 5hz. Applies only in "Burst" modes
 
 
 ## Triggered Climb

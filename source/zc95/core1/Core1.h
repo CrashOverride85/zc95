@@ -31,7 +31,7 @@ class Core1
         void loop();
         void activate_routine(uint8_t routine_id);
         void stop_routine();
-        CPowerLevelControl *power_level_control;
+    
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
         void menu_selected(uint8_t menu_id);
@@ -63,6 +63,7 @@ class Core1
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
+        CPowerLevelControl *_power_level_control;
 };
 
 Core1* core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);

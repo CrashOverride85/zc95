@@ -59,6 +59,10 @@ void CZC624Comms::send_message(message msg)
 
         spi_write_read_blocking(_spi, send_ptr, (uint8_t*)&recv, sizeof(msg));
         _last_msg_us = time_us_64();
+        if (msg.command == (uint8_t)spi_command_t::PowerDown)
+        {
+            printf("CZC624Comms::send_message: Sent PowerDown to ZC924\n");
+        }
         
         // Whenever we send a message, we get the desired LED states for each channel in return
         for (uint n=0; n < sizeof(recv); n++)

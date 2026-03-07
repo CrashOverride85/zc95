@@ -32,8 +32,8 @@ class CAnalogueCapture
         void start();
         void stop();
         void process();
-        bool new_battery_readings_available();
-        uint8_t *get_battery_readings(uint8_t *readings_count);
+        bool new_voltage_readings_available();
+        uint8_t *get_voltage_readings(uint8_t *readings_count);
         void get_audio_buffer(channel chan, uint16_t *samples, uint8_t **buffer);
         uint64_t get_last_buffer_update_time_us();
         uint64_t get_capture_end_time_us();

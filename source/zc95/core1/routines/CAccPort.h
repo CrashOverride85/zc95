@@ -1,7 +1,7 @@
 #ifndef _CACCPORT_H
 #define _CACCPORT_H
 
-#include "../EExtInputPort.h"
+#include "../PortExpanders/EExtInputPort.h"
 
 class CAccPort
 {

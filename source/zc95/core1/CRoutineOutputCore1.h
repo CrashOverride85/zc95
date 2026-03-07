@@ -6,15 +6,14 @@
 #include "Core1.h"
 #include "../display/CDisplay.h"
 #include "../CLedControl.h"
-#include "../CExtInputPortExp.h"
-#include "../EExtInputPort.h"
+#include "../Hal/IHal.h"
 #include "../AudioInput/CAudio.h"
 
 
 class CRoutineOutputCore1 : public CRoutineOutput
 {
     public:
-        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, CExtInputPortExp **ext_port_exp, CAudio* audio);
+        CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, IHal *hal, CAudio* audio);
         void set_front_panel_power(uint8_t channel, uint16_t power);
         void set_remote_power(uint8_t channel, uint16_t power);
         void enable_remote_power_mode();
@@ -32,6 +31,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void trigger(trigger_socket socket, trigger_part part, bool active);
         void soft_button_pressed(soft_button button, bool pressed);
         void bluetooth_remote_passthrough(CBluetoothRemote::keypress_t key);
+        void extended_ramp_start();
         void loop();
 
         void collar_transmit (uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power);
@@ -44,6 +44,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void set_acc_io_port_state(enum ExtInputPort output, bool high);
         lua_script_state_t get_lua_script_state();
         void set_text_callback_function(std::function<void(pattern_text_output_t)> cb);
+        void set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb);
 
     private:
         union __attribute__((packed)) message
@@ -59,7 +60,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         Core1 *_core1 = NULL;
         CDisplay *_display;
         CLedControl *_led_control;
-        CExtInputPortExp **_ext_port_exp;
+        IHal *_hal;
         uint16_t _front_pannel_power[MAX_CHANNELS] = {0};
         uint16_t _remote_power[MAX_CHANNELS] = {0};
         uint16_t _output_power[MAX_CHANNELS] = {0};
@@ -67,6 +68,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         bool _remote_mode_active = false;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
         std::function<void(pattern_text_output_t)> _text_output_callback = NULL;
+        std::function<void(menu_change_msg_t)> _menu_change_callback = NULL;
         CAudio* _audio;
 };
 

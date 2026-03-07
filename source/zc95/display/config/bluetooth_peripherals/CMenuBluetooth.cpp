@@ -72,7 +72,7 @@ void CMenuBluetooth::button_pressed(Button button)
     }
     else
     {
-        if (button == Button::A)
+        if (button == Button::A || button == Button::ROT)
         {
             if (get_current_setting().id ==  CMenuBluetooth::setting_id::SCAN)
             {
@@ -130,6 +130,9 @@ void CMenuBluetooth::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuBluetooth::save_setting(uint8_t setting_menu_index, uint8_t choice_menu_index)
 {
+    if (setting_menu_index >= _settings.size() || choice_menu_index >= _setting_choices.size())
+        return;
+
     setting_t setting = _settings[setting_menu_index];
     setting_t choice_id = _setting_choices[choice_menu_index];
 

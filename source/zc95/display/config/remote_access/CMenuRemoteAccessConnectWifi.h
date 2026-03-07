@@ -5,13 +5,14 @@
 #include "../../../CAnalogueCapture.h"
 #include "../../../RemoteAccess/CWifi.h"
 #include "../../../core1/CRoutineOutput.h"
+#include "../../../Hal/IHal.h"
 
 class CMenuRemoteAccessConnectWifi : public CMenu
 {
     public:
         CMenuRemoteAccessConnectWifi(
             CDisplay* display,
-            CGetButtonState *buttons, 
+            IHal *hal, 
             CSavedSettings *saved_settings, 
             CWifi *wifi,
             CRoutineOutput *routine_output);
@@ -34,7 +35,7 @@ class CMenuRemoteAccessConnectWifi : public CMenu
         
         CDisplay* _display;
         display_area _disp_area;
-        CGetButtonState *_buttons;
+        IHal *_hal;
         CSavedSettings *_saved_settings;
         CWifi *_wifi;
         CAnalogueCapture *_analogue_capture;

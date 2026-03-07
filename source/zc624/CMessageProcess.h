@@ -29,7 +29,8 @@ class CMessageProcess
             SwitchOff = 7,
             NoOp = 8,
             SetTestVal = 9,
-            Pulse = 10
+            Pulse = 10,
+            SyncChanel = 11
         };
     
         CMessageProcess(COutput *output, CI2cSlave *i2c_slave);
@@ -47,6 +48,7 @@ class CMessageProcess
         void on(message msg);
         void off(message msg);
         void power_down(message msg);
+        void sync_channel(message msg);
 
         CI2cSlave *_i2c_slave;
 };

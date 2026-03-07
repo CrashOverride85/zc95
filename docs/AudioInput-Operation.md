@@ -1,13 +1,12 @@
 # Audio Input
 
-If the (optional) audio input board is present, an extra "Audio input" option shows on the settings menu, along with patterns using audio input.
-
 Audio input can be either line level or mic level (selectable), and optionally power can be provided for mics. It's intended to be used with PC style electret microphones. I've found this microphone works particularly well (and with the mk312bt): https://www.amazon.co.uk/gp/product/B07L6H7YYQ/
 
+## Mk1 only:
 When the audio input board is installed, the Aux port on the front can be configured for either Audio input (default) or serial I/O (currently only debug out).
 
 ## Configuration
-There are two relevant menus for configuring audio - "Audio input" and "Hardware config" ("Audio" and "Aux port use").
+There are two relevant menus for configuring audio - "Audio input", and for MK1's "Hardware config" ("Audio" and "Aux port use").
 
 ### Audio input
 This is used to set gain, enable/disable microphone preamp (so set for mic or line level), enable/disable microphone power, and show a preview of the audio signal to aid setting volume and gain.
@@ -27,6 +26,8 @@ Disabling the mic preamp switches to line level input, and shows stereo input:
 
 
 ### Hardware config
+Only applies to the Mk1 which has a single, dual purpose, serial+audio 3.5mm socket (Mk2s have separate/dedicated serial & audio sockets).
+
 There are two relevant entries in the hardware config menu:
 
 1. Audio. 
@@ -41,7 +42,6 @@ With the audio board present, the zc95 has the ability to switch the use of the 
     - Serial I/O - port is used for serial I/O
 
 Note this option has no effect if the audio input board isn't present; the port is always routed to the serial interface.
-
 
 
 [Audio input mic]: images/screen_audio_input_mic.jpg "Audio input configuration screen - mic"
