@@ -8642,10 +8642,10 @@
       (reference "R155") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/7e1b2806-18f3-4f58-a91f-e94638c09ec3/8049fdcd-c674-4e4e-aa59-894934814561"
-      (reference "R156") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R156") (unit 1) (value "100R") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/7e1b2806-18f3-4f58-a91f-e94638c09ec3/17291f29-3259-4522-b565-e2ccbd996959"
-      (reference "R157") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R157") (unit 1) (value "100R") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/3f31ae8f-beda-448d-904b-b027dde59383/1845e032-fcd8-4154-a5a6-3a8bee70f41c"
       (reference "SW1") (unit 1) (value "SW_SPDT") (footprint "ProjLib:SS-12D06L5")
