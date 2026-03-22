@@ -34,6 +34,8 @@ class HalMk1 : public IHal
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
 
+        CLedControl* led_control();
+
         static void s_gpio_callback(uint gpio, uint32_t events);
 
     private:
@@ -49,6 +51,7 @@ class HalMk1 : public IHal
         CFrontPanel* _front_panel = NULL;
         front_panel_version_t _front_panel_version = front_panel_version_t::UNKNOWN;
         time_t _last_loop_time = 0;
+        CLedControl *_led;
 };
 
 #endif

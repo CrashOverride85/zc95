@@ -18,6 +18,7 @@ HalMk2::HalMk2(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     _mk2_pm = new CPowerManagementMk2(_main_board_port_exp, _variant);
     _tca9534_ext = new TCA9534(MK2_EXT_INPUT_PORT_EXP_ADDR);
     _ext_input_port_exp = new CExtInputPortExp(led, routine_output, _tca9534_ext);
+    _led = led;
 
     init_pwm_pin(PIN_MK2_DISP_BL);
 
@@ -196,4 +197,9 @@ void HalMk2::mic_power_enable(bool enable)
 front_panel_version_t HalMk2::front_panel_version()
 {
     return _front_panel_version;
+}
+
+CLedControl* HalMk2::led_control()
+{
+    return _led;
 }

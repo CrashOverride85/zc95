@@ -74,6 +74,11 @@ void HalDummy::mic_power_enable(bool enable)
     
 }
 
+CLedControl* HalDummy::led_control()
+{
+    return NULL;
+}
+
 front_panel_version_t HalDummy::front_panel_version()
 {
     return front_panel_version_t::UNKNOWN;

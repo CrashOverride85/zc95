@@ -111,6 +111,14 @@ Configuration options so far:
 
       **Caution** : Do not rely on this - the battery must be capable of being _safely_ charged at 2000 mA, even if a lower value is set for battery longevity / power consumption (whatever) reasons. 2000 mA is the default for the charge controller, so it's possible there are some scenarios where the default may get used.
 
+  - LED colour format - set the colour format (RGB, GBR, etc) expected by the 6 front panel LEDs. This should only need changing if not using the part specified in the BoM. When this option is selected, the LEDs should show:
+    
+      - Trigger1 + Trigger2: Red
+      - Chan1 + Chan2: Green
+      - Chan3 + Chan4: Blue
+
+    Adjust the colour format until the LEDs on the front panel show as above.
+
 * Battery info - MKI & MKII: Shows battery voltage and state of charge (%). MKII only: Also shows estimated battery capacity and capacity remaining in mAh along with current flow in/out of battery in mA (-ve is out of battery, +ve is in, i.e. charging).
 
 * About - shows firmware version of main board, and zc624 output board

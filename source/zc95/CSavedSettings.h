@@ -73,7 +73,8 @@ class CSavedSettings
         DisplayBrightness= 227, // Display brightness, in percent
         ExtendedRampLevel= 228, // Extended ramp percent, 1% - 100%
         ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
-        ExtendedRampShow = 230  // Show 'Ramp start' option on all patterns
+        ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns
+        LedColourFormat  = 231  // Colour format (RBG, BGR, etc) of front panel LED buttons
     };
 
     public:
@@ -144,6 +145,16 @@ class CSavedSettings
         {
             RUNNING_PATTERN = 0,
             BATTERY_CURRENT = 1
+        };
+
+        enum class led_colour_format_t
+        {
+            RGB = 0,
+            RBG = 1,
+            BGR = 2,
+            BRG = 3,
+            GRB = 4,
+            GBR = 5
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -262,6 +273,9 @@ class CSavedSettings
 
         bool get_extended_ramp_show();
         void set_extended_ramp_show(bool show);
+
+        led_colour_format_t get_led_colour_format();
+        void set_led_colour_format(led_colour_format_t colour_format);
 
         void eeprom_initialise();
 

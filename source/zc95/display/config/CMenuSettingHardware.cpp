@@ -46,6 +46,7 @@ CMenuSettingHardware::CMenuSettingHardware(CDisplay* display, CSavedSettings *sa
 CMenuSettingHardware::~CMenuSettingHardware()
 {
     printf("~CMenuSettingHardware()\n");
+    _hal->led_control()->show_rbg_test_pattern(false);
 
     if (_submenu_active)
     {
@@ -140,7 +141,7 @@ void CMenuSettingHardware::adjust_rotary_encoder_change(int8_t change)
 
 void CMenuSettingHardware::save_setting(uint8_t setting_menu_index, uint8_t choice_id)
 {
-
+     _hal->led_control()->show_rbg_test_pattern(false);
     switch (_settings_list->get_current_selection_id())
     {
         case setting_id::AUDIO:
@@ -158,6 +159,11 @@ void CMenuSettingHardware::save_setting(uint8_t setting_menu_index, uint8_t choi
                 _hal->audio_input_enable(true);
             else
                 _hal->audio_input_enable(false);
+            break;
+            
+        case setting_id::LED_FORMAT:
+            _saved_settings->set_led_colour_format((CSavedSettings::led_colour_format_t)choice_id);
+            _hal->led_control()->show_rbg_test_pattern(true);
             break;
 
         case setting_id::CHARGE_CURRENT:
@@ -207,7 +213,8 @@ void CMenuSettingHardware::show()
     // MKII's have separate serial and audio sockets so this setting is meaningless.
     if (_hal->hardware_version() == zc95_version_t::MKI)
         _settings_list->add_option("Aux port use", setting_id::AUX_USE);
-    
+
+    _settings_list->add_option("LED colour format", setting_id::LED_FORMAT);
 
     _exit_menu = false;
     set_options_for_selection(0);
@@ -218,6 +225,7 @@ void CMenuSettingHardware::set_options_for_selection(uint8_t setting_id)
     _settings_choice_list->clear_options();
     uint8_t current_choice_id = 0;
     std::string port_name = _hal->hardware_version() == zc95_version_t::MKI ? "Aux" : "Serial"; // MKI has single Aux port, MKII has Serial+Audio
+    _hal->led_control()->show_rbg_test_pattern(false);
 
     switch (setting_id)
     {
@@ -239,6 +247,17 @@ void CMenuSettingHardware::set_options_for_selection(uint8_t setting_id)
             _settings_choice_list->add_option("Audio input", (uint8_t)CSavedSettings::setting_aux_port_use::AUDIO );
             _settings_choice_list->add_option("Serial I/O" , (uint8_t)CSavedSettings::setting_aux_port_use::SERIAL);
             current_choice_id = (uint8_t)_saved_settings->get_aux_port_use();
+            break;
+
+        case setting_id::LED_FORMAT:
+            _settings_choice_list->add_option("RGB", (uint8_t)CSavedSettings::led_colour_format_t::RGB);    
+            _settings_choice_list->add_option("RBG", (uint8_t)CSavedSettings::led_colour_format_t::RBG);
+            _settings_choice_list->add_option("BGR", (uint8_t)CSavedSettings::led_colour_format_t::BGR);
+            _settings_choice_list->add_option("BRG", (uint8_t)CSavedSettings::led_colour_format_t::BRG);
+            _settings_choice_list->add_option("GRB", (uint8_t)CSavedSettings::led_colour_format_t::GRB);
+            _settings_choice_list->add_option("GBR", (uint8_t)CSavedSettings::led_colour_format_t::GBR);
+            current_choice_id = (uint8_t)_saved_settings->get_led_colour_format();
+            _hal->led_control()->show_rbg_test_pattern(true);
             break;
 
         case setting_id::CHARGE_CURRENT:

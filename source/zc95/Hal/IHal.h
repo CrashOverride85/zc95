@@ -35,6 +35,9 @@ class IHal
         virtual void audio_input_enable(bool enable) = 0;
         virtual void mic_preamp_enable(bool enable) = 0;
         virtual void mic_power_enable(bool enable) = 0;
+
+        // LED control
+        virtual CLedControl* led_control() = 0;
 };
 
 #endif

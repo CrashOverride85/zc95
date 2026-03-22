@@ -43,7 +43,8 @@ CLedControl::CLedControl(uint8_t tx_pin, CSavedSettings** settings)
     _sm = 0;
     pio_sm_claim(_pio, _sm);
     _settings = settings;
-    _brightness = get_led_brightness();;
+    _brightness = get_led_brightness();
+    _colour_format = get_led_colour_format();
 
     memset((void*)_led_state, 0, sizeof(_led_state));
     _led_state_changed = true;
@@ -71,15 +72,29 @@ uint8_t CLedControl::get_led_brightness()
         return 10;
 }
 
-static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) 
+CSavedSettings::led_colour_format_t CLedControl::get_led_colour_format()
 {
-    return
-            ((uint32_t) (r) << 16) |
-            ((uint32_t) (g) << 8)  |
-            (uint32_t)  (b);            
+    if ((*_settings) != NULL)
+        return (*_settings)->get_led_colour_format();
+    else
+        return CSavedSettings::led_colour_format_t::RGB;
 }
 
 
+uint32_t CLedControl::urgb_u32(uint8_t r, uint8_t g, uint8_t b) 
+{
+    switch(_colour_format)
+    {
+        case CSavedSettings::led_colour_format_t::RGB: return ((uint32_t) (r) << 16) | ((uint32_t) (g) << 8) | (uint32_t) (b);
+        case CSavedSettings::led_colour_format_t::RBG: return ((uint32_t) (r) << 16) | ((uint32_t) (b) << 8) | (uint32_t) (g);
+        case CSavedSettings::led_colour_format_t::BGR: return ((uint32_t) (b) << 16) | ((uint32_t) (g) << 8) | (uint32_t) (r);
+        case CSavedSettings::led_colour_format_t::BRG: return ((uint32_t) (b) << 16) | ((uint32_t) (r) << 8) | (uint32_t) (g);
+        case CSavedSettings::led_colour_format_t::GRB: return ((uint32_t) (g) << 16) | ((uint32_t) (r) << 8) | (uint32_t) (b);
+        case CSavedSettings::led_colour_format_t::GBR: return ((uint32_t) (g) << 16) | ((uint32_t) (b) << 8) | (uint32_t) (r);        
+   }
+
+   return  ((uint32_t) (r) << 16) | ((uint32_t) (g) << 8)  | (uint32_t)  (b);
+}
 
 void CLedControl::loop(bool force_update)
 {
@@ -87,6 +102,12 @@ void CLedControl::loop(bool force_update)
     {
         _led_state_changed = true;
         _brightness = get_led_brightness();
+    }
+
+    if (get_led_colour_format() != _colour_format)
+    {
+        _led_state_changed = true;
+        _colour_format = get_led_colour_format();
     }
 
     if (_led_state_changed || force_update)
@@ -145,6 +166,9 @@ uint32_t CLedControl::get_brightness_adjusted_led_colour(uint8_t led)
 // Set an LED colour
 void CLedControl::set_led_colour(LED led, uint32_t colour)
 {
+    if (_inhibit_changes)
+        return;
+
     if (_led_state[(uint8_t)led] != colour)
     {
         _led_state[(uint8_t)led] = colour; 
@@ -160,4 +184,22 @@ void CLedControl::set_all_led_colour(uint32_t colour)
     set_led_colour(LED::Channel4, colour);
     set_led_colour(LED::Trigger1, colour);
     set_led_colour(LED::Trigger2, colour);
+}
+
+void CLedControl::show_rbg_test_pattern(bool show)
+{
+    if (show)
+    {
+        set_led_colour(LED::Trigger1, LedColour::Red);
+        set_led_colour(LED::Trigger2, LedColour::Red);
+        set_led_colour(LED::Channel1, LedColour::Green);
+        set_led_colour(LED::Channel2, LedColour::Green);
+        set_led_colour(LED::Channel3, LedColour::Blue);
+        set_led_colour(LED::Channel4, LedColour::Blue);
+        _inhibit_changes = true;
+    }
+    else
+    {
+        _inhibit_changes = false;
+    }
 }

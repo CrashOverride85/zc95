@@ -33,6 +33,8 @@ class HalDummy : public IHal
         void audio_input_enable(bool enable);
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
+
+        CLedControl* led_control();
 };
 
 #endif

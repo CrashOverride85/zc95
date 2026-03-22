@@ -573,6 +573,16 @@ void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = seconds;
 }
 
+CSavedSettings::led_colour_format_t CSavedSettings::get_led_colour_format()
+{
+    return (led_colour_format_t)(_eeprom_contents[(uint8_t)setting::LedColourFormat]);
+}
+
+void CSavedSettings::set_led_colour_format(led_colour_format_t led_colour_format)
+{
+    _eeprom_contents[(uint8_t)setting::LedColourFormat] = (uint8_t)led_colour_format;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);
