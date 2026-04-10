@@ -1,6 +1,8 @@
 #ifndef _ZCTYPES_H
 #define _ZCTYPES_H
 
+#include <stdint.h>
+
 enum class front_panel_version_t
 {
     UNKNOWN,

@@ -44,7 +44,7 @@ inline const unsigned int rol(const unsigned int value,
 
 // Sets the first 16 integers in the buffert to zero.
 // Used for clearing the W buffert.
-inline void clearWBuffert(unsigned int* buffert)
+void clearWBuffert(unsigned int* buffert)
 {
     for (int pos = 16; --pos >= 0;)
     {
