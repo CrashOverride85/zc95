@@ -17,7 +17,7 @@
  */
 
 #include "CWaves.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include <string.h>
 
 static const int pulse_gap_min_us = 2700;

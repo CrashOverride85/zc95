@@ -23,8 +23,8 @@
 #define I2C_PORT i2c0  // main i2c bus for port expanders + eeprom
 
 // Set expected version for zc624 output module
-#define ZC624_REQUIRED_MAJOR_VERION 2
-#define ZC624_MIN_MINOR_VERION      1
+#define ZC624_REQUIRED_MAJOR_VERSION 3
+#define ZC624_MIN_MINOR_VERSION      0
 
 // Versions for the GetVersion/VersionDetails message, but that's not used by anything yet
 #define WEBSOCKET_API_VERION_MAJOR  1   // Increment on breaking change
@@ -95,3 +95,14 @@
 #define SERIAL_TX_QUEUE_SIZE 2000 // only used when in remote access/serial mode
 
 #define LUA_UPLOAD_BUFFER_SIZE  4096 // Will probably break if not a multiple of 4096, likely also depends on the script slot sizes in flash (see LuaScripts/LuaScripts.S)
+
+#define EEPROM_MAGIC_VAL  85 // If this is in setting::EepromInit, assume the eeprom has been initialised
+#define EEPROM_BOOTLOADER_SETTING_ADDR 232
+#define EEPROM_BOOTLOADER_SETTING_NORMAL 0          // normal boot
+#define EEPROM_BOOTLOADER_SETTING_RESTORE_PENDING 1 // On next boot, backup the current f/w then copy the "pending" f/w to flash
+#define EEPROM_BOOTLOADER_SETTING_RESTORE_PREV 2    // On next boot, copy the "prev" firmware to flash
+
+
+#define BOOTLOADER_SIZE_K 48
+#define PROGRAM_OFFSET (BOOTLOADER_SIZE_K * 1024)  // where does the main firmware start in flash
+

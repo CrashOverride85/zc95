@@ -4,10 +4,11 @@
 #define _CI2CSLAVE_H
 
 #include <inttypes.h>
-
+#include <string>
 #include <i2c_fifo.h>
 #include <i2c_slave.h>
 
+#include "../common/i2cEnums.h"
 
 
 class CI2cSlave
@@ -15,36 +16,35 @@ class CI2cSlave
     public:       
         enum class reg
         {
-            // Read only
-            TypeLow        = 0x00,
-            TypeHigh       = 0x01,
-            VersionMajor   = 0x02,
-            VersionMinor   = 0x03,
+            TypeLow        = ZC624_REG_TYPELOW,
+            TypeHigh       = ZC624_REG_TYPEHIGH,
+            VersionMajor   = ZC624_REG_VERSIONMAJOR,
+            VersionMinor   = ZC624_REG_VERSIONMINOR,
 
-            OverallStatus  = 0x0F,
-            Chan0Status    = 0x10,
-            Chan1Status    = 0x11,
-            Chan2Status    = 0x12,
-            Chan3Status    = 0x13,
+            OverallStatus  = ZC624_REG_OVERALLSTATUS,
+            Chan0Status    = ZC624_REG_CHAN0STATUS,
+            Chan1Status    = ZC624_REG_CHAN1STATUS,
+            Chan2Status    = ZC624_REG_CHAN2STATUS,
+            Chan3Status    = ZC624_REG_CHAN3STATUS,
 
-            VerStrStart    = 0x20,
-            VerStrEnd      = 0x34, //  20 character string
+            VerStrStart    = ZC624_REG_VERSTRSTART,
+            VerStrEnd      = ZC624_REG_VERSTREND, //  20 character string
 
-            TestVal        = 0x40,
+            TestVal        = ZC624_REG_TESTVAL,
+
+            BlVerStrStart  = ZC624_REG_BL_VERSTRSTART,
+            BlVerStrEnd    = ZC624_REG_BL_VERSTREND, // 20 character string
 
             // Read/write
             // starting at 0x80
-            ChannelIsolation = 0x80 // Default = true. If false, multiple channels can pulse at the same time (triphase effects)
-        };
-
-        enum status
-        {
-            Startup   = 0x00,
-            Ready     = 0x01,
-            Fault     = 0x02
+            ChannelIsolation = ZC624_REG_CHANNELISOLATION, // Default = true. If false, multiple channels can pulse at the same time (triphase effects)
+            Bootloader       = ZC624_REG_BOOTLOADER,
+            DataBlockWrite   = ZC624_REG_DATABLOCKWRITE,
+            EraseFirmware    = ZC624_REG_ERASEFIRMWARE
         };
 
         CI2cSlave();
+        ~CI2cSlave();
         void set_value(uint8_t reg, uint8_t value);
         uint8_t get_value(CI2cSlave::reg reg);
 
@@ -52,8 +52,7 @@ class CI2cSlave
     private:
         static void i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event);
         void init_with_default_values();
+        std::string get_zc624_bootloader_version();
 };
 
 #endif
-
-

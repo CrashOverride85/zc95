@@ -2,7 +2,7 @@
 #define _CCHANNELCONFIG_H
 
 #include "../display/CDisplay.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../CSavedSettings.h"
 #include "../CLedControl.h"
 

@@ -69,7 +69,7 @@ uint8_t CLedControl::get_led_brightness()
     if ((*_settings) != NULL)
         return (*_settings)->get_led_brightness();
     else
-        return 10;
+        return 2;
 }
 
 CSavedSettings::led_colour_format_t CLedControl::get_led_colour_format()

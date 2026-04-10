@@ -3,12 +3,11 @@
 
 #include "bluetooth.h"
 #include "Bluetooth/CBluetoothRemote.h"
-
+#include "../common/zc95_config.h"
 #include "CEeprom.h"
 #include "CChannel_types.h"
 
 #define EEPROM_SIZE      512 // EEPROM is 4Kbit
-#define EEPROM_MAGIC_VAL  85 // If this is in setting::EepromInit, assume the eeprom has been initialised
 
 #define EEPROM_CHANNEL_COUNT 10 // Maximum number of configured channels that can be saved. Changing this invalidates EEPROM contents
 
@@ -74,7 +73,8 @@ class CSavedSettings
         ExtendedRampLevel= 228, // Extended ramp percent, 1% - 100%
         ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
         ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns
-        LedColourFormat  = 231  // Colour format (RBG, BGR, etc) of front panel LED buttons
+        LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
+        BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR  // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootload code
     };
 
     public:
@@ -155,6 +155,13 @@ class CSavedSettings
             BRG = 3,
             GRB = 4,
             GBR = 5
+        };
+
+        enum class bootloader_mode_t
+        {
+            NORMAL_BOOT      = EEPROM_BOOTLOADER_SETTING_NORMAL,
+            RESTORE_PENDING  = EEPROM_BOOTLOADER_SETTING_RESTORE_PENDING,
+            RESTORE_PREVIOUS = EEPROM_BOOTLOADER_SETTING_RESTORE_PREV
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -276,6 +283,9 @@ class CSavedSettings
 
         led_colour_format_t get_led_colour_format();
         void set_led_colour_format(led_colour_format_t colour_format);
+
+        bootloader_mode_t get_bootloader_mode();
+        void set_bootloader_mode(bootloader_mode_t mode);
 
         void eeprom_initialise();
 

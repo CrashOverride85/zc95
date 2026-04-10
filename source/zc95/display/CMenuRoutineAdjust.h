@@ -7,7 +7,7 @@
 #include "../core1/routines/CRoutine.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../ECButtons.h"
 #include "../CGetButtonState.h"
 #include "../AudioInput/CAudio.h"

@@ -19,7 +19,7 @@
 #include "CMenuSettingsStatusBarText.h"
 #include "../CMenuSettings.h"
 #include "../../../CDebugOutput.h"
-#include "../../../config.h"
+#include "../../../common/zc95_config.h"
 
 
 CMenuSettingsStatusBarText::CMenuSettingsStatusBarText(CDisplay* display, CSavedSettings *saved_settings)

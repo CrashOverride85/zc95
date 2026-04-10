@@ -18,6 +18,8 @@
 
 #include "CMenuSettingAbout.h"
 #include "../git_version.h"
+#include "../../common/zc95_config.h"
+#include "../../common/FirmwareMagicNumber.h"
 
 CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, IHal *hal, CHwCheck *hwCheck)
 {
@@ -25,6 +27,9 @@ CMenuSettingAbout::CMenuSettingAbout(CDisplay* display, IHal *hal, CHwCheck *hwC
     _display = display;
     _hal = hal;
     _hwCheck = hwCheck;
+    _mode = screen_mode_t::MAIN_FW;
+    _zc624_fw_ver    = _hwCheck->get_zc624_version(false);
+    _zc624_bl_fw_ver = _hwCheck->get_zc624_version(true);
 }
 
 CMenuSettingAbout::~CMenuSettingAbout()
@@ -46,6 +51,13 @@ void CMenuSettingAbout::button_pressed(Button button)
                 _exit_menu = true;
                 break;
 
+            case Button::C:
+                if (_mode == screen_mode_t::BOOTLOAD_FW)
+                    _mode = screen_mode_t::MAIN_FW;
+                else
+                    _mode = screen_mode_t::BOOTLOAD_FW;
+                set_c_button_text();
+
             default:
                 break;
         }
@@ -61,16 +73,31 @@ void CMenuSettingAbout::draw()
 {
     uint8_t line = 1;
     display_area disp_area = _display->get_display_area();
-    std::string zc624_ver = _hwCheck->get_zc624_version();
-
-    put_text_line("Firmware versions:", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-
-    put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-    put_text_line(kGitHash            , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
     
-    line++;
-    put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
-    put_text_line(zc624_ver           , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
+    if (_mode == screen_mode_t::MAIN_FW)
+    {
+        put_text_line("Firmware versions:", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+
+        put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+        const char* fw_ver = firmware_info.firmware_version;
+        put_text_line(fw_ver              , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
+        
+        line++;
+        put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+        put_text_line(_zc624_fw_ver       , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
+    }
+    else
+    {
+        put_text_line("Bootloader:       ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+
+        put_text_line("ZC95              ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+        std::string fw_ver = get_zc95_bootloader_version();
+        put_text_line(fw_ver              , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
+        
+        line++;
+        put_text_line("ZC624 output      ", disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF));
+        put_text_line(_zc624_bl_fw_ver     , disp_area.x0+5, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0x99, 0x99, 0x99));
+    }
 }
 
 void CMenuSettingAbout::put_text_line(std::string text, int16_t x, int16_t y, uint8_t line, hagl_color_t colour)
@@ -82,8 +109,31 @@ void CMenuSettingAbout::show()
 {
     _display->set_option_a("");
     _display->set_option_b("Back");
-    _display->set_option_c("");
+    set_c_button_text();
     _display->set_option_d("");
 
     _exit_menu = false;
+}
+
+void CMenuSettingAbout::set_c_button_text()
+{
+    if (_mode == screen_mode_t::BOOTLOAD_FW)
+        _display->set_option_c("Main");
+    else
+        _display->set_option_c("Bootloader");
+}
+
+std::string CMenuSettingAbout::get_zc95_bootloader_version()
+{
+    firmware_info_t fw_info;
+    
+    // For the bootloader, the version block is in the last 128 bytes of it.
+    // PROGRAM_OFFSET here is start of the main f/w.
+    memcpy(&fw_info, (void*)(XIP_BASE + PROGRAM_OFFSET - 128), sizeof(firmware_info_t));
+    if (fw_info.magic != FIRMWARE_VERSION_95BL_MAGIC)
+    {
+        strcpy(fw_info.firmware_version, "<invalid>");
+    }
+
+    return fw_info.firmware_version;
 }

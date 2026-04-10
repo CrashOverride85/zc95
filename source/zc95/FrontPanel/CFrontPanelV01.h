@@ -1,7 +1,7 @@
 #include "CFrontPanel.h"
 #include "CRotEnc.h"
 #include "PortExpanders/CMainBoardPortExp.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 class CFrontPanelV01 : public CFrontPanel
 {

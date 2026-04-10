@@ -203,7 +203,7 @@ pico_set_program_version(zc95 "1.0")
 pico_enable_stdio_uart(zc95 1)
 pico_enable_stdio_usb(zc95 0)
 
-
+pico_set_linker_script(zc95 ${CMAKE_CURRENT_SOURCE_DIR}/memmap.ld)
 
 # Add the standard library to the build
 target_link_libraries(zc95 pico_stdlib)
@@ -235,7 +235,6 @@ add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
 add_subdirectory(external/lua)
 add_subdirectory(external/ArduinoJson)
-#target_link_libraries(zc95 hagl hagl_hal)
 
 target_compile_definitions(zc95 PRIVATE
   NDEBUG
@@ -291,3 +290,21 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess
     ${PICO_SDK_PATH}/lib/lwip/include/lwip/apps
 )
+
+# Include bootloader
+set(BOOTLOADER_BIN ${CMAKE_CURRENT_SOURCE_DIR}/../zc95Bootloader/build/zc95Bootloader.bin)
+set(BOOTLOADER_OBJ ${CMAKE_CURRENT_BINARY_DIR}/zc95Bootloader.o)
+
+add_custom_command(
+    OUTPUT ${BOOTLOADER_OBJ}
+    COMMAND ${CMAKE_OBJCOPY}
+            -I binary
+            -O elf32-littlearm
+            -B arm
+            ${BOOTLOADER_BIN}
+            ${BOOTLOADER_OBJ}
+    DEPENDS ${BOOTLOADER_BIN}
+    COMMENT "Converting zc95Bootloader.bin to object"
+    VERBATIM
+)
+target_sources(zc95 PRIVATE ${BOOTLOADER_OBJ})

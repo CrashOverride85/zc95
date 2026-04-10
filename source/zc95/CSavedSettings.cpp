@@ -583,6 +583,16 @@ void CSavedSettings::set_led_colour_format(led_colour_format_t led_colour_format
     _eeprom_contents[(uint8_t)setting::LedColourFormat] = (uint8_t)led_colour_format;
 }
 
+CSavedSettings::bootloader_mode_t CSavedSettings::get_bootloader_mode()
+{
+    return (bootloader_mode_t)(_eeprom_contents[(uint8_t)setting::BootloaderMode]);
+}
+   
+void CSavedSettings::set_bootloader_mode(bootloader_mode_t mode)
+{
+    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)mode;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);
@@ -641,6 +651,8 @@ void CSavedSettings::eeprom_initialise()
 
     _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = 70;
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = 20;
+
+    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)bootloader_mode_t::NORMAL_BOOT;
 
     // Save changes
     save();

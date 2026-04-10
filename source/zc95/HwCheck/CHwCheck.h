@@ -27,7 +27,7 @@ class CHwCheck
         ~CHwCheck();
         void check_part1();
         void check_part2();
-        std::string get_zc624_version();
+        std::string get_zc624_version(bool bootloader);
         bool audio_digipot_found();
         void die(std::string error_message);
         bool clear_eeprom_buttons_pressed(front_panel_version_t fp_version);
@@ -36,7 +36,20 @@ class CHwCheck
         void set_display(CDisplay *display);    
 
     private:
-        enum Cause {UNKNOWN, MISSING, BATTERY, ZC624_UNKNOWN, ZC624_STATUS, ZC624_VERSION, ZC624_NO_SPI, NO_FP_ADC, HW_VER_UNKNOWN};
+        enum Cause 
+        {
+            UNKNOWN,
+            MISSING,
+            BATTERY, 
+            ZC624_UNKNOWN, 
+            ZC624_STATUS, 
+            ZC624_VERSION, 
+            ZC624_NO_SPI, 
+            ZC624_STUCK_BOOTLOADER, 
+            NO_FP_ADC, 
+            HW_VER_UNKNOWN
+        };
+
         void show_error_text_missing(int y);
         void show_error_text_message(int *y, std::string message);
         void hw_check_failed(enum Cause cause);

@@ -1,5 +1,5 @@
 #include "CDebugOutput.h"
-#include "config.h"
+#include "../common/zc95_config.h"
 #include "pico/stdlib.h"
 
 void CDebugOutput::set_debug_destination(debug_dest_t destination)

@@ -17,7 +17,7 @@
  */
 
 #include "CMenuCollarConfigSelected.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../core1/output/collar/CCollarComms.h" // for CCollarComms::mode_to_string() 
 #include "../core1/CRoutineOutput.h"
 

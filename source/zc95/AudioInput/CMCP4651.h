@@ -2,7 +2,7 @@
 #define _CMCP4651_H
 
 #include <inttypes.h>
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 class CMCP4651 {
 	
