@@ -28,6 +28,7 @@
  #ifndef _BQ25601_H
  #define _BQ25601_H
  
+ #include <stdint.h>
 
  #define BQ25601_REG00 0x00
  #define BQ25601_REG01 0x01
