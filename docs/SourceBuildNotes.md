@@ -1,16 +1,30 @@
-# Building source
+# Building
+
+## Docker
+If you just want to build the current dev release, the quickest and easiest way to compile the firmware is to use the docker image ([source](../misc/Docker/)).
+
+Steps to build, adjust paths as required:
+```
+cd /data
+git clone https://github.com/CrashOverride85/zc95.git --recurse-submodules
+docker run -v /data/zc95:/src --rm ghcr.io/crashoverride85/zc95-build:1.0.0
+```
+All going well, complied firmware images should appear in /data/zc95/source/CompiledUF2/
+
+
+## Local setup
 
 Quick start building notes for Linux, tested on a fresh install of Debian Bookworm, but should be very similar for any Debian derived distro.
 For other environments, see the [pico getting started guide][gs].
 
 This is the bare minimum to get to the point where you can build a binary to copy to the Pico.
 
-## Install build tools
+### Install build tools
 ```
 apt-get install git cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential libstdc++-arm-none-eabi-newlib python3 python3-pycryptodome
 ```
 
-## Setup pico-sdk
+### Setup pico-sdk
 ```
 git clone https://github.com/raspberrypi/pico-sdk.git
 cd pico-sdk
@@ -19,7 +33,7 @@ export PICO_SDK_PATH=`pwd`
 cd ..
 ```
 
-## Get zc95 source & build
+### Get zc95 source & build
 ```
 git clone https://github.com/CrashOverride85/zc95.git --recursive
 cd zc95/source/zc95/
@@ -34,7 +48,7 @@ This should result in the two pico binaries being built that can be copied to th
 * zc95/source/zc95/zc95.uf2 - for main board
 * zc95/source/zc624/OutputZc.uf2 - for output board
 
-# Debugging
+## Debugging
 For small fixes/changes/tweaks the above is fine, but requires manually copying to Pico via USB, and doesn't allow for debugging, so very quickly gets tedious for larger changes.
 
 The pico-sdk integrates really well with Visual Studio Code & an SWD debugger, allowing single keypress build & upload, along with setting breakpoints, stepping through code, etc., so that would be my recommendation for a development environment. 
@@ -47,7 +61,7 @@ It's probably worth noting that the code is using both cores, so bare that in mi
 [gs]: https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf
 [pp]: https://www.raspberrypi.com/products/debug-probe/
 
-# BTStack patch
+## BTStack patch
 In order to get one of the bluetooth remotes to work (#7 in [the bluetooth notes](./Bluetooth.md), and potentially later ones), in `pico-sdk/lib/btstack/src/ble/sm.c` I needed to comment this out:
 ```
         default:
