@@ -3,10 +3,10 @@
 ## Docker
 If you just want to build the current dev release, the quickest and easiest way to compile the firmware is to use the docker image ([source](../misc/Docker/)).
 
-Steps to build, adjust paths as required:
+Steps to build the dev branch, adjust paths as required:
 ```
 cd /data
-git clone https://github.com/CrashOverride85/zc95.git --recurse-submodules
+git clone -b dev https://github.com/CrashOverride85/zc95.git --recurse-submodules
 docker run -v /data/zc95:/src --rm ghcr.io/crashoverride85/zc95-build:1.0.0
 ```
 All going well, complied firmware images should appear in /data/zc95/source/CompiledUF2/
