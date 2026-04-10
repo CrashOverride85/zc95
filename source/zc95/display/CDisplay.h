@@ -12,7 +12,7 @@
 
 #include "CMenu.h"
 #include "../CUtil.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../FrontPanel/CFrontPanel.h"
 #include "../Bluetooth/CBluetooth.h"
 #include "../PowerManagement/IPowerManagement.h"

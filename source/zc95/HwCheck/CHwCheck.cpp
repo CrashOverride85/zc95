@@ -24,7 +24,7 @@
 #include "CHwCheck.h"
 #include "i2c_scan.h"
 #include "../git_version.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../CUtil.h"
 #include "../ECButtons.h"
 #include "../LuaScripts/LuaScripts.h"
@@ -175,6 +175,9 @@ void CHwCheck::check_part1()
         ok = false;
     }
 
+    // Start main firmware on zc624 (i.e. exit bootloader)
+    _zc624_comms->exit_bootloader();
+
     if (ok)
     {
         printf("Status: Ok\n\n");
@@ -186,7 +189,6 @@ void CHwCheck::check_part1()
     }
 
     clear_eeprom_if_requested(_hal->front_panel()->verion()); // if appropriate button is held down, clears eeprom then halts
-
 }
 
 // The ZC624 output board takes a while to initialize from power on, so check its status much later when it should be ready.
@@ -195,32 +197,52 @@ void CHwCheck::check_part2()
 {
     uint8_t ver_minor = 0;
     uint8_t ver_major = 0;
-    bool ver_check_ok = _zc624_comms->get_major_minor_version(&ver_major, &ver_minor);
+    
     CHwCheck::Cause cause = Cause::ZC624_UNKNOWN;
     bool error = false;
 
     printf("\n\nHardware check (part2)\n");
     printf("======================\n");
 
-    printf("    ZC624 Version...");
-    if (ver_check_ok)
+    // Check zc624 has exited bootloader mode and started the main f/w.
+    printf("    ZC624 Started...");
+    bool main_fw_running = _zc624_comms->has_started_main_firmware();
+    if (main_fw_running)
     {
-        printf("API maj=[%d], min=[%d], FW=[%s]\n", ver_major, ver_minor, _zc624_comms->get_version().c_str());
-
-        // check version is compatable
-        if (ZC624_REQUIRED_MAJOR_VERION != ver_major || ver_minor < ZC624_MIN_MINOR_VERION)
-        {
-            printf("ZC624 API version mismatch. Expected:\n");
-            printf("  major version  = %d (found %d)\n", ZC624_REQUIRED_MAJOR_VERION, ver_major);
-            printf("  minor version >= %d (found %d)\n", ZC624_MIN_MINOR_VERION     , ver_minor);
-            error = true;
-            cause = Cause::ZC624_VERSION;
-        }
+        printf("Ok\n");
     }
     else
     {
-        printf("ERROR\n");
+        printf(" ERROR: ZC624 not exited bootloader mode\n");
+        cause = Cause::ZC624_STUCK_BOOTLOADER;
         error = true;
+    }
+
+    if (!error)
+    {
+        // Important not to do this if the main f/w hasn't started, as it would 
+        // report the bootloader version, which may be out of date (and that's ok)
+        printf("    ZC624 Version...");
+        bool ver_check_ok = _zc624_comms->get_major_minor_version(&ver_major, &ver_minor);
+        if (ver_check_ok)
+        {
+            printf("API maj=[%d], min=[%d], FW=[%s]\n", ver_major, ver_minor, _zc624_comms->get_version(false).c_str());
+
+            // check version is compatable
+            if (ZC624_REQUIRED_MAJOR_VERSION != ver_major || ver_minor < ZC624_MIN_MINOR_VERSION)
+            {
+                printf("ZC624 API version mismatch. Expected:\n");
+                printf("  major version  = %d (found %d)\n", ZC624_REQUIRED_MAJOR_VERSION, ver_major);
+                printf("  minor version >= %d (found %d)\n", ZC624_MIN_MINOR_VERSION     , ver_minor);
+                error = true;
+                cause = Cause::ZC624_VERSION;
+            }
+        }
+        else
+        {
+            printf("ERROR\n");
+            error = true;
+        }
     }
 
     if (!error)
@@ -334,6 +356,10 @@ void CHwCheck::hw_check_failed(enum Cause cause)
 
         case Cause::BATTERY:
             show_error_text_message(&y, "Battery is flat!");
+            break;
+
+        case Cause::ZC624_STUCK_BOOTLOADER:
+            show_error_text_message(&y, "ZC624 bad firmware");
             break;
 
         case Cause::ZC624_STATUS:
@@ -457,9 +483,9 @@ void CHwCheck::halt()
     };
 }
 
-std::string CHwCheck::get_zc624_version()
+std::string CHwCheck::get_zc624_version(bool bootloader)
 {
-    return _zc624_comms->get_version();
+    return _zc624_comms->get_version(bootloader);
 }
 
 void CHwCheck::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color)
@@ -646,7 +672,7 @@ void CHwCheck::fail_status_line()
 
     hagl_color_t text_colour = hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF);
    
-    put_text("F/W: " + std::string(kGitHash), 0, (MIPI_DISPLAY_HEIGHT-1) - 16, text_colour);
+    put_text("F/W: " + std::string(firmware_info.firmware_version), 0, (MIPI_DISPLAY_HEIGHT-1) - 16, text_colour);
 
     std::string hw_ver;
     std::string front_panel_version;

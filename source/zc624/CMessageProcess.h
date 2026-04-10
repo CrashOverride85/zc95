@@ -1,7 +1,7 @@
 #ifndef _CMESSAGEPROCESS_H
 #define _CMESSAGEPROCESS_H
 
-#include "config.h"
+#include "../common/zc624_config.h"
 #include "COutput.h"
 #include "CI2cSlave.h"
 

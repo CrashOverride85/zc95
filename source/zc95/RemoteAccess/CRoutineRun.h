@@ -6,7 +6,7 @@
 #include <string>
 #include <functional>
 #include <ArduinoJson.h>
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 

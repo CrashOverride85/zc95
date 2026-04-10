@@ -5,7 +5,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 
-#include "config.h"
+#include "../common/zc624_config.h"
 #include "pulse_gen.pio.h"
 #include "COutputChannel.h"
 #include "CMsgDac.h"

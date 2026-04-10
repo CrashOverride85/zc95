@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../common/zc624_config.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +34,7 @@ int main()
     stdio_init_all();
     adc_init();
     
-    printf("ZC624 startup, firmware version: %s\n", kGitHash);
+    printf("ZC624 startup, firmware version: %s\n", firmware_info.firmware_version);
 
     gpio_init(PIN_OK_LED);
     gpio_set_dir(PIN_OK_LED, GPIO_OUT);
@@ -88,7 +88,7 @@ int main()
 
         output.loop();
 
-        if (i2c_slave->get_value(CI2cSlave::reg::OverallStatus) == CI2cSlave::status::Fault)
+        if (i2c_slave->get_value(CI2cSlave::reg::OverallStatus) == ZC624_OVERALL_STATUS_FAULT)
         {
             printf("HALT.\n");
             while(1)

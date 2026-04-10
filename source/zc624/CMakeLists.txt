@@ -42,6 +42,8 @@ pico_set_program_version(OutputZc "0.1")
 pico_enable_stdio_uart(OutputZc 1)
 pico_enable_stdio_usb(OutputZc 0)
 
+pico_set_linker_script(OutputZc ${CMAKE_CURRENT_SOURCE_DIR}/memmap.ld)
+
 # Add the standard library to the build
 target_link_libraries(OutputZc pico_stdlib)
 
@@ -62,3 +64,21 @@ add_subdirectory(external/pico_i2c_slave)
 target_compile_definitions(OutputZc PRIVATE
   SYS_CLK_MHZ=200
 )
+
+# Include bootloader
+set(BOOTLOADER_BIN ${CMAKE_CURRENT_SOURCE_DIR}/../zc624Bootloader/build/zc624Bootloader.bin)
+set(BOOTLOADER_OBJ ${CMAKE_CURRENT_BINARY_DIR}/zc624Bootloader.o)
+
+add_custom_command(
+    OUTPUT ${BOOTLOADER_OBJ}
+    COMMAND ${CMAKE_OBJCOPY}
+            -I binary
+            -O elf32-littlearm
+            -B arm
+            ${BOOTLOADER_BIN}
+            ${BOOTLOADER_OBJ}
+    DEPENDS ${BOOTLOADER_BIN}
+    COMMENT "Converting zc624Bootloader.bin to object"
+    VERBATIM
+)
+target_sources(OutputZc PRIVATE ${BOOTLOADER_OBJ})

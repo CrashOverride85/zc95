@@ -1,7 +1,7 @@
 #include "CRotEnc.h"
 #include "CGetButtonState.h"
 #include "../CSavedSettings.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../ZcTypes.h"
 
 #ifndef _CFRONTPANEL_H

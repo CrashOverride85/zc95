@@ -19,7 +19,7 @@
 #include "../../external/lua/lua-5.1.5/include/lstate.h"
 
 #include "CLuaRoutine.h"
-#include "../../config.h"
+#include "../../../common/zc95_config.h"
 #include "../../LuaScripts/LuaScripts.h"
 #include <string>
 #include <string.h>

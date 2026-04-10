@@ -17,7 +17,7 @@
  */
 
 #include "CClimbPulse.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include <string.h>
 
 #define DEFAULT_CLIMB_TIME_SEC 60

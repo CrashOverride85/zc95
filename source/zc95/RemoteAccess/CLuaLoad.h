@@ -7,7 +7,7 @@
 #include <functional>
 #include <ArduinoJson.h>
 #include "../CLuaStorage.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 class CLuaLoad
 {

@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include "CPowerLevelRamp.h"
 #include "../CSavedSettings.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 class CPowerLevelControl
 {

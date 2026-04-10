@@ -1,7 +1,7 @@
 #include "CDetermineHardwareVersion.h"
 #include "hardware/i2c.h"
 #include "../CUtil.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 zc95_version_t CDetermineHardwareVersion::get_hardware_version()
 {

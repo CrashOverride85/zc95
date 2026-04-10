@@ -17,7 +17,7 @@
  */
 
 #include "CFullChannelAsSimpleChannel.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 /*
  * Allow a "full" output channel, e.g. the ZC624 output board (which expects pulse lengths to passed, etc.) to

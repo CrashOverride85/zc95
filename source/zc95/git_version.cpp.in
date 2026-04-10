@@ -1,2 +1,11 @@
 #include "git_version.h"
-const char *kGitHash = "@GIT_HASH@";
+#include "../../../common/zc95_config.h"
+
+__attribute__((section(".firmware_metadata")))
+const firmware_info_t firmware_info = {
+    .magic = 0x5A433935,   // "ZC95"
+    .struct_version = 1,
+    .firmware_version = "@GIT_HASH@",
+    .fw624_major = ZC624_REQUIRED_MAJOR_VERSION,
+    .fw624_minor = ZC624_MIN_MINOR_VERSION
+};

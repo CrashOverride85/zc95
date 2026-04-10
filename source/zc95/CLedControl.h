@@ -64,7 +64,7 @@ class CLedControl
         CSavedSettings** _settings;
         uint64_t _last_led_update = 0;
         CSavedSettings::led_colour_format_t _colour_format;
-        bool _inhibit_changes;
+        bool _inhibit_changes = false;
 };
 
 #endif

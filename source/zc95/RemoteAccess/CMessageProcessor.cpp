@@ -451,7 +451,7 @@ void CMessageProcessor::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_S
 
     response_message["Type"] = "VersionDetails";
     response_message["MsgId"] = msg_count;
-    response_message["ZC95"] = kGitHash;
+    response_message["ZC95"] = firmware_info.firmware_version;
     response_message["WsMajor"] = WEBSOCKET_API_VERION_MAJOR;
     response_message["WsMinor"] = WEBSOCKET_API_VERION_MINOR;
     response_message["SerialNo"] = get_serial();
