@@ -7,10 +7,23 @@ Steps to build the dev branch, adjust paths as required:
 ```
 cd /data
 git clone -b dev https://github.com/CrashOverride85/zc95.git --recurse-submodules
-docker run -v /data/zc95:/src --rm ghcr.io/crashoverride85/zc95-build:1.0.0
+docker run -v /data/zc95:/src --rm ghcr.io/crashoverride85/zc95-build:1.1.0
 ```
 All going well, complied firmware images should appear in /data/zc95/source/CompiledUF2/
 
+### pico2
+This project has been designed around and tested with the original pico (rp2040). However if you really want to build for the pico2, add `pico2` as the first and only command line argument to the container, i.e.:
+```
+docker run -v <path to repo>:/src --rm ghcr.io/crashoverride85/zc95-build:1.1.0 pico2
+```
+I do not recommend using pico2's for the zc95:
+
+- This project is likely going to continue to target the original pico(w) for as long as it is readily available in order to remain compatible with exiting zc95's, so the advantages of the pico2 (and there are many) will be wasted
+- It doesn't include the bootloader; so firmware upgrades via serial - and likely later from the UI - won't be possible
+- I'm not going to be routinely testing future changes even build for the pico2, much less work as intended
+- I've barely tested it. On 2026/04/16, it does build from the dev branch, boots up, and appears functional at first glace 🤷‍♂️️
+
+You have been warned.
 
 ## Local setup
 

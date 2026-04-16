@@ -32,5 +32,6 @@ RUN git config --global safe.directory '*'
 ADD build.sh /build.sh
 
 WORKDIR /src
-CMD ["/bin/sh", "/build.sh"]
 
+ENTRYPOINT ["/bin/sh", "/build.sh"]
+CMD ["pico"]
