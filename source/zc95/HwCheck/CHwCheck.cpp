@@ -176,6 +176,12 @@ void CHwCheck::check_part1()
     }
 
     // Start main firmware on zc624 (i.e. exit bootloader)
+#ifdef PICO_RP2350
+    // If running on Pico2's, there (currently) isn't a bootloader. If the zc624 is an original
+    // pico (with a bootloader) and we're running on a pico2, then by the time we hit this point, 
+    // the 624 isn't going to be ready to respond. Give it time to start up.
+    sleep_ms(500);
+#endif
     _zc624_comms->exit_bootloader();
 
     if (ok)

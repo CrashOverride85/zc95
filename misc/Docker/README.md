@@ -19,4 +19,14 @@ docker run -v /home/crashoverride/zc95:/src --rm ghcr.io/crashoverride85/zc95-bu
 
 After it completes, the complied binaries should be in `zc95/source/CompiledUF2/`
 
-Will only build dev & version >2.1.
+Will only build dev & versions >=2.1.
+
+Also see [notes on building source](../../docs/SourceBuildNotes.md).
+
+## Changelog
+
+### v1.1.0
+Add ability to build for pico2 with command line arg
+
+### v1.0.0
+Inital version - builds for pico only

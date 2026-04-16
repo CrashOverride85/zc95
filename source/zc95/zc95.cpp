@@ -34,6 +34,8 @@
 #include "hardware/regs/rosc.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/adc.h"
+#include "hardware/structs/xip_ctrl.h"
+
 
 #include "CLedControl.h"
 #include "Hal/IHal.h"
@@ -158,6 +160,17 @@ int main()
 {
     // Debugging with picoprobe causes cyw43_arch_init() to hang without this. JLink doesn't need it though ¯\_(ツ)_/¯
     timer_hw->dbgpause = 0; 
+
+#ifdef PICO_RP2350
+    // When uploading then debugging with JLINK (tested with 8.42) it leaves the XIP cache disabled, which absolutely kills performance.
+    // See: https://forum.segger.com/index.php?thread/9782-rp2350-xip-cache-not-re-enabled-after-flash-loader/&postID=34698
+    uint32_t xip_ctl = xip_ctrl_hw->ctrl;
+    if (xip_ctl != 131)
+    {
+        printf("XIP ctrl register does not match expected power on default of 0x%X, resetting (was 0x%X)\n", 131, xip_ctrl_hw->ctrl);
+        xip_ctrl_hw->ctrl = 131;
+    }
+#endif
 
     CSavedSettings* settings = NULL;
     CLedControl led = CLedControl(PIN_LED, &settings);
