@@ -74,7 +74,8 @@ class CSavedSettings
         ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
         ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns
         LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
-        BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR  // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootload code
+        BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR, // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootloader code
+        ExtenedRampShape = 233
     };
 
     public:
@@ -286,6 +287,9 @@ class CSavedSettings
 
         bootloader_mode_t get_bootloader_mode();
         void set_bootloader_mode(bootloader_mode_t mode);
+
+        int8_t get_extended_ramp_shape();
+        void set_extended_ramp_shape(int8_t shape);
 
         void eeprom_initialise();
 

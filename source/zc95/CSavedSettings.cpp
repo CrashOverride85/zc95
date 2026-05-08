@@ -593,6 +593,16 @@ void CSavedSettings::set_bootloader_mode(bootloader_mode_t mode)
     _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)mode;
 }
 
+int8_t CSavedSettings::get_extended_ramp_shape()
+{
+    return (int8_t)(_eeprom_contents[(uint8_t)setting::ExtenedRampShape]);
+}
+
+void CSavedSettings::set_extended_ramp_shape(int8_t shape)
+{
+    _eeprom_contents[(uint8_t)setting::ExtenedRampShape] = (uint8_t)shape;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

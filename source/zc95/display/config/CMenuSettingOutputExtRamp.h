@@ -21,17 +21,21 @@ class CMenuSettingOutputExtRamp : public CMenu
         {
             RAMP_SHOW           = 0,
             RAMP_LEVEL          = 1,
-            RAMP_TIME           = 2
+            RAMP_TIME           = 2,
+            RAMP_SHAPE          = 3
         };
 
         enum setting_kind_t
         {
             MULTI_CHOICE        = 0,
-            MIN_MAX             = 1
+            MIN_MAX             = 1,
+            RAMP_SHAPE_GRAPH    = 2
         };
 
         setting_kind_t get_setting_kind(setting_id_t setting_id);
         setting_id_t get_currently_selected_setting_id();
+        void draw_shape_graph(int8_t shape);
+        float normalized_exponential(float k, float t);
 
         class setting_t
         {
@@ -65,5 +69,6 @@ class CMenuSettingOutputExtRamp : public CMenu
         int16_t _min_max_value = 0;
         int16_t _min_max_value_min = 0;
         int16_t _min_max_value_max = 0;
+        uint8_t _min_max_step_size = 1;
         std::string _min_max_uom = "";
 };
