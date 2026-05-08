@@ -168,7 +168,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
         selected_power = (float)selected_power * ((float)_initial_ramp_percent / (float)100);
     
     if (_extended_ramp.ramp_in_progress())
-        selected_power = (float)selected_power * (_extended_ramp.get_ramp_percent() / (float)100);
+        selected_power = (float)selected_power * (_extended_ramp.get_ramp_power_percent() / (float)100);
     
     return selected_power;
 }
@@ -269,5 +269,5 @@ void CPowerLevelControl::calc_output_power(uint8_t channel)
 
     _output_power[channel] = scaled_power 
                 * ((float)_initial_ramp_percent / (float)100)
-                * (_extended_ramp.get_ramp_percent() / (float)100);
+                * (_extended_ramp.get_ramp_power_percent() / (float)100);
 }

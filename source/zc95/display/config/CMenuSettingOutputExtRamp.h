@@ -35,7 +35,6 @@ class CMenuSettingOutputExtRamp : public CMenu
         setting_kind_t get_setting_kind(setting_id_t setting_id);
         setting_id_t get_currently_selected_setting_id();
         void draw_shape_graph(int8_t shape);
-        float normalized_exponential(float k, float t);
 
         class setting_t
         {

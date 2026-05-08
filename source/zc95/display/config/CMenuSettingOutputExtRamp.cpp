@@ -20,6 +20,7 @@
 #include "CMenuSettings.h"
 #include "../CDebugOutput.h"
 #include "../../common/zc95_config.h"
+#include "../core1/CPowerLevelRamp.h"
 #include <math.h>
 
 
@@ -331,7 +332,7 @@ void CMenuSettingOutputExtRamp::draw_shape_graph(int8_t shape)
 
         // IMPORTANT: in eeprom and on the display, 'shape' is stored as an int between -100 and +100. 
         //            But when passed to normalized_exponential, it's divided by 10.
-        float ramp_output = normalized_exponential((float)shape/(float)10, ramp_progress); 
+        float ramp_output = CPowerLevelRamp::s_normalized_exponential((float)shape/(float)10, ramp_progress); 
 
         int16_t y = _setting_choice_area.y1-1 - (int16_t)((float)height * (float)ramp_output);
         hagl_put_pixel(_display->get_hagl_backed(), x, y, green);
@@ -346,20 +347,4 @@ void CMenuSettingOutputExtRamp::draw_shape_graph(int8_t shape)
     std::ostringstream oss;
     oss << "Shape: " << std::to_string(shape);
     _display->put_text(oss.str(), _duration_area.x0, _duration_area.y1-_display->get_font_height(), hagl_color(_display->get_hagl_backed(), 0x55, 0x55, 0x55));
-}
-
-// k = curve shape: -ve values will cause a fast initial rise, then slow down. +ve values will cause a slow inital rise, then speed up.
-//                  0 will result in a purley linear rise (return value = t)
-// t = time, 0 to 1, i.e. 0.5 = 50% through the ramp time-wise 
-// Output is 0 to 1, which should be mapped onto an output level of 0 to 1000.
-float CMenuSettingOutputExtRamp::normalized_exponential(float k, float t)
-{
-    // As k -> 0, the function approaches t
-    if (fabsf(k) < 1e-9)
-    {
-        return t;
-    }
-
-    return (exp(k * t) - 1.0) /
-           (exp(k) - 1.0);
 }
