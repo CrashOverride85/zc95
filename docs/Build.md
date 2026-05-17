@@ -84,8 +84,14 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 
 * Buttons: Consider what colour you want the buttons. The BoM lists LP1OA1A**B** for blue (as I used for the Mk1), but for this Mk2 I've gone with LP1OA1A**R** for red. Still not sure which I prefer ¯\_(ツ)_/¯
 
-### LED riser
-_Optional_: Order or 3d print LED riser: [STL file](../misc/led-riser/led-riser.stl).
+### 3D printed parts
+These parts are optional.
+
+#### LED riser
+Order or 3d print LED riser: [STL file](../misc/led-riser/led-riser.stl). These make it easier to install the LEDs at the correct/consistent height.
+
+#### Display frame
+Allows the screws holding the Adafruit display to the front panel to be tightened without crushing the display. [STL file](../misc/display-frame/lcd_frame_ada.stl).
 
 ## Assembly
 
@@ -171,6 +177,12 @@ The pin marked with the white dot is the LED cathode, the opposite pin is the an
 Once connected, it should look something like:
 
 ![front panel buttons connected]
+
+_Optional_: If you ordered/printed the display frame, place it around the display before mounting to the front panel:
+
+![display frame]
+
+(Thanks to rootuz for this frame)
 
 Use the M2 nuts & 20mm bolts to attach the board to the front panel, then screw on the washers & nuts for the potentiometers. 
 
@@ -371,6 +383,7 @@ Possible causes (not exhaustive!) for calibration to fail:
 [front panel back]: images/fp_back.jpg "Back of front panel with LCD and buttons attached"
 [10pin F-F cable]: images/10pinFF.jpg "10 pin F-F cable"
 [8w IDC]: images/8w_idc.jpg "2x4 IDC cable"
+[display frame]: images/display_frame.jpg
 [front panel attached to main]: images/fp_attached_to_main.jpg "Front panel attached to main board"
 [battery thermistor]: images/battery_thermistor.jpg "Thermistor taped to battery"
 [zc95 assembled1]: images/assembled_3dprinted.jpg "Fully assembled ZC95 in 3d printed case, minus cover"
