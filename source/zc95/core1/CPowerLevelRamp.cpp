@@ -67,7 +67,6 @@ void CPowerLevelRamp::calc_ramp_percent()
     }
 }
 
-
 // k = ramp shape: -ve values will cause a fast initial rise, then slow down. +ve values will cause a slow inital rise, then speed up.
 //                  0 will result in a purley linear rise (return value = t)
 // t = time, 0 to 1, i.e. 0.5 = 50% through the ramp time-wise 

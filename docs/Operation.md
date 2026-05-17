@@ -65,6 +65,7 @@ Configuration options so far:
     * Show ramp start - Yes or No. If Yes, when running a pattern the top item on the list will always be "Ramp start". To start the ramp up, select this option, and press the top left soft button (labelled "Start"). 
     * Start level - 1% - 100%. At what percentage of the power selected on the front panel does the ramp start. Setting to 100% effectively disables the ramp function
     * Time per p.p. - Time taken in seconds to increase the power level by one percentage point. This increase is relatively smooth, and will increase the power level in 0.1% increments to achieve the selected rate.
+    * Ramp shape - Affects how the ramp is performed. -ve values result in a fast initial rise that slows down as the ramp progresses. +ve values result in a slow initial rise, which speeds up as the ramp progresses. The graph on screen gives a visual representation of how the ramp will progress for the selected value. The default setting of 0 results in a linear rise (which is how the ramp functioned prior to this setting).
 
     With either "Start level" or "Time per p.p." selected, the bottom of the menu will indicate the estimated time in minutes for the ramp to complete.
 
