@@ -540,6 +540,8 @@ uint8_t CSavedSettings::get_extended_ramp_level()
     uint8_t level = _eeprom_contents[(uint8_t)setting::ExtendedRampLevel];
     if (level == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
         return 70;
+    else if (level > 99)
+        return 99;
     else
         return level;
 }
@@ -558,14 +560,36 @@ uint8_t CSavedSettings::get_extended_ramp_time_seconds()
         return seconds;
 }
 
-bool CSavedSettings::get_extended_ramp_show()
+bool CSavedSettings::get_extended_ramp_show_menu_option()
 {
-    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] != 0);
+    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
 }
 
-void CSavedSettings::set_extended_ramp_show(bool show)
+void CSavedSettings::set_extended_ramp_show_menu_option(bool show)
 {
-    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = show;
+    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    if (show)
+        value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU;
+    else
+        value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
+
+    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
+}
+
+bool CSavedSettings::get_extended_ramp_show_on_status_bar()
+{
+    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
+}
+
+void CSavedSettings::set_extended_ramp_show_on_status_bar(bool show)
+{
+    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    if (show)
+        value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR;
+    else
+        value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
+
+    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
 }
 
 void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)

@@ -22,7 +22,8 @@ class CMenuSettingOutputExtRamp : public CMenu
             RAMP_SHOW           = 0,
             RAMP_LEVEL          = 1,
             RAMP_TIME           = 2,
-            RAMP_SHAPE          = 3
+            RAMP_SHAPE          = 3,
+            RAMP_SHOW_STS_BAR   = 4
         };
 
         enum setting_kind_t

@@ -145,6 +145,7 @@ void Core1::loop()
         _channel_config->loop();
 
     update_power_levels();
+    update_extended_ramp_progress();
     process_messages();
     check_validity_of_lua_script();
 
@@ -204,6 +205,29 @@ void Core1::update_power_levels()
                 multicore_fifo_push_blocking(msg.msg32);
                 _output_power_max[channel_number] = power_level_max;
             }
+        }
+    }
+}
+
+void Core1::update_extended_ramp_progress()
+{
+    uint8_t new_percent = 0xFF;
+    uint16_t new_secs_remain = 0xFFFF;
+
+    _power_level_control->get_extended_ramp_progress(&new_percent, &new_secs_remain);
+    if (new_percent != _extended_ramp_percent || new_secs_remain != _extended_ramp_remaining_seconds)
+    {
+        message msg = {0};
+        msg.msg8[0] = MESSAGE_EXTENDED_RAMP_PROGRESS;
+        msg.msg8[1] = new_percent;
+        msg.msg8[2] = new_secs_remain & 0xFF;
+        msg.msg8[3] = (new_secs_remain >> 8) & 0xFF;
+
+        if (multicore_fifo_wready())
+        {
+            multicore_fifo_push_blocking(msg.msg32);
+            _extended_ramp_percent = new_percent;
+            _extended_ramp_remaining_seconds = new_secs_remain;
         }
     }
 }

@@ -12,6 +12,7 @@ class CPowerLevelRamp
         void ramp_start();
         bool loop();
         float get_ramp_power_percent();
+        float get_ramp_progress_percent();
         bool ramp_in_progress();
         void reset();
 

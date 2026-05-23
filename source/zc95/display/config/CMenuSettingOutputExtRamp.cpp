@@ -167,7 +167,11 @@ void CMenuSettingOutputExtRamp::save_setting(uint8_t setting_menu_index, uint8_t
             break;
 
         case setting_id_t::RAMP_SHOW:
-            _saved_settings->set_extended_ramp_show(choice_id.id);
+            _saved_settings->set_extended_ramp_show_menu_option(choice_id.id);
+            break;
+
+        case setting_id_t::RAMP_SHOW_STS_BAR:
+            _saved_settings->set_extended_ramp_show_on_status_bar(choice_id.id);
             break;
 
         case setting_id_t::RAMP_SHAPE:
@@ -228,10 +232,11 @@ void CMenuSettingOutputExtRamp::show()
     _display->set_option_d("Down");
 
     _settings.clear();
-    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHOW , "Show ramp start"));
-    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_LEVEL, "Start level"));
-    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_TIME , "Time per p.p."));
-    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHAPE, "Ramp shape"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHOW        , "Show ramp start"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_LEVEL       , "Start level"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_TIME        , "Time per p.p."));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHAPE       , "Ramp shape"));
+    _settings.push_back(CMenuSettingOutputExtRamp::setting_t(setting_id_t::RAMP_SHOW_STS_BAR, "Show on status bar"));
 
     _settings_list->clear_options();
     for (std::vector<CMenuSettingOutputExtRamp::setting_t>::iterator it = _settings.begin(); it != _settings.end(); it++)
@@ -253,7 +258,13 @@ void CMenuSettingOutputExtRamp::set_options_for_setting(setting_id_t setting_id)
         case setting_id_t::RAMP_SHOW:
             _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(false, "No" ));
             _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(true , "Yes"));
-            current_choice_id = _saved_settings->get_extended_ramp_show();
+            current_choice_id = _saved_settings->get_extended_ramp_show_menu_option();
+            break;
+
+        case setting_id_t::RAMP_SHOW_STS_BAR:
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(false, "No" ));
+            _setting_choices.push_back(CMenuSettingOutputExtRamp::setting_t(true , "Yes"));
+            current_choice_id = _saved_settings->get_extended_ramp_show_on_status_bar();
             break;
 
         case setting_id_t::RAMP_LEVEL:
@@ -302,6 +313,7 @@ CMenuSettingOutputExtRamp::setting_kind_t CMenuSettingOutputExtRamp::get_setting
     switch (setting_id)
     {
         case setting_id_t::RAMP_SHOW:
+        case setting_id_t::RAMP_SHOW_STS_BAR:
             return setting_kind_t::MULTI_CHOICE;
 
         case setting_id_t::RAMP_SHAPE:

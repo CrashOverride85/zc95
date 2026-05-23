@@ -35,6 +35,16 @@ float CPowerLevelRamp::get_ramp_power_percent()
     return shape_adjusted_ramp * 100;
 }
 
+float CPowerLevelRamp::get_ramp_progress_percent()
+{
+    if (!_ramp_in_progress)
+        return 100;
+
+    // Calculate the progress through the ramp, in percent. This will always be 0-100%, i.e. 
+    // it won't start at what's configured as the "Start level" like _ramp_percent does.
+    return (_ramp_percent-_saved_settings->get_extended_ramp_level()) * ((float)100 / (float)((float)100 - (float)_saved_settings->get_extended_ramp_level()));
+}
+
 bool CPowerLevelRamp::ramp_in_progress()
 {
     return _ramp_in_progress;

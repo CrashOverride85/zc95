@@ -82,7 +82,7 @@ void CAudioWave::get_config(struct routine_conf *conf)
 
 void CAudioWave::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
-    if (menu_id = menu_ids::AUDIO_RANGE && new_value >= 1 && new_value <= 100)
+    if (menu_id == menu_ids::AUDIO_RANGE && new_value >= 1 && new_value <= 100)
         _range_percent = new_value;
 }
 

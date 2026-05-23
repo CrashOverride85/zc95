@@ -191,6 +191,12 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
     _channel_power[channel].max_power = maximum_power;
 }
 
+void CDisplay::set_extended_ramp_progress(uint8_t percent, uint16_t seconds_remaining)
+{
+    _extended_ramp_seconds_remain = seconds_remaining;
+    _extended_ramp_percent = percent;
+}
+
 void CDisplay::set_current_menu(CMenu *menu)
 {
     _current_menu = menu;
@@ -310,12 +316,6 @@ void CDisplay::draw_status_bar()
 {
     char buffer[100] = {0};
 
-    std::string current_mode = "N/A";
-    if (_current_menu)
-    {
-        current_mode = _current_menu->get_title();
-    }
-
     battery_state_t state;
     IPowerManagement::power_status_t power_status = _power_management->power_status();
     if (power_status == IPowerManagement::power_status_t::OnBattery)
@@ -348,15 +348,53 @@ void CDisplay::draw_status_bar()
 
     put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
-    // Status text: either running pattern or battery current draw
+    // Status text: either running pattern, battery current draw or ramp progress
+    std::string status_text = get_status_bar_text();
+    put_text(status_text, 26, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
+
+    // Draw H/M/L power indicator (always)
+    uint16_t x = MIPI_DISPLAY_WIDTH - 8;
+    draw_power_level_indicator(x, y-1);
+
+    // If bluetooth is on, show bt symbol in bottom right of screen to the left of the power level indicator
+    x -= 8;
+    draw_bt_logo_if_required(x, y-1);
+}
+
+std::string CDisplay::get_status_bar_text()
+{
+    std::string current_mode = "N/A";
+    if (_current_menu)
+    {
+        current_mode = _current_menu->get_title();
+    }
 
     // Draw status bar text, depending on configured option
     std::string status_text;
-    if (g_SavedSettings->get_status_bar_option() == CSavedSettings::status_bar_text_t::RUNNING_PATTERN)
+    if (g_SavedSettings->get_extended_ramp_show_on_status_bar() && 
+        _extended_ramp_percent != 0xFF && 
+        _extended_ramp_seconds_remain != 0xFFFF && 
+        current_mode != "")
+    {
+        status_text = "Ramp: " + std::to_string(_extended_ramp_percent) + "%, ";
+
+        uint16_t minutes = _extended_ramp_seconds_remain / 60;
+        uint16_t seconds = _extended_ramp_seconds_remain % 60;
+        if (minutes > 0)
+        {
+            status_text += std::to_string(minutes) + "m" +
+                           std::to_string(seconds) + "s";
+        }
+        else
+            status_text += std::to_string(seconds) + "s";
+    }
+
+    else if (g_SavedSettings->get_status_bar_option() == CSavedSettings::status_bar_text_t::RUNNING_PATTERN)
     {
         // name of currently running pattern (if any)
         status_text = current_mode;
     }
+
     else if (g_SavedSettings->get_status_bar_option() == CSavedSettings::status_bar_text_t::BATTERY_CURRENT)
     {
         int16_t current_ma = 0;
@@ -367,15 +405,8 @@ void CDisplay::draw_status_bar()
     {
         status_text = "?";
     }
-    put_text(status_text, 26, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
-    // Draw H/M/L power indicator (always)
-    uint16_t x = MIPI_DISPLAY_WIDTH - 8;
-    draw_power_level_indicator(x, y-1);
-
-    // If bluetooth is on, show bt symbol in bottom right of screen to the left of the power level indicator
-    x -= 8;
-    draw_bt_logo_if_required(x, y-1);
+    return status_text;
 }
 
 void CDisplay::draw_power_level_indicator(int16_t x, int16_t y)
