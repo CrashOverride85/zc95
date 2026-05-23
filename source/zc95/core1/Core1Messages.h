@@ -41,6 +41,8 @@
 #define MESSAGE_SET_AUDIO_MODE              131
 #define MESSAGE_SET_MENU_VALUE              132
 
+#define MESSAGE_EXTENDED_RAMP_PROGRESS      140
+
 enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
 union __attribute__((packed)) message

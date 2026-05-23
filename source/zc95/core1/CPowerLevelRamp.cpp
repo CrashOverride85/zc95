@@ -1,4 +1,5 @@
 #include "CPowerLevelRamp.h"
+#include <math.h>
 
 CPowerLevelRamp::CPowerLevelRamp(CSavedSettings *saved_settings)
 {
@@ -24,9 +25,24 @@ bool CPowerLevelRamp::loop()
     return false;
 }
 
-float CPowerLevelRamp::get_ramp_percent()
+float CPowerLevelRamp::get_ramp_power_percent()
 {
-    return _ramp_in_progress ? _ramp_percent : 100;
+    if (!_ramp_in_progress)
+        return 100;
+
+    float shape = (float)_saved_settings->get_extended_ramp_shape() / (float)10;
+    float shape_adjusted_ramp = s_normalized_exponential(shape, _ramp_percent / (float)100);
+    return shape_adjusted_ramp * 100;
+}
+
+float CPowerLevelRamp::get_ramp_progress_percent()
+{
+    if (!_ramp_in_progress)
+        return 100;
+
+    // Calculate the progress through the ramp, in percent. This will always be 0-100%, i.e. 
+    // it won't start at what's configured as the "Start level" like _ramp_percent does.
+    return (_ramp_percent-_saved_settings->get_extended_ramp_level()) * ((float)100 / (float)((float)100 - (float)_saved_settings->get_extended_ramp_level()));
 }
 
 bool CPowerLevelRamp::ramp_in_progress()
@@ -59,4 +75,20 @@ void CPowerLevelRamp::calc_ramp_percent()
         _ramp_percent = 100;
         _ramp_in_progress = false;
     }
+}
+
+// k = ramp shape: -ve values will cause a fast initial rise, then slow down. +ve values will cause a slow inital rise, then speed up.
+//                  0 will result in a purley linear rise (return value = t)
+// t = time, 0 to 1, i.e. 0.5 = 50% through the ramp time-wise 
+// Output is 0 to 1, which should be mapped onto an output level of 0 to 1000.
+float CPowerLevelRamp::s_normalized_exponential(float k, float t)
+{
+    // As k -> 0, the function approaches t
+    if (fabsf(k) < 1e-9)
+    {
+        return t;
+    }
+
+    return (exp(k * t) - 1.0) /
+           (exp(k) - 1.0);
 }

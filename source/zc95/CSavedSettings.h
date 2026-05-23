@@ -72,9 +72,10 @@ class CSavedSettings
         DisplayBrightness= 227, // Display brightness, in percent
         ExtendedRampLevel= 228, // Extended ramp percent, 1% - 100%
         ExtenedRampTime  = 229, // Extended ramp time. 1 - 200 (seconds)
-        ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns
+        ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns, and should progress be displayed on the status bar
         LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
-        BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR  // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootload code
+        BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR, // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootloader code
+        ExtenedRampShape = 233
     };
 
     public:
@@ -162,6 +163,12 @@ class CSavedSettings
             NORMAL_BOOT      = EEPROM_BOOTLOADER_SETTING_NORMAL,
             RESTORE_PENDING  = EEPROM_BOOTLOADER_SETTING_RESTORE_PENDING,
             RESTORE_PREVIOUS = EEPROM_BOOTLOADER_SETTING_RESTORE_PREV
+        };
+
+        enum class extended_ramp_show_bitmask_t
+        {
+            EXT_RAMP_SHOW_ON_PATTERN_MENU           = 1,
+            EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR    = 2
         };
 
         CSavedSettings(CEeprom *eeprom);
@@ -278,14 +285,20 @@ class CSavedSettings
         uint8_t get_extended_ramp_time_seconds();
         void set_extended_ramp_time_seconds(uint8_t seconds);
 
-        bool get_extended_ramp_show();
-        void set_extended_ramp_show(bool show);
+        bool get_extended_ramp_show_menu_option();
+        void set_extended_ramp_show_menu_option(bool show);
+
+        bool get_extended_ramp_show_on_status_bar();
+        void set_extended_ramp_show_on_status_bar(bool show);
 
         led_colour_format_t get_led_colour_format();
         void set_led_colour_format(led_colour_format_t colour_format);
 
         bootloader_mode_t get_bootloader_mode();
         void set_bootloader_mode(bootloader_mode_t mode);
+
+        int8_t get_extended_ramp_shape();
+        void set_extended_ramp_shape(int8_t shape);
 
         void eeprom_initialise();
 

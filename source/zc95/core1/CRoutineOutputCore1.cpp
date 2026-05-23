@@ -332,7 +332,16 @@ void CRoutineOutputCore1::process_message(message msg)
                 _menu_change_callback(menu_change_msg);
             }
             break;
+
+        case MESSAGE_EXTENDED_RAMP_PROGRESS:
+        {
+            uint8_t percent = msg.msg8[1];
+            uint16_t seconds_remaining = msg.msg8[2];
+            seconds_remaining |= msg.msg8[3] << 8;
+            _display->set_extended_ramp_progress(percent, seconds_remaining);
+            break;
         }
+    }
 }
 
 void CRoutineOutputCore1::process_text_message_queue()

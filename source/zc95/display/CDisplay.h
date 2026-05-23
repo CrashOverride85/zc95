@@ -38,6 +38,7 @@ class CDisplay
         void set_option_d(std::string text);
         
         void set_power_level(uint8_t channel, int16_t front_panel_power, int16_t actual_power, int16_t maximum_power, bool remote_mode_active);
+        void set_extended_ramp_progress(uint8_t percent, uint16_t seconds_remaining);
 
         void set_current_menu(CMenu *menu);
 
@@ -70,6 +71,7 @@ class CDisplay
 
         void draw_soft_buttons();
         void draw_status_bar();
+        std::string get_status_bar_text();
         void draw_power_level();
         void draw_bar_graphs();
         void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour);
@@ -105,6 +107,9 @@ class CDisplay
         CFrontPanel *_front_panel;
         CBluetooth *_bluetooth;
         IPowerManagement* _power_management;
+
+        uint8_t _extended_ramp_percent = 0xFF;
+        uint16_t _extended_ramp_seconds_remain = 0xFFFF;
 };
 
 #endif
