@@ -13,4 +13,11 @@ enum class ExtInputPort
     TRG1_B   = 7
 };
 
+enum class ExtInputPortState
+{
+    OUTPUT_LOW  = 0,
+    OUTPUT_HIGH = 1,
+    INPUT = 3
+};
+
 #endif

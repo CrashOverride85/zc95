@@ -27,7 +27,7 @@ class CExtInputPortExp
         
         void interrupt();
         void reset_acc_port();
-        void set_acc_io_port_state(enum ExtInputPort output, bool high);
+        void set_acc_io_port_state(enum ExtInputPort output, ExtInputPortState state);
 
     
     private:

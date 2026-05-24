@@ -353,6 +353,16 @@ Minimal example for using the accessory port to control 3 LEDs. Can be used with
 
 ![acc port]
 
+### AccIoSetInput
+```
+Params:
+    * Accessory I/O line number (1-3)
+```
+Sets an I/O line on the accessory port to be an input, with a weak pull up.
+This is the default state of the lines from power on, and each is reset to be an input when a pattern is started; i.e. there should not normally be a need to call this method.
+
+When the state of an I/O line set to input changes, the `ExternalTrigger` method in the Lua script (if present) is called - see description of `ExternalTrigger` for more details.
+
 ### DelayMs
 ```
 Params:
@@ -375,9 +385,18 @@ Called with `pushed=True` when the top left soft button is pressed, and then aga
 ### ExternalTrigger(socket, part, active)
 Called when an external trigger happens.
 
-Socket: can be either "`TRIGGER1`" or "`TRIGGER2`" for the Trigger1 and Trigger2 sockets respectively. 
+Socket: can be either "`TRIGGER1`", "`TRIGGER2`" or "`ACCESSORY`" for the Trigger1, Trigger2 or Accessory sockets respectively. 
 
-Part: can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `True`, when released it will be `False`.
+For the 3.5mm trigger sockets, part can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `True`, when released it will be `False`.
+
+This function will also be called for input on the accessory port. Shorting ACC_IO_1, 2 or 3 to ground will result in a part of A, B or C respectively:
+
+| I/O line | Pin | Part |
+|----------|-----|------|
+| ACC_IO_1 |  9  |  A   |
+| ACC_IO_2 |  4  |  B   |
+| ACC_IO_3 |  8  |  C   |
+| GND      |  5  |      |
 
 ### BluetoothRemoteKeypress (key)
 See bluetooth_fire.lua for an example of this.

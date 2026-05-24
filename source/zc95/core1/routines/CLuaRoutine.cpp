@@ -112,6 +112,7 @@ void CLuaRoutine::load_lua_script_if_required()
             { "SetFrequency"  , &dispatch<&CLuaRoutine::lua_set_freq> },
             { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
             { "AccIoWrite"    , &dispatch<&CLuaRoutine::lua_acc_io_write> },
+            { "AccIoSetInput" , &dispatch<&CLuaRoutine::lua_acc_io_input> },
             { "EnableTriphase", &dispatch<&CLuaRoutine::lua_enable_triphase> },
             { "LinkChannels"  , &dispatch<&CLuaRoutine::lua_link_channel> },
             { "DelayMs"       , &dispatch<&CLuaRoutine::lua_delay_ms> },
@@ -330,6 +331,10 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
         case trigger_socket::Trigger2:
             str_socket = "TRIGGER2";
             break;
+        
+        case trigger_socket::Acc:
+            str_socket = "ACCESSORY";
+            break;
 
         default:
             printf("CLuaRoutine::trigger: Error, unexpected trigger socket: %d\n", (int)socket);
@@ -344,6 +349,10 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
 
         case trigger_part::B:
             str_part = "B";
+            break;
+        
+        case trigger_part::C: // only applicable for the accessory port, which has 3 lines
+            str_part = "C";
             break;
 
         default:
@@ -867,10 +876,35 @@ int CLuaRoutine::lua_acc_io_write(lua_State *L)
             return 0;
     }
 
-    acc_port.set_io_port_state(io_port, state);
+    if (state)
+        acc_port.set_io_port_state(io_port, ExtInputPortState::OUTPUT_HIGH);
+    else
+        acc_port.set_io_port_state(io_port, ExtInputPortState::OUTPUT_LOW);
 
     return 1;
 }
+
+// Params:
+// int : Accessory port I/O line (1-3) to set to input mode
+int CLuaRoutine::lua_acc_io_input(lua_State *L)
+{
+    int io_line = lua_tointeger(L, 1);
+
+    ExtInputPort io_port;
+    switch (io_line)
+    {
+        case 1: io_port = ExtInputPort::ACC_IO_1; break;
+        case 2: io_port = ExtInputPort::ACC_IO_2; break;
+        case 3: io_port = ExtInputPort::ACC_IO_3; break;
+        default:
+            return 0;
+    }
+
+    acc_port.set_io_port_state(io_port, ExtInputPortState::INPUT);
+
+    return 1;
+}
+
 
 // Params:
 // bool: State - true=enabled, false=disabled

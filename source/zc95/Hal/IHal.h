@@ -29,7 +29,7 @@ class IHal
         
         // accessory port
         virtual void acc_port_reset() = 0;
-        virtual void acc_port_set_io_port_state(ExtInputPort output, bool high) = 0;
+        virtual void acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state) = 0;
 
         // audio
         virtual void audio_input_enable(bool enable) = 0;

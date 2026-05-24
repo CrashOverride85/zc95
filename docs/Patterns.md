@@ -349,6 +349,8 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 * Ring = contact at end of wire (green)
 * Sleeve = wire (red)
 
+Alternatively, the accessory socket can be used for input - use ACC_IO_1 for the contact at the end, and ACC_IO_2 for the wire.
+
 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"
 [Audio Threshold]: images/screen_pattern_audioThreshold.jpg "Audio Threshold"

@@ -67,6 +67,7 @@ class CLuaRoutine: public CRoutine
         int lua_set_freq(lua_State *L);
         int lua_set_pulse_width(lua_State *L);
         int lua_acc_io_write(lua_State *L);
+        int lua_acc_io_input(lua_State *L);
         int lua_enable_triphase(lua_State *L);
         int lua_link_channel(lua_State *L);
         int lua_delay_ms(lua_State *L);

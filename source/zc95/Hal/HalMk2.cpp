@@ -179,9 +179,9 @@ void HalMk2::acc_port_reset()
     _ext_input_port_exp->reset_acc_port();
 }
 
-void HalMk2::acc_port_set_io_port_state(ExtInputPort output, bool high)
+void HalMk2::acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
-    _ext_input_port_exp->set_acc_io_port_state(output, high);
+    _ext_input_port_exp->set_acc_io_port_state(output, state);
 }
 
 void HalMk2::mic_preamp_enable(bool enable)

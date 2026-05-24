@@ -16,6 +16,7 @@ class PCF8574 : public IPortExpander
         bool read_port_expander(uint8_t *value);
         bool write_port_expander(uint8_t value);
         bool set_pin_as_output(uint8_t pin);
+        bool set_pin_as_input(uint8_t pin);
         bool set_pin_state(uint8_t pin, bool high);
         bool is_output_pin_set(uint8_t pin);
         bool get_pin_state(uint8_t pin);

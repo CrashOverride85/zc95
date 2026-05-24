@@ -51,9 +51,9 @@ void CExtInputPortExp::clear_input()
     _input_states_at_last_check = _last_read;
     update_trigger_leds();
 
-    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_1);
-    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_2);
-    _port_exp->set_pin_as_output((int)ExtInputPort::ACC_IO_3);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_1);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_2);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_3);
 }
 
 void CExtInputPortExp::interrupt()
@@ -170,10 +170,13 @@ void CExtInputPortExp::update_led_for_trigger_port(Trigger trigger)
 
 void CExtInputPortExp::update_active_routine()
 {
-    update_active_routine_trigger(ExtInputPort::TRG1_A, trigger_socket::Trigger1, trigger_part::A);
-    update_active_routine_trigger(ExtInputPort::TRG1_B, trigger_socket::Trigger1, trigger_part::B);
-    update_active_routine_trigger(ExtInputPort::TRG2_A, trigger_socket::Trigger2, trigger_part::A);
-    update_active_routine_trigger(ExtInputPort::TRG2_B, trigger_socket::Trigger2, trigger_part::B);
+    update_active_routine_trigger(ExtInputPort::ACC_IO_1, trigger_socket::Acc     , trigger_part::A);
+    update_active_routine_trigger(ExtInputPort::ACC_IO_2, trigger_socket::Acc     , trigger_part::B);
+    update_active_routine_trigger(ExtInputPort::ACC_IO_3, trigger_socket::Acc     , trigger_part::C);
+    update_active_routine_trigger(ExtInputPort::TRG1_A  , trigger_socket::Trigger1, trigger_part::A);
+    update_active_routine_trigger(ExtInputPort::TRG1_B  , trigger_socket::Trigger1, trigger_part::B);
+    update_active_routine_trigger(ExtInputPort::TRG2_A  , trigger_socket::Trigger2, trigger_part::A);
+    update_active_routine_trigger(ExtInputPort::TRG2_B  , trigger_socket::Trigger2, trigger_part::B);
 }
 
 void CExtInputPortExp::update_active_routine_trigger(enum ExtInputPort input, trigger_socket socket, trigger_part part)
@@ -192,19 +195,25 @@ void CExtInputPortExp::update_active_routine_trigger(enum ExtInputPort input, tr
 
 void CExtInputPortExp::reset_acc_port()
 {
-    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_1, true);
-    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_2, true);
-    _port_exp->set_pin_state((int)ExtInputPort::ACC_IO_3, true);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_1);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_2);
+    _port_exp->set_pin_as_input((int)ExtInputPort::ACC_IO_3);
 }
 
-void CExtInputPortExp::set_acc_io_port_state(enum ExtInputPort output, bool high)
+void CExtInputPortExp::set_acc_io_port_state(enum ExtInputPort output, ExtInputPortState state)
 {
     switch (output)
     {
         case ExtInputPort::ACC_IO_1:
         case ExtInputPort::ACC_IO_2:
         case ExtInputPort::ACC_IO_3:
-            _port_exp->set_pin_state((int)output, high);
+            if (state == ExtInputPortState::INPUT)
+                _port_exp->set_pin_as_input((int)output);
+            else
+            {
+                _port_exp->set_pin_as_output((int)output);
+                _port_exp->set_pin_state((int)output, state == ExtInputPortState::OUTPUT_HIGH);
+            }
             break;
     }
 }
