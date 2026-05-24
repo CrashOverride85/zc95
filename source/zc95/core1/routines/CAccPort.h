@@ -10,7 +10,7 @@ class CAccPort
         ~CAccPort();
         
         void reset();
-        void set_io_port_state(enum ExtInputPort output, bool high);
+        void set_io_port_state(enum ExtInputPort output, ExtInputPortState state);
 
     private:
 

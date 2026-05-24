@@ -45,6 +45,13 @@ bool PCF8574::set_pin_as_output(uint8_t pin)
     return true;
 }
 
+bool PCF8574::set_pin_as_input(uint8_t pin)
+{
+    // A PCF8574 has no real concept of this (no direction register). You just call set_pin_state.
+    set_pin_state(pin, true);
+    return true;
+}
+
 bool PCF8574::set_pin_state(uint8_t pin, bool high)
 {
     uint8_t new_val = _output_state;

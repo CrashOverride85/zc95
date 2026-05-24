@@ -163,9 +163,6 @@ void CBuzz::trigger(trigger_socket socket, trigger_part part, bool active)
     if (!_game_running)
         return;
 
-    if (socket != trigger_socket::Trigger1)
-        return;
-
     // Part A = Handle touching end. Make sure the signal is present for at least x milliseconds to avoid false triggering
     if (part == trigger_part::A)
     {

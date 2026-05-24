@@ -296,15 +296,15 @@ void CRoutineOutputCore1::process_message(message msg)
         }
 
         case MESSAGE_SET_ACC_IO_PORT1_STATE:
-            set_acc_io_port_state(ExtInputPort::ACC_IO_1, msg.msg8[1]);
+            set_acc_io_port_state(ExtInputPort::ACC_IO_1, (ExtInputPortState)msg.msg8[1]);
             break;
 
         case MESSAGE_SET_ACC_IO_PORT2_STATE:
-            set_acc_io_port_state(ExtInputPort::ACC_IO_2, msg.msg8[1]);
+            set_acc_io_port_state(ExtInputPort::ACC_IO_2, (ExtInputPortState)msg.msg8[1]);
             break;
 
         case MESSAGE_SET_ACC_IO_PORT3_STATE:
-            set_acc_io_port_state(ExtInputPort::ACC_IO_3, msg.msg8[1]);
+            set_acc_io_port_state(ExtInputPort::ACC_IO_3, (ExtInputPortState)msg.msg8[1]);
             break;
 
         case MESSAGE_SET_ACC_IO_PORT_RESET:
@@ -442,10 +442,10 @@ void CRoutineOutputCore1::reset_acc_port()
         _hal->acc_port_reset();
 }
 
-void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, bool high)
+void CRoutineOutputCore1::set_acc_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
     if (_hal)
-        _hal->acc_port_set_io_port_state(output, high);
+        _hal->acc_port_set_io_port_state(output, state);
 }
 
 lua_script_state_t CRoutineOutputCore1::get_lua_script_state()

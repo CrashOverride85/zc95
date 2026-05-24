@@ -54,7 +54,7 @@ void HalDummy::acc_port_reset()
     
 }
 
-void HalDummy::acc_port_set_io_port_state(ExtInputPort output, bool high)
+void HalDummy::acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
     
 }

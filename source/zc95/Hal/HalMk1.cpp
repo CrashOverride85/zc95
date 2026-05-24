@@ -146,9 +146,9 @@ void HalMk1::acc_port_reset()
     _ext_input_port_exp->reset_acc_port();
 }
 
-void HalMk1::acc_port_set_io_port_state(ExtInputPort output, bool high)
+void HalMk1::acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
-    _ext_input_port_exp->set_acc_io_port_state(output, high);
+    _ext_input_port_exp->set_acc_io_port_state(output, state);
 }
 
 void HalMk1::audio_input_enable(bool enable)
