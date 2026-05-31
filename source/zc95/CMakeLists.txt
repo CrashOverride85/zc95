@@ -297,6 +297,25 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${PICO_SDK_PATH}/lib/lwip/include/lwip/apps
 )
 
+pico_set_lwip_httpd_content(zc95 INTERFACE
+        # For setting the WiFi credentials when in AP mode
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/empty.html
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-ap.html
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/mobile.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-00.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-25.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-50.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-75.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-100.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery-1.11.2.min.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.css
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/wifi/scanresults.ssi
+
+        # For uploading Lua scripts when connected to a WiFi network
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-net.html
+        )
+
 if(PICO_PLATFORM STREQUAL "rp2040")
   # Include bootloader
   set(BOOTLOADER_BIN ${CMAKE_CURRENT_SOURCE_DIR}/../zc95Bootloader/build/zc95Bootloader.bin)
