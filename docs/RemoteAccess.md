@@ -6,7 +6,7 @@
 The ZC95 can be controlled remotely either using serial (Aux port) or using WiFi if a Pico-W is used for the MCU on the main board.
 
 The remote access options can be used to:
-* Upload Lua scripts (of which 5 can be stored)
+* Upload Lua scripts (of which 5 can be stored) using either a web interface or python utility
 * Control the box remotely with a Python GUI
 * Limited control using an Arduino/ESP32 with the [ZC95 Arduino library][ArduinoLib].
 * Custom app using the [JSON interface](./JSON.md)
@@ -51,7 +51,12 @@ Select the "Connect to WiFi" option, and it should connect to the WiFi network p
 
 ![ConnectedToWifi]
 
-At this point, the Python GUI and scripts to list/upload Lua scripts should work if given the IP displayed on screen.
+At this point, the Python GUI, scripts and integrated web interface to list/upload Lua scripts should work if given the IP displayed on screen.
+
+To upload a script using the built in web interface, browse to the address displayed on screen, click the "Upload" button next to one of the script slots, then pick a script to upload:
+
+![WebInterface]
+
 
 ## Serial control
 The ZC95 can also be controlled using serial via the 3.5mm aux/serial port. 
@@ -203,6 +208,7 @@ In this case, it's showing a script that's failed on line 112 due to a call to a
 [PhoneConfigWifi]: images/phone_config_wifi.jpg "Configure wifi on iphone"
 [ShowSsidAndPassword]: images/screen_ra_ap.jpg "Screen showing SSID and password for AP mode"
 [ConnectedToWifi]: images/screen_ra_connected.jpg "Connected to WiFi screen"
+[WebInterface]: images/web_upload_lua.jpg "Integrated web interface to upload Lua scripts"
 [Gui]: images/pattern_gui_start.png "Python GUI showing Waves pattern"
 [GuiDebug]: images/gui_debug_window.png "Python GUI showing debug window"
 [ArduinoLib]: ../misc/Arduino/libraries/Zc95/README.md
