@@ -84,7 +84,7 @@
 #define LWIP_HTTPD_SSI_MULTIPART        1
 #define LWIP_HTTPD_DYNAMIC_HEADERS      1
 #define HTTPD_USE_CUSTOM_FSDATA         1
-#define HTTPD_FSDATA_FILE               "../../../RemoteAccess/fsdata.c"
+#define HTTPD_FSDATA_FILE               "pico_fsdata.inc"
 
 #define LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED 1
 #define SO_REUSE 1
