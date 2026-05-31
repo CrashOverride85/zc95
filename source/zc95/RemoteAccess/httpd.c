@@ -188,11 +188,10 @@ static tWsHandler websocket_cb = NULL;
 static tWsOpenHandler websocket_open_cb = NULL;
 
 
+const char* file_index_ap  = "/index-ap.html";   // default page when in AP mode
+const char* file_index_net = "/index-net.html";  // default page when NOT in AP mode
 
-static const default_filename httpd_default_filenames[] = {
-  {"/index.shtml", 1 },
-  {"/index.ssi",   1 },
-  {"/index.shtm",  1 },
+static default_filename httpd_default_filenames[] = {
   {"/index.html",  0 },
   {"/index.htm",   0 }
 };
@@ -3003,6 +3002,11 @@ void
 httpd_init(uint8_t ap_mode)
 {
   _ap_mode = ap_mode;
+
+  if (_ap_mode)
+    httpd_default_filenames[0].name = file_index_ap;
+  else
+    httpd_default_filenames[0].name = file_index_net;
 
 #if HTTPD_USE_MEM_POOL
   LWIP_MEMPOOL_INIT(HTTPD_STATE);

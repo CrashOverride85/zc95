@@ -298,8 +298,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 pico_set_lwip_httpd_content(zc95 INTERFACE
+        # For setting the WiFi credentials when in AP mode
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/empty.html
-        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index.html
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-ap.html
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/mobile.js
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-00.png
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-25.png
@@ -310,6 +311,9 @@ pico_set_lwip_httpd_content(zc95 INTERFACE
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.css
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.js
         ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/wifi/scanresults.ssi
+
+        # For uploading Lua scripts when connected to a WiFi network
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-net.html
         )
 
 if(PICO_PLATFORM STREQUAL "rp2040")
