@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "CI2cSlave.h"
-#include "config.h"
+#include "../common/zc624_config.h"
+#include "../common/FirmwareMagicNumber.h"
 #include "git_version.h"
 
 static struct
@@ -33,6 +34,11 @@ static struct
     i2c_slave_init(I2C_PORT_SLAVE, ZC624_ADDR, &CI2cSlave::i2c_slave_handler);
 }
 
+CI2cSlave::~CI2cSlave()
+{
+    i2c_slave_deinit(I2C_PORT_SLAVE);
+}
+
 void CI2cSlave::set_value(uint8_t reg, uint8_t value)
 {
    i2c_slave_context.mem[(uint8_t)reg] = value;
@@ -56,22 +62,33 @@ void CI2cSlave::init_with_default_values()
     i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMajor]     = VERSION_MAJOR;
     i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::VersionMinor]     = VERSION_MINOR;
 
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::OverallStatus]    = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan0Status]      = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan1Status]      = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan2Status]      = CI2cSlave::status::Startup;
-    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan3Status]      = CI2cSlave::status::Startup;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::OverallStatus]    = ZC624_OVERALL_STATUS_STARTUP;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan0Status]      = ZC624_OVERALL_STATUS_STARTUP;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan1Status]      = ZC624_OVERALL_STATUS_STARTUP;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan2Status]      = ZC624_OVERALL_STATUS_STARTUP;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Chan3Status]      = ZC624_OVERALL_STATUS_STARTUP;
     
     // Read/Write registers
     i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::ChannelIsolation] = true;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::Bootloader]       = ZC624_REG_BOOTLOADER_STATE_RUN_MAIN_FIRMWARE;
+    i2c_slave_context.mem[(uint8_t)CI2cSlave::reg::EraseFirmware]    = ZC624_REG_ERASEFW_NA;
 
     // Copy version into i2c_slave_context.mem
-    uint version_len = strlen(kGitHash);
+    uint version_len = strlen(firmware_info.firmware_version);
     uint version_space = (uint8_t)CI2cSlave::reg::VerStrEnd - (uint8_t)CI2cSlave::reg::VerStrStart;
     if (version_len > version_space)
         version_len = version_space;
     for (uint8_t x=0; x < version_len; x++)
-        i2c_slave_context.mem[((uint8_t)CI2cSlave::reg::VerStrStart) + x] = kGitHash[x];
+        i2c_slave_context.mem[((uint8_t)CI2cSlave::reg::VerStrStart) + x] = firmware_info.firmware_version[x];
+
+    // Copy bootloader version into i2c_slave_context.mem
+    const char* bl_version = get_zc624_bootloader_version().c_str();
+    version_len = strlen(bl_version);
+    version_space = (uint8_t)CI2cSlave::reg::BlVerStrEnd - (uint8_t)CI2cSlave::reg::BlVerStrStart;
+    if (version_len > version_space)
+        version_len = version_space;
+    for (uint8_t x=0; x < version_len; x++)
+        i2c_slave_context.mem[((uint8_t)CI2cSlave::reg::BlVerStrStart) + x] = bl_version[x];
 }
 
 void CI2cSlave::i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event)
@@ -108,4 +125,19 @@ void CI2cSlave::i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event)
         default:
             break;
     }
+}
+
+std::string CI2cSlave::get_zc624_bootloader_version()
+{
+    firmware_info_t fw_info;
+
+    // For the bootloader, the version block is in the last 128 bytes of it.
+    // PROGRAM_OFFSET here is start of the main f/w.
+    memcpy(&fw_info, (void*)(XIP_BASE + PROGRAM_OFFSET - 128), sizeof(firmware_info_t));
+    if (fw_info.magic != FIRMWARE_VERSION_624BL_MAGIC)
+    {
+        strcpy(fw_info.firmware_version, "<invalid>");
+    }
+
+    return fw_info.firmware_version;
 }

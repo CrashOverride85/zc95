@@ -41,7 +41,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void audio_intensity_change(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan = 0);
 
         void reset_acc_port();
-        void set_acc_io_port_state(enum ExtInputPort output, bool high);
+        void set_acc_io_port_state(enum ExtInputPort output, ExtInputPortState state);
         lua_script_state_t get_lua_script_state();
         void set_text_callback_function(std::function<void(pattern_text_output_t)> cb);
         void set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb);

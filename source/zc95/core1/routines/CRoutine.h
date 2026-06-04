@@ -35,13 +35,15 @@ enum class menu_entry_type
 enum class trigger_socket
 {
     Trigger1,
-    Trigger2
+    Trigger2,
+    Acc
 };
 
 enum class trigger_part
 {
     A,
-    B
+    B,
+    C
 };
 
 enum class soft_button

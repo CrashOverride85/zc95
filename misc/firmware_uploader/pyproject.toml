@@ -1,0 +1,17 @@
+[project]
+name = "firmware-uploader"
+version = "0.1.0"
+description = "Cross-platform GUI utility for uploading RP2040 firmware over a serial connection."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyserial>=3.5",
+    "xmodem>=0.5.0",
+]
+
+[project.scripts]
+firmware-uploader = "firmware_uploader.ui:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

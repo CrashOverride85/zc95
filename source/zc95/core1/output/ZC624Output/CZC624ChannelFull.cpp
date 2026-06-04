@@ -1,5 +1,5 @@
 #include "CZC624ChannelFull.h"
-#include "../../../config.h"
+#include "../../../../common/zc95_config.h"
 #include "../../../globals.h"
 
 CZC624ChannelFull::CZC624ChannelFull(CSavedSettings *saved_settings, CZC624Comms *comms, CPowerLevelControl *power_level_control, uint8_t channel_id) : 

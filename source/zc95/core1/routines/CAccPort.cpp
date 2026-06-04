@@ -42,21 +42,21 @@ void CAccPort::reset()
     multicore_fifo_push_blocking(msg.msg32);
 }
 
-void CAccPort::set_io_port_state(enum ExtInputPort output, bool high)
+void CAccPort::set_io_port_state(enum ExtInputPort output, ExtInputPortState state)
 {
-    uint8_t messsge_type = 0;
+    uint8_t message_type = 0;
     switch (output)
     {
-        case ExtInputPort::ACC_IO_1: messsge_type = MESSAGE_SET_ACC_IO_PORT1_STATE; break;
-        case ExtInputPort::ACC_IO_2: messsge_type = MESSAGE_SET_ACC_IO_PORT2_STATE; break;
-        case ExtInputPort::ACC_IO_3: messsge_type = MESSAGE_SET_ACC_IO_PORT3_STATE; break;
+        case ExtInputPort::ACC_IO_1: message_type = MESSAGE_SET_ACC_IO_PORT1_STATE; break;
+        case ExtInputPort::ACC_IO_2: message_type = MESSAGE_SET_ACC_IO_PORT2_STATE; break;
+        case ExtInputPort::ACC_IO_3: message_type = MESSAGE_SET_ACC_IO_PORT3_STATE; break;
         default:
             return;
     }
 
     message msg = {0};
-    msg.msg8[0] = messsge_type;
-    msg.msg8[1] = (uint8_t)high;
+    msg.msg8[0] = message_type;
+    msg.msg8[1] = (uint8_t)state;
     msg.msg8[2] = 0;
     msg.msg8[3] = 0;
 

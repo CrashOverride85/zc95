@@ -168,7 +168,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
         selected_power = (float)selected_power * ((float)_initial_ramp_percent / (float)100);
     
     if (_extended_ramp.ramp_in_progress())
-        selected_power = (float)selected_power * (_extended_ramp.get_ramp_percent() / (float)100);
+        selected_power = (float)selected_power * (_extended_ramp.get_ramp_power_percent() / (float)100);
     
     return selected_power;
 }
@@ -180,6 +180,24 @@ uint16_t CPowerLevelControl::get_target_max_power_level(uint8_t channel)
         return 0;
 
     return _front_panel_power[channel];
+}
+
+void CPowerLevelControl::get_extended_ramp_progress(uint8_t* out_percent, uint16_t* out_secs_remain)
+{
+    if (!_extended_ramp.ramp_in_progress())
+    {
+        *out_percent = 0xFF;
+        *out_secs_remain = 0xFFFF;
+        return;
+    }
+
+    float percent_progress = _extended_ramp.get_ramp_progress_percent();
+
+    uint8_t steps = 100 - _saved_settings->get_extended_ramp_level();
+    int total_duration_seconds = steps * _saved_settings->get_extended_ramp_time_seconds();
+
+    *out_secs_remain = total_duration_seconds - ((float)total_duration_seconds * (percent_progress / (float)100));
+    *out_percent = (uint8_t)percent_progress;
 }
 
 void CPowerLevelControl::initial_ramp_start()
@@ -269,5 +287,5 @@ void CPowerLevelControl::calc_output_power(uint8_t channel)
 
     _output_power[channel] = scaled_power 
                 * ((float)_initial_ramp_percent / (float)100)
-                * (_extended_ramp.get_ramp_percent() / (float)100);
+                * (_extended_ramp.get_ramp_power_percent() / (float)100);
 }

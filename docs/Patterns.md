@@ -199,6 +199,7 @@ The left audio channel is output on channels 1+2, the right on 3+4. It probably 
 ### Menu options
 * Stereo view - Shows two wave forms - for left and right channels. 
 * Triphase view - Shows three wave forms - left, right and a virtual / calculated triphase effect.
+* Range - affects how much the input signal affects the output. 1%-100%. 100% (default, fixed <= v2.0 behaviour) means a strong signal is full power and weak signal is minimum power. 50% means a strong signal is full power but a weak signal is half power. No input signal always results in no output.
 
 Note that the selected view does not affect the output, and the indicated triphase effect will only be felt if channel 1+3 (or 2+4) have a common electrode. The adjust dial changes the gain, which is displayed on the thin yellow bar at the bottom of the waveform display.
 
@@ -347,6 +348,8 @@ Yes! Trigger input 1 needs a stereo Tip, Ring, Sleeve (TRS) 3.5mm plug wired as 
 * Tip = wand (common ground)
 * Ring = contact at end of wire (green)
 * Sleeve = wire (red)
+
+Alternatively, the accessory socket can be used for input - use ACC_IO_1 for the contact at the end, and ACC_IO_2 for the wire.
 
 
 [Buzz wire game]: images/BuzzGame.jpg "Buzz wire game"

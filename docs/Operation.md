@@ -65,6 +65,8 @@ Configuration options so far:
     * Show ramp start - Yes or No. If Yes, when running a pattern the top item on the list will always be "Ramp start". To start the ramp up, select this option, and press the top left soft button (labelled "Start"). 
     * Start level - 1% - 100%. At what percentage of the power selected on the front panel does the ramp start. Setting to 100% effectively disables the ramp function
     * Time per p.p. - Time taken in seconds to increase the power level by one percentage point. This increase is relatively smooth, and will increase the power level in 0.1% increments to achieve the selected rate.
+    * Ramp shape - Affects how the ramp is performed. -ve values result in a fast initial rise that slows down as the ramp progresses. +ve values result in a slow initial rise, which speeds up as the ramp progresses. The graph on screen gives a visual representation of how the ramp will progress for the selected value. The default setting of 0 results in a linear rise (which is how the ramp functioned prior to this setting).
+    * Show on status bar - if set to "Yes", shows the progress in percent and the ramp time remaining in the status bar whilst the ramp is running.
 
     With either "Start level" or "Time per p.p." selected, the bottom of the menu will indicate the estimated time in minutes for the ramp to complete.
 
@@ -90,6 +92,8 @@ Configuration options so far:
     - Battery current - current draw from battery in mA. -ve indicates current being drawn from battery, +ve current going into battery (i.e. charging).
       For PCB versions >= 2.3, this may go negative even when plugged in, as if the charger can't supply enough current, the difference will come from the battery.
 
+    Note that if the extended ramp configuration has been set to show progress on the status bar, that will override this setting whilst the ramp is in progress.
+
 * Audio input - Displayed if audio board present by default, depends on "Hardware config > Audio" setting. See [Audio Input](./AudioInput-Operation.md)
 
 * Hardware config - configure various hardware settings. Shouldn't need changing. Options:
@@ -110,6 +114,14 @@ Configuration options so far:
   - v2.3+ only: Batt charge current. Set the maximum charge current for the battery between 0 mA and 3000 mA.
 
       **Caution** : Do not rely on this - the battery must be capable of being _safely_ charged at 2000 mA, even if a lower value is set for battery longevity / power consumption (whatever) reasons. 2000 mA is the default for the charge controller, so it's possible there are some scenarios where the default may get used.
+
+  - LED colour format - set the colour format (RGB, GBR, etc) expected by the 6 front panel LEDs. This should only need changing if not using the part specified in the BoM. When this option is selected, the LEDs should show:
+    
+      - Trigger1 + Trigger2: Red
+      - Chan1 + Chan2: Green
+      - Chan3 + Chan4: Blue
+
+    Adjust the colour format until the LEDs on the front panel show as above.
 
 * Battery info - MKI & MKII: Shows battery voltage and state of charge (%). MKII only: Also shows estimated battery capacity and capacity remaining in mAh along with current flow in/out of battery in mA (-ve is out of battery, +ve is in, i.e. charging).
 

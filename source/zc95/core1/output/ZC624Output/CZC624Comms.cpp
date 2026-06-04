@@ -1,4 +1,4 @@
-#include "../../../config.h"
+#include "../../../common/zc95_config.h"
 #include "../../../globals.h"
 #include "../../../CUtil.h"
 #include "../../../CLedControl.h"
@@ -186,12 +186,21 @@ bool CZC624Comms::channel_has_fault(uint8_t channel)
     return (chan_status != CZC624Comms::status::Ready);
 }
 
-std::string CZC624Comms::get_version()
+std::string CZC624Comms::get_version(bool bootloader)
 {
+    i2c_reg_t reg_end = i2c_reg_t::VerStrEnd;
+    i2c_reg_t reg_start = i2c_reg_t::VerStrStart;
+
+    if (bootloader)
+    {
+        reg_end = i2c_reg_t::BlVerStrEnd;
+        reg_start = i2c_reg_t::BlVerStrStart;
+    }
+
     std::string version_str = "ERROR";
-    uint8_t ver_str_len = ((uint8_t)i2c_reg_t::VerStrEnd - (uint8_t)i2c_reg_t::VerStrStart);
+    uint8_t ver_str_len = ((uint8_t)reg_end - (uint8_t)reg_start);
     char* buffer = (char*)calloc(ver_str_len+1, 1);
-    bool retval = get_i2c_register_range(i2c_reg_t::VerStrStart, (uint8_t*)buffer, ver_str_len);
+    bool retval = get_i2c_register_range(reg_start, (uint8_t*)buffer, ver_str_len);
     if (retval)
     {
         version_str = buffer;
@@ -239,6 +248,26 @@ bool CZC624Comms::test_spi_comms(uint8_t test_val)
     get_i2c_register(CZC624Comms::i2c_reg_t::TestVal, &i2c_read_val);
 
     return i2c_read_val != msg.arg0;
+}
+
+// Instruct the zc624 to exit bootloader mode and start main firmware
+bool CZC624Comms::exit_bootloader()
+{
+    return write_i2c_register(i2c_reg_t::Bootloader, ZC624_REG_BOOTLOADER_STATE_RUN_MAIN_FIRMWARE);
+}
+
+// Return true if the zc624 is reporting the main firmware is running and there's no issue with the firmware
+bool CZC624Comms::has_started_main_firmware()
+{
+    uint8_t bootloader;
+    uint8_t state;
+    bool ret = get_i2c_register(CZC624Comms::i2c_reg_t::Bootloader, &bootloader);
+    ret &=     get_i2c_register(CZC624Comms::i2c_reg_t::OverallStatus, &state);
+    return (
+        ret && 
+        (bootloader == ZC624_REG_BOOTLOADER_STATE_RUN_MAIN_FIRMWARE) && 
+        (state != ZC624_OVERALL_STATUS_FAULTFIRMWARE)
+    );
 }
 
 std::string CZC624Comms::status_to_string(status s)

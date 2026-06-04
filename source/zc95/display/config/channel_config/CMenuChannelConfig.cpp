@@ -20,7 +20,7 @@
 
 
 #include "../CMenuSettings.h"
-#include "../../../config.h"
+#include "../../../common/zc95_config.h"
 
 
 CMenuChannelConfig::CMenuChannelConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output)

@@ -54,7 +54,7 @@ void HalDummy::acc_port_reset()
     
 }
 
-void HalDummy::acc_port_set_io_port_state(ExtInputPort output, bool high)
+void HalDummy::acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
     
 }
@@ -72,6 +72,11 @@ void HalDummy::mic_preamp_enable(bool enable)
 void HalDummy::mic_power_enable(bool enable)
 {
     
+}
+
+CLedControl* HalDummy::led_control()
+{
+    return NULL;
 }
 
 front_panel_version_t HalDummy::front_panel_version()

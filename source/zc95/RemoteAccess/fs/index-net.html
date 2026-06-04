@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZC95 Lua Scripts</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#1d252c;background:#f6f7f4}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:860px;margin:0 auto;padding:20px}
+header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-size:24px;margin:0}.meta{font-size:12px;color:#66727c;text-align:right}
+.panel{background:#fff;border:1px solid #d7ddd5;border-radius:8px;padding:14px;margin-bottom:12px}
+.bar{display:flex;gap:8px;align-items:center}
+.conn{flex:1;font-size:14px;color:#46525c}
+button{border:1px solid #9ba9a4;border-radius:6px;background:#eef3ef;color:#172027;padding:8px 11px;font:inherit;cursor:pointer}
+button:hover{background:#e1e9e4}button:disabled{opacity:.5;cursor:not-allowed}.danger{background:#fff0ee;border-color:#ca9188}
+.status{min-height:22px;font-size:14px;color:#40505a;margin-top:8px}.err{color:#9d2419}.ok{color:#1c6b39}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d7ddd5;border-radius:8px;overflow:hidden}
+th,td{padding:10px;border-bottom:1px solid #e6ebe7;text-align:left}th{font-size:12px;color:#59666f;background:#eef2ee}
+tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{width:170px;text-align:right;white-space:nowrap}
+.invalid{color:#9d6a00}.empty{color:#71808a}.progress{height:8px;background:#e5ebe7;border-radius:999px;overflow:hidden;margin-top:6px}
+.fill{width:0;height:100%;background:#287a48;transition:width .12s}.hidden{display:none}.small{font-size:12px;color:#66727c}
+@media(max-width:640px){.wrap{padding:12px}header{display:block}.meta{text-align:left;margin-top:6px}.bar{flex-wrap:wrap}.conn{flex-basis:100%}table,tbody,tr,td{display:block}thead{display:none}tr{border-bottom:1px solid #d7ddd5}td{border:0;padding:7px 10px}.actions{text-align:left;width:auto}.slot:before{content:"Slot ";font-weight:600}.state:before{content:"State: ";font-weight:600}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lua scripts</h1>
+    <div class="meta" id="version">Not connected</div>
+  </header>
+
+  <section class="panel">
+    <div class="bar">
+      <div class="conn" id="conn">Disconnected</div>
+      <button id="connect">Connect</button>
+      <button id="refresh" disabled>Refresh</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <table aria-label="Lua script slots">
+    <thead><tr><th class="slot">Slot</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
+    <tbody id="slots"><tr><td colspan="4" class="empty">Connect to load script slots.</td></tr></tbody>
+  </table>
+  <input id="file" class="hidden" type="file" accept=".lua,text/x-lua,text/plain">
+</div>
+
+<script>
+(function(){
+  var WS_HOST=null; // For testing, set to e.g. "device.local"; null uses this host.
+  var ws=null,msgId=1,pending={},uploading=false,pingTimer=0,selectedSlot=null,closing=false;
+  var connectBtn=document.getElementById("connect"),connEl=document.getElementById("conn");
+  var refreshBtn=document.getElementById("refresh"),statusEl=document.getElementById("status");
+  var slotsEl=document.getElementById("slots"),fileEl=document.getElementById("file"),versionEl=document.getElementById("version");
+
+  connectBtn.onclick=function(){ws&&ws.readyState===1?disconnect("Disconnected."):connect()};
+  refreshBtn.onclick=function(){loadInfo().catch(function(){})};
+  fileEl.onchange=function(){var f=fileEl.files[0];fileEl.value="";if(f)upload(selectedSlot,f)};
+  slotsEl.onclick=function(e){
+    var b=e.target.closest("button"); if(!b||uploading)return;
+    var i=Number(b.getAttribute("data-slot"));
+    if(b.getAttribute("data-act")==="upload"){selectedSlot=i;fileEl.click()}
+    if(b.getAttribute("data-act")==="delete")del(i);
+  };
+  connect();
+
+  function defaultEndpoint(){
+    return "ws://"+(WS_HOST||location.host)+"/stream";
+  }
+  function setStatus(t,cls){statusEl.className="status "+(cls||"");statusEl.textContent=t||""}
+  function setConn(t){connEl.textContent=t}
+  function connected(){return ws&&ws.readyState===1}
+  function setBusy(b){uploading=b;refreshBtn.disabled=!connected()||b;connectBtn.disabled=b;renderButtons()}
+
+  function connect(){
+    cleanup();
+    closing=false;
+    setStatus("Connecting...");
+    setConn("Connecting to "+defaultEndpoint());
+    try{ws=new WebSocket(defaultEndpoint())}catch(e){setStatus(e.message,"err");setConn("Disconnected");return}
+    ws.onopen=function(){
+      setConn("Connected to "+defaultEndpoint());
+      connectBtn.textContent="Disconnect";refreshBtn.disabled=false;setStatus("Connected.","ok");
+      pingTimer=setInterval(function(){if(connected()&&!uploading&&!Object.keys(pending).length)send("GetVersion",null,"VersionDetails").catch(function(){})},6000);
+      loadInfo().catch(function(){});
+    };
+    ws.onmessage=function(ev){handleMessage(ev.data)};
+    ws.onerror=function(){setStatus("WebSocket error.","err")};
+    ws.onclose=function(){var wasClosing=closing;failPending("Connection lost.");cleanup();setStatus(wasClosing?"Disconnected.":"Connection lost.",wasClosing?"":"err")};
+  }
+  function disconnect(msg){closing=true;if(ws)ws.close();else{cleanup();setStatus(msg||"Disconnected.")}}
+  function cleanup(){
+    if(pingTimer)clearInterval(pingTimer); pingTimer=0; ws=null; pending={}; uploading=false;
+    setConn("Disconnected");
+    connectBtn.textContent="Connect";connectBtn.disabled=false;refreshBtn.disabled=true;renderButtons();
+  }
+  function failPending(text){
+    Object.keys(pending).forEach(function(k){pending[k].reject(new Error(text));clearTimeout(pending[k].timer)});
+    pending={};
+  }
+  function send(type,body,expect){
+    if(!connected())return Promise.reject(new Error("Not connected."));
+    var id=++msgId,msg=Object.assign({Type:type,MsgId:id},body||{});
+    ws.send(JSON.stringify(msg));
+    return new Promise(function(resolve,reject){
+      pending[id]={expect:expect||"Ack",resolve:resolve,reject:reject,timer:setTimeout(function(){
+        delete pending[id]; reject(new Error("Timed out waiting for "+type+"."));
+      },8000)};
+    });
+  }
+  function handleMessage(text){
+    var msg;
+    try{msg=JSON.parse(text)}catch(e){setStatus("Received invalid JSON.","err");return}
+    if(msg.MsgId!==undefined&&pending[msg.MsgId]){
+      var p=pending[msg.MsgId]; clearTimeout(p.timer); delete pending[msg.MsgId];
+      if(msg.Result!=="OK")p.reject(new Error(msg.Error||("Device returned "+(msg.Result||"an error")+".")));
+      else if(p.expect&&msg.Type!==p.expect)p.reject(new Error("Expected "+p.expect+", got "+msg.Type+"."));
+      else p.resolve(msg);
+      return;
+    }
+    if(msg.Result==="ERROR"||msg.Type==="LuaScriptError")setStatus(msg.Error||msg.Text||"Device reported an error.","err");
+  }
+  function loadInfo(){
+    if(!connected())return Promise.reject(new Error("Not connected."));
+    refreshBtn.disabled=true;
+    return send("GetVersion",null,"VersionDetails").then(function(v){
+      showVersion(v);
+      return send("GetLuaScripts",null,"LuaScripts");
+    }).then(function(s){renderSlots(s.Scripts||[]);setStatus("Script slots loaded.","ok")})
+      .catch(function(e){setStatus(e.message,"err");throw e})
+      .then(function(v){refreshBtn.disabled=!connected()||uploading;return v},function(e){refreshBtn.disabled=!connected()||uploading;throw e});
+  }
+  function showVersion(v){
+    versionEl.textContent=(v.ZC95||"Unknown version")+" | Serial "+(v.SerialNo||"unknown");
+  }
+  function renderSlots(scripts){
+    var byIndex={},max=4;
+    scripts.forEach(function(s){byIndex[s.Index]=s;if(s.Index>max)max=s.Index});
+    scripts=[];
+    for(var i=0;i<=max;i++)scripts.push(byIndex[i]||{Index:i,Empty:true,Valid:false,Name:"<unknown>",Missing:true});
+    slotsEl.innerHTML=scripts.map(function(s){
+      var state=s.Missing?"Unknown":(s.Empty?"Empty":(s.Valid?"Valid":"Invalid"));
+      var cls=s.Empty?"empty":(s.Valid?"":"invalid");
+      return '<tr data-row="'+s.Index+'"><td class="slot">'+esc(s.Index)+'</td><td>'+esc(s.Name||"")+'<div class="small hidden" data-prog="'+s.Index+'"><span></span><div class="progress"><div class="fill"></div></div></div></td><td class="state '+cls+'">'+state+'</td><td class="actions"><button data-act="upload" data-slot="'+s.Index+'">Upload</button> <button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
+    }).join("");
+    renderButtons();
+  }
+  function renderButtons(){
+    var dis=!connected()||uploading;
+    slotsEl.querySelectorAll("button").forEach(function(b){b.disabled=dis});
+  }
+  function del(i){
+    if(!connected())return;
+    setBusy(true);setStatus("Deleting slot "+i+"...");
+    send("DeleteLuaScript",{Index:i},"Ack").then(loadInfo)
+      .then(function(){setStatus("Deleted slot "+i+".","ok")})
+      .catch(function(e){setStatus(e.message,"err")})
+      .then(function(){setBusy(false)});
+  }
+  function upload(i,file){
+    if(i===null||!connected())return;
+    setBusy(true);setStatus("Reading "+file.name+"...");
+    readText(file).then(function(text){
+      var lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+      if(lines.length&&lines[lines.length-1]==="")lines.pop();
+      return send("LuaStart",{Index:i},"Ack").then(function(){return sendLines(i,lines,0)});
+    }).then(function(){return send("LuaEnd",null,"Ack")})
+      .then(loadInfo)
+      .then(function(){setStatus("Uploaded "+file.name+" to slot "+i+".","ok")})
+      .catch(function(e){setStatus(e.message,"err")})
+      .then(function(){hideProgress(i);setBusy(false)});
+  }
+  function sendLines(slot,lines,n){
+    progress(slot,n,lines.length);
+    if(n>=lines.length)return Promise.resolve();
+    return send("LuaLine",{LineNumber:n,Text:lines[n]},"Ack").then(function(){return sendLines(slot,lines,n+1)});
+  }
+  function progress(slot,done,total){
+    var box=slotsEl.querySelector('[data-prog="'+slot+'"]'); if(!box)return;
+    var pct=total?Math.round(done*100/total):100;
+    box.classList.remove("hidden"); box.querySelector("span").textContent="Uploading "+pct+"%";
+    box.querySelector(".fill").style.width=pct+"%";
+  }
+  function hideProgress(slot){var box=slotsEl.querySelector('[data-prog="'+slot+'"]');if(box)box.classList.add("hidden")}
+  function readText(file){
+    return new Promise(function(resolve,reject){
+      var r=new FileReader(); r.onload=function(){resolve(String(r.result||""))}; r.onerror=function(){reject(new Error("Could not read file."))}; r.readAsText(file);
+    });
+  }
+  function esc(v){return String(v).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
+})();
+</script>
+</body>
+</html>

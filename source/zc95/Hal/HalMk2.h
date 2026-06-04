@@ -25,13 +25,14 @@ class HalMk2 : public IHal
 
         void loop();
         void acc_port_reset();
-        void acc_port_set_io_port_state(ExtInputPort output, bool high);
+        void acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state);
 
         void audio_input_enable(bool enable) {};
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
 
         hw_variant_t hardware_variant();
+        CLedControl* led_control();
 
         static void s_gpio_callback(uint gpio, uint32_t events);
 
@@ -55,6 +56,7 @@ class HalMk2 : public IHal
         front_panel_version_t _front_panel_version = front_panel_version_t::v0_2; // MKII's can't work with v0.1 FPs
         uint8_t _display_brightness_percent = 0xFF;
         bool _display_on = false;
+        CLedControl *_led;
 };
 
 #endif

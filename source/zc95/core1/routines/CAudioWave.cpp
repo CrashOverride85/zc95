@@ -20,7 +20,8 @@
 
 enum menu_ids
 {
-    AUDIO_WAVE = 1
+    AUDIO_WAVE  = 1,
+    AUDIO_RANGE = 2
 };
 
 #define CHANNEL_COUNT 4
@@ -60,6 +61,17 @@ void CAudioWave::config(struct routine_conf *conf)
     menu_triphase_view.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
     conf->menu.push_back(menu_triphase_view);
 
+    struct menu_entry menu_range = new_menu_entry();
+    menu_range.id = menu_ids::AUDIO_RANGE;
+    menu_range.title = "Range";
+    menu_range.menu_type = menu_entry_type::MIN_MAX;
+    menu_range.minmax.current_value = 100;
+    menu_range.minmax.increment_step = 1;
+    menu_range.minmax.min = 1;
+    menu_range.minmax.max = 100;
+    menu_range.minmax.UoM = "%";
+    conf->menu.push_back(menu_range);
+
     conf->force_channel_isolation = false;
 }
 
@@ -70,7 +82,8 @@ void CAudioWave::get_config(struct routine_conf *conf)
 
 void CAudioWave::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
-
+    if (menu_id == menu_ids::AUDIO_RANGE && new_value >= 1 && new_value <= 100)
+        _range_percent = new_value;
 }
 
 void CAudioWave::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
@@ -93,25 +106,27 @@ void CAudioWave::pulse_message(uint8_t channel, uint16_t power_level, uint8_t po
     if (channel >= 2)
         return;
 
+    uint16_t range_adjusted_power_level = get_range_adjusted_power_level(power_level);
+
     // Pretty much all the processing for this pattern is done in CAudio/CAudio3Process, and passed into here.
     // All that needs to be done now is copy the 2 channels of data arriving into 4 channels, and adjust the 
     // power level, if needed.
 
     // Update power level if needed
-    if (_chan_last_power_level[channel] != power_level)
+    if (_chan_last_power_level[channel] != range_adjusted_power_level)
     {
         if (channel == 0)
         {
-            full_channel_set_power(0, power_level);
-            full_channel_set_power(1, power_level);
+            full_channel_set_power(0, range_adjusted_power_level);
+            full_channel_set_power(1, range_adjusted_power_level);
         }
         else if (channel == 1)
         {
-            full_channel_set_power(2, power_level);
-            full_channel_set_power(3, power_level);
+            full_channel_set_power(2, range_adjusted_power_level);
+            full_channel_set_power(3, range_adjusted_power_level);
         }
         
-        _chan_last_power_level[channel] = power_level;
+        _chan_last_power_level[channel] = range_adjusted_power_level;
     }
 
     if (channel == 0)
@@ -124,6 +139,21 @@ void CAudioWave::pulse_message(uint8_t channel, uint16_t power_level, uint8_t po
        full_channel_pulse(2, pos_pulse_us, neg_pulse_us);
        full_channel_pulse(3, pos_pulse_us, neg_pulse_us);
     }
+}
+
+uint16_t CAudioWave::get_range_adjusted_power_level(uint16_t power_level)
+{
+    if (power_level > 1000)
+        return 0;
+
+   float result = power_level + (1000.0f - power_level) * (1.0f - _range_percent / 100.0f);
+
+    if (result < 0)
+        return 0;
+    if (result > 1000)
+        return 1000;
+    else
+        return result;
 }
 
 void CAudioWave::start()

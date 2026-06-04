@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../common/zc624_config.h"
 #include "COutput.h"
 #include <stdio.h>
 
@@ -44,11 +44,11 @@ COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
         COutputChannel::status chan_status = _channel[chan]->get_status();
         if (chan_status == COutputChannel::status::READY)
         {
-            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, CI2cSlave::status::Ready);
+            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, ZC624_OVERALL_STATUS_READY);
         }
         else
         {
-            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, CI2cSlave::status::Fault);
+            _i2c_slave->set_value(((uint8_t)CI2cSlave::reg::Chan0Status)+chan, ZC624_OVERALL_STATUS_FAULT);
             all_ready = false;
         }
     }
@@ -56,13 +56,13 @@ COutput::COutput(PIO pio, CI2cSlave *i2c_slave)
     if (all_ready)
     {
         printf("Calibration success\n");
-        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Ready);
+        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, ZC624_OVERALL_STATUS_READY);
         gpio_put(PIN_9V_ENABLE, 1);
     }
     else
     {
         printf("One or more chanel failed calibration, not enabling power.\n");
-        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Fault);
+        _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, ZC624_OVERALL_STATUS_FAULT);
         gpio_put(PIN_9V_ENABLE, 0);
     }
 }
@@ -255,7 +255,7 @@ void COutput::power_down()
     
     // Could probably do with an extra status. But as there's currently no return 
     // from PowerDown, it's good enough for now
-    _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, CI2cSlave::status::Fault); 
+    _i2c_slave->set_value((uint8_t)CI2cSlave::reg::OverallStatus, ZC624_OVERALL_STATUS_FAULT); 
 
     for (int chan=0; chan < CHANNEL_COUNT; chan++)
     {

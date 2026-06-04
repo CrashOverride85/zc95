@@ -18,7 +18,7 @@
 
 #include "CMenuCollarConfig.h"
 #include "CMenuCollarConfigSelected.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../core1/output/collar/CCollarComms.h"
 
 CMenuCollarConfig::CMenuCollarConfig(CDisplay* display, IHal *hal, CSavedSettings *saved_settings, CRoutineOutput *routine_output)

@@ -35,8 +35,8 @@
 
 
 #define DEVICE_TYPE   624
-#define VERSION_MAJOR   2
-#define VERSION_MINOR   1
+#define VERSION_MAJOR   3
+#define VERSION_MINOR   0
 
 
 
@@ -55,5 +55,9 @@
 
 #define PIN_CHAN4_GATE_A 12
 #define PIN_CHAN4_GATE_B 13
+
+#define BOOTLOADER_SIZE_K 48
+#define PROGRAM_OFFSET (BOOTLOADER_SIZE_K * 1024) 
+
 
 #endif

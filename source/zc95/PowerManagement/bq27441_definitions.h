@@ -16,7 +16,7 @@
 #ifndef _BQ27441_DEFINITIONS_H
 #define _BQ27441_DEFINITIONS_H
 
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 
 /********************************

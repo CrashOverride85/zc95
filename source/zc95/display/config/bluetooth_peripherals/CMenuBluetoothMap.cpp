@@ -18,7 +18,7 @@
 
 #include "CMenuBluetoothMap.h"
 #include "../CDebugOutput.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 
 CMenuBluetoothMap::CMenuBluetoothMap(CDisplay* display, CSavedSettings *saved_settings, CBluetooth *bluetooth)

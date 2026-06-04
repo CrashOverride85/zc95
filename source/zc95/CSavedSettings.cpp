@@ -540,6 +540,8 @@ uint8_t CSavedSettings::get_extended_ramp_level()
     uint8_t level = _eeprom_contents[(uint8_t)setting::ExtendedRampLevel];
     if (level == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
         return 70;
+    else if (level > 99)
+        return 99;
     else
         return level;
 }
@@ -558,19 +560,71 @@ uint8_t CSavedSettings::get_extended_ramp_time_seconds()
         return seconds;
 }
 
-bool CSavedSettings::get_extended_ramp_show()
+bool CSavedSettings::get_extended_ramp_show_menu_option()
 {
-    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] != 0);
+    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
 }
 
-void CSavedSettings::set_extended_ramp_show(bool show)
+void CSavedSettings::set_extended_ramp_show_menu_option(bool show)
 {
-    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = show;
+    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    if (show)
+        value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU;
+    else
+        value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
+
+    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
+}
+
+bool CSavedSettings::get_extended_ramp_show_on_status_bar()
+{
+    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
+}
+
+void CSavedSettings::set_extended_ramp_show_on_status_bar(bool show)
+{
+    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    if (show)
+        value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR;
+    else
+        value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
+
+    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
 }
 
 void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)
 {
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = seconds;
+}
+
+CSavedSettings::led_colour_format_t CSavedSettings::get_led_colour_format()
+{
+    return (led_colour_format_t)(_eeprom_contents[(uint8_t)setting::LedColourFormat]);
+}
+
+void CSavedSettings::set_led_colour_format(led_colour_format_t led_colour_format)
+{
+    _eeprom_contents[(uint8_t)setting::LedColourFormat] = (uint8_t)led_colour_format;
+}
+
+CSavedSettings::bootloader_mode_t CSavedSettings::get_bootloader_mode()
+{
+    return (bootloader_mode_t)(_eeprom_contents[(uint8_t)setting::BootloaderMode]);
+}
+   
+void CSavedSettings::set_bootloader_mode(bootloader_mode_t mode)
+{
+    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)mode;
+}
+
+int8_t CSavedSettings::get_extended_ramp_shape()
+{
+    return (int8_t)(_eeprom_contents[(uint8_t)setting::ExtenedRampShape]);
+}
+
+void CSavedSettings::set_extended_ramp_shape(int8_t shape)
+{
+    _eeprom_contents[(uint8_t)setting::ExtenedRampShape] = (uint8_t)shape;
 }
 
 bool CSavedSettings::eeprom_initialised()
@@ -631,6 +685,8 @@ void CSavedSettings::eeprom_initialise()
 
     _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = 70;
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = 20;
+
+    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)bootloader_mode_t::NORMAL_BOOT;
 
     // Save changes
     save();

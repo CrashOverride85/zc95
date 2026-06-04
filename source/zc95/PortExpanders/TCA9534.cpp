@@ -38,6 +38,29 @@ bool TCA9534::set_pin_as_output(uint8_t pin)
     return true;
 }
 
+bool TCA9534::set_pin_as_input(uint8_t pin)
+{
+    uint8_t txbuf[2] = {0};
+
+    txbuf[0] = port_exp_reg_t::CONFIGURATION;
+    txbuf[1] = _config_register;
+    txbuf[1] |= (1 << pin);
+    int bytes_written = i2c_write(__func__, _i2c_address, txbuf, sizeof(txbuf), false);
+    if (bytes_written != 2)
+    {
+        printf("TCA9534::set_pin_as_input() write failed! i2c bytes_written = %d\n", bytes_written);
+        return false;
+    }
+
+    _config_register = txbuf[1];
+    return true;
+}
+
+bool TCA9534::is_pin_configured_as_output(uint8_t pin)
+{
+    return !(_config_register & (1 << pin));
+}
+
 bool TCA9534::read_port_expander(uint8_t *value)
 {
     uint8_t buffer[1] = {0};

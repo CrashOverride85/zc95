@@ -29,7 +29,8 @@ class CMenuSettingHardware : public CMenu
             AUDIO          = 0,
             DEBUG          = 1,
             AUX_USE        = 2,
-            CHARGE_CURRENT = 3
+            CHARGE_CURRENT = 3,
+            LED_FORMAT     = 4
         };
 
         COptionsList *_settings_list = NULL;

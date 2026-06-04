@@ -34,6 +34,8 @@
 #include "hardware/regs/rosc.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/adc.h"
+#include "hardware/structs/xip_ctrl.h"
+
 
 #include "CLedControl.h"
 #include "Hal/IHal.h"
@@ -134,12 +136,24 @@ void seed_random_from_rosc()
   srand(random);
 } 
 
-void set_leds_to_black(CLedControl* led)
+void set_leds_to_purple(CLedControl* led)
 {
-    led->set_all_led_colour(LedColour::Black);
+    led->set_all_led_colour(LedColour::Purple);
     led->loop(true);
     sleep_ms(1);
     led->loop(true);
+}
+
+void set_normal_bootloader_mode(CSavedSettings* settings)
+{
+    CSavedSettings::bootloader_mode_t current_mode = settings->get_bootloader_mode();
+    printf("Current bootloader mode = %d\n", (uint8_t)current_mode);
+    if (current_mode != CSavedSettings::bootloader_mode_t::NORMAL_BOOT)
+    {
+        printf("Updating bootloader mode to NORMAL\n");
+        settings->set_bootloader_mode(CSavedSettings::bootloader_mode_t::NORMAL_BOOT);
+        settings->save();
+    }
 }
 
 int main()
@@ -147,10 +161,21 @@ int main()
     // Debugging with picoprobe causes cyw43_arch_init() to hang without this. JLink doesn't need it though ¯\_(ツ)_/¯
     timer_hw->dbgpause = 0; 
 
+#ifdef PICO_RP2350
+    // When uploading then debugging with JLINK (tested with 8.42) it leaves the XIP cache disabled, which absolutely kills performance.
+    // See: https://forum.segger.com/index.php?thread/9782-rp2350-xip-cache-not-re-enabled-after-flash-loader/&postID=34698
+    uint32_t xip_ctl = xip_ctrl_hw->ctrl;
+    if (xip_ctl != 131)
+    {
+        printf("XIP ctrl register does not match expected power on default of 0x%X, resetting (was 0x%X)\n", 131, xip_ctrl_hw->ctrl);
+        xip_ctrl_hw->ctrl = 131;
+    }
+#endif
+
     CSavedSettings* settings = NULL;
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;
-    set_leds_to_black(&led);
+    set_leds_to_purple(&led);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -170,7 +195,7 @@ int main()
     
     // For now, until settings loaded from eeprom, send debugging info to accessory port
     CDebugOutput::set_debug_destination(CDebugOutput::debug_dest_t::ACC);
-    printf("\n\nZC95 Startup, firmware version: %s\n", kGitHash);
+    printf("\n\nZC95 Startup, firmware version: %s\n", firmware_info.firmware_version);
     
     zc95_version_t hardware_version = CDetermineHardwareVersion::get_hardware_version();
 
@@ -214,7 +239,7 @@ int main()
 
     CDebugOutput::set_debug_destination_from_settings(settings);
 
-    // Front panel LEDs - give some feedback we're powering up (display takes almost second to appear)
+    // Front panel LEDs - update brightness now saved settings are available
     led.set_all_led_colour(LedColour::Purple);
     led.loop(true);
     sleep_ms(1);
@@ -277,6 +302,9 @@ int main()
     led.loop();
     uint64_t last_analog_check = 0;
     _hal->loop();
+
+    set_normal_bootloader_mode(settings);
+
     while (1) 
     {
         uint64_t loop_start = time_us_64();

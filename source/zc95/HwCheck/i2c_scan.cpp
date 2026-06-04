@@ -1,5 +1,5 @@
 #include "i2c_scan.h"
-#include "config.h"
+#include "../../../common/zc95_config.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
 

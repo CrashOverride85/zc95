@@ -111,7 +111,7 @@ void CFire::soft_button_pushed (soft_button button, bool pushed)
         }
         else
         {
-            // Continous mode (on whilst button held down)
+            // Continuous mode (on whilst button held down)
             if (pushed)
                 all_channels(true);
             else

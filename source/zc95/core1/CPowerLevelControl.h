@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include "CPowerLevelRamp.h"
 #include "../CSavedSettings.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 class CPowerLevelControl
 {
@@ -52,6 +52,10 @@ class CPowerLevelControl
 
         // Start the extended ramp. This is started from the menu and can last from a few minutes to over an hour (config dependant)
         void extended_ramp_start();
+
+        // If extended ramp is active, returns the progress in percent, and the number of seconds remaining.
+        // If not active, returns 0xFF and 0xFFFF for percent and seconds remaining respectively. 
+        void get_extended_ramp_progress(uint8_t* out_percent, uint16_t* out_secs_remain);
 
         void zero_power_level();
 

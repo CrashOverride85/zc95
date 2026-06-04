@@ -28,11 +28,13 @@ class HalMk1 : public IHal
         void loop();
 
         void acc_port_reset();
-        void acc_port_set_io_port_state(ExtInputPort output, bool high);
+        void acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state);
 
         void audio_input_enable(bool enable);
         void mic_preamp_enable(bool enable);
         void mic_power_enable(bool enable);
+
+        CLedControl* led_control();
 
         static void s_gpio_callback(uint gpio, uint32_t events);
 
@@ -49,6 +51,7 @@ class HalMk1 : public IHal
         CFrontPanel* _front_panel = NULL;
         front_panel_version_t _front_panel_version = front_panel_version_t::UNKNOWN;
         time_t _last_loop_time = 0;
+        CLedControl *_led;
 };
 
 #endif

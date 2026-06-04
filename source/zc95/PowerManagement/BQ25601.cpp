@@ -32,7 +32,7 @@
  #include <stdio.h>
  #include "BQ25601.h"
  #include "../CUtil.h"
- #include "../../config.h"
+ #include "../../../common/zc95_config.h"
  
 BQ25601::BQ25601()
 {

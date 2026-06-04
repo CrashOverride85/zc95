@@ -40,7 +40,7 @@ function(CheckGitVersion)
     endif ()
 
     if (NOT EXISTS ${post_configure_dir}/git_version.h)
-        file(COPY ${pre_configure_dir}/git_version.h DESTINATION ${post_configure_dir})
+        file(COPY ${pre_configure_dir}/../common/git_version.h DESTINATION ${post_configure_dir})
     endif()
 
     if (NOT DEFINED GIT_HASH_CACHE)

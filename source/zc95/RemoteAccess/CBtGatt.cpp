@@ -261,7 +261,7 @@ uint16_t CBtGatt::att_read_callback(hci_con_handle_t connection_handle, uint16_t
             return att_read_callback_handle_blob((uint8_t*)&gZc624ChannelIsolationEnabled, 1, offset, buffer, buffer_size);            
 
         case ATT_CHARACTERISTIC_ORG_BLUETOOTH_CHARACTERISTIC_FIRMWARE_REVISION_STRING_01_VALUE_HANDLE:
-            return att_read_callback_handle_blob((uint8_t*)(kGitHash), strlen(kGitHash), offset, buffer, buffer_size);
+            return att_read_callback_handle_blob((uint8_t*)(firmware_info.firmware_version), strlen(firmware_info.firmware_version), offset, buffer, buffer_size);
     }
 
    return 0;

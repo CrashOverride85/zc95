@@ -46,6 +46,7 @@ class Core1
         void process_messages();
         void process_message(message msg);
         void update_power_levels();
+        void update_extended_ramp_progress();
         void set_output_chanels_to_off(bool enable_channel_isolation);
         void process_audio_pulse_queue();
         void check_validity_of_lua_script();
@@ -64,6 +65,8 @@ class Core1
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
         CPowerLevelControl *_power_level_control;
+        uint8_t _extended_ramp_percent = 0xFF;
+        uint16_t _extended_ramp_remaining_seconds = 0xFFFF;
 };
 
 Core1* core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);

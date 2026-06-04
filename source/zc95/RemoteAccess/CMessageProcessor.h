@@ -7,7 +7,7 @@
 #include "httpd.h"
 #include "CLuaLoad.h"
 #include "CRoutineRun.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
 

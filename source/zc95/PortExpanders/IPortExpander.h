@@ -11,6 +11,7 @@ class IPortExpander
         virtual bool read_port_expander(uint8_t *value) = 0;
         virtual bool write_port_expander(uint8_t value) = 0;
         virtual bool set_pin_as_output(uint8_t pin) = 0;
+        virtual bool set_pin_as_input(uint8_t pin) = 0;
         virtual bool set_pin_state(uint8_t pin, bool high) = 0;
         virtual bool is_output_pin_set(uint8_t pin) = 0;
         virtual bool get_pin_state(uint8_t pin) = 0;

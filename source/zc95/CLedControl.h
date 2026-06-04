@@ -46,12 +46,15 @@ class CLedControl
         void loop(bool force_update = false);
         void update_leds();
         void set_led_colour(LED led, uint32_t colour);
-        uint32_t get_brightness_adjusted_led_colour(uint8_t led);
         void set_all_led_colour(uint32_t colour);
+        void show_rbg_test_pattern(bool show);
     
     private:
+        uint32_t get_brightness_adjusted_led_colour(uint8_t led);
         void put_pixel(uint32_t pixel_rgb);
         uint8_t get_led_brightness();
+        uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b);
+        CSavedSettings::led_colour_format_t get_led_colour_format();
         volatile uint32_t _led_state[LED_COUNT];
         volatile bool _led_state_changed;
         uint8_t _tx_pin;
@@ -60,6 +63,8 @@ class CLedControl
         int8_t _brightness;
         CSavedSettings** _settings;
         uint64_t _last_led_update = 0;
+        CSavedSettings::led_colour_format_t _colour_format;
+        bool _inhibit_changes = false;
 };
 
 #endif

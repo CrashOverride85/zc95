@@ -16,6 +16,7 @@ HalMk1::HalMk1(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
     _mk1_pm = new CPowerManagementMk1();
     _pcf8574_ext = new PCF8574(MK1_EXT_INPUT_PORT_EXP_ADDR);
     _ext_input_port_exp = new CExtInputPortExp(led, routine_output, _pcf8574_ext);
+    _led = led;
 
     for (uint x=0; x < 10; x++)
         _mk1_pm->get_battery_readings();
@@ -119,6 +120,11 @@ zc95_version_t HalMk1::hardware_version()
     return zc95_version_t::MKI;
 }
 
+CLedControl* HalMk1::led_control()
+{
+    return _led;
+}
+
 void HalMk1::s_gpio_callback(uint gpio, uint32_t events)
 {
     if (!_this)
@@ -140,9 +146,9 @@ void HalMk1::acc_port_reset()
     _ext_input_port_exp->reset_acc_port();
 }
 
-void HalMk1::acc_port_set_io_port_state(ExtInputPort output, bool high)
+void HalMk1::acc_port_set_io_port_state(ExtInputPort output, ExtInputPortState state)
 {
-    _ext_input_port_exp->set_acc_io_port_state(output, high);
+    _ext_input_port_exp->set_acc_io_port_state(output, state);
 }
 
 void HalMk1::audio_input_enable(bool enable)

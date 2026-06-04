@@ -19,7 +19,7 @@
 #include "CMenuSettingOutput.h"
 #include "CMenuSettings.h"
 #include "../CDebugOutput.h"
-#include "../config.h"
+#include "../../common/zc95_config.h"
 
 
 CMenuSettingOutput::CMenuSettingOutput(CDisplay* display, IHal *hal, CSavedSettings *saved_settings)

@@ -2,7 +2,9 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(PICO_BOARD pico_w)
+if (NOT DEFINED PICO_BOARD)
+    set(PICO_BOARD pico_w CACHE STRING "Board type")
+endif()
 
 # add_compile_options(-Wall -Wextra -pedantic -Werror)
 
@@ -203,7 +205,12 @@ pico_set_program_version(zc95 "1.0")
 pico_enable_stdio_uart(zc95 1)
 pico_enable_stdio_usb(zc95 0)
 
-
+if(PICO_PLATFORM STREQUAL "rp2040")
+  target_compile_definitions(zc95 PRIVATE
+    SYS_CLK_MHZ=200
+  )
+  pico_set_linker_script(zc95 ${CMAKE_CURRENT_SOURCE_DIR}/memmap.ld)
+endif()
 
 # Add the standard library to the build
 target_link_libraries(zc95 pico_stdlib)
@@ -235,7 +242,6 @@ add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
 add_subdirectory(external/lua)
 add_subdirectory(external/ArduinoJson)
-#target_link_libraries(zc95 hagl hagl_hal)
 
 target_compile_definitions(zc95 PRIVATE
   NDEBUG
@@ -248,7 +254,6 @@ target_compile_definitions(zc95 PRIVATE
   PICO_STACK_SIZE=8192
   PICO_CORE1_STACK_SIZE=0 # stack is malloc'd
   PICO_USE_STACK_GUARDS   # would rather die instantly on stack overflow, than get weird, hard to debug, errors
-  SYS_CLK_MHZ=200
   # For Lua. If a Lua script consumes all the memory, Lua can handle that and give an OOM error, which is better 
   # than crashing with a Panic. Ideally Lua would use a seperate alloc function that didn't panic, whilst everything
   # else did. Not quite sure how to manage that yet; multicore/malloc mutex complicates things.
@@ -291,3 +296,43 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess
     ${PICO_SDK_PATH}/lib/lwip/include/lwip/apps
 )
+
+pico_set_lwip_httpd_content(zc95 INTERFACE
+        # For setting the WiFi credentials when in AP mode
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/empty.html
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-ap.html
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/mobile.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-00.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-25.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-50.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-75.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/icons/network-wireless-connected-100.png
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery-1.11.2.min.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.css
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/jquery/jquery.mobile-1.4.5.min.js
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/wifi/scanresults.ssi
+
+        # For uploading Lua scripts when connected to a WiFi network
+        ${CMAKE_CURRENT_LIST_DIR}/RemoteAccess/fs/index-net.html
+        )
+
+if(PICO_PLATFORM STREQUAL "rp2040")
+  # Include bootloader
+  set(BOOTLOADER_BIN ${CMAKE_CURRENT_SOURCE_DIR}/../zc95Bootloader/build/zc95Bootloader.bin)
+  set(BOOTLOADER_OBJ ${CMAKE_CURRENT_BINARY_DIR}/zc95Bootloader.o)
+
+  add_custom_command(
+      OUTPUT ${BOOTLOADER_OBJ}
+      COMMAND ${CMAKE_OBJCOPY}
+              -I binary
+              -O elf32-littlearm
+              -B arm
+              ${BOOTLOADER_BIN}
+              ${BOOTLOADER_OBJ}
+      DEPENDS ${BOOTLOADER_BIN}
+      COMMENT "Converting zc95Bootloader.bin to object"
+      VERBATIM
+  )
+endif()
+
+target_sources(zc95 PRIVATE ${BOOTLOADER_OBJ})
