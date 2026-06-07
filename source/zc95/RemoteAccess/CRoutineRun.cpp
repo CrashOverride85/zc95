@@ -88,8 +88,8 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             return true; // finished
         }
 
-        _routine_output->activate_routine(index);
         set_pattern_config(index);
+        _routine_output->activate_routine(index);
         pattern_start = true;
         _running = true;
     }
