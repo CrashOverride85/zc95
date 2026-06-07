@@ -756,7 +756,7 @@ union luai_Cast { double l_d; long l_l; };
 ** without modifying the main part of the file.
 */
 
-#define LUA_MAX_ROTABLE_NAME      10
+#define LUA_MAX_ROTABLE_NAME      11
 
 /* LUA_OPTIMIZE_MEMORY:
    0 - no optimizations
