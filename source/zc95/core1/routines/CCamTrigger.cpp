@@ -114,7 +114,7 @@ void CCamTrigger::soft_button_pushed (soft_button button, bool pushed)
 
 void CCamTrigger::start()
 {
-    acc_port.set_io_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_HIGH);
+    acc_port.io_set_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_HIGH);
     set_all_channels_power(POWER_FULL);
 }
 
@@ -131,13 +131,13 @@ void CCamTrigger::loop(uint64_t time_us)
     {
         _cam_pulse_start_us = 0;
         _cam_pulse_end_us = time_us + (DefaultCamPulseMs * 1000);
-        acc_port.set_io_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_LOW);
+        acc_port.io_set_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_LOW);
     }
 
     if (_cam_pulse_end_us && (time_us > _cam_pulse_end_us))
     {
         _cam_pulse_end_us = 0;
-        acc_port.set_io_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_HIGH);
+        acc_port.io_set_port_state(ExtInputPort::ACC_IO_1, ExtInputPortState::OUTPUT_HIGH);
     }
 }
 

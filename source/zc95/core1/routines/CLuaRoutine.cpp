@@ -113,6 +113,7 @@ void CLuaRoutine::load_lua_script_if_required()
             { "SetPulseWidth" , &dispatch<&CLuaRoutine::lua_set_pulse_width> },
             { "AccIoWrite"    , &dispatch<&CLuaRoutine::lua_acc_io_write> },
             { "AccIoSetInput" , &dispatch<&CLuaRoutine::lua_acc_io_input> },
+            { "AccSerialWrite", &dispatch<&CLuaRoutine::lua_acc_serial_write> },
             { "EnableTriphase", &dispatch<&CLuaRoutine::lua_enable_triphase> },
             { "LinkChannels"  , &dispatch<&CLuaRoutine::lua_link_channel> },
             { "DelayMs"       , &dispatch<&CLuaRoutine::lua_delay_ms> },
@@ -200,6 +201,8 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         }
 
         conf->audio_processing_mode = get_audio_processing_mode();
+
+        get_serial_config(&conf->serial);
 
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
@@ -429,6 +432,9 @@ void CLuaRoutine::start()
         printf("Start: have BluetoothHidEvent() function\n");
         _get_raw_bt_hid_events = true;
     }
+
+    if (conf.serial.enabled)
+        start_acc_serial(&conf.serial);
 }
 
 void CLuaRoutine::loop(uint64_t time_us)
@@ -454,6 +460,9 @@ void CLuaRoutine::loop(uint64_t time_us)
             }
         }
     }
+
+    if (_serial_enabled)
+        process_serial();
 
     double time_ms = (double)time_us/(double)1000;
 
@@ -492,6 +501,12 @@ void CLuaRoutine::stop()
         full_channel_off(channel_id);
         _channel_switch_off_at_us[channel_id] = 0;
     }
+
+    if (_serial_enabled)
+    {
+        acc_port.serial_stop();
+        _serial_enabled = false;
+    }
 }
 
 lua_script_state_t CLuaRoutine::lua_script_state()
@@ -500,6 +515,37 @@ lua_script_state_t CLuaRoutine::lua_script_state()
         return lua_script_state_t::INVALID;
     else
         return lua_script_state_t::VALID;
+}
+
+void CLuaRoutine::process_serial()
+{
+    acc_port.serial_loop();
+    std::string serial_data = "";
+    if (_serial_mode_line)
+    {
+        if (acc_port.serial_line_available())
+            serial_data = acc_port.serial_get_line();
+    }
+    else
+    {
+        while(acc_port.serial_data_available())
+        {
+            serial_data += acc_port.serial_get_character();
+
+            if (serial_data.length() > 300)
+                break;
+        }
+    }
+
+    if (serial_data.size() == 0)
+        return;
+
+    lua_getglobal(_lua_state, "SerialData");
+    if (lua_isfunction(_lua_state, -1))
+    {
+        lua_pushstring(_lua_state, serial_data.c_str());
+        pcall(1, 0, 0);
+    }
 }
 
 //////////////////////////////////// LUA //////////////////////////////////////////////////////
@@ -690,6 +736,36 @@ void CLuaRoutine::get_min_max_entry(struct menu_entry *entry)
     entry->minmax.UoM = get_string_field("uom");
 }
 
+void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
+{
+    lua_getfield(_lua_state, -1, "serial");
+    if (lua_istable(_lua_state, -1))
+    {
+        serial_config->enabled   = get_bool_field("enabled");
+        serial_config->baud      = get_int_field("baud");
+        serial_config->stop_bits = get_int_field("stop_bits");
+        serial_config->line_mode = get_bool_field("line_mode"); 
+        _serial_mode_line        = serial_config->line_mode;
+
+        std::string parity       = get_string_field("parity");
+
+        if (parity == "ODD")
+            serial_config->parity = uart_parity_t::UART_PARITY_ODD;
+        else if (parity == "EVEN")
+            serial_config->parity = uart_parity_t::UART_PARITY_EVEN;
+        else
+            serial_config->parity = uart_parity_t::UART_PARITY_NONE;
+
+        if (serial_config->stop_bits != 1 && serial_config->stop_bits != 2)
+            serial_config->stop_bits = 1;
+    }
+    else
+    {
+        serial_config->enabled = false;
+    }
+    lua_pop(_lua_state, 1);
+}
+
 int CLuaRoutine::get_int_field(const char *field_name)
 {
     int number;
@@ -737,6 +813,23 @@ bool CLuaRoutine::is_channel_number_valid(int channel_number)
         return true;
     else
         return false;
+}
+
+void CLuaRoutine::start_acc_serial(serial_config_t* serial_config)
+{
+    if (g_SavedSettings->get_debug_dest() == CSavedSettings::setting_debug::ACC_PORT)
+    {
+        printf("CLuaRoutine::start_acc_serial: Accessory port is the debug destination, serial will not be available to script\n");
+        print(text_type_t::ERROR, "Serial requested but unavailable: change 'Config -> Hardware Config -> Debug destination' from 'Accessory port'");
+    }
+    else
+    {
+        acc_port.serial_set_baud(serial_config->baud);
+        acc_port.serial_set_format(serial_config->stop_bits, serial_config->parity);
+        acc_port.serial_set_line_mode(serial_config->line_mode);
+        acc_port.serial_start();
+        _serial_enabled = true;
+    }
 }
 
 /////////////////////////////////////
@@ -877,9 +970,9 @@ int CLuaRoutine::lua_acc_io_write(lua_State *L)
     }
 
     if (state)
-        acc_port.set_io_port_state(io_port, ExtInputPortState::OUTPUT_HIGH);
+        acc_port.io_set_port_state(io_port, ExtInputPortState::OUTPUT_HIGH);
     else
-        acc_port.set_io_port_state(io_port, ExtInputPortState::OUTPUT_LOW);
+        acc_port.io_set_port_state(io_port, ExtInputPortState::OUTPUT_LOW);
 
     return 1;
 }
@@ -900,11 +993,31 @@ int CLuaRoutine::lua_acc_io_input(lua_State *L)
             return 0;
     }
 
-    acc_port.set_io_port_state(io_port, ExtInputPortState::INPUT);
+    acc_port.io_set_port_state(io_port, ExtInputPortState::INPUT);
 
     return 1;
 }
 
+int CLuaRoutine::lua_acc_serial_write(lua_State *L)
+{
+    size_t len;
+    const char* line = lua_tolstring(L, 1, &len);
+    if (len == 0)
+        return 0;
+
+    if (_serial_mode_line)
+    {
+        std::string str(line, len);
+        acc_port.serial_write_line(str);
+    }
+    else
+    {
+        for(size_t n=0; n < len; n++)
+            acc_port.serial_write(line[n]);
+    }
+
+    return 1;
+}
 
 // Params:
 // bool: State - true=enabled, false=disabled

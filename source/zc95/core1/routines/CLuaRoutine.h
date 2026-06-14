@@ -45,6 +45,7 @@ class CLuaRoutine: public CRoutine
         audio_mode_t get_audio_processing_mode();
         void get_multi_choice_entry(struct menu_entry *entry);
         void get_min_max_entry(struct menu_entry *entry);
+        void get_serial_config(serial_config_t* serial_config);
         int get_int_field(const char *field_name);
         std::string get_string_field(const char *field_name);
         bool get_bool_field(const char *field_name);
@@ -54,6 +55,8 @@ class CLuaRoutine: public CRoutine
         int run_lua_loop (double time_ms);
         int run_lua_loop_thread(double time_ms);
         void channel_pulse_processing();
+        void start_acc_serial(serial_config_t* serial_config);
+        void process_serial();
 
         static void s_lua_hook(lua_State *L, lua_Debug *ar);
 
@@ -68,6 +71,7 @@ class CLuaRoutine: public CRoutine
         int lua_set_pulse_width(lua_State *L);
         int lua_acc_io_write(lua_State *L);
         int lua_acc_io_input(lua_State *L);
+        int lua_acc_serial_write(lua_State *L);
         int lua_enable_triphase(lua_State *L);
         int lua_link_channel(lua_State *L);
         int lua_delay_ms(lua_State *L);
@@ -89,4 +93,7 @@ class CLuaRoutine: public CRoutine
         int _instruction_count = 0;
         const int _hook_call_frequency = 25;
         bool _get_raw_bt_hid_events = false; // true if the routine has a BluetoothHidEvent function
+
+        bool _serial_mode_line = false;
+        bool _serial_enabled = false;
 };

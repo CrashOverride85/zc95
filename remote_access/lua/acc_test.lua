@@ -13,6 +13,13 @@ Config = {
             uom = "ms",
             default = _delay_ms
          }
+    },
+    serial = {
+      enabled = true,
+      parity = "NONE",
+      stop_bits = 1,
+      baud = 115200,
+      line_mode = true
     }
 }
 
@@ -50,4 +57,10 @@ function NextIoLine()
     zc.AccIoWrite(1, true)
     _active_io_line = 1
   end
+
+  zc.AccSerialWrite("SWAP");
+end
+
+function SerialData(data)
+  print("> " .. data)
 end

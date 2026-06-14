@@ -93,6 +93,7 @@
 #define ACC_PORT_UART uart1
 
 #define SERIAL_TX_QUEUE_SIZE 2000 // only used when in remote access/serial mode
+#define SERIAL_ACC_RX_QUEUE_SIZE 255 // buffer size for inbound serial over the accessory port
 
 #define LUA_UPLOAD_BUFFER_SIZE  4096 // Will probably break if not a multiple of 4096, likely also depends on the script slot sizes in flash (see LuaScripts/LuaScripts.S)
 
