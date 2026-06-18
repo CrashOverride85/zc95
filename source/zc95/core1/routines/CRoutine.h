@@ -92,12 +92,22 @@ struct menu_entry
     struct audio_view audioview;
 };
 
+struct serial_config_t
+{
+    bool enabled;
+    uint32_t baud;
+    uint8_t stop_bits;
+    uart_parity_t parity;
+    bool line_mode;
+};
+
 struct routine_conf
 {
     std::string name;
     std::vector<output_type> outputs;
     std::vector<menu_entry> menu;
     std::string button_text[(int)soft_button::BUTTON_MAX];
+    serial_config_t serial {false, 115200, 1, uart_parity_t::UART_PARITY_NONE, false};
     bool force_channel_isolation = true;  // If true, routine cannot disable channel isolation. If false, routine is prefixed with "(!)" in menu as a warning
     audio_mode_t audio_processing_mode = audio_mode_t::OFF;
     uint16_t loop_freq_hz = 0;
@@ -115,7 +125,7 @@ class CRoutine
         {
             if (_started)
             {
-                acc_port.reset();
+                acc_port.io_reset();
                 set_all_channels_off();
             }
         };

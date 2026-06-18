@@ -158,6 +158,7 @@ Optional fields:
 * `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be grouped together, instead of appearing in one long list (useful for scripts with many options)
 * `audio_processing_mode` - if the script can use audio, sets the mode. Currently either `OFF` (default) or `AUDIO_INTENSITY`. See audio section later.
 * `bluetooth_remote_passthrough` - if present and set to `True`, keypresses from connected to bluetooth remotes are passed though to the `BluetoothRemoteKeypress()` function, instead of using the configured mappings from the config menu. See `BluetoothRemoteKeypress()` notes later for more details
+* `serial` - see later "Serial I/O" section for options available in the `serial` block. If supplied, allows access to the serial lines on the accessory port from the script.
 
 A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
 
@@ -363,6 +364,14 @@ This is the default state of the lines from power on, and each is reset to be an
 
 When the state of an I/O line set to input changes, the `ExternalTrigger` method in the Lua script (if present) is called - see description of `ExternalTrigger` for more details.
 
+### AccSerialWrite
+```
+Params:
+    * String to write to serial on accessory port
+```
+See later "Serial I/O" section.
+
+
 ### DelayMs
 ```
 Params:
@@ -418,6 +427,9 @@ If `bluetooth_remote_passthrough = false` (or is absent), this function is never
 Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project that can be paired with the ZC95 and use this functionality [HidExample](../misc/Bluetooth/HidExample/).
 
 When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particularly familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
+
+### SerialData(data)
+If serial enabled, is called whenever serial data is received. See "Serial I/O" section.
 
 ### AudioIntensityChange(left_chan, right_chan, virt_chan)
 Receive audio data from aux socket.
@@ -500,6 +512,39 @@ With channel 1 and 2 linked, using the default pulse width of 150, at three diff
 
 *100% Offset* - the pulse on the linked channel starts as the pulse on the lead channel finishes  (result of `zc.LinkChannels(1, 2, 100)`)
 
+## Serial I/O
+If enabled in the `Config` block, Lua scripts can interact with devices connected via serial on the **Accessory** port.
+
+To enable, include a serial block in `Config`, e.g:
+```
+    serial = {
+      enabled = true,
+      parity = "NONE",
+      stop_bits = 1,
+      baud = 9600,
+      line_mode = true
+    }
+```
+
+Fields:
+* `enabled` - enables serial access. Defaults to false.
+* `parity` - valid options are `ODD`, `EVEN` or `NONE` (default)
+* `stop_bits` - valid options are 1 or 2. Defaults to 1.
+* `baud` - Only tested with 9600 and 115200, but all common rates between at least 150 and 115200 should work. Defaults to 115200.
+* `line_mode` - If true, received data is buffered until CR is received, then passed as a full line to the scripts `SerialData` function. If false, `SerialData` is called as data is received (can be 1 or a few characters at a time). When true, a CR is appended to any data sent using `zc.AccSerialWrite()`. Defaults to true.
+    
+    **Important**: with `line_mode = true`, any lines longer than 300 characters are discarded.
+
+Where a field is omitted, the default is used.
+
+When serial is enabled, it is expected that a 'SerialData` method will exist to receive serial data, e.g. to output received data:
+```
+function SerialData(data)
+  print("> " .. data)
+end
+```
+
+To send serial data, use the `zc.AccSerialWrite(<data>)` method, e.g.: `zc.AccSerialWrite("Hello world");`.
 
 [acc port]: images/lua_acc_port.png "Accessory port"
 [offset 0]: images/TriphaseOffset0pc.png "zc.LinkChannels(1, 2, 0)"
