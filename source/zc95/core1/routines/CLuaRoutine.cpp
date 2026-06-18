@@ -741,13 +741,13 @@ void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
     lua_getfield(_lua_state, -1, "serial");
     if (lua_istable(_lua_state, -1))
     {
-        serial_config->enabled   = get_bool_field("enabled");
-        serial_config->baud      = get_int_field("baud");
-        serial_config->stop_bits = get_int_field("stop_bits");
-        serial_config->line_mode = get_bool_field("line_mode"); 
+        serial_config->enabled   = get_bool_field("enabled", false);
+        serial_config->baud      = get_int_field("baud", 115200);
+        serial_config->stop_bits = get_int_field("stop_bits", 1);
+        serial_config->line_mode = get_bool_field("line_mode", true); 
         _serial_mode_line        = serial_config->line_mode;
 
-        std::string parity       = get_string_field("parity");
+        std::string parity       = get_string_field("parity", "NONE");
 
         if (parity == "ODD")
             serial_config->parity = uart_parity_t::UART_PARITY_ODD;
@@ -766,25 +766,35 @@ void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
     lua_pop(_lua_state, 1);
 }
 
-int CLuaRoutine::get_int_field(const char *field_name)
+int CLuaRoutine::get_int_field(const char *field_name, int default_value)
 {
     int number;
     lua_getfield(_lua_state, -1, field_name);
-    number = lua_tonumber(_lua_state, -1);
+
+    if (lua_type(_lua_state,-1) == LUA_TNIL)
+        number = default_value;
+    else
+        number = lua_tonumber(_lua_state, -1);
+
     lua_pop(_lua_state, 1);
     return number;
 }
 
-std::string CLuaRoutine::get_string_field(const char *field_name)
+std::string CLuaRoutine::get_string_field(const char *field_name, std::string default_value)
 {
     std::string str;
     lua_getfield(_lua_state, -1, field_name);
-    str = lua_tostring(_lua_state, -1);
+
+    if (lua_type(_lua_state,-1) == LUA_TNIL)
+        str = default_value;
+    else
+        str = lua_tostring(_lua_state, -1);
+
     lua_pop(_lua_state, 1);
     return str;
 }
 
-bool CLuaRoutine::get_bool_field(const char *field_name)
+bool CLuaRoutine::get_bool_field(const char *field_name, bool default_value)
 {
     bool ret = false;
     lua_getfield(_lua_state, -1, field_name);
@@ -792,6 +802,10 @@ bool CLuaRoutine::get_bool_field(const char *field_name)
     if (lua_isboolean(_lua_state, -1))
     {
         ret = lua_toboolean(_lua_state, -1);
+    }
+    else
+    {
+        ret = default_value;
     }
 
     lua_pop(_lua_state, 1);
@@ -823,12 +837,18 @@ void CLuaRoutine::start_acc_serial(serial_config_t* serial_config)
         print(text_type_t::ERROR, "Serial requested but unavailable: change 'Config -> Hardware Config -> Debug destination' from 'Accessory port'");
     }
     else
-    {
+    {        
         acc_port.serial_set_baud(serial_config->baud);
         acc_port.serial_set_format(serial_config->stop_bits, serial_config->parity);
         acc_port.serial_set_line_mode(serial_config->line_mode);
         acc_port.serial_start();
         _serial_enabled = true;
+
+        printf("Serial enabled with config:\n");
+        printf("\tbaud      = %lu\n", serial_config->baud);
+        printf("\tstop_bits = %d\n",  serial_config->stop_bits);
+        printf("\tline_mode = %d\n",  serial_config->line_mode);
+        printf("\tparity    = %d\n\n",serial_config->parity);
     }
 }
 

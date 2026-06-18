@@ -46,9 +46,9 @@ class CLuaRoutine: public CRoutine
         void get_multi_choice_entry(struct menu_entry *entry);
         void get_min_max_entry(struct menu_entry *entry);
         void get_serial_config(serial_config_t* serial_config);
-        int get_int_field(const char *field_name);
-        std::string get_string_field(const char *field_name);
-        bool get_bool_field(const char *field_name);
+        int get_int_field(const char *field_name, int default_value = 0);
+        std::string get_string_field(const char *field_name, std::string default_value = "");
+        bool get_bool_field(const char *field_name, bool default_value = false);
         bool is_channel_number_valid(int channel_number);
         bool runnable();
         int pcall (int nargs, int nresults, int errfunc);
