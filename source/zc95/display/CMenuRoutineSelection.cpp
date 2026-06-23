@@ -161,12 +161,6 @@ void CMenuRoutineSelection::show()
     }
 }
 
-// If a routine has any menu item that uses audio, return true
-bool CMenuRoutineSelection::is_audio_routine(routine_conf conf)
-{
-    return (conf.audio_processing_mode != audio_mode_t::OFF);
-}
-
 void CMenuRoutineSelection::populate_routine_list()
 {
     // Get a list of routines to show
@@ -174,33 +168,23 @@ void CMenuRoutineSelection::populate_routine_list()
     int index=0;
     for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
-        struct routine_conf conf;
-        CRoutine* routine = (*it).routine_maker((*it).param);
-        routine->get_config(&conf);
-
-        // Add a warning for routines that are able to disable channel isolation
-        std::string name;
-        if (conf.force_channel_isolation)
-            name = conf.name;
-        else
-            name = "(!)" + conf.name;
-
-        if (!conf.hidden_from_menu)
+        CRoutines::Routine routine = (*it);
+        
+        if (!routine.hidden)
         {
             // Hide audio routines from menu if audio hardware not present. Show everything else.        
-            if (!is_audio_routine(conf))
+            if (routine.audio_mode == audio_mode_t::OFF)
             {
-                _routine_display_list->add_option(name, index);
+                _routine_display_list->add_option(routine.script_name, index);
             }
             else
             {
                 if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
                 {
-                    _routine_display_list->add_option(name, index);
+                    _routine_display_list->add_option(routine.script_name, index);
                 }
             }
         }
         index++;
-        delete routine;
     }
 }

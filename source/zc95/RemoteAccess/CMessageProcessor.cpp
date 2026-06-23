@@ -324,25 +324,22 @@ void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
     int index=0;
     for (std::vector<CRoutines::Routine>::iterator it = _routines.begin(); it != _routines.end(); it++)
     {
-        struct routine_conf conf;
-        CRoutine* routine = (*it).routine_maker((*it).param);
-        routine->get_config(&conf);
+        CRoutines::Routine routine = (*it);
 
         // Only include patterns that either don't use audio, or use audio intensity mode. Other's won't work at all remotely. 
         // Also skip stuff that's hidden from the menu
         if 
         (
-            (conf.audio_processing_mode == audio_mode_t::OFF || conf.audio_processing_mode == audio_mode_t::AUDIO_INTENSITY) && 
-            (!conf.hidden_from_menu)
+            (routine.audio_mode == audio_mode_t::OFF || routine.audio_mode == audio_mode_t::AUDIO_INTENSITY) && 
+            (!routine.hidden)
         )
         {
             JsonObject obj = patterns.createNestedObject();
             obj["Id"] = index;
-            obj["Name"] = conf.name;
+            obj["Name"] = routine.script_name;
         }
 
         index++;
-        delete routine;
     }
 
     response_message["Result"] = "OK";

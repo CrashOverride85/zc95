@@ -53,14 +53,17 @@ CSavedSettings::~CSavedSettings()
 void CSavedSettings::save()
 {
     printf("Save changed settings to EEPROM...");
+
+    uint16_t changes_found = 0;
     for (int n=0; n < EEPROM_SIZE; n++)
     {
         if (_eeprom->read(n) != _eeprom_contents[n])
         {
             _eeprom->write(n, _eeprom_contents[n], true);
+            changes_found++;
         }
     }
-    printf("done\n");
+    printf("done (%d changes found)\n", changes_found);
 }
 
 CSavedSettings::channel_selection CSavedSettings::get_channel(uint8_t channel_id)

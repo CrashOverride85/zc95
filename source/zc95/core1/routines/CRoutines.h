@@ -5,7 +5,6 @@
 #include "CWaves.h"
 #include "CToggle.h"
 #include "CRoundRobin.h"
-#include "CClimb.h"
 #include "CTriggeredClimb.h"
 #include "CFire.h"
 #include "CClimbPulse.h"
@@ -27,6 +26,9 @@ class CRoutines
         struct Routine
         {
             routine_creator routine_maker;
+            std::string script_name;
+            bool hidden;
+            audio_mode_t audio_mode;
             int param;
         };
 
@@ -35,36 +37,54 @@ class CRoutines
             // Loop through and add all valid lua scripts
             for (uint8_t index = 0; index < lua_script_count(); index++)
             {
-                if (is_lua_script_valid(index))
-                    routines.push_back({&(CLuaRoutine::create), index});
+                add_routine_if_lua_script_valid(routines, index);
             }
             
-         // routines.push_back({&(CWaves::create)         , 0}); now a lua script
-            routines.push_back({&(CToggle::create)        , 0});
-            routines.push_back({&(CRoundRobin::create)    , 0});
-        //  routines.push_back({&(CTens::create)          , 0}); now a lua script
-        //  routines.push_back({&(CClimb::create)         , 0}); now a lua script
-            routines.push_back({&(CTriggeredClimb::create), 0});
-            routines.push_back({&(CFire::create)          , 0});
-            routines.push_back({&(CAudioThreshold::create), 0});
-            routines.push_back({&(CAudioWave::create)     , 0});
-            routines.push_back({&(CAudioIntensity::create), 0});
-            routines.push_back({&(CAudioVirtual3::create) , 0});
-            routines.push_back({&(CClimbPulse::create)    , 0});
-            routines.push_back({&(CPredicament::create)   , 0});
-            routines.push_back({&(CShockChoice::create)   , 0});
-            routines.push_back({&(CCamTrigger::create)    , 0});
-            routines.push_back({&(CBuzz::create)          , 0});
-            routines.push_back({&(CDirectPulse::create)   , 0}); // special for BLE. hidden from menu.
+            add_routine(CToggle::create         , routines);
+            add_routine(CRoundRobin::create     , routines);
+            add_routine(CTriggeredClimb::create , routines);
+            add_routine(CFire::create           , routines);
+            add_routine(CAudioThreshold::create , routines);
+            add_routine(CAudioWave::create      , routines);
+            add_routine(CAudioIntensity::create , routines);
+            add_routine(CAudioVirtual3::create  , routines);
+            add_routine(CClimbPulse::create     , routines);
+            add_routine(CPredicament::create    , routines);
+            add_routine(CShockChoice::create    , routines);
+            add_routine(CCamTrigger::create     , routines);
+            add_routine(CBuzz::create           , routines);
+            add_routine(CDirectPulse::create    , routines);  // special for BLE. hidden from menu.         
         }
 
     private:
-        static bool is_lua_script_valid(uint8_t index)
+        static void add_routine(routine_creator routine, std::vector<Routine> &routines, uint8_t param_index = 0)
+        { 
+            struct routine_conf conf;
+            CRoutine* routine_ptr = routine(param_index);
+            routine_ptr->get_config(&conf);
+            delete routine_ptr;
+
+            // Add a warning for routines that are able to disable channel isolation
+            if (!conf.force_channel_isolation)
+                conf.name = "(!)" + conf.name;
+
+            routines.push_back({routine, conf.name, conf.hidden_from_menu, conf.audio_processing_mode, 0});
+        }
+
+        static void add_routine_if_lua_script_valid(std::vector<Routine> &routines, uint8_t index)
         {
-            CLuaRoutine *lua = new CLuaRoutine(index);
-            bool is_valid = lua->is_script_valid();
-            delete lua;
-            return is_valid;
+            CLuaRoutine lua = CLuaRoutine(index);
+            bool is_valid = lua.is_script_valid();
+            if (is_valid)
+            {
+                struct routine_conf conf;
+                lua.get_config(&conf);
+
+                if (!conf.force_channel_isolation)
+                    conf.name = "(!)" + conf.name;
+
+                routines.push_back({&(CLuaRoutine::create), conf.name, conf.hidden_from_menu, conf.audio_processing_mode, index});
+            }
         }
 };
 
