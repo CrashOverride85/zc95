@@ -31,8 +31,15 @@ float CPowerLevelRamp::get_ramp_power_percent()
         return 100;
 
     float shape = (float)_saved_settings->get_extended_ramp_shape() / (float)10;
-    float shape_adjusted_ramp = s_normalized_exponential(shape, _ramp_percent / (float)100);
-    return shape_adjusted_ramp * 100;
+    if (shape == 0)
+        return _ramp_percent;
+
+    // s_normalized_exponential needs to see a % between 0 - 100, regradless of what the start point was.
+    float shape_adjusted_ramp = s_normalized_exponential(shape, get_ramp_progress_percent() / (float)100);
+
+    // generate output percent
+    float ramp_up_portion = 100 - _saved_settings->get_extended_ramp_level(); // get_extended_ramp_level returns the configured start of ramp as a %
+    return _saved_settings->get_extended_ramp_level() + (ramp_up_portion * shape_adjusted_ramp);
 }
 
 float CPowerLevelRamp::get_ramp_progress_percent()

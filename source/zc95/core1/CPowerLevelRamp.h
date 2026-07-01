@@ -22,7 +22,7 @@ class CPowerLevelRamp
     private:
         void calc_ramp_percent();
 
-        float  _ramp_percent = 0; // 100=full power
+        float  _ramp_percent = 0; // 100=full power. This starts at whatever percentage is returned by get_extended_ramp_level (i.e. the user configured starting level), and ends at 100 when the ramp completes.
         bool _ramp_in_progress = false;
         uint64_t _ramp_start_time_us = 0;
         uint64_t _last_calc_us = 0;
