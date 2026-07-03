@@ -58,6 +58,9 @@ void CLuaRoutine::CLuaRoutine_common()
     _last_lua_error = "";
     _lua_state = NULL;
     _script_valid = ScriptValid::UNKNOWN;
+    _lua_loop_thread = NULL;
+    _lua_loop_thread_ref = LUA_NOREF;
+    _suspend_lua_loop_execution_until_us = 0;
 
     _lua_state = luaL_newstate_ud(this);
     luaL_openlibs(_lua_state);
@@ -282,6 +285,10 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
         lua_pushinteger(_lua_state, new_value);
         pcall(2, 0, 0);
     }
+    else
+    {
+        lua_pop(_lua_state, 1);
+    }
 }
 
 void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
@@ -296,6 +303,10 @@ void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
         lua_pushinteger(_lua_state, menu_id);
         lua_pushinteger(_lua_state, choice_id);
         pcall(2, 0, 0);
+    }
+    else
+    {
+        lua_pop(_lua_state, 1);
     }
 }
 
@@ -312,6 +323,10 @@ void CLuaRoutine::soft_button_pushed (soft_button button, bool pushed)
         {
             lua_pushboolean(_lua_state, pushed);
             pcall(1, 0, 0);
+        }
+        else
+        {
+            lua_pop(_lua_state, 1);
         }
     }
 }
@@ -371,6 +386,10 @@ void CLuaRoutine::trigger(trigger_socket socket, trigger_part part, bool active)
         lua_pushboolean(_lua_state, active);
         pcall(3, 0, 0);
     }
+    else
+    {
+        lua_pop(_lua_state, 1);
+    }
 }
 
 void CLuaRoutine::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
@@ -383,6 +402,10 @@ void CLuaRoutine::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
         lua_pushstring(_lua_state, keypress.c_str());
         pcall(1, 0, 0);
     }
+    else
+    {
+        lua_pop(_lua_state, 1);
+    }
 }
 
 void CLuaRoutine::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan)
@@ -394,6 +417,10 @@ void CLuaRoutine::audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t
         lua_pushinteger(_lua_state, right_chan);
         lua_pushinteger(_lua_state, virt_chan);
         pcall(3, 0, 0);
+    }
+    else
+    {
+        lua_pop(_lua_state, 1);
     }
 }
 
@@ -422,6 +449,7 @@ void CLuaRoutine::start()
     }
     else
     {
+        lua_pop(_lua_state, 1);
         set_all_channels_power(POWER_FULL);
     }
 
@@ -432,6 +460,7 @@ void CLuaRoutine::start()
         printf("Start: have BluetoothHidEvent() function\n");
         _get_raw_bt_hid_events = true;
     }
+    lua_pop(_lua_state, 1);
 
     if (conf.serial.enabled)
         start_acc_serial(&conf.serial);
@@ -495,6 +524,13 @@ void CLuaRoutine::channel_pulse_processing()
 
 void CLuaRoutine::stop()
 {
+    if (_lua_state && _lua_loop_thread_ref != LUA_NOREF)
+    {
+        luaL_unref(_lua_state, LUA_REGISTRYINDEX, _lua_loop_thread_ref);
+        _lua_loop_thread_ref = LUA_NOREF;
+        _lua_loop_thread = NULL;
+    }
+
     set_all_channels_power(0);
     for (int channel_id=0; channel_id < CHANNEL_COUNT; channel_id++)    
     {
@@ -546,6 +582,10 @@ void CLuaRoutine::process_serial()
         lua_pushstring(_lua_state, serial_data.c_str());
         pcall(1, 0, 0);
     }
+    else
+    {
+        lua_pop(_lua_state, 1);
+    }
 }
 
 //////////////////////////////////// LUA //////////////////////////////////////////////////////
@@ -570,68 +610,109 @@ int CLuaRoutine::pcall (int nargs, int nresults, int errfunc)
 
 int CLuaRoutine::run_lua_loop(double time_ms)
 {
-    if (_suspend_lua_loop_execution_until_us == 0 )
+    if (!_lua_loop_thread)
     {
-        // Not suspended
-        _lua_loop_thread = lua_newthread(_lua_state);
-        run_lua_loop_thread(time_ms);
-    }
-
-    else if (_suspend_lua_loop_execution_until_us > time_us_64())
-    {
-        // Suspended, not time to resume yet
-    }
-
-    else
-    {
-        // Suspended, now time to resume
-        _suspend_lua_loop_execution_until_us = 0;
-        run_lua_loop_thread(time_ms);
-    }
-
-    return 0;
-}
-
-int CLuaRoutine::run_lua_loop_thread(double time_ms)
-{
-    lua_getglobal(_lua_loop_thread, "Loop");
-    if (lua_isfunction(_lua_loop_thread, -1))
-    {
-        lua_pushnumber(_lua_loop_thread, time_ms);
-            
-        _instruction_count = 0;
-        int retval = lua_resume(_lua_loop_thread, 1);
-        if (retval == LUA_YIELD)
+        if (!create_loop_thread())
         {
-            if (_suspend_lua_loop_execution_until_us == 0) // Only expecting LUA_YIELD if zc.DelayMs() was used, which would set _suspend_lua_loop_execution_until_us.
-                _suspend_lua_loop_execution_until_us = 1;
-        }
-        else if (retval)
-        {
-            // Not LUA_YIELD and non-zero means error
-            const char *err = lua_tostring(_lua_loop_thread, -1);
-            printf("CLuaRoutine::run_lua_loop_thread error: %s (retval = %d)\n", err, retval);
-            print(text_type_t::ERROR, "Script stopped... error: \n%s", err);
             _script_valid = ScriptValid::INVALID;
             stop();
+            return -1;
         }
-        else
-        {
-            // successful completion of _lua_loop_thread, remove from main _lua_state
-            lua_pop(_lua_state, 1);
-        }
+    }
+
+    uint64_t now = time_us_64();
+
+    int nargs = 0;
+
+    if (_suspend_lua_loop_execution_until_us != 0)
+    {
+        if (now < _suspend_lua_loop_execution_until_us)
+            return 0;
+
+        // Resume from inside zc.DelayMs().
+        // Don't pass time_ms here, otherwise DelayMs() would return time_ms
+        _suspend_lua_loop_execution_until_us = 0;
+        nargs = 0;
     }
     else
     {
-        // There must be a loop function, or the script isn't going to work
-        printf("CLuaRoutine::loop(): No loop function in script!\n");
-        print(text_type_t::ERROR, "Script stopped... no Loop function found in script!");
-        _script_valid = ScriptValid::INVALID;
-        stop();
-        return -1;
+        // Normal loop: wrapper is waiting for a new time_ms.
+        lua_pushnumber(_lua_loop_thread, time_ms);
+        nargs = 1;
     }
 
-    return 0;
+    _instruction_count = 0;
+    int retval = lua_resume(_lua_loop_thread, nargs);
+
+    if (retval == LUA_YIELD)
+    {
+        return 0;
+    }
+
+    if (retval != 0)
+    {
+        const char *err = lua_tostring(_lua_loop_thread, -1);
+        printf("CLuaRoutine::run_lua_loop error: %s retval=%d\n", err, retval);
+
+        print(text_type_t::ERROR, "Script stopped... error: \n%s", err);
+        _script_valid = ScriptValid::INVALID;
+        stop();
+        return retval;
+    }
+
+    printf("Lua loop runner unexpectedly finished\n");
+    _script_valid = ScriptValid::INVALID;
+    stop();
+    return -1;
+}
+
+bool CLuaRoutine::create_loop_thread()
+{
+    if (_lua_loop_thread_ref != LUA_NOREF)
+    {
+        luaL_unref(_lua_state, LUA_REGISTRYINDEX, _lua_loop_thread_ref);
+        _lua_loop_thread_ref = LUA_NOREF;
+        _lua_loop_thread = NULL;
+    }
+
+    _lua_loop_thread = lua_newthread(_lua_state);
+    _lua_loop_thread_ref = luaL_ref(_lua_state, LUA_REGISTRYINDEX);
+
+    // Add hook so that an instruction limit can be added
+    lua_sethook(_lua_loop_thread, CLuaRoutine::s_lua_hook, LUA_MASKCOUNT, _hook_call_frequency);
+
+    const char *runner =
+        "while true do\n"
+        "    local time_ms = coroutine.yield()\n"
+        "    Loop(time_ms)\n"
+        "end\n";
+
+    if (luaL_loadstring(_lua_loop_thread, runner) != 0)
+    {
+        printf("Failed to load Lua loop runner: %s\n", lua_tostring(_lua_loop_thread, -1));
+        luaL_unref(_lua_state, LUA_REGISTRYINDEX, _lua_loop_thread_ref);
+        _lua_loop_thread_ref = LUA_NOREF;
+        _lua_loop_thread = NULL;
+        return false;
+    }
+
+    // Start the wrapper. It should run until the first coroutine.yield(),
+    // before calling Loop().
+    int retval = lua_resume(_lua_loop_thread, 0);
+
+    if (retval != LUA_YIELD)
+    {
+        printf("Lua loop runner did not yield as expected; retval=%d\n", retval);
+        if (retval != 0)
+            printf("Error: %s\n", lua_tostring(_lua_loop_thread, -1));
+
+        luaL_unref(_lua_state, LUA_REGISTRYINDEX, _lua_loop_thread_ref);
+        _lua_loop_thread_ref = LUA_NOREF;
+        _lua_loop_thread = NULL;
+        return false;
+    }
+
+    return true;
 }
 
 void CLuaRoutine::s_lua_hook(lua_State *L, lua_Debug *ar)
@@ -639,13 +720,13 @@ void CLuaRoutine::s_lua_hook(lua_State *L, lua_Debug *ar)
     CLuaRoutine *ptr = (CLuaRoutine*)(L->l_G->ud);
     if (ptr)
     {
-        ptr->lua_hook(ar);
+        ptr->lua_hook(L, ar);
     }
 }
 
-// If a Lua function continuously executes for more than about LUA_MAX_INTRUCTIONS, kill the 
+// If a Lua function continuously executes for more than about LUA_MAX_INSTRUCTIONS, kill the 
 // script. This is to protect from infinite loops locking up the box.
-void CLuaRoutine::lua_hook(lua_Debug *ar)
+void CLuaRoutine::lua_hook(lua_State *L, lua_Debug *ar)
 {
     if (ar->event == LUA_HOOKCOUNT)
     {
@@ -653,8 +734,7 @@ void CLuaRoutine::lua_hook(lua_Debug *ar)
         if (_instruction_count > LUA_MAX_INSTRUCTIONS)
         {
             printf("CLuaRoutine(): Terminating execution of Lua script due to instruction limit being reached\n");
-            luaL_error(_lua_state, "Instruction limit reached");
-            return;
+            luaL_error(L, "Instruction limit reached");
         }
     }
 }
@@ -894,7 +974,7 @@ int CLuaRoutine::lua_channel_on(lua_State *L)
 
     full_channel_on(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
-    return 1;
+    return 0;
 }
 
 // Takes one param: channel number (1-4)
@@ -905,7 +985,7 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
 
     full_channel_off(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
-    return 1;
+    return 0;
 }
 
 // Params: 
@@ -922,7 +1002,7 @@ int CLuaRoutine::lua_channel_pulse_ms(lua_State *L)
     _channel_switch_off_at_us[chan-1] = time_us_64() + (duration_ms * 1000);
     full_channel_on(chan-1);
 
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -936,7 +1016,7 @@ int CLuaRoutine::lua_set_power(lua_State *L)
     if (power < 0 || power > 1000) return 0;
 
     full_channel_set_power(chan-1, power);
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -950,7 +1030,7 @@ int CLuaRoutine::lua_set_freq(lua_State *L)
     if (freq <= 0 || freq > 300) return 0;
 
     full_channel_set_freq(chan-1, freq);
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -968,7 +1048,7 @@ int CLuaRoutine::lua_set_pulse_width(lua_State *L)
     if (neg < 0 || neg > 255) return 0;
 
     full_channel_set_pulse_width(chan-1, pos, neg);
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -994,7 +1074,7 @@ int CLuaRoutine::lua_acc_io_write(lua_State *L)
     else
         acc_port.io_set_port_state(io_port, ExtInputPortState::OUTPUT_LOW);
 
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -1015,7 +1095,7 @@ int CLuaRoutine::lua_acc_io_input(lua_State *L)
 
     acc_port.io_set_port_state(io_port, ExtInputPortState::INPUT);
 
-    return 1;
+    return 0;
 }
 
 int CLuaRoutine::lua_acc_serial_write(lua_State *L)
@@ -1036,7 +1116,7 @@ int CLuaRoutine::lua_acc_serial_write(lua_State *L)
             acc_port.serial_write(line[n]);
     }
 
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -1045,7 +1125,7 @@ int CLuaRoutine::lua_enable_triphase(lua_State *L)
 {
     bool state = lua_toboolean(L, 2);
     set_channel_isolation(state);
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -1063,7 +1143,7 @@ int CLuaRoutine::lua_link_channel(lua_State *L)
     if (offset < 0 || offset > 100) return 0;
 
     full_channel_link_channel(lead-1, linked-1, offset);
-    return 1;
+    return 0;
 }
 
 // Params:
@@ -1074,7 +1154,10 @@ int CLuaRoutine::lua_delay_ms(lua_State *L)
 
     if (delay_ms < 0 || delay_ms > 10000) return 0;
 
-    _suspend_lua_loop_execution_until_us = time_us_64() + (delay_ms * 1000);
+    CLuaRoutine *ptr = (CLuaRoutine*)(L->l_G->ud);
+    if (ptr)
+        ptr->_suspend_lua_loop_execution_until_us =
+            time_us_64() + ((uint64_t)delay_ms * 1000);
 
     return lua_yield(L, 0);
 }
@@ -1097,5 +1180,5 @@ int CLuaRoutine::lua_set_menu_option(lua_State *L)
 
     set_menu_value(menu_id, value);
 
-    return 1;
+    return 0;
 }
