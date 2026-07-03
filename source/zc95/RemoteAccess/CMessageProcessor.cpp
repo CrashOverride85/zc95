@@ -354,7 +354,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
-    DynamicJsonDocument response_message(2500);
+    DynamicJsonDocument response_message(4096);
 
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
@@ -435,7 +435,16 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
 
         response_message["Result"] = "OK";
     }
-        
+
+    if (response_message.overflowed())
+    {
+        response_message.clear();
+        response_message["Type"]   = "PatternDetail";
+        response_message["MsgId"]  = msg_count;
+        response_message["Result"] = "ERROR";
+        response_message["Error"]  = "Insufficient memory to generate response";
+    }
+
     std::string generatedJson;
     serializeJson(response_message, generatedJson);
     _send(generatedJson);
