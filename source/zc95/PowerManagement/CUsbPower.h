@@ -15,6 +15,7 @@ class CUsbPower
         CUsbPower(hw_variant_t variant);
         void set_cc1_voltage_mV(int16_t mv);
         void set_cc2_voltage_mV(int16_t mv);
+        void update_input_current_limit(bool force_update);
         bool ext_power_good();
         BQ25601::charge_status_enum charge_status();
         void loop();
@@ -31,7 +32,6 @@ class CUsbPower
         usb_power_t get_usb_power();
         std::string usb_power_status_string(usb_power_t usb_power_status);
         void update_usb_power_status();
-        void update_input_current_limit();
         uint16_t get_current_limit_ma(usb_power_t usb);
         void set_charge_current();
         constexpr time_us_t SecondsInUs(int seconds) { return (seconds * 1000000); }

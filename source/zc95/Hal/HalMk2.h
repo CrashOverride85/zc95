@@ -40,6 +40,7 @@ class HalMk2 : public IHal
         void set_mkII_variant();
         void set_display_brightness();
         void init_pwm_pin(uint8_t gpio);
+        void get_inital_usb_cc_values();
         hw_variant_t _variant;
         
         TCA9534* _tca9534_ext = NULL;
