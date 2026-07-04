@@ -191,11 +191,18 @@ int main()
     
     // Serial on acc port
     gpio_set_function(PIN_ACC_UART_TX, GPIO_FUNC_UART);
-    gpio_set_function(PIN_ACC_UART_RX, GPIO_FUNC_UART);    
-    
+    gpio_set_function(PIN_ACC_UART_RX, GPIO_FUNC_UART);
+
     // For now, until settings loaded from eeprom, send debugging info to accessory port
     CDebugOutput::set_debug_destination(CDebugOutput::debug_dest_t::ACC);
     printf("\n\nZC95 Startup, firmware version: %s\n", firmware_info.firmware_version);
+
+    sleep_ms(100); // wait for eeprom to be ready
+    settings = new CSavedSettings(&eeprom);
+    g_SavedSettings = settings;
+    
+    // Now settings have (hopefully!) been loaded, set debug output as per stored config
+    CDebugOutput::set_debug_destination_from_settings(settings);   
     
     zc95_version_t hardware_version = CDetermineHardwareVersion::get_hardware_version();
 
@@ -229,15 +236,8 @@ int main()
     // Make sure there is some semi-random-ish data available
     seed_random_from_rosc();
 
-    // Note eeprom ic is on i2c bus
-    sleep_ms(100); // wait for eeprom to be ready
-    settings = new CSavedSettings(&eeprom);
-    g_SavedSettings = settings;
-
     // Configure AUX port for serial or audio use
     _hal->audio_input_enable(settings->get_aux_port_use() == CSavedSettings::setting_aux_port_use::AUDIO);
-
-    CDebugOutput::set_debug_destination_from_settings(settings);
 
     // Front panel LEDs - update brightness now saved settings are available
     led.set_all_led_colour(LedColour::Purple);

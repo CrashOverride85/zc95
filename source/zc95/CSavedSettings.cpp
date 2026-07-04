@@ -43,6 +43,16 @@ CSavedSettings::CSavedSettings(CEeprom *eeprom)
     for (int n=0; n < EEPROM_SIZE; n++)
         _eeprom_contents[n] = _eeprom->read(n);
     printf("done\n");
+
+    if (_eeprom_contents[(uint16_t)setting::EepromInit] != EEPROM_MAGIC_VAL)
+    {
+        // This should only be reachable if the EEPROM isn't working (not found, faulty, whatever).
+        // Re-populate _eeprom_contents with defaults, which the "Read eeprom..." step 
+        // above will have effectively wiped if there was an error reading the EEPROM
+        eeprom_initialise(); 
+        
+        printf("Failed to initialise EEPROM\n");
+    }
 }
 
 CSavedSettings::~CSavedSettings()

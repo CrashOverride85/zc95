@@ -155,6 +155,13 @@ void CPowerManagementMk2::add_raw_adc_readings(const uint8_t *raw_adc_readings_b
     }
 }
 
+void CPowerManagementMk2::set_inital_cc_voltages_and_set_input_current_limit(int16_t cc1_mv, int16_t cc2_mv)
+{
+    _usb_power.set_cc1_voltage_mV(cc1_mv);
+    _usb_power.set_cc2_voltage_mV(cc2_mv);
+    _usb_power.update_input_current_limit(true);
+}
+
 int CPowerManagementMk2::s_cmpfunc (const void *a, const void *b)
 {
    return ( *(uint32_t*)a - *(uint32_t*)b );

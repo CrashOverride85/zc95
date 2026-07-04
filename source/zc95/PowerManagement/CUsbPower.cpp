@@ -34,8 +34,7 @@ void CUsbPower::loop()
     if (!_active)
         return;
 
-    update_usb_power_status();
-    update_input_current_limit();
+    update_input_current_limit(false);
     set_charge_current();
 
     _charge_ctl.read_register(BQ25601_REG00);
@@ -101,9 +100,11 @@ void CUsbPower::update_usb_power_status()
     }
 }
 
-void CUsbPower::update_input_current_limit()
+void CUsbPower::update_input_current_limit(bool force_update)
 {
-    if (_time_usb_power_changed && (time_us_64() - _time_usb_power_changed) > SecondsInUs(5))
+    update_usb_power_status();
+
+    if (force_update || (_time_usb_power_changed && (time_us_64() - _time_usb_power_changed) > SecondsInUs(2)))
     {
         uint16_t limit = get_current_limit_ma(_usb_power);
         _charge_ctl.set_input_current_limit_mA(limit);
@@ -111,7 +112,6 @@ void CUsbPower::update_input_current_limit()
         _time_usb_power_changed = 0;
     }
 }
-
 
 // Use the voltage on the USB CC pins to figure out what type of charger is attached.
 // Can be fooled by dubious cables.

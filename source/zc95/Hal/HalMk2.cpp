@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
+#include "hardware/adc.h"
 #include "HalMk2.h"
 #include "../HwCheck/CDetermineHardwareVersion.h"
 #include "../FrontPanel/CFrontPanelV02.h"
@@ -50,6 +51,10 @@ HalMk2::HalMk2(CLedControl* led, CRoutineOutput** routine_output, CAnalogueCaptu
 
     // Reset LCD
     _main_board_port_exp->lcd_reset();
+
+    // On startup, get some inital values for the voltage at the USB CC lines
+    if (!_analogue_capture->is_running() && _variant == hw_variant_t::V2_2)
+        get_inital_usb_cc_values();
 }
 
 HalMk2::~HalMk2()
@@ -202,4 +207,27 @@ front_panel_version_t HalMk2::front_panel_version()
 CLedControl* HalMk2::led_control()
 {
     return _led;
+}
+
+void HalMk2::get_inital_usb_cc_values()
+{
+    if (_variant != hw_variant_t::V2_2)
+        return;
+
+    adc_init();
+    adc_gpio_init(26);
+    adc_select_input(0);
+
+    const float conversion_factor_to_mv = 3300.0f / (1 << 12);
+
+    _main_board_port_exp->set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_CC1);
+    sleep_ms(10);
+    uint16_t cc1 = adc_read();
+
+
+    _main_board_port_exp->set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_CC2);
+    sleep_ms(10);
+    uint16_t cc2 = adc_read();
+
+    _mk2_pm->set_inital_cc_voltages_and_set_input_current_limit(conversion_factor_to_mv * cc1, conversion_factor_to_mv * cc2);
 }
