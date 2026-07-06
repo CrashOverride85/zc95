@@ -133,6 +133,7 @@ add_executable(zc95
   display/config/display_options/CMenuSettingDisplayOptions.cpp
   display/config/display_options/CMenuSettingButtonBrightness.cpp
   display/config/display_options/CMenuSettingPowerLevelDisplay.cpp
+  display/config/display_options/CMenuSettingBatteryStatus.cpp
   display/config/display_options/CMenuSettingLedBrightnes.cpp
   display/config/display_options/CMenuSettingsStatusBarText.cpp
   display/config/display_options/CMenuSettingDisplayBrightness.cpp

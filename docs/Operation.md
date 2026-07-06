@@ -83,6 +83,8 @@ Configuration options so far:
     - In bar graph - Show value, rotated 90 degrees, inside the corresponding bar graph
     - Both - Enable Disappearing text display and in bar graph
 
+  - Battery status - Controls what is displayed in the battery icon: Percentage (default) or voltage
+
   - Button brightness - controls how bright the LEDs in the 4 front panel buttons are
 
   - MKII only: Display brightness - as you would expect, changes the display brightness

@@ -40,7 +40,8 @@ class CMenuSettingDisplayOptions : public CMenu
             POWER_LEVEL_DISPLAY = 1,
             BUTTON_BRIGHTNESS   = 2,
             STATUS_BAR_TEXT     = 3,
-            DISPLAY_BRIGHTNESS  = 4
+            DISPLAY_BRIGHTNESS  = 4,
+            BATTERY_STATUS      = 5
         };
 
         std::vector<setting> _settings;

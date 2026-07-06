@@ -22,6 +22,7 @@
 #include "CMenuSettingButtonBrightness.h"
 #include "CMenuSettingsStatusBarText.h"
 #include "CMenuSettingDisplayBrightness.h"
+#include "CMenuSettingBatteryStatus.h"
 
 CMenuSettingDisplayOptions::CMenuSettingDisplayOptions(
         CDisplay* display, 
@@ -107,6 +108,10 @@ void CMenuSettingDisplayOptions::show_selected_setting()
         case setting_id::DISPLAY_BRIGHTNESS:
             set_active_menu(new CMenuSettingDisplayBrightness(_display, _saved_settings));
             break;
+
+        case setting_id::BATTERY_STATUS:
+            set_active_menu(new CMenuSettingBatteryStatus(_display, _saved_settings));
+            break;
     }
 }
 
@@ -144,6 +149,7 @@ void CMenuSettingDisplayOptions::show()
 
     _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::LED_BRIGHTNESS,      "LED brightness     "));
     _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::POWER_LEVEL_DISPLAY, "Power level display"));
+    _settings.push_back(CMenuSettingDisplayOptions::setting(setting_id::BATTERY_STATUS,      "Battery status     "));
 
     // Illuminated buttons were added for v0.2 of front panel
     if (_hal->front_panel()->verion() == front_panel_version_t::v0_2)
