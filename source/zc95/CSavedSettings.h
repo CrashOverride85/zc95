@@ -75,7 +75,8 @@ class CSavedSettings
         ExtendedRampShow = 230, // Show 'Ramp start' option on all patterns, and should progress be displayed on the status bar
         LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
         BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR, // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootloader code
-        ExtenedRampShape = 233
+        ExtenedRampShape = 233,
+        BatteryStatus    = 234  // What to show inside the battery status icon
     };
 
     public:
@@ -146,6 +147,12 @@ class CSavedSettings
         {
             RUNNING_PATTERN = 0,
             BATTERY_CURRENT = 1
+        };
+
+        enum class battery_status_t
+        {
+            PERCENTAGE = 0,
+            VOLTAGE    = 1
         };
 
         enum class led_colour_format_t
@@ -275,6 +282,9 @@ class CSavedSettings
 
         status_bar_text_t get_status_bar_option();
         void set_status_bar_option(status_bar_text_t status_bar_option);
+
+        battery_status_t get_battery_status();
+        void set_battery_status(battery_status_t battery_status);
 
         uint8_t get_display_brightness_percent();
         void set_display_brightness_percent(uint8_t percent);

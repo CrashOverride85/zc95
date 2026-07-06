@@ -80,6 +80,8 @@ class CDisplay
         void draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour);
         void draw_bt_logo_if_required(int16_t x, int16_t y);
         void draw_battery_icon(int16_t x, int16_t y, battery_state_t state);
+        std::string get_battery_status_text(battery_state_t state);
+        int16_t get_battery_status_text_x(std::string text);
         void draw_power_level_indicator(int16_t x, int16_t y);
 
         // Soft buttons

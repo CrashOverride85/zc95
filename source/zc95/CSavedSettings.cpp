@@ -533,6 +533,16 @@ void CSavedSettings::set_status_bar_option(status_bar_text_t status_bar_option)
     _eeprom_contents[(uint8_t)setting::StatusBarOption] = (uint8_t)status_bar_option;
 }
 
+CSavedSettings::battery_status_t CSavedSettings::get_battery_status()
+{
+    return (battery_status_t)(_eeprom_contents[(uint8_t)setting::BatteryStatus]);
+}
+
+void CSavedSettings::set_battery_status(battery_status_t battery_status)
+{
+    _eeprom_contents[(uint8_t)setting::BatteryStatus] = (uint8_t)battery_status;
+}
+
 uint8_t CSavedSettings::get_display_brightness_percent()
 {
     uint8_t percent = (_eeprom_contents[(uint8_t)setting::DisplayBrightness]);
@@ -695,6 +705,7 @@ void CSavedSettings::eeprom_initialise()
     _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
     _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
     _eeprom_contents[(uint8_t)setting::StatusBarOption]  = (uint8_t)status_bar_text_t::RUNNING_PATTERN;
+    _eeprom_contents[(uint8_t)setting::BatteryStatus]    = (uint8_t)battery_status_t::PERCENTAGE;
 
     _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = 70;
     _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = 20;

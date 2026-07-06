@@ -314,8 +314,6 @@ void CDisplay::draw_bar(uint8_t bar_number, std::string label, uint16_t max_powe
 
 void CDisplay::draw_status_bar()
 {
-    char buffer[100] = {0};
-
     battery_state_t state;
     IPowerManagement::power_status_t power_status = _power_management->power_status();
     if (power_status == IPowerManagement::power_status_t::OnBattery)
@@ -333,20 +331,12 @@ void CDisplay::draw_status_bar()
     if (_power_management->get_battery_percentage() == 0xFF || _power_management->power_status() == IPowerManagement::power_status_t::Unknown)
         state = battery_state_t::Fault;
 
-    // Draw battery percent with icon
+    // Draw battery status (percentage or voltage) with icon
     uint16_t y = (MIPI_DISPLAY_HEIGHT-1) - status_bar_height+2;
     draw_battery_icon(0, y, state);
-    if (state == battery_state_t::Fault)
-    {
-        // Can't figure out what's going on with the battery (maybe it's missing?)...
-        snprintf(buffer, sizeof(buffer)-1, "?");
-    }
-    else
-    {
-        snprintf(buffer, sizeof(buffer)-1, "%d", _power_management->get_battery_percentage());
-    }
 
-    put_text(buffer, 4, y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
+    std::string battery_text = get_battery_status_text(state);
+    put_text(battery_text, get_battery_status_text_x(battery_text), y, hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA), false, font5x7);
 
     // Status text: either running pattern, battery current draw or ramp progress
     std::string status_text = get_status_bar_text();
@@ -407,6 +397,63 @@ std::string CDisplay::get_status_bar_text()
     }
 
     return status_text;
+}
+
+// Get the string to put inside the battery icon. Either voltage or percentage - config
+// dependant - if things are working. Or "?" if there's some kind of issue
+std::string CDisplay::get_battery_status_text(battery_state_t state)
+{
+    char battery_text[8] = {0};
+
+    if (state == battery_state_t::Fault)
+    {
+        // Can't figure out what's going on with the battery (maybe it's missing?)...
+        snprintf(battery_text, sizeof(battery_text)-1, "?");
+        return battery_text;
+    }
+
+    if (g_SavedSettings->get_battery_status() == CSavedSettings::battery_status_t::VOLTAGE)
+    {
+        int16_t battery_voltage_mV = 0;
+        if (!_power_management->get_stat(&battery_voltage_mV, IPowerManagement::power_stat_t::BatVoltage) || battery_voltage_mV < 0)
+        {
+            snprintf(battery_text, sizeof(battery_text)-1, "?");
+            return battery_text;
+        }
+
+        // When voltage is >= 10v (applies to mk1's), show "nn.n"
+        if (battery_voltage_mV >= 10000)
+        {
+            uint16_t decivolts = (battery_voltage_mV + 50) / 100;
+            snprintf(battery_text, sizeof(battery_text)-1, "%d.%d", decivolts / 10, decivolts % 10);
+        }
+
+        // When voltage is < 10v (applies to mk2's), show "n.nn"
+        else
+        {
+            uint16_t centivolts = (battery_voltage_mV + 5) / 10;
+            snprintf(battery_text, sizeof(battery_text)-1, "%d.%02d", centivolts / 100, centivolts % 100);
+        }
+    }
+    else
+    {
+        snprintf(battery_text, sizeof(battery_text)-1, "%d", _power_management->get_battery_percentage());
+    }
+
+    return battery_text;
+}
+
+// Determine whereabouts the text in the battery icon should start
+int16_t CDisplay::get_battery_status_text_x(std::string text)
+{
+    const int16_t battery_icon_width = 24;
+    const int16_t font5x7_width = 5;
+    int16_t text_width = text.length() * font5x7_width;
+
+    if (text_width >= battery_icon_width)
+        return 0;
+
+    return (battery_icon_width - text_width) / 2;
 }
 
 void CDisplay::draw_power_level_indicator(int16_t x, int16_t y)
@@ -481,7 +528,10 @@ void CDisplay::draw_battery_icon(int16_t x, int16_t y, battery_state_t state)
 
             for (uint8_t sec = 0; sec < 3; sec++)
             {
-                draw_logo(bat_logo_filled[sec], x + (sec * 8), y-1, colour);
+                if (g_SavedSettings->get_battery_status() == CSavedSettings::battery_status_t::VOLTAGE)
+                    draw_logo(bat_logo[sec], x + (sec * 8), y-1, colour); // the filled logo doesn't look right when showing voltage, as the voltage takes up too much space
+                else
+                    draw_logo(bat_logo_filled[sec], x + (sec * 8), y-1, colour);
             }
         }
         break;
@@ -686,4 +736,3 @@ void CDisplay::show_splash_screen()
 
     hagl_flush(_hagl_backend);
 }
-
