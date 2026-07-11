@@ -1,10 +1,13 @@
 #include "CPowerManagementMk2.h"
 #include <string.h>
 
+uint8_t CPowerManagementMk2::s_bq27441_read_error_count = 0;
+
 CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, hw_variant_t variant) : _usb_power(variant)
 {
     _mainboard_port_exp = mainboard_port_exp;
     _variant = variant;
+    s_bq27441_read_error_count = 0;
 
     BQ27441_ctx_t _BQ27441 = {
             .BQ27441_i2c_address = BQ27441_I2C_ADDRESS,
@@ -92,10 +95,20 @@ int16_t CPowerManagementMk2::s_BQ27441_i2cReadBytes(uint8_t DevAddress, uint8_t 
     if (bytes_written != sizeof(data))
     {
         printf("s_BQ27441_i2cReadBytes::read failed! i2c bytes_written = %d\n", bytes_written);
+        if (s_bq27441_read_error_count < 255) s_bq27441_read_error_count++;
         return false;
     }
 
-    return (i2c_read(__func__, DevAddress, dest, count, false) == count);
+    if (i2c_read(__func__, DevAddress, dest, count, false) == count)
+    {
+        s_bq27441_read_error_count = 0;
+        return true;
+    }
+    else
+    {
+        if (s_bq27441_read_error_count < 255) s_bq27441_read_error_count++;
+        return false;
+    }
 }
 
 void CPowerManagementMk2::add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len)
@@ -159,6 +172,7 @@ void CPowerManagementMk2::set_inital_cc_voltages_and_set_input_current_limit(int
 {
     _usb_power.set_cc1_voltage_mV(cc1_mv);
     _usb_power.set_cc2_voltage_mV(cc2_mv);
+    sleep_ms(100);
     _usb_power.update_input_current_limit(true);
 }
 
@@ -255,7 +269,14 @@ void CPowerManagementMk2::loop_v2_2()
     bool on_ext_power = _usb_power.ext_power_good();
     BQ25601::charge_status_enum charge_status = _usb_power.charge_status();
 
-    if (on_ext_power)
+    if (s_bq27441_read_error_count > 10)
+    {
+        // read errors from the bq27441 (fuel gauge) most likely means that there's no battery, or there's something very wrong with the battery
+        _charging_status = charging_status_t::Unknown;
+        _power_status = power_status_t::Unknown;
+    }
+
+    else if (on_ext_power)
     {
         _power_status = power_status_t::OnExternalPower;
 

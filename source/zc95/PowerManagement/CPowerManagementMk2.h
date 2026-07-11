@@ -54,6 +54,7 @@ class CPowerManagementMk2 : public IPowerManagement
         uint16_t _remaining_capacity_mah;
         uint16_t _full_capacity_mah;
         int16_t _vbus_voltage = -1;
+        static uint8_t s_bq27441_read_error_count;
 
         uint16_t _input_limit = 0;
 

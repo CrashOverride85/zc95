@@ -21,6 +21,9 @@ CUsbPower::CUsbPower(hw_variant_t variant)
         // to that, which should be fine.
 
         _charge_ctl.set_watchdog_time(BQ25601::watchdog_enum::WATCHDOG_DISABLED);
+
+        _reported_current_limit_ma = _charge_ctl.get_input_current_limit_mA();
+
         set_charge_current();
     }
     else
@@ -37,11 +40,16 @@ void CUsbPower::loop()
     update_input_current_limit(false);
     set_charge_current();
 
+    read_input_current_limit_from_charge_controller();
+}
+
+void CUsbPower::read_input_current_limit_from_charge_controller()
+{
     _charge_ctl.read_register(BQ25601_REG00);
     uint16_t charge_controller_set_input_limit = _charge_ctl.get_input_current_limit_mA();
     if (_reported_current_limit_ma != charge_controller_set_input_limit)
     {
-        printf("USB input current limit change: %d mA => %d mA\n", _reported_current_limit_ma, charge_controller_set_input_limit);  
+        printf("USB input current limit change: %d mA => %d mA\n", _reported_current_limit_ma, charge_controller_set_input_limit);
         _reported_current_limit_ma = charge_controller_set_input_limit;
     }
 }
@@ -110,6 +118,7 @@ void CUsbPower::update_input_current_limit(bool force_update)
         _charge_ctl.set_input_current_limit_mA(limit);
         printf("Setting input current limit to: %d mA\n", limit);
         _time_usb_power_changed = 0;
+        read_input_current_limit_from_charge_controller();
     }
 }
 

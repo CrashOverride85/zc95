@@ -78,7 +78,7 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 ### Misc parts
 [The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (battery, display, etc.).
 
-* Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway).
+* Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway). Be aware that a battery is _required_ for the ZC95 to function correctly. It might power on and pass the self test without it if you're lucky, but expect stability problems without it.
 
 * Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
 
@@ -297,8 +297,13 @@ Once reset, there should be a confirmation message, followed by flashing red lig
 
 Before showing the confirmation screen, the box will have confirmed the EEPROM IC can be detected, but no saved settings will have been used. 
 
+## Flashing LEDs / no or corrupted display / output fault / general stability problems
+For general erratic behaviour, the most likely cause is a problem with the battery - and is especially likely if the device sometimes powers up, but shows a red "?" in the battery indicator.
+
+Even when powered via USB, a battery must still be present for reliable operation. If you're determined to run it without a battery, try putting a 470 uF (or higher) electrolytic capacitor in place of the battery.
+
 ## Output section
-If the output section passes its self test, the OK LED, which is just above the left corner of the right most pico, should light (which should be ~1-2 seconds after power on). If it fails, this light should flash.
+If the output section passes its self test, the OK LED, which is just above the left corner of the right most pico, should light (which should be ~1-2 seconds after power on). If the self test fails, this light will flash slowly (on for 0.5s, off for 0.5s etc).
 
 There is also debugging output from the output pico on a 2 pin serial header next to it. Note that is at 3v3 level, and RS232 levels would damage it.
 

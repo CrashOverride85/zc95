@@ -20,6 +20,8 @@ class CUsbPower
         BQ25601::charge_status_enum charge_status();
         void loop();
 
+        void read_input_current_limit_from_charge_controller();
+
     private:
         enum class usb_power_t
         {
