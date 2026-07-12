@@ -107,3 +107,10 @@
 #define BOOTLOADER_SIZE_K 48
 #define PROGRAM_OFFSET (BOOTLOADER_SIZE_K * 1024)  // where does the main firmware start in flash
 
+
+
+#define MENU_ID_CHANNEL5  0xF5 // 240
+//              CHANNEL6  0xF6
+//              ...
+#define MENU_ID_NO_PARAMS 0xFE
+#define MENU_ID_RAMP      0xFF

@@ -46,6 +46,8 @@ class CLuaRoutine: public CRoutine
         void get_multi_choice_entry(struct menu_entry *entry);
         void get_min_max_entry(struct menu_entry *entry);
         void get_serial_config(serial_config_t* serial_config);
+        void get_channel_config(std::vector<channel_config_t> &channels);
+        channel_config_t get_channel_config_t(std::string channel_type, uint8_t index);
         int get_int_field(const char *field_name, int default_value = 0);
         std::string get_string_field(const char *field_name, std::string default_value = "");
         bool get_bool_field(const char *field_name, bool default_value = false);

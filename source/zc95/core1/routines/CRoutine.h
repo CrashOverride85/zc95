@@ -101,11 +101,24 @@ struct serial_config_t
     bool line_mode;
 };
 
+struct channel_config_t
+{
+    CChannel_types::channel_type type; // Internal, Collar, or None
+    uint8_t index;
+};
+
 struct routine_conf
 {
     std::string name;
     std::vector<output_type> outputs;
     std::vector<menu_entry> menu;
+    std::vector<channel_config_t> channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 3}
+    };
     std::string button_text[(int)soft_button::BUTTON_MAX];
     serial_config_t serial {false, 115200, 1, uart_parity_t::UART_PARITY_NONE, false};
     bool force_channel_isolation = true;  // If true, routine cannot disable channel isolation. If false, routine is prefixed with "(!)" in menu as a warning

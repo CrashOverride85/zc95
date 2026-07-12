@@ -17,9 +17,6 @@
 #include <string>
 #include <vector>
 
-#define MENU_ID_RAMP      0xFF
-#define MENU_ID_NO_PARAMS 0xFE
-
 class CMenuRoutineAdjust : public CMenu
 {
     public:

@@ -160,7 +160,24 @@ bool CLuaRoutine::is_script_valid()
 
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
-    get_and_validate_config(conf); 
+    get_and_validate_config(conf);
+
+    // channel_id=0 is "CHAN1" on the front panel. channel_id=4 is the first "extra" channel, 
+    // which dont't have a dedicated dials on the front panel (expected to be a shock collars)
+    for (size_t channel_id = conf->channels.size()-1; channel_id >= 4; channel_id--)
+    {
+        menu_entry extra_channel;
+        extra_channel.id = MENU_ID_CHANNEL5 + channel_id-4;
+        extra_channel.menu_type = menu_entry_type::MIN_MAX;
+        extra_channel.title = "Channel " + std::to_string(channel_id+1);
+        extra_channel.minmax.current_value = 0;
+        extra_channel.minmax.min = 0;
+        extra_channel.minmax.max = 100;
+        extra_channel.minmax.increment_step = 1;
+        extra_channel.minmax.UoM = "%";
+
+        conf->menu.emplace(conf->menu.begin(), extra_channel);
+    }
 }
 
 bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
@@ -206,6 +223,7 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         conf->audio_processing_mode = get_audio_processing_mode();
 
         get_serial_config(&conf->serial);
+        get_channel_config(conf->channels);
 
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
@@ -846,6 +864,139 @@ void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
     lua_pop(_lua_state, 1);
 }
 
+void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
+{
+    constexpr int existing_channel_count = 4;
+    constexpr int maximum_channel_count = 10;
+
+    if (channels.size() != existing_channel_count)
+    {
+        printf("CLuaRoutine::get_channel_config: Expected %d existing channels, but found %u\n", existing_channel_count, channels.size());
+        return;
+    }
+
+    // The Config table is expected to be at the top of the Lua stack
+    lua_getfield(_lua_state, -1, "channels");
+
+    if (lua_isnil(_lua_state, -1))
+    {
+        lua_pop(_lua_state, 1);
+        return;
+    }
+
+    if (!lua_istable(_lua_state, -1))
+    {
+        printf("CLuaRoutine::get_channel_config: Config.channels is not a table\n");
+        lua_pop(_lua_state, 1);
+        return;
+    }
+
+    int highest_channel_number = existing_channel_count;
+
+    /*
+     * Validate all keys before modifying the output vector.
+     *
+     * Valid keys must be integer numbers from 1 to 10. Channels 1-4 are
+     * already present in the vector and are therefore left unchanged.
+     */
+    lua_pushnil(_lua_state);
+    while (lua_next(_lua_state, -2) != 0)
+    {
+        // Key is at -2; value is at -1
+        if (!lua_isnumber(_lua_state, -2))
+        {
+            printf("CLuaRoutine::get_channel_config: Channel key is not numeric\n");
+
+            lua_pop(_lua_state, 2); // Value and key
+            lua_pop(_lua_state, 1); // Channels table
+            return;
+        }
+
+        int channel_number = lua_tonumber(_lua_state, -2);
+
+        if (channel_number < 1 ||
+            channel_number > maximum_channel_count)
+        {
+            printf("CLuaRoutine::get_channel_config: Channel number %d is outside the valid range 1-%d\n",
+                channel_number,
+                maximum_channel_count);
+
+            lua_pop(_lua_state, 2);
+            lua_pop(_lua_state, 1);
+            return;
+        }
+
+        if (channel_number > highest_channel_number)
+            highest_channel_number = channel_number;
+
+        // Remove the value, retaining the key for lua_next()
+        lua_pop(_lua_state, 1);
+    }
+
+    /*
+     * Append channels 5 through the highest configured channel.
+     * Missing or invalid entries are represented by NONE/0.
+     */
+    for (int channel_number = existing_channel_count + 1; channel_number <= highest_channel_number; channel_number++)
+    {
+        lua_rawgeti(_lua_state, -1, channel_number);
+
+        if (lua_istable(_lua_state, -1))
+        {
+            std::string channel_type = get_string_field("channel_type", "NONE");
+
+            int index = get_int_field("index", 0);
+
+            if (index < 0 || index > UINT8_MAX)
+            {
+                printf("CLuaRoutine::get_channel_config: Invalid index %d for channel %d; using NONE/0\n", index, channel_number);
+
+                channel_type = "NONE";
+                index = 0;
+            }
+
+            channels.push_back(get_channel_config_t(channel_type, index));
+        }
+        else
+        {
+            if (!lua_isnil(_lua_state, -1))
+            {
+                printf("CLuaRoutine::get_channel_config: Configuration for channel %d is not a table; using NONE/0\n", channel_number);
+            }
+
+            channels.push_back(get_channel_config_t("NONE", 0));
+        }
+
+        lua_pop(_lua_state, 1);
+    }
+
+    // Remove the Config.channels table
+    lua_pop(_lua_state, 1);
+}
+
+channel_config_t CLuaRoutine::get_channel_config_t(std::string channel_type, uint8_t index)
+{
+   CChannel_types::channel_type type;
+
+    if (!strcasecmp(channel_type.c_str(), "INTERNAL"))
+        type = CChannel_types::channel_type::CHANNEL_INTERNAL;
+
+    else if (!strcasecmp(channel_type.c_str(), "COLLAR"))
+        type = CChannel_types::channel_type::CHANNEL_COLLAR;
+    
+    else if (!strcasecmp(channel_type.c_str(), "NONE"))
+        type = CChannel_types::channel_type::CHANNEL_NONE;
+
+    else
+    {
+        type = CChannel_types::channel_type::CHANNEL_NONE;
+        index = 0;
+        print(text_type_t::ERROR, "Invalid channel type: %s\n", channel_type);
+    }
+
+    return {type, index};
+}
+
 int CLuaRoutine::get_int_field(const char *field_name, int default_value)
 {
     int number;
@@ -1172,7 +1323,7 @@ int CLuaRoutine::lua_set_menu_option(lua_State *L)
     int menu_id = lua_tointeger(L, 1);
     int value   = lua_tointeger(L, 2);
     
-    if (menu_id > 0xFF || menu_id < 0)
+    if (menu_id >= MENU_ID_CHANNEL5 || menu_id < 0)
         return 0;
 
     if (value > 0xFFFF || value < 0)
