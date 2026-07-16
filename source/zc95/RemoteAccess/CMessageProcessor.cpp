@@ -370,7 +370,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
         struct routine_conf conf;
         CRoutines::Routine routine = _routines[id];
         CRoutine* routine_ptr = routine.routine_maker(routine.param);
-        routine_ptr->get_config(&conf);
+        routine_ptr->get_routine_config(&conf);
         delete routine_ptr;
 
         response_message["Name"] = conf.name;

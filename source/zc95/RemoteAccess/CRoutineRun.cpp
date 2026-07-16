@@ -270,7 +270,7 @@ void CRoutineRun::set_pattern_config(uint8_t index)
 {
     CRoutines::Routine routine = _routines[index];
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
-    routine_ptr->get_config(&_pattern_conf);
+    routine_ptr->get_routine_config(&_pattern_conf);
     delete routine_ptr;
 }
 

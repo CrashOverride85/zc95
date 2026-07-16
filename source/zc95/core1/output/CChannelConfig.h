@@ -11,8 +11,7 @@
 
 #include "collar/CCollarComms.h"
 #include "collar/CCollarChannel.h"
-
-#include "ZC624Output/CZC624ChannelFull.h"
+#include "ZC624Output/CZC624Channel.h"
 #include "ZC624Output/CZC624Comms.h"
 
 class CChannelConfig
@@ -22,7 +21,7 @@ class CChannelConfig
         CChannelConfig(CSavedSettings *saved_settings, CPowerLevelControl *power_level_control);
         ~CChannelConfig();
 
-        void configure_channels_from_saved_config(COutputChannel** active_channels);
+        void configure_channels_from_saved_config(std::vector<COutputChannel*>* active_channels);
         void loop();
 
         CCollarComms *get_collar_comms();
@@ -33,7 +32,7 @@ class CChannelConfig
         CPowerLevelControl *_power_level_control;
         CCollarComms _collar_comms = CCollarComms(PIN_433TX); // 433MHz transmitter for collars
     
-        CZC624Comms _zc614_comms = CZC624Comms(ZC624_SPI_PORT, I2C_PORT);
+        CZC624Comms _zc624_comms = CZC624Comms(ZC624_SPI_PORT, I2C_PORT);
 };
 
 #endif  

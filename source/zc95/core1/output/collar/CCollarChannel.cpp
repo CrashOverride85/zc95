@@ -30,7 +30,7 @@ CCollarChannel::CCollarChannel(
     CCollarComms *comms, 
     CPowerLevelControl *power_level_control, 
     uint8_t channel_id) :
-    CSimpleOutputChannel(saved_settings, power_level_control, channel_id)
+    COutputChannel(saved_settings, power_level_control, channel_id)
 {
     printf("CCollarChannel(%d)\n", channel_id);
     _saved_settings = saved_settings;
@@ -66,7 +66,7 @@ void CCollarChannel::on()
 
 void CCollarChannel::pulse(uint16_t minimum_duration_ms)
 {
-    _pulse_end_time = get_time_us() + (minimum_duration_ms * 1000);
+    _pulse_end_time = time_us_64() + (minimum_duration_ms * 1000);
     transmit(_collar_level);
     _current_status = collar_status::ON;
 }
@@ -98,7 +98,7 @@ void CCollarChannel::loop(uint64_t time_us)
 
     if (_led_off_time)
     {
-        if (get_time_us() > _led_off_time)
+        if (time_us_64() > _led_off_time)
         {
             _led_off_time = 0;
             set_led_colour(LedColour::Yellow);
@@ -118,17 +118,17 @@ void CCollarChannel::set_collar_level_from_power(int16_t power)
 
 void CCollarChannel::transmit (uint8_t power)
 {
-    _led_off_time = get_time_us() + (400 * 1000);
+    _led_off_time = time_us_64() + (400 * 1000);
     set_led_colour(LedColour::Red);
 
      // If we've already transmitted something in the last 100ms, skip this transmission
-    if (get_time_us() -_last_tx_time_us < (100 * 1000))
+    if (time_us_64() -_last_tx_time_us < (100 * 1000))
         return;
 
     CSavedSettings::collar_config collar_conf;
     if (_saved_settings->get_collar_config(_channel_id, collar_conf))
     {
         _comms->transmit(collar_conf.id, (CCollarComms::collar_channel)collar_conf.channel, (CCollarComms::collar_mode)collar_conf.mode, _collar_level);
-        _last_tx_time_us = get_time_us();
+        _last_tx_time_us = time_us_64();
     }
 }

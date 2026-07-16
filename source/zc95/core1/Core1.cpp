@@ -71,30 +71,12 @@ Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_se
     _channel_config = NULL;
 
     _power_level_control = new CPowerLevelControl(saved_settings);
-
-    memset(_active_channels, 0, sizeof(_active_channels));
-    memset(_fullChannelAsSimpleChannels, 0, sizeof(_fullChannelAsSimpleChannels));
 }
 
 void Core1::init()
 {
     // Note: If channel config is changed, this will be called again
     printf("Core1::init()\n");
-
-    for (int x = 0; x < MAX_CHANNELS; x++)
-    {
-        if (_fullChannelAsSimpleChannels[x] != NULL)
-        {
-            delete _fullChannelAsSimpleChannels[x];
-            _fullChannelAsSimpleChannels[x] = NULL;
-        }
-
-        if (_active_channels[x] != NULL)
-        {
-            delete _active_channels[x];
-            _active_channels[x] = NULL;
-        }
-    }
 
     if (_channel_config != NULL)
     {
@@ -103,20 +85,14 @@ void Core1::init()
     }
 
     _channel_config = new CChannelConfig(_saved_settings, _power_level_control);
-    _channel_config->configure_channels_from_saved_config(_active_channels);
-
-    memset(_fullChannelAsSimpleChannels, 0, sizeof(_fullChannelAsSimpleChannels));
-    for (int x = 0; x < MAX_CHANNELS; x++)
-    {
-        _real_output_channel[x] = _active_channels[x];
-    }
+    _channel_config->configure_channels_from_saved_config(&_active_channels);
+    printf("Core1::init(): Active channels: %d\n", _active_channels.size());
 }
 
 Core1::~Core1()
 {
     printf("Core1::~Core1()\n");
     delete _channel_config;
-    delete_fullChannelAsSimpleChannels_and_restore_channels();
 
     if (_power_level_control != NULL)
     {
@@ -132,12 +108,11 @@ void Core1::loop()
         _active_routine->loop(time_us_64());
     }
 
-    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
-        if (_active_channels[channel_number] != NULL)
-        {
-            _active_channels[channel_number]->loop(time_us_64());
-            _active_channels[channel_number]->update_power();
-        }
+    for (uint8_t channel_id = 0; channel_id < _active_channels.size(); channel_id++)
+    {
+        _active_channels[channel_id]->loop(time_us_64());
+        _active_channels[channel_id]->update_power();
+    }
 
     _power_level_control->loop();
 
@@ -152,14 +127,11 @@ void Core1::loop()
 
     if (gFatalError)
     {
-        for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
+        for (uint8_t channel_number = 0; channel_number < _active_channels.size(); channel_number++)
         {
-            if (_active_channels[channel_number] != NULL)
-            {
-                _active_channels[channel_number]->channel_set_power(0);
-                _active_channels[channel_number]->loop(time_us_64());
-                _active_channels[channel_number]->update_power();
-            }
+            _active_channels[channel_number]->channel_set_power(0);
+            _active_channels[channel_number]->loop(time_us_64());
+            _active_channels[channel_number]->update_power();
         }
 
         _channel_config->shutdown_zc624();
@@ -170,15 +142,15 @@ void Core1::loop()
 
 void Core1::update_power_levels()
 {
-    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
+    for (uint8_t channel_id = 0; channel_id < _active_channels.size(); channel_id++)
     {
         // Send current power level being output, if changed
-        uint16_t power_level = _power_level_control->get_display_power_level(channel_number);
-        if (power_level != _output_power[channel_number])
+        uint16_t power_level = _power_level_control->get_display_power_level(channel_id);
+        if (power_level != _output_power[channel_id])
         {
             message msg = {0};
             msg.msg8[0] = MESSAGE_SET_DISPLAY_POWER;
-            msg.msg8[1] = channel_number;
+            msg.msg8[1] = channel_id;
             msg.msg8[2] = power_level & 0xFF;
             msg.msg8[3] = (power_level >> 8) & 0xFF;
 
@@ -186,24 +158,24 @@ void Core1::update_power_levels()
             {
                 // printf("Core1::update_power_levels(): send power level\n");
                 multicore_fifo_push_blocking(msg.msg32);
-                _output_power[channel_number] = power_level;
+                _output_power[channel_id] = power_level;
             }
         }
 
         // Send the current maximum power (this will be increasing automatically during ramp up)
-        uint16_t power_level_max = _power_level_control->get_max_power_level(channel_number);
-        if (power_level_max != _output_power_max[channel_number])
+        uint16_t power_level_max = _power_level_control->get_max_power_level(channel_id);
+        if (power_level_max != _output_power_max[channel_id])
         {
             message msg = {0};
             msg.msg8[0] = MESSAGE_SET_MAXIMUM_POWER;
-            msg.msg8[1] = channel_number;
+            msg.msg8[1] = channel_id;
             msg.msg8[2] = power_level_max & 0xFF;
             msg.msg8[3] = (power_level_max >> 8) & 0xFF;
 
             if (multicore_fifo_wready())
             {
                 multicore_fifo_push_blocking(msg.msg32);
-                _output_power_max[channel_number] = power_level_max;
+                _output_power_max[channel_id] = power_level_max;
             }
         }
     }
@@ -397,7 +369,7 @@ void Core1::process_message(message msg)
             else
                 _power_level_control->remote_mode_disable();
 
-            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+            for (uint8_t channel = 0; channel < _active_channels.size(); channel++)
                 update_channel_power(channel);
             break;
         }
@@ -482,61 +454,15 @@ void Core1::activate_routine(uint8_t routine_id)
 
     stop_routine();
 
-    _active_routine= routine.routine_maker(routine.param);
+    _active_routine = routine.routine_maker(routine.param);
 
     routine_conf conf;
-    _active_routine->get_config(&conf);
+    _active_routine->get_routine_config(&conf);
 
-    // Loop through all the channels the routine has requested
-    uint8_t channel = 0;
-    for (std::vector<output_type>::iterator it = conf.outputs.begin(); it != conf.outputs.end(); it++)
-    {
-        if (_active_channels[channel] == NULL)
-        {
-            printf("Core1::activate_routine(): ERROR - _active_channels[%d] == NULL\n", channel);
-        }
-        else
-        {
-            switch (*it)
-            {
-            case output_type::SIMPLE:
-                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
-                {
-                    // Routine wants a simple channel, but that channel is a full one. So use a wrapper to convert it into a simple channel
-                    _fullChannelAsSimpleChannels[channel] = new CFullChannelAsSimpleChannel(_saved_settings, (CFullOutputChannel *)_active_channels[channel], channel, _power_level_control);
-                    _active_channels[channel] = _fullChannelAsSimpleChannels[channel];
-                }
+    init();
 
-                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::SIMPLE)
-                {
-                    _active_routine->set_simple_output_channel(channel, (CSimpleOutputChannel *)_active_channels[channel]);
-                }
+    _active_routine->set_active_channels(&_active_channels);
 
-                else
-                {
-                    printf("ERROR: Unknown channel type for channel (%d)\n", channel);
-                }
-                break;
-
-            case output_type::FULL:
-                if (_active_channels[channel]->get_channel_type() == COutputChannel::channel_type::FULL)
-                {
-                    _active_routine->set_full_output_channel(channel, (CFullOutputChannel *)_active_channels[channel]);
-                }
-                else
-                {
-                    printf("CMenuRoutineSelection::activate_routine(): ERROR - routine requested FULL output channel, but chan %d is not type FULL\n", channel);
-                }
-                break;
-
-            default:
-                printf("CMenuRoutineSelection::activate_routine(): ERROR - unexpected output_type\n");
-                break;
-            }
-        }
-
-        channel++;
-    }
 
     _power_level_control->initial_ramp_start();
     _active_routine->start();
@@ -546,6 +472,8 @@ void Core1::activate_routine(uint8_t routine_id)
 
 void Core1::stop_routine()
 {
+     printf("Core1::stop_routine\n");
+
     // Stop & delete currently running routine, if any
     if (_active_routine != NULL)
     {
@@ -555,28 +483,24 @@ void Core1::stop_routine()
         _active_routine = NULL;
     }
 
+    printf("Core1::stop_routine set to off\n");
     set_output_chanels_to_off(true);
 
-    // Get rid of any FullChannelAsSimpleChannel wrappers that may have been used
-    delete_fullChannelAsSimpleChannels_and_restore_channels();
-    set_output_chanels_to_off(false);
+    printf("Core1::disable audio\n");
     set_audio_mode(audio_mode_t::OFF);
 }
 
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
 {
     // set power levels to min/off
-    for (uint8_t channel_number = 0; channel_number < MAX_CHANNELS; channel_number++)
+    for (uint8_t channel_number = 0; channel_number < _active_channels.size(); channel_number++)
     {
-        if (_active_channels[channel_number] != NULL)
-        {
-            _active_channels[channel_number]->channel_set_power(0);
+        _active_channels[channel_number]->channel_set_power(0);
 
-            // Make sure ChannelIsolation is on ready for the next routine. This should happen anyway, but just to make sure.
-            if (enable_channel_isolation && _active_channels[channel_number]->get_channel_type() == COutputChannel::channel_type::FULL)
-            {
-                ((CFullOutputChannel *)_active_channels[channel_number])->set_channel_isolation(true);
-            }
+        // Make sure ChannelIsolation is on ready for the next routine. This should happen anyway, but just to make sure.
+        if (enable_channel_isolation && _active_channels[channel_number]->get_channel_type() == CChannel_types::channel_type::CHANNEL_INTERNAL)
+        {
+            _active_channels[channel_number]->set_channel_isolation(true);
         }
     }
 
@@ -584,27 +508,12 @@ void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
     update_power_levels();
 }
 
-void Core1::delete_fullChannelAsSimpleChannels_and_restore_channels()
-{
-    for (int x = 0; x < MAX_CHANNELS; x++)
-    {
-        if (_fullChannelAsSimpleChannels[x] != NULL)
-        {
-            delete _fullChannelAsSimpleChannels[x];
-            _fullChannelAsSimpleChannels[x] = NULL;
-        }
-
-        _active_channels[x] = _real_output_channel[x];
-    }
-}
-
 void Core1::update_channel_power(uint8_t channel)
 {
-    if (channel > MAX_CHANNELS)
+    if (channel >= _active_channels.size())
         return;
 
-    if (_active_channels[channel] != NULL)
-        _active_channels[channel]->update_power();
+    _active_channels[channel]->update_power();
 }
 
 void Core1::menu_min_max_change(uint8_t menu_id, int16_t new_value)

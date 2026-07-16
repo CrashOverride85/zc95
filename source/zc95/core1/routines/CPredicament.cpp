@@ -51,12 +51,6 @@ void CPredicament::config(struct routine_conf *conf)
 {
     conf->name = "Predicament";
 
-    // Want 4x simple channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Trigger 1 invert"
     struct menu_entry menu_trg1_inv = new_menu_entry();
     menu_trg1_inv.id = menu_ids::TRG1_INV;
@@ -183,7 +177,7 @@ void CPredicament::stop()
 {
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 void CPredicament::all_channels(bool on)
@@ -191,8 +185,8 @@ void CPredicament::all_channels(bool on)
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {
         if (on)
-            simple_channel_on(x);
+            channel_on(x);
         else
-            simple_channel_off(x);
+            channel_off(x);
     }
 }

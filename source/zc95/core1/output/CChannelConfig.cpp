@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2026  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,28 +40,28 @@ CCollarComms* CChannelConfig::get_collar_comms()
     return &_collar_comms;
 }
 
-void CChannelConfig::configure_channels_from_saved_config(COutputChannel** active_channels)
+void CChannelConfig::configure_channels_from_saved_config(std::vector<COutputChannel*>* active_channels)
 {
+    // delete any existing configured chanels
+    for (size_t channel_id=0; channel_id < (*active_channels).size(); channel_id++)
+    {
+        delete (*active_channels)[channel_id];
+    }
+    (*active_channels).clear();
+
     for (int channel_id=0; channel_id < MAX_CHANNELS; channel_id++)
     {
-        // Clear all channels to start with
-        if (active_channels[channel_id] != NULL)
-        {
-            delete active_channels[channel_id];
-            active_channels[channel_id] = NULL;
-        }
-
         CSavedSettings::channel_selection channel_details = _saved_settings->get_channel(channel_id);
 
         switch (channel_details.type)
         {
             case  CChannel_types::channel_type::CHANNEL_COLLAR:
                 // FIXME: read collar ID from eeprom:
-                active_channels[channel_id] = new CCollarChannel(_saved_settings, &_collar_comms, _power_level_control, channel_id); 
+             //   active_channels[channel_id] = new CCollarChannel(_saved_settings, &_collar_comms, _power_level_control, channel_id); 
                 break;
 
             case  CChannel_types::channel_type::CHANNEL_INTERNAL:
-                active_channels[channel_id] = new CZC624ChannelFull(_saved_settings, &_zc614_comms, _power_level_control, channel_id);
+                (*active_channels).push_back(new CZC624Channel(_saved_settings, &_zc624_comms, _power_level_control, channel_details.index, channel_id));
                 break;
 
             default:
@@ -69,6 +69,8 @@ void CChannelConfig::configure_channels_from_saved_config(COutputChannel** activ
                 break;
         }
     }
+
+    printf("CChannelConfig::configure_channels_from_saved_config: active_channels.size=%d\n", (*active_channels).size());
 }
 
 void CChannelConfig::shutdown_zc624()
@@ -76,5 +78,5 @@ void CChannelConfig::shutdown_zc624()
     printf("shutting down zc624 output module\n");
     CZC624Comms::message message = {0};
     message.command = (uint8_t)CZC624Comms::spi_command_t::PowerDown;
-    _zc614_comms.send_message(message);
+    _zc624_comms.send_message(message);
 }

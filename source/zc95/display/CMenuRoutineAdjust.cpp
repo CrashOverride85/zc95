@@ -41,7 +41,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
 
     // get routine config
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
-    routine_ptr->get_config(&_active_routine_conf);
+    routine_ptr->get_routine_config(&_active_routine_conf);
     delete routine_ptr;
 
     _show_ramp_start = _saved_settings->get_extended_ramp_show_menu_option();

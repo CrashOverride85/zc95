@@ -659,7 +659,7 @@ int8_t CBtGatt::find_routine_by_name_and_set_config(std::string name)
     {
         CRoutines::Routine routine = _routines[idx];
         CRoutine* routine_ptr = routine.routine_maker(routine.param);
-        routine_ptr->get_config(&_routine_conf); // Note _routine_conf class variable
+        routine_ptr->get_routine_config(&_routine_conf); // Note _routine_conf class variable
         delete routine_ptr;
 
         if (std::string(_routine_conf.name) == name)

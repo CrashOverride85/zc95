@@ -4,12 +4,12 @@
 
 #include <stdint.h>
 #include "CCollarComms.h"
-#include "../CSimpleOutputChannel.h"
+#include "../COutputChannel.h"
 #include "../../../CSavedSettings.h"
 #include "pico/stdlib.h"
 
 
-class CCollarChannel : public CSimpleOutputChannel
+class CCollarChannel : public COutputChannel
 {
   public:
     enum class collar_status { ON, OFF };

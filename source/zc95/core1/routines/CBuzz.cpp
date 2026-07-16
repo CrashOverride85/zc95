@@ -53,12 +53,6 @@ void CBuzz::config(struct routine_conf *conf)
     conf->name = "Buzz";
     conf->button_text[(int)soft_button::BUTTON_A] = "Start";
 
-    // Want 4x simple channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // Game length
     struct menu_entry menu_game_len = new_menu_entry();
     menu_game_len.id = menu_ids::GAME_DURATION;
@@ -239,8 +233,8 @@ void CBuzz::loop(uint64_t time_us)
             _current_power_level++;
 
         _next_power_increase_us = time_us + (_power_increment_period_ms * 1000);
-        simple_channel_set_power(0, _current_power_level);
-        simple_channel_set_power(1, _current_power_level);
+        channel_set_power(0, _current_power_level);
+        channel_set_power(1, _current_power_level);
     }
 }
 
@@ -248,27 +242,27 @@ void CBuzz::stop()
 {
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 void CBuzz::shock_start()
 {
-    simple_channel_on(2);
-    simple_channel_on(3);
+    channel_on(2);
+    channel_on(3);
     _shock_start_time_us = time_us_64();
 }
 
 void CBuzz::shock_stop()
 {
-    simple_channel_off(2);
-    simple_channel_off(3);
+    channel_off(2);
+    channel_off(3);
     _shock_start_time_us = 0;
 }
 
 void CBuzz::shock_power_level(uint16_t new_power_level)
 {
-    simple_channel_set_power(2, new_power_level);
-    simple_channel_set_power(3, new_power_level);
+    channel_set_power(2, new_power_level);
+    channel_set_power(3, new_power_level);
 }
 
 void CBuzz::stop_game()
@@ -282,11 +276,11 @@ void CBuzz::stop_game()
     _shock_trigger_active = false;
     _end_game_at_us = 0;
 
-    simple_channel_set_power(0, _current_power_level);
-    simple_channel_set_power(1, _current_power_level);
+    channel_set_power(0, _current_power_level);
+    channel_set_power(1, _current_power_level);
     shock_power_level(_shock_power_level);
     for (int x=0; x < CHANNEL_COUNT; x++)    
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 void CBuzz::start_game()
@@ -299,11 +293,11 @@ void CBuzz::start_game()
     _shock_trigger_active = false;
     _end_game_at_us = 0;
 
-    simple_channel_set_power(0, _current_power_level);
-    simple_channel_set_power(1, _current_power_level);
+    channel_set_power(0, _current_power_level);
+    channel_set_power(1, _current_power_level);
     shock_power_level(_shock_power_level);
-    simple_channel_on(0);
-    simple_channel_on(1);
+    channel_on(0);
+    channel_on(1);
     _game_running = true;
 }
 

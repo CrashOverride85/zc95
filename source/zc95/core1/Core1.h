@@ -9,8 +9,6 @@
 #include "output/CChannelConfig.h"
 #include "output/collar/CCollarComms.h"
 
-#include "output/CFullChannelAsSimpleChannel.h"
-
 #include "../CSavedSettings.h"
 #include "CPowerLevelControl.h"
 #include "Core1Messages.h"
@@ -42,7 +40,6 @@ class Core1
         void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
 
     private:
-        void delete_fullChannelAsSimpleChannels_and_restore_channels();
         void process_messages();
         void process_message(message msg);
         void update_power_levels();
@@ -55,10 +52,8 @@ class Core1
 
         CChannelConfig *_channel_config;
         CRoutine *_active_routine = NULL;
-        COutputChannel* _active_channels[MAX_CHANNELS];
-        CFullChannelAsSimpleChannel *_fullChannelAsSimpleChannels[MAX_CHANNELS];
+        std::vector<COutputChannel*> _active_channels;
         CSavedSettings *_saved_settings;
-        COutputChannel *_real_output_channel[MAX_CHANNELS];
         std::vector<CRoutines::Routine>& _routines;
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    

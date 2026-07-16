@@ -3,22 +3,13 @@
 
 #include "../../globals.h"
 #include "../../AudioInput/AudioTypes.h"
-#include "../output/CSimpleOutputChannel.h"
-#include "../output/CFullOutputChannel.h"
 #include "CAccPort.h"
-
+#include "../output/COutputChannel.h"
 #include <vector>
 #include <inttypes.h>
 #include <string>
 #include <string.h>
 #include <stdarg.h>
-
-enum class output_type
-{
-    NONE,
-    SIMPLE,
-    FULL
-};
 
 enum class menu_entry_type
 {
@@ -110,7 +101,6 @@ struct channel_config_t
 struct routine_conf
 {
     std::string name;
-    std::vector<output_type> outputs;
     std::vector<menu_entry> menu;
     std::vector<channel_config_t> channels = 
     {
@@ -143,7 +133,6 @@ class CRoutine
             }
         };
     
-        virtual void get_config(struct routine_conf *conf) = 0;
         virtual void start() = 0;
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) {};
         virtual void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id) {};
@@ -154,7 +143,7 @@ class CRoutine
 
         virtual void audio_threshold_reached(uint16_t fundamental_freq, uint8_t cross_count) {};
         virtual void audio_intensity(uint8_t left_chan, uint8_t right_chan, uint8_t virt_chan) {};
-        virtual void pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
+        virtual void pulse_message(uint8_t channel_id, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us) {};
 
         virtual lua_script_state_t lua_script_state()
         {
@@ -164,25 +153,41 @@ class CRoutine
         virtual void loop(uint64_t time_us) = 0;
         virtual void stop() = 0;
 
-        void set_simple_output_channel(uint8_t channel, CSimpleOutputChannel *simple_output_channel)
+        void get_routine_config(struct routine_conf *conf)
         {
-            _started = true;
-            if (channel < MAX_CHANNELS)
-                _simple_channel[channel] = simple_output_channel;
-        };
-        
-        void set_full_output_channel(uint8_t channel, CFullOutputChannel *full_output_channel) 
+            // Call get_config for the specific routine
+            get_config(conf);
+
+            // Add a min/max menu entry for any extra channels that have been configured
+
+            // channel_id=0 is "CHAN1" on the front panel. channel_id=4 is the first "extra" channel, 
+            // which dont't have a dedicated dials on the front panel (expected to be a shock collars)
+            for (size_t channel_id = conf->channels.size()-1; channel_id >= 4; channel_id--)
+            {
+                menu_entry extra_channel;
+                extra_channel.id = MENU_ID_CHANNEL5 + channel_id-4;
+                extra_channel.menu_type = menu_entry_type::MIN_MAX;
+                extra_channel.title = "Channel " + std::to_string(channel_id+1);
+                extra_channel.minmax.current_value = 0;
+                extra_channel.minmax.min = 0;
+                extra_channel.minmax.max = 100;
+                extra_channel.minmax.increment_step = 1;
+                extra_channel.minmax.UoM = "%";
+
+                conf->menu.emplace(conf->menu.begin(), extra_channel);
+            }
+        }
+
+        void set_active_channels(std::vector<COutputChannel*>* active_channels)
         {
-            _started = true;
-            if (channel < MAX_CHANNELS)
-                _full_channel[channel] = full_output_channel;
-        };       
+            _active_channels = active_channels;
+        }
 
         static void reset_routine_conf(struct routine_conf &conf)
         {   
             conf.name = "";
-            conf.outputs.clear();
             conf.menu.clear();
+            conf.channels.clear();
             conf.audio_processing_mode = audio_mode_t::OFF;
             conf.force_channel_isolation = true;
 
@@ -192,6 +197,8 @@ class CRoutine
 
     protected:
         CAccPort acc_port;
+        virtual void get_config(struct routine_conf *conf) = 0;
+
         static struct multi_choice_option get_choice(std::string choice_name, uint8_t choice_id)
         {
              struct multi_choice_option  choice;
@@ -210,91 +217,68 @@ class CRoutine
             return entry;
         }
 
-        void simple_channel_set_power(uint8_t channel, uint16_t power)
+        void channel_pulse(uint8_t channel_id, uint16_t min_pulse_ms)
         {
-            if (channel < MAX_CHANNELS && _simple_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _simple_channel[channel]->channel_set_power(power);
+                (*_active_channels)[channel_id]->channel_pulse(min_pulse_ms);
             }
         }
 
-        void simple_channel_pulse(uint8_t channel, uint16_t min_pulse_ms)
+        void channel_single_pulse(uint8_t channel_id, uint16_t pos_us, uint16_t neg_us)
         {
-            if (channel < MAX_CHANNELS && _simple_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _simple_channel[channel]->channel_pulse(min_pulse_ms);
+                (*_active_channels)[channel_id]->channel_single_pulse(pos_us, neg_us);
             }
         }
 
-        void simple_channel_on(uint8_t channel)
+        void channel_set_power(uint8_t channel_id, uint16_t power)
         {
-            if (channel < MAX_CHANNELS && _simple_channel[channel] != NULL)
+            printf("CRoutine::channel_set_power(id=%d, power=%d)\n", channel_id, power);
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _simple_channel[channel]->channel_on();
+                (*_active_channels)[channel_id]->channel_set_power(power);
             }
         }
 
-        void simple_channel_off(uint8_t channel)
+        void channel_set_freq(uint8_t channel_id, uint16_t freq)
         {
-            if (channel < MAX_CHANNELS && _simple_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _simple_channel[channel]->channel_off();
+                (*_active_channels)[channel_id]->set_freq(freq);
             }
         }
 
-        void full_channel_pulse(uint8_t channel, uint16_t pos_us, uint16_t neg_us)
+        void channel_set_pulse_width(uint8_t channel_id, uint8_t pos_us, uint8_t neg_us)
         {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _full_channel[channel]->channel_pulse(pos_us, neg_us);
+                (*_active_channels)[channel_id]->set_pulse_width(pos_us, neg_us);
             }
         }
 
-        void full_channel_set_power(uint8_t channel, uint16_t power)
+        void channel_on(uint8_t channel_id)
         {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _full_channel[channel]->channel_set_power(power);
+                (*_active_channels)[channel_id]->on();
             }
         }
 
-        void full_channel_set_freq(uint8_t channel, uint16_t freq)
+        void channel_off(uint8_t channel_id)
         {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            if (_active_channels != NULL && channel_id < _active_channels->size())
             {
-                _full_channel[channel]->set_freq(freq);
+                (*_active_channels)[channel_id]->off();
             }
         }
 
-        void full_channel_set_pulse_width(uint8_t channel, uint8_t pos_us, uint8_t neg_us)
+        void channel_link_channel(uint8_t lead_channel_id, uint8_t linked_channel, uint8_t offset_percent)
         {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
+            if (_active_channels != NULL && lead_channel_id < _active_channels->size())
             {
-                _full_channel[channel]->set_pulse_width(pos_us, neg_us);
-            }
-        }
-
-        void full_channel_on(uint8_t channel)
-        {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
-            {
-                _full_channel[channel]->on();
-            }
-        }
-
-        void full_channel_off(uint8_t channel)
-        {
-            if (channel < MAX_CHANNELS && _full_channel[channel] != NULL)
-            {
-                _full_channel[channel]->off();
-            }
-        }
-
-        void full_channel_link_channel(uint8_t lead_channel, uint8_t linked_channel, uint8_t offset_percent)
-        {
-            if (lead_channel < MAX_CHANNELS && _full_channel[lead_channel] != NULL)
-            {
-                _full_channel[lead_channel]->link_channel(linked_channel, offset_percent);
+                (*_active_channels)[lead_channel_id]->link_channel(linked_channel, offset_percent);
             }
         }
 
@@ -308,40 +292,31 @@ class CRoutine
                 return;
             }
 
-            for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+            for (uint8_t channel_id = 0; channel_id < _active_channels->size(); channel_id++)
             {
-                if (_full_channel[chan] != NULL)
-                {
-                    _full_channel[chan]->set_channel_isolation(enabled);
-                }
+                (*_active_channels)[channel_id]->set_channel_isolation(enabled);
             }
         }
 
         void set_all_channels_power(uint16_t power)
         {
-            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
-            {
-                if (_full_channel[channel] != NULL)
-                    _full_channel[channel]->channel_set_power(power);
+            if (_active_channels == NULL) return;
 
-                if (_simple_channel[channel] != NULL)
-                    _simple_channel[channel]->channel_set_power(power);
+            for (uint8_t channel_id = 0; channel_id < _active_channels->size(); channel_id++)
+            {
+                (*_active_channels)[channel_id]->channel_set_power(power);
             }
         }
 
         void set_all_channels_off()
         {
-            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+            if (_active_channels == NULL) return;
+            
+            for (uint8_t channel_id = 0; channel_id < _active_channels->size(); channel_id++)
             {
-                if (_simple_channel[channel] != NULL)
-                    _simple_channel[channel]->channel_off();
-
-                if (_full_channel[channel] != NULL)
-                {
-                    _full_channel[channel]->off();
-                    _full_channel[channel]->set_freq(DEFAULT_FREQ_HZ);
-                    _full_channel[channel]->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
-                }
+                (*_active_channels)[channel_id]->off();
+                (*_active_channels)[channel_id]->set_freq(DEFAULT_FREQ_HZ);
+                (*_active_channels)[channel_id]->set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
             }
         }
 
@@ -382,8 +357,7 @@ class CRoutine
         }
 
     private:
-        CFullOutputChannel *_full_channel[MAX_CHANNELS] = {0};
-        CSimpleOutputChannel *_simple_channel[MAX_CHANNELS] = {0};
+        std::vector<COutputChannel*>* _active_channels = NULL;
         bool _started = false;
 };
 

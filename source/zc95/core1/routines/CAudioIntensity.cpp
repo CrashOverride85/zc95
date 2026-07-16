@@ -42,12 +42,6 @@ void CAudioIntensity::config(struct routine_conf *conf)
 {
     conf->name = "Audio Intensity";
 
-    // Want 4x full channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     conf->audio_processing_mode = audio_mode_t::AUDIO_INTENSITY;
 
     struct menu_entry menu_mono = new_menu_entry();
@@ -108,17 +102,17 @@ void CAudioIntensity::audio_intensity(uint8_t left_chan, uint8_t right_chan, uin
 
     if (_mono)
     {
-        full_channel_set_power(0, power_left);
-        full_channel_set_power(1, power_left);
-        full_channel_set_power(2, power_left);
-        full_channel_set_power(3, power_left);        
+        channel_set_power(0, power_left);
+        channel_set_power(1, power_left);
+        channel_set_power(2, power_left);
+        channel_set_power(3, power_left);        
     }
     else
     {
-        full_channel_set_power(0, power_left );
-        full_channel_set_power(1, power_left );
-        full_channel_set_power(2, power_right);
-        full_channel_set_power(3, power_right);
+        channel_set_power(0, power_left );
+        channel_set_power(1, power_left );
+        channel_set_power(2, power_right);
+        channel_set_power(3, power_right);
     }
 }
 
@@ -126,10 +120,10 @@ void CAudioIntensity::start()
 {
     set_all_channels_power(0);
     
-    full_channel_on(0);
-    full_channel_on(1);
-    full_channel_on(2);
-    full_channel_on(3);
+    channel_on(0);
+    channel_on(1);
+    channel_on(2);
+    channel_on(3);
 }
 
 void CAudioIntensity::loop(uint64_t time_us)

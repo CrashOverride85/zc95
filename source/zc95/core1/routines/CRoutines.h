@@ -61,7 +61,7 @@ class CRoutines
         { 
             struct routine_conf conf;
             CRoutine* routine_ptr = routine(param_index);
-            routine_ptr->get_config(&conf);
+            routine_ptr->get_routine_config(&conf);
             delete routine_ptr;
 
             // Add a warning for routines that are able to disable channel isolation

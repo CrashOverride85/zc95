@@ -39,12 +39,6 @@ void CToggle::config(struct routine_conf *conf)
 {
     conf->name = "Toggle";
 
-    // Want 4x simple channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Speed" - a min/max entry between 500-4000
     struct menu_entry menu_speed = new_menu_entry();
     menu_speed.id = menu_ids::SPEED;
@@ -97,7 +91,7 @@ void CToggle::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
     {
         // Switch off before changing mode
         for (int x=0; x < CHANNEL_COUNT; x++)
-            simple_channel_off(x);
+            channel_off(x);
 
         _wait_until_us = 0;
 
@@ -119,23 +113,23 @@ void CToggle::loop(uint64_t time_us)
     if (time_us > _wait_until_us)
     {
         for (int x=0; x < CHANNEL_COUNT; x++)
-            simple_channel_set_power(x, POWER_FULL);
+            channel_set_power(x, POWER_FULL);
 
         if (_current_active_channel == 1)
         {
             _current_active_channel = 2;
             if (_pulse_mode)
             {
-                simple_channel_pulse(1, 100);
-                simple_channel_pulse(3, 100);
+                channel_pulse(1, 100);
+                channel_pulse(3, 100);
             }
             else
             {
-                simple_channel_off(0);
-                simple_channel_off(2);
+                channel_off(0);
+                channel_off(2);
 
-                simple_channel_on(1);
-                simple_channel_on(3);
+                channel_on(1);
+                channel_on(3);
             }
             
         }
@@ -144,16 +138,16 @@ void CToggle::loop(uint64_t time_us)
             _current_active_channel = 1;
             if (_pulse_mode)
             {
-                simple_channel_pulse(0, 100);
-                simple_channel_pulse(2, 100);
+                channel_pulse(0, 100);
+                channel_pulse(2, 100);
             }
             else
             {
-                simple_channel_off(1);
-                simple_channel_off(3);
+                channel_off(1);
+                channel_off(3);
 
-                simple_channel_on(0);
-                simple_channel_on(2);
+                channel_on(0);
+                channel_on(2);
             }
         }
 
@@ -166,7 +160,7 @@ void CToggle::stop()
 {
    
     for (int x=0; x < CHANNEL_COUNT; x++)    
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 uint64_t CToggle::mHz_to_us_delay(int16_t mHz)

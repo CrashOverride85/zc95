@@ -45,12 +45,6 @@ void CDirectPulse::config(struct routine_conf *conf)
 {
     conf->name = "DirectControl";
 
-    // Want 4x full channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     // menu_id's 0-3 are for channel 0-3 power
     struct menu_entry menu_chan_power[MAX_CHANNELS] = {0};
     for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
@@ -153,7 +147,7 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
             if (new_value < 0 || new_value > 1000)
                 return;
 
-            full_channel_set_power(menu_id, new_value);
+            channel_set_power(menu_id, new_value);
             _chan_last_power_level[chan] = new_value;
             return;
         }
@@ -166,7 +160,7 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
             
             _chan_pos_pulse_width[chan] = new_value;
 
-            full_channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
+            channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
             return;
         }
 
@@ -178,7 +172,7 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
             
             _chan_neg_pulse_width[chan] = new_value;
 
-            full_channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
+            channel_set_pulse_width(chan, _chan_pos_pulse_width[chan], _chan_neg_pulse_width[chan]);
             return;
         }
 
@@ -188,7 +182,7 @@ void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value)
             if (new_value < 1 || new_value > 255)
                 return;
             
-            full_channel_set_freq(chan, new_value);
+            channel_set_freq(chan, new_value);
             return;
         }
     }
@@ -215,9 +209,9 @@ void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
         if (menu_id == chan+40)
         {
             if (choice_id == 1)
-                full_channel_on(chan);
+                channel_on(chan);
             else
-                full_channel_off(chan);
+                channel_off(chan);
 
             return;
         }
@@ -240,11 +234,11 @@ void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t 
     {
         if (_chan_last_power_level[channel] != power_level)
         {
-            full_channel_set_power(channel, power_level);
+            channel_set_power(channel, power_level);
             _chan_last_power_level[channel] = power_level;
         }
 
-        full_channel_pulse(channel, pos_pulse_us, neg_pulse_us);
+        channel_single_pulse(channel, pos_pulse_us, neg_pulse_us);
     }
 }
 

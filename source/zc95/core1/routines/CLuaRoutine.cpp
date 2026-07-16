@@ -161,23 +161,6 @@ bool CLuaRoutine::is_script_valid()
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
     get_and_validate_config(conf);
-
-    // channel_id=0 is "CHAN1" on the front panel. channel_id=4 is the first "extra" channel, 
-    // which dont't have a dedicated dials on the front panel (expected to be a shock collars)
-    for (size_t channel_id = conf->channels.size()-1; channel_id >= 4; channel_id--)
-    {
-        menu_entry extra_channel;
-        extra_channel.id = MENU_ID_CHANNEL5 + channel_id-4;
-        extra_channel.menu_type = menu_entry_type::MIN_MAX;
-        extra_channel.title = "Channel " + std::to_string(channel_id+1);
-        extra_channel.minmax.current_value = 0;
-        extra_channel.minmax.min = 0;
-        extra_channel.minmax.max = 100;
-        extra_channel.minmax.increment_step = 1;
-        extra_channel.minmax.UoM = "%";
-
-        conf->menu.emplace(conf->menu.begin(), extra_channel);
-    }
 }
 
 bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
@@ -189,11 +172,6 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
     {
         return false;
     }
-
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
 
     lua_getglobal(_lua_state, "Config");
     if (lua_istable(_lua_state, -1))
@@ -296,6 +274,13 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     if (!runnable())
         return;
 
+    if (menu_id >= MENU_ID_CHANNEL5)
+    {
+        uint8_t channel_id = menu_id - MENU_ID_CHANNEL5 + 4;
+        handle_extra_channel_power_change(channel_id, new_value);
+        return;
+    }
+
     lua_getglobal(_lua_state, "MinMaxChange");
     if (lua_isfunction(_lua_state, -1))
     {
@@ -307,6 +292,13 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     {
         lua_pop(_lua_state, 1);
     }
+}
+
+void CLuaRoutine::handle_extra_channel_power_change(uint8_t channel_id, uint8_t power_percent)
+{
+    if (power_percent > 100)
+        return;
+
 }
 
 void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
@@ -533,7 +525,7 @@ void CLuaRoutine::channel_pulse_processing()
         {
             if (time_us_64() >  _channel_switch_off_at_us[channel_id])
             {
-                full_channel_off(channel_id);
+                channel_off(channel_id);
                 _channel_switch_off_at_us[channel_id] = 0;
             }
         }
@@ -552,7 +544,7 @@ void CLuaRoutine::stop()
     set_all_channels_power(0);
     for (int channel_id=0; channel_id < CHANNEL_COUNT; channel_id++)    
     {
-        full_channel_off(channel_id);
+        channel_off(channel_id);
         _channel_switch_off_at_us[channel_id] = 0;
     }
 
@@ -1123,7 +1115,7 @@ int CLuaRoutine::lua_channel_on(lua_State *L)
 	int chan = lua_tointeger(L, 1);
     if (!is_channel_number_valid(chan)) return 0;
 
-    full_channel_on(chan-1);
+    channel_on(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
     return 0;
 }
@@ -1134,7 +1126,7 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
     int chan = lua_tointeger(L, 1);
     if (!is_channel_number_valid(chan)) return 0;
 
-    full_channel_off(chan-1);
+    channel_off(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
     return 0;
 }
@@ -1151,7 +1143,7 @@ int CLuaRoutine::lua_channel_pulse_ms(lua_State *L)
     if (duration_ms < 0) return 0;
 
     _channel_switch_off_at_us[chan-1] = time_us_64() + (duration_ms * 1000);
-    full_channel_on(chan-1);
+    channel_on(chan-1);
 
     return 0;
 }
@@ -1166,7 +1158,7 @@ int CLuaRoutine::lua_set_power(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
     if (power < 0 || power > 1000) return 0;
 
-    full_channel_set_power(chan-1, power);
+    channel_set_power(chan-1, power);
     return 0;
 }
 
@@ -1180,7 +1172,7 @@ int CLuaRoutine::lua_set_freq(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
     if (freq <= 0 || freq > 300) return 0;
 
-    full_channel_set_freq(chan-1, freq);
+    channel_set_freq(chan-1, freq);
     return 0;
 }
 
@@ -1198,7 +1190,7 @@ int CLuaRoutine::lua_set_pulse_width(lua_State *L)
     if (pos < 0 || pos > 255) return 0;
     if (neg < 0 || neg > 255) return 0;
 
-    full_channel_set_pulse_width(chan-1, pos, neg);
+    channel_set_pulse_width(chan-1, pos, neg);
     return 0;
 }
 
@@ -1293,7 +1285,7 @@ int CLuaRoutine::lua_link_channel(lua_State *L)
     if (linked < 0 || linked > 255) return 0;
     if (offset < 0 || offset > 100) return 0;
 
-    full_channel_link_channel(lead-1, linked-1, offset);
+    channel_link_channel(lead-1, linked-1, offset);
     return 0;
 }
 

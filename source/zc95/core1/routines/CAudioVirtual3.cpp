@@ -38,11 +38,6 @@ void CAudioVirtual3::config(struct routine_conf *conf)
 {
     conf->name = "Audio virtual 3";
 
-    // Only use 3 channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     conf->audio_processing_mode = audio_mode_t::AUDIO3;
 
     struct menu_entry menu_mono = new_menu_entry();
@@ -85,11 +80,11 @@ void CAudioVirtual3::pulse_message(uint8_t channel, uint16_t power_level, uint8_
 
     if (_chan_last_power_level[channel] != power_level)
     {
-        full_channel_set_power(channel, power_level);
+        channel_set_power(channel, power_level);
         _chan_last_power_level[channel] = power_level;
     }
 
-    full_channel_pulse(channel, pos_pulse_us, neg_pulse_us);
+    channel_single_pulse(channel, pos_pulse_us, neg_pulse_us);
 }
 
 void CAudioVirtual3::start()
