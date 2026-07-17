@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2026  CrashOverride85
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ static uint32_t *_stack = NULL;
 void core1_entry()
 {
     printf("Core1::core1_entry()\n");
-    core1->init();
+   // core1->init();
 
     while (1)
         core1->loop();
@@ -63,42 +63,16 @@ Core1 *core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *sa
     return core1;
 }
 
-Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)  : _routines(routines)
+Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)  : _saved_settings(saved_settings), _routines(routines)
 {
     printf("Core1::Core1()\n");
-    _saved_settings = saved_settings;
     _active_routine = NULL;
-    _channel_config = NULL;
-
-    _power_level_control = new CPowerLevelControl(saved_settings);
-}
-
-void Core1::init()
-{
-    // Note: If channel config is changed, this will be called again
-    printf("Core1::init()\n");
-
-    if (_channel_config != NULL)
-    {
-        delete _channel_config;
-        _channel_config = NULL;
-    }
-
-    _channel_config = new CChannelConfig(_saved_settings, _power_level_control);
-    _channel_config->configure_channels_from_saved_config(&_active_channels);
-    printf("Core1::init(): Active channels: %d\n", _active_channels.size());
+    _channel_config.configure_channels_from_saved_config(&_active_channels);
 }
 
 Core1::~Core1()
 {
     printf("Core1::~Core1()\n");
-    delete _channel_config;
-
-    if (_power_level_control != NULL)
-    {
-        delete _power_level_control;
-        _power_level_control = NULL;
-    }
 }
 
 void Core1::loop()
@@ -114,10 +88,7 @@ void Core1::loop()
         _active_channels[channel_id]->update_power();
     }
 
-    _power_level_control->loop();
-
-    if (_channel_config != NULL)
-        _channel_config->loop();
+    _channel_config.loop();
 
     update_power_levels();
     update_extended_ramp_progress();
@@ -134,7 +105,7 @@ void Core1::loop()
             _active_channels[channel_number]->update_power();
         }
 
-        _channel_config->shutdown_zc624();
+        _channel_config.shutdown_zc624();
         printf("Core1: HALT.\n");
         while (1);
     }
@@ -142,10 +113,13 @@ void Core1::loop()
 
 void Core1::update_power_levels()
 {
+    if (_channel_config.PowerLevelControl() == NULL)
+        return;
+
     for (uint8_t channel_id = 0; channel_id < _active_channels.size(); channel_id++)
     {
         // Send current power level being output, if changed
-        uint16_t power_level = _power_level_control->get_display_power_level(channel_id);
+        uint16_t power_level = _channel_config.PowerLevelControl()->get_display_power_level(channel_id);
         if (power_level != _output_power[channel_id])
         {
             message msg = {0};
@@ -163,7 +137,7 @@ void Core1::update_power_levels()
         }
 
         // Send the current maximum power (this will be increasing automatically during ramp up)
-        uint16_t power_level_max = _power_level_control->get_max_power_level(channel_id);
+        uint16_t power_level_max = _channel_config.PowerLevelControl()->get_max_power_level(channel_id);
         if (power_level_max != _output_power_max[channel_id])
         {
             message msg = {0};
@@ -183,10 +157,13 @@ void Core1::update_power_levels()
 
 void Core1::update_extended_ramp_progress()
 {
+    if (_channel_config.PowerLevelControl() == NULL)
+        return;
+
     uint8_t new_percent = 0xFF;
     uint16_t new_secs_remain = 0xFFFF;
 
-    _power_level_control->get_extended_ramp_progress(&new_percent, &new_secs_remain);
+    _channel_config.PowerLevelControl()->get_extended_ramp_progress(&new_percent, &new_secs_remain);
     if (new_percent != _extended_ramp_percent || new_secs_remain != _extended_ramp_remaining_seconds)
     {
         message msg = {0};
@@ -289,14 +266,15 @@ void Core1::process_message(message msg)
     }
 
     case MESSAGE_SET_FRONT_PANNEL_POWER:
-    {
-        uint8_t channel = msg.msg8[1];
-        uint16_t power = msg.msg8[2];
-        power |= msg.msg8[3] << 8;
-        _power_level_control->set_front_panel_power(channel, power);
-        update_channel_power(channel);
+        if (_channel_config.PowerLevelControl() != NULL)
+        {
+            uint8_t channel = msg.msg8[1];
+            uint16_t power = msg.msg8[2];
+            power |= msg.msg8[3] << 8;
+            _channel_config.PowerLevelControl()->set_front_panel_power(channel, power);
+            update_channel_power(channel);
+        }
         break;
-    }
 
     case MESSAGE_TRIGGER_COLLAR:
     {
@@ -322,7 +300,7 @@ void Core1::process_message(message msg)
 
     case MESSAGE_REINIT_CHANNELS:
         stop_routine();
-        init();
+        //init(); FIXME
         break;
 
     case MESSAGE_AUDIO_THRES_REACHED:
@@ -352,27 +330,29 @@ void Core1::process_message(message msg)
         break;   
         
     case MESSAGE_SET_REMOTE_ACCESS_POWER:
+        if (_channel_config.PowerLevelControl() != NULL)
         {
             uint8_t channel = msg.msg8[1];
             uint16_t power = msg.msg8[2];
             power |= msg.msg8[3] << 8;
-            _power_level_control->set_remote_power(channel, power);
+            _channel_config.PowerLevelControl()->set_remote_power(channel, power);
             update_channel_power(channel);
-            break;
         }
+        break;
 
     case MESSAGE_SET_REMOTE_ACCESS_MODE:
+        if (_channel_config.PowerLevelControl() != NULL)
         {
             uint8_t enable = (msg.msg8[1] != 0);
             if (enable)
-                _power_level_control->remote_mode_enable();
+                _channel_config.PowerLevelControl()->remote_mode_enable();
             else
-                _power_level_control->remote_mode_disable();
+                _channel_config.PowerLevelControl()->remote_mode_disable();
 
             for (uint8_t channel = 0; channel < _active_channels.size(); channel++)
                 update_channel_power(channel);
-            break;
         }
+        break;
 
     case MESSAGE_BLUETOOTH_REMOTE_KEYPRESS:
         {
@@ -382,10 +362,11 @@ void Core1::process_message(message msg)
         }
 
     case MESSAGE_EXTENDED_RAMP_START:
-        {
-            _power_level_control->extended_ramp_start();
-            break;
+        if (_channel_config.PowerLevelControl() != NULL)
+        {   
+            _channel_config.PowerLevelControl()->extended_ramp_start();
         }
+        break;
     }
 }
 
@@ -458,13 +439,13 @@ void Core1::activate_routine(uint8_t routine_id)
 
     routine_conf conf;
     _active_routine->get_routine_config(&conf);
-
-    init();
+    _channel_config.configure_channels(&_active_channels, conf.channels);
 
     _active_routine->set_active_channels(&_active_channels);
 
+    if (_channel_config.PowerLevelControl() != NULL)
+        _channel_config.PowerLevelControl()->initial_ramp_start();
 
-    _power_level_control->initial_ramp_start();
     _active_routine->start();
     set_audio_mode(conf.audio_processing_mode);
     printf("Core1::activate_routine: completed\n");
@@ -488,6 +469,11 @@ void Core1::stop_routine()
 
     printf("Core1::disable audio\n");
     set_audio_mode(audio_mode_t::OFF);
+
+    _channel_config.clear_chanel_config(&_active_channels);
+
+    // Restore default channel config. This is mostly so the power dials work work and the LEDs show green when not running a pattern
+    _channel_config.configure_channels_from_saved_config(&_active_channels);
 }
 
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
@@ -504,7 +490,9 @@ void Core1::set_output_chanels_to_off(bool enable_channel_isolation)
         }
     }
 
-    _power_level_control->zero_power_level();
+    if (_channel_config.PowerLevelControl() != NULL)
+        _channel_config.PowerLevelControl()->zero_power_level();
+
     update_power_levels();
 }
 
@@ -558,7 +546,7 @@ void Core1::soft_button_pushed(soft_button button, bool pushed)
 
 void Core1::collar_transmit(uint16_t id, CCollarComms::collar_channel channel, CCollarComms::collar_mode mode, uint8_t power)
 {
-    CCollarComms *collar_comms = _channel_config->get_collar_comms();
+    CCollarComms *collar_comms = _channel_config.get_collar_comms();
 
     CCollarComms::collar_message msg;
     msg.id = id;

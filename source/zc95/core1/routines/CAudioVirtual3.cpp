@@ -45,6 +45,14 @@ void CAudioVirtual3::config(struct routine_conf *conf)
     menu_mono.title = "Audio view";
     menu_mono.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
     conf->menu.push_back(menu_mono);
+
+    conf->channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_NONE, 0}
+    };
 }
 
 void CAudioVirtual3::get_config(struct routine_conf *conf)
@@ -75,7 +83,7 @@ void CAudioVirtual3::trigger(trigger_socket socket, trigger_part part, bool acti
 void CAudioVirtual3::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
     // Pretty much all the processing for this pattern is done in CAudio, and passed into here.
-    if (channel > 3)
+    if (channel >= 3)
         return;
 
     if (_chan_last_power_level[channel] != power_level)

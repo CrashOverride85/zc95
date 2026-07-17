@@ -1,6 +1,6 @@
 /*
  * ZC95
- * Copyright (C) 2021  CrashOverride85
+ * Copyright (C) 2026  CrashOverride85
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,13 +33,15 @@
  *   - output_power_level      - The power level to be sent to output chanel after combining all the above. Also scaled based on power mode (high/medium/low)
  */
 
-CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings) : _extended_ramp(saved_settings)
+CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings, uint8_t channel_count) : _channel_count(channel_count), _extended_ramp(saved_settings)
 {
+    printf("CPowerLevelControl()\n");
     _saved_settings = saved_settings;
-    memset(_front_panel_power, 0, sizeof(_front_panel_power));
-    memset(_routine_power, 0, sizeof(_routine_power));
-    memset(_output_power, 0, sizeof(_output_power));
-    memset(_remote_access_power, 0, sizeof(_remote_access_power));
+
+    _front_panel_power   = new uint16_t[_channel_count]();
+    _remote_access_power = new uint16_t[_channel_count]();
+    _routine_power       = new uint16_t[_channel_count]();
+    _output_power        = new uint16_t[_channel_count]();
 
     _initial_ramp_percent = 0; 
     _initial_ramp_last_increment_us = 0;
@@ -49,11 +51,20 @@ CPowerLevelControl::CPowerLevelControl(CSavedSettings *saved_settings) : _extend
     _remote_mode_active = false;
 }
 
+CPowerLevelControl::~CPowerLevelControl()
+{
+    printf("~CPowerLevelControl()\n");
+    delete[] _front_panel_power;
+    delete[] _remote_access_power;
+    delete[] _routine_power;
+    delete[] _output_power;
+}
+
 // Call with the power level set on the front panel 
 // power is 0-1000, channel is 0-3
 void CPowerLevelControl::set_front_panel_power(uint8_t channel, uint16_t power)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return;
 
     if (_front_panel_power[channel] != power)
@@ -67,7 +78,7 @@ void CPowerLevelControl::set_front_panel_power(uint8_t channel, uint16_t power)
 // power is 0-1000, channel is 0-3
 void CPowerLevelControl::set_remote_power(uint8_t channel, uint16_t power)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return;
 
     if (power > 1000)
@@ -83,7 +94,7 @@ void CPowerLevelControl::set_remote_power(uint8_t channel, uint16_t power)
 void CPowerLevelControl::remote_mode_enable()
 {
     _remote_mode_active = true;
-    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    for (int chan=0; chan < _channel_count; chan++)
     {
         _remote_access_power[chan] = 0;
         calc_output_power(chan);
@@ -93,7 +104,7 @@ void CPowerLevelControl::remote_mode_enable()
 void CPowerLevelControl::remote_mode_disable()
 {
     _remote_mode_active = false;
-    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    for (int chan=0; chan < _channel_count; chan++)
     {
         _remote_access_power[chan] = 0;
         calc_output_power(chan);
@@ -104,7 +115,7 @@ void CPowerLevelControl::remote_mode_disable()
 // Power level being requested by routine (0-1000)
 void CPowerLevelControl::set_routine_requested_power_level(uint8_t channel, uint16_t power)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return;
 
     if (_routine_power[channel] != power)
@@ -117,7 +128,7 @@ void CPowerLevelControl::set_routine_requested_power_level(uint8_t channel, uint
 // Get power level to send to output chanel (0-1000)
 uint16_t CPowerLevelControl::get_output_power_level(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     switch(_saved_settings->get_power_level())
@@ -138,7 +149,7 @@ uint16_t CPowerLevelControl::get_output_power_level(uint8_t channel)
 
 uint16_t CPowerLevelControl::get_display_power_level(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     return _output_power[channel];
@@ -149,7 +160,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
 {
     uint16_t selected_power = 0;
 
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     if (_remote_mode_active)
@@ -176,7 +187,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
 // Get the maximum power level (power level set on front panel - 0-1000) that's being ramped up to
 uint16_t CPowerLevelControl::get_target_max_power_level(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     return _front_panel_power[channel];
@@ -224,7 +235,7 @@ void CPowerLevelControl::zero_power_level()
     _initial_ramp_percent = 0;
     _initial_ramp_last_increment_us = 0;
 
-    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    for (int chan=0; chan < _channel_count; chan++)
     {
         _routine_power[chan] = 0;
         calc_output_power(chan);
@@ -254,7 +265,7 @@ void CPowerLevelControl::loop()
 
     if (_recalc_power)
     {
-        for (int chan=0; chan < MAX_CHANNELS; chan++)
+        for (int chan=0; chan < _channel_count; chan++)
         {
             calc_output_power(chan);
         }

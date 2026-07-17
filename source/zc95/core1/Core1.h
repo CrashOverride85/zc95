@@ -25,7 +25,6 @@ class Core1
     public:
         Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);
         ~Core1();
-        void init();
         void loop();
         void activate_routine(uint8_t routine_id);
         void stop_routine();
@@ -50,16 +49,15 @@ class Core1
         void set_audio_mode(audio_mode_t mode);
         static void __not_in_flash_func(core1_suspend)(void);
 
-        CChannelConfig *_channel_config;
-        CRoutine *_active_routine = NULL;
-        std::vector<COutputChannel*> _active_channels;
         CSavedSettings *_saved_settings;
         std::vector<CRoutines::Routine>& _routines;
+        CChannelConfig _channel_config = CChannelConfig(_saved_settings);
+        CRoutine *_active_routine = NULL;
+        std::vector<COutputChannel*> _active_channels;
         uint16_t _output_power[MAX_CHANNELS] = {0};
         uint16_t _output_power_max[MAX_CHANNELS] = {0};    
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
-        CPowerLevelControl *_power_level_control;
         uint8_t _extended_ramp_percent = 0xFF;
         uint16_t _extended_ramp_remaining_seconds = 0xFFFF;
 };

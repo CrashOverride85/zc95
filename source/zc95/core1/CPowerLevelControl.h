@@ -9,7 +9,8 @@
 class CPowerLevelControl
 {
     public:
-        CPowerLevelControl(CSavedSettings *saved_settings);
+        CPowerLevelControl(CSavedSettings *saved_settings, uint8_t channel_count);
+        ~CPowerLevelControl();
 
         // Call with the power level set on the front panel 
         // power is 0-1000, channel is 0-3
@@ -63,10 +64,12 @@ class CPowerLevelControl
 
     private:
         void calc_output_power(uint8_t channel);
-        uint16_t _front_panel_power[MAX_CHANNELS];
-        uint16_t _remote_access_power[MAX_CHANNELS];
-        uint16_t _routine_power[MAX_CHANNELS];
-        uint16_t _output_power[MAX_CHANNELS];
+        
+        const uint8_t _channel_count;
+        uint16_t *_front_panel_power;
+        uint16_t *_remote_access_power;
+        uint16_t *_routine_power;
+        uint16_t *_output_power;
 
         uint8_t  _initial_ramp_percent = 0; // 100=full power
         uint64_t _initial_ramp_last_increment_us = 0;

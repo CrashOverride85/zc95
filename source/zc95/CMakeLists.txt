@@ -82,6 +82,8 @@ add_executable(zc95
 
   core1/output/ZC624Output/CZC624Channel.cpp
   core1/output/ZC624Output/CZC624Comms.cpp
+
+  core1/output/dummy_output/CDummyOutput.cpp
  
   core1/routines/CAccPort.cpp
 

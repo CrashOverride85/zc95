@@ -39,7 +39,6 @@ class COutputChannel
         // Called by routines
         void channel_set_power(uint16_t power)
         {
-            printf("channel_set_power channel_id=%d, power=%d\n", _channel_id, power);
             _power_level_control->set_routine_requested_power_level(_channel_id, power);
             update_power();
         }

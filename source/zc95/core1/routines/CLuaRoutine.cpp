@@ -858,14 +858,11 @@ void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
 
 void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
 {
-    constexpr int existing_channel_count = 4;
-    constexpr int maximum_channel_count = 10;
+    /* channels is set up so that the index is a channel_id (usually 0-3),
+     * but the Lua script deals with channel numbers (1-4)
+     */
 
-    if (channels.size() != existing_channel_count)
-    {
-        printf("CLuaRoutine::get_channel_config: Expected %d existing channels, but found %u\n", existing_channel_count, channels.size());
-        return;
-    }
+    constexpr uint8_t maximum_channel_count = 10;
 
     // The Config table is expected to be at the top of the Lua stack
     lua_getfield(_lua_state, -1, "channels");
@@ -883,13 +880,11 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
         return;
     }
 
-    int highest_channel_number = existing_channel_count;
+    size_t highest_channel_number = channels.size();
 
     /*
      * Validate all keys before modifying the output vector.
-     *
-     * Valid keys must be integer numbers from 1 to 10. Channels 1-4 are
-     * already present in the vector and are therefore left unchanged.
+     * Valid keys must be integer numbers from 1 to 10.
      */
     lua_pushnil(_lua_state);
     while (lua_next(_lua_state, -2) != 0)
@@ -904,19 +899,20 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
             return;
         }
 
-        int channel_number = lua_tonumber(_lua_state, -2);
+        int lua_channel_number = lua_tonumber(_lua_state, -2);
 
-        if (channel_number < 1 ||
-            channel_number > maximum_channel_count)
+        if (lua_channel_number < 1 ||
+            lua_channel_number > maximum_channel_count)
         {
             printf("CLuaRoutine::get_channel_config: Channel number %d is outside the valid range 1-%d\n",
-                channel_number,
+                lua_channel_number,
                 maximum_channel_count);
 
             lua_pop(_lua_state, 2);
             lua_pop(_lua_state, 1);
             return;
         }
+        uint8_t channel_number = lua_channel_number;
 
         if (channel_number > highest_channel_number)
             highest_channel_number = channel_number;
@@ -926,10 +922,15 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
     }
 
     /*
-     * Append channels 5 through the highest configured channel.
-     * Missing or invalid entries are represented by NONE/0.
+     * Update channels to combine the chanels already present, and what's in the Lua script.
+     * If the Lua script doesn't specify a chanel, the default/existing value should be used.
+     * If it's in both, the Lua script value should be used.
+     * For example, if the script only specifies that chanel=5 is a shock collar, then 1-4 
+     * should be left alone, with 5 added.
+     * If a script wants to specifically remove a channel, it could, e.g., list channel 4 and 
+     * set the type to NONE.
      */
-    for (int channel_number = existing_channel_count + 1; channel_number <= highest_channel_number; channel_number++)
+    for (size_t channel_number = 1; channel_number <= highest_channel_number; channel_number++)
     {
         lua_rawgeti(_lua_state, -1, channel_number);
 
@@ -947,16 +948,24 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
                 index = 0;
             }
 
-            channels.push_back(get_channel_config_t(channel_type, index));
+            if (channels.size() > channel_number - 1)
+                // Chanel is in both the current list passed in, and in the Lua script. Update to match Lua script.
+                channels[channel_number - 1] = get_channel_config_t(channel_type, index);
+            else
+                // Chanel is not in current list passed in, but is in the Lua script. Add.
+                channels.push_back(get_channel_config_t(channel_type, index));
         }
-        else
+        else // chanel channel_number is not mentioned in Lua script
         {
             if (!lua_isnil(_lua_state, -1))
             {
                 printf("CLuaRoutine::get_channel_config: Configuration for channel %d is not a table; using NONE/0\n", channel_number);
             }
 
-            channels.push_back(get_channel_config_t("NONE", 0));
+            if (!(channels.size() > channel_number - 1))
+                // Chanel is not in the current list passed in, nor in the Lua script. And a blank/none entry 
+                // to avoid gaps in the sequence (e.g. if chanels 1, 3 & 4 are used, and a NONE entry for 2)
+                channels.push_back(get_channel_config_t("NONE", 0));                
         }
 
         lua_pop(_lua_state, 1);

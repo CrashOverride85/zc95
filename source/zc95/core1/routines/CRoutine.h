@@ -235,7 +235,6 @@ class CRoutine
 
         void channel_set_power(uint8_t channel_id, uint16_t power)
         {
-            printf("CRoutine::channel_set_power(id=%d, power=%d)\n", channel_id, power);
             if (_active_channels != NULL && channel_id < _active_channels->size())
             {
                 (*_active_channels)[channel_id]->channel_set_power(power);
