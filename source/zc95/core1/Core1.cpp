@@ -68,11 +68,36 @@ Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_se
     printf("Core1::Core1()\n");
     _active_routine = NULL;
     _channel_config.configure_channels_from_saved_config(&_active_channels);
+    update_output_power_arrays();
+}
+
+void Core1::update_output_power_arrays()
+{
+    if (_output_power != NULL)
+        delete _output_power;
+
+    if (_output_power_max != NULL)
+        delete _output_power_max;
+
+    _output_power = new uint16_t[_active_channels.size()]();
+    _output_power_max = new uint16_t[_active_channels.size()]();
 }
 
 Core1::~Core1()
 {
     printf("Core1::~Core1()\n");
+
+    if (_output_power != NULL)
+    {
+        delete _output_power;
+        _output_power = NULL;
+    }
+
+    if (_output_power_max != NULL)
+    {
+        delete _output_power_max;
+        _output_power_max = NULL;
+    }
 }
 
 void Core1::loop()
@@ -120,7 +145,7 @@ void Core1::update_power_levels()
     {
         // Send current power level being output, if changed
         uint16_t power_level = _channel_config.PowerLevelControl()->get_display_power_level(channel_id);
-        if (power_level != _output_power[channel_id])
+        if (_output_power != NULL && power_level != _output_power[channel_id])
         {
             message msg = {0};
             msg.msg8[0] = MESSAGE_SET_DISPLAY_POWER;
@@ -138,7 +163,7 @@ void Core1::update_power_levels()
 
         // Send the current maximum power (this will be increasing automatically during ramp up)
         uint16_t power_level_max = _channel_config.PowerLevelControl()->get_max_power_level(channel_id);
-        if (power_level_max != _output_power_max[channel_id])
+        if (_output_power_max != NULL && power_level_max != _output_power_max[channel_id])
         {
             message msg = {0};
             msg.msg8[0] = MESSAGE_SET_MAXIMUM_POWER;
@@ -440,6 +465,7 @@ void Core1::activate_routine(uint8_t routine_id)
     routine_conf conf;
     _active_routine->get_routine_config(&conf);
     _channel_config.configure_channels(&_active_channels, conf.channels);
+    update_output_power_arrays();
 
     _active_routine->set_active_channels(&_active_channels);
 

@@ -130,6 +130,15 @@ void CDirectPulse::config(struct routine_conf *conf)
     conf->audio_processing_mode = audio_mode_t::OFF;
     conf->force_channel_isolation = false;
     conf->hidden_from_menu = true;
+
+    // Always use the 4 internal channels for this pattern.
+    conf->channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 3}
+    };
 }
 
 void CDirectPulse::get_config(struct routine_conf *conf)

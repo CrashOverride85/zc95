@@ -26,7 +26,8 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
-                CSavedSettings *saved_settings) 
+                CSavedSettings *saved_settings,
+                uint8_t routine_id) 
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -38,11 +39,14 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     _bluetooth = bluetooth;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
+    _routine_id = routine_id;
 
     // get routine config
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
     routine_ptr->get_routine_config(&_active_routine_conf);
     delete routine_ptr;
+
+    _routine_output->activate_routine(routine_id, _active_routine_conf.channels.size());
 
     _show_ramp_start = _saved_settings->get_extended_ramp_show_menu_option();
 

@@ -14,6 +14,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
 {
     public:
         CRoutineOutputCore1(CDisplay *display, CLedControl *led_control, IHal *hal, CAudio* audio);
+        ~CRoutineOutputCore1();
         void set_front_panel_power(uint8_t channel, uint16_t power);
         void set_remote_power(uint8_t channel, uint16_t power);
         void enable_remote_power_mode();
@@ -22,7 +23,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         uint16_t get_front_pannel_power(uint8_t channel);
         uint16_t get_max_output_power(uint8_t channel);
         
-        void activate_routine(uint8_t routine_id);
+        void activate_routine(uint8_t routine_id, uint8_t channel_count);
         void stop_routine();
 
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
@@ -56,15 +57,18 @@ class CRoutineOutputCore1 : public CRoutineOutput
         void update_display(uint8_t channel);
         void process_message(message msg);
         void process_text_message_queue();
+        void update_channel_count(uint8_t channel_count);
 
         Core1 *_core1 = NULL;
         CDisplay *_display;
         CLedControl *_led_control;
         IHal *_hal;
-        uint16_t _front_pannel_power[MAX_CHANNELS] = {0};
-        uint16_t _remote_power[MAX_CHANNELS] = {0};
-        uint16_t _output_power[MAX_CHANNELS] = {0};
-        uint16_t _max_output_power[MAX_CHANNELS] = {0};      
+
+        uint8_t _channel_count = 0;
+        uint16_t* _front_panel_power = NULL;
+        uint16_t* _remote_power = NULL;
+        uint16_t* _output_power = NULL;
+        uint16_t* _max_output_power = NULL;
         bool _remote_mode_active = false;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
         std::function<void(pattern_text_output_t)> _text_output_callback = NULL;

@@ -631,7 +631,7 @@ void CBtGatt::routine_run(bool run)
 
     if (run)
     {
-        _routine_output->activate_routine(_routine_id);
+        _routine_output->activate_routine(_routine_id, _routine_conf.channels.size());
 
        if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
         {

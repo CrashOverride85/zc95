@@ -58,7 +58,7 @@ void CChannelConfig::configure_channels_from_saved_config(std::vector<COutputCha
     }
     (*active_channels).clear();
 
-    for (int channel_id=0; channel_id < MAX_CHANNELS; channel_id++)
+    for (int channel_id=0; channel_id < (*active_channels).size(); channel_id++)
     {
         CSavedSettings::channel_selection channel_details = _saved_settings->get_channel(channel_id);
         (*active_channels).push_back(get_ouput_chanel(channel_details.type, channel_details.index, channel_id));

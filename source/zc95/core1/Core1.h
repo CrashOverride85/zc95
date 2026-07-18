@@ -47,6 +47,7 @@ class Core1
         void process_audio_pulse_queue();
         void check_validity_of_lua_script();
         void set_audio_mode(audio_mode_t mode);
+        void update_output_power_arrays();
         static void __not_in_flash_func(core1_suspend)(void);
 
         CSavedSettings *_saved_settings;
@@ -54,8 +55,8 @@ class Core1
         CChannelConfig _channel_config = CChannelConfig(_saved_settings);
         CRoutine *_active_routine = NULL;
         std::vector<COutputChannel*> _active_channels;
-        uint16_t _output_power[MAX_CHANNELS] = {0};
-        uint16_t _output_power_max[MAX_CHANNELS] = {0};    
+        uint16_t* _output_power = NULL;
+        uint16_t* _output_power_max = NULL;
         pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
         uint8_t _extended_ramp_percent = 0xFF;

@@ -52,13 +52,6 @@ CRoutineRun::CRoutineRun(
 
     _routine_output->set_text_callback_function(std::bind(&CRoutineRun::script_output, this, std::placeholders::_1));
     _routine_output->set_menu_change_callback_function(std::bind(&CRoutineRun::menu_changed_callback, this, std::placeholders::_1));
-
-    for (uint8_t channel=0; channel < MAX_CHANNELS; channel++)
-    {
-        _output_power[channel]     = _routine_output->get_output_power(channel);
-        _max_output_power[channel] = _routine_output->get_max_output_power(channel);
-        _front_panel_power[channel] = _routine_output->get_front_pannel_power(channel);
-    }
 }
 
 CRoutineRun::~CRoutineRun()
@@ -68,8 +61,28 @@ CRoutineRun::~CRoutineRun()
     _routine_output->stop_routine();
     _routine_output->set_text_callback_function(NULL);
 
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint8_t channel = 0; channel < _channel_count; channel++)
         _routine_output->set_remote_power(channel, 0);
+
+    if (_front_panel_power != NULL)
+    {
+        delete _front_panel_power;
+        _front_panel_power = NULL;
+    }
+
+    if (_output_power != NULL)
+    {
+        _output_power = NULL;
+        delete _output_power;
+    }
+
+    if (_max_output_power != NULL)
+    {
+        _max_output_power = NULL;
+        delete _max_output_power;
+    }
+
+    _channel_count = 0;
 }
 
 bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
@@ -89,7 +102,8 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         }
 
         set_pattern_config(index);
-        _routine_output->activate_routine(index);
+        update_channel_count(_pattern_conf.channels.size());
+        _routine_output->activate_routine(index, _pattern_conf.channels.size());
         pattern_start = true;
         _running = true;
     }
@@ -158,7 +172,7 @@ void CRoutineRun::loop()
     // If the power levels change (either front panel dial adjusted or changed by script), send update message with new values
     if (time_us_64() - _last_power_status_update_us > (250 * 1000)) // at most every 250ms
     {
-        for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+        for(uint8_t channel = 0; channel < _channel_count; channel++)
         {
             if (_routine_output->get_output_power(channel) != _output_power[channel])
             {
@@ -212,13 +226,13 @@ void CRoutineRun::send_lua_script_error_message()
 
 void CRoutineRun::send_power_status_update()
 {
-    DynamicJsonDocument status_message(1000);
+    DynamicJsonDocument status_message(1500);
 
     status_message["Type"] = "PowerStatus";
     status_message["MsgId"] = -1;
 
     JsonArray channels = status_message.createNestedArray("Channels");
-    for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    for(uint8_t channel = 0; channel < _channel_count; channel++)
     {
         JsonObject obj = channels.createNestedObject();
         obj["Channel"]        = channel+1;
@@ -326,4 +340,48 @@ void CRoutineRun::send_menu_change_update(uint8_t menu_id, uint16_t value)
     std::string generatedJson;
     serializeJson(status_message, generatedJson);
     _send(generatedJson);
+}
+
+void CRoutineRun::update_channel_count(uint8_t channel_count)
+{
+    if (channel_count == _channel_count)
+    {
+        printf("CRoutineRun::update_channel_count - already configured for %d channels, nothing to do.\n", channel_count);
+        return;
+    }
+
+    printf("CRoutineRun::update_channel_count - configuring for %d channels\n", channel_count);
+    if (_front_panel_power != NULL)
+    {
+        delete _front_panel_power;
+        _front_panel_power = NULL;
+    }
+
+    if (_output_power != NULL)
+    {
+        delete _output_power;
+        _output_power = NULL;
+    }
+
+    if (_max_output_power != NULL)
+    {
+        delete _max_output_power;
+        _max_output_power = NULL;
+    }
+
+    _channel_count = channel_count;
+
+    if (_channel_count > 0)
+    {
+        _front_panel_power = new uint16_t[channel_count]();
+        _output_power      = new uint16_t[channel_count]();
+        _max_output_power  = new uint16_t[channel_count]();
+
+        for (uint8_t channel=0; channel < _channel_count; channel++)
+        {
+            _output_power[channel]      = _routine_output->get_output_power(channel);
+            _max_output_power[channel]  = _routine_output->get_max_output_power(channel);
+            _front_panel_power[channel] = _routine_output->get_front_pannel_power(channel);
+        }
+    }
 }

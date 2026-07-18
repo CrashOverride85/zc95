@@ -40,12 +40,41 @@ CRoutineOutputCore1::CRoutineOutputCore1(CDisplay *display, CLedControl *led_con
     _audio = audio;
 }
 
+CRoutineOutputCore1::~CRoutineOutputCore1()
+{
+    if (_front_panel_power != NULL)
+    {
+        delete _front_panel_power;
+        _front_panel_power = NULL;
+    }
+
+    if (_remote_power != NULL)
+    {
+        _remote_power = NULL;
+        delete _remote_power;
+    }
+
+    if (_output_power != NULL)
+    {
+        _output_power = NULL;
+        delete _output_power;
+    }
+
+    if (_max_output_power != NULL)
+    {
+        _max_output_power = NULL;
+        delete _max_output_power;
+    }
+
+    _channel_count = 0;
+}
+
 void CRoutineOutputCore1::set_front_panel_power(uint8_t channel, uint16_t power)
 {
-    if (channel > MAX_CHANNELS)
+    if (channel > _channel_count)
         return;
     
-    if (_front_pannel_power[channel] != power)
+    if (_front_panel_power[channel] != power)
     {
         message msg = {0};
         msg.msg8[0] = MESSAGE_SET_FRONT_PANNEL_POWER;
@@ -53,7 +82,7 @@ void CRoutineOutputCore1::set_front_panel_power(uint8_t channel, uint16_t power)
         msg.msg8[2] = power & 0xFF;
         msg.msg8[3] = (power >> 8) & 0xFF;
 
-        _front_pannel_power[channel] = power;
+        _front_panel_power[channel] = power;
         multicore_fifo_push_blocking(msg.msg32);
         update_display(channel);
     }
@@ -61,7 +90,7 @@ void CRoutineOutputCore1::set_front_panel_power(uint8_t channel, uint16_t power)
 
 uint16_t CRoutineOutputCore1::get_output_power(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     return _output_power[channel]; 
@@ -69,21 +98,23 @@ uint16_t CRoutineOutputCore1::get_output_power(uint8_t channel)
 
 uint16_t CRoutineOutputCore1::get_front_pannel_power(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
-    return _front_pannel_power[channel];
+    return _front_panel_power[channel];
 }
 
 uint16_t CRoutineOutputCore1::get_max_output_power(uint8_t channel){
-    if (channel >= MAX_CHANNELS)
+    if (channel >= _channel_count)
         return 0;
 
     return _max_output_power[channel];
 }
 
-void CRoutineOutputCore1::activate_routine(uint8_t routine_id)
+void CRoutineOutputCore1::activate_routine(uint8_t routine_id, uint8_t channel_count)
 {
+    update_channel_count(channel_count);
+
     message msg = {0};
     msg.msg8[0] = MESSAGE_ROUTINE_LOAD;
     msg.msg8[1] = routine_id;
@@ -101,7 +132,7 @@ void CRoutineOutputCore1::stop_routine()
 
 void CRoutineOutputCore1::set_remote_power(uint8_t channel, uint16_t power)
 {
-    if (channel > MAX_CHANNELS)
+    if (channel > _channel_count)
         return;
     
     if (_remote_power[channel] != power)
@@ -127,7 +158,7 @@ void CRoutineOutputCore1::enable_remote_power_mode()
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = true;
 
-    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint channel = 0; channel < _channel_count; channel++)
         _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
@@ -140,7 +171,7 @@ void CRoutineOutputCore1::disable_remote_power_mode()
     multicore_fifo_push_blocking(msg.msg32);
     _remote_mode_active = false;
 
-    for (uint channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint channel = 0; channel < _channel_count; channel++)
         _display->set_power_level(channel, get_front_pannel_power(channel), get_output_power(channel), get_max_output_power(channel), _remote_mode_active);
 }
 
@@ -243,7 +274,7 @@ void CRoutineOutputCore1::process_message(message msg)
             uint16_t power = msg.msg8[2];
             power |= msg.msg8[3] << 8;
             
-            if (channel >= MAX_CHANNELS)
+            if (channel >= _channel_count)
                 return;
             
             _output_power[channel] = power;
@@ -257,7 +288,7 @@ void CRoutineOutputCore1::process_message(message msg)
             uint16_t power = msg.msg8[2];
             power |= msg.msg8[3] << 8;
             
-            if (channel >= MAX_CHANNELS)
+            if (channel >= _channel_count)
                 return;
             
             _max_output_power[channel] = power;
@@ -461,4 +492,30 @@ void CRoutineOutputCore1::set_text_callback_function(std::function<void(pattern_
 void CRoutineOutputCore1::set_menu_change_callback_function(std::function<void(menu_change_msg_t)> cb)
 {
     _menu_change_callback = cb;
+}
+
+void CRoutineOutputCore1::update_channel_count(uint8_t channel_count)
+{
+    printf("CRoutineOutputCore1::update_channel_count - configuring for %d channels\n", channel_count);
+    if (_front_panel_power != NULL)
+        delete _front_panel_power;
+
+    if (_remote_power != NULL)
+        delete _remote_power;
+
+    if (_output_power != NULL)
+        delete _output_power;
+
+    if (_max_output_power != NULL)
+        delete _max_output_power;
+
+    _channel_count = channel_count;
+
+    if (_channel_count > 0)
+    {
+        _front_panel_power = new uint16_t[channel_count]();
+        _remote_power      = new uint16_t[channel_count]();
+        _output_power      = new uint16_t[channel_count]();
+        _max_output_power  = new uint16_t[channel_count]();
+    }
 }
