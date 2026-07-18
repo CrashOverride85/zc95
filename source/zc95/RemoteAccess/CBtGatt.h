@@ -68,7 +68,7 @@ class CBtGatt
         CSavedSettings *_saved_settings;
         uint64_t _start_time_us = 0;
 
-        channel_power_t _channel_power_change[MAX_CHANNELS] = {0};
+        channel_power_t _channel_power_change[INTERNAL_CHANNEL_COUNT] = {0};
         uint64_t _last_power_status_update_us = 0;
         uint8_t _battery_percentage = 0;
         bool _routine_running = false;

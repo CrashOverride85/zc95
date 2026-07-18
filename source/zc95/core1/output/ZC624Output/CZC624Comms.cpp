@@ -161,7 +161,7 @@ uint8_t CZC624Comms::check_zc624()
         printf("ZC624 is not ready (status = %d)\n", status);
 
         uint8_t return_status = 1;
-        for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+        for(uint8_t chan=0; chan < INTERNAL_CHANNEL_COUNT; chan++)
         {
             if (channel_has_fault(chan))
                 return_status |= 1 << (chan+1);

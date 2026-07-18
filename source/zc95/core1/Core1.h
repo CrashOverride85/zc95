@@ -57,7 +57,7 @@ class Core1
         std::vector<COutputChannel*> _active_channels;
         uint16_t* _output_power = NULL;
         uint16_t* _output_power_max = NULL;
-        pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
+        pulse_message_t _pulse_messages[INTERNAL_CHANNEL_COUNT] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
         uint8_t _extended_ramp_percent = 0xFF;
         uint16_t _extended_ramp_remaining_seconds = 0xFFFF;

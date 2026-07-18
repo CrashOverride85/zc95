@@ -412,7 +412,7 @@ void __not_in_flash_func(Core1::core1_suspend)(void)
 void Core1::process_audio_pulse_queue()
 {    
     pulse_message_t pulse_message;
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
     {
         if (queue_try_peek (&gPulseQueue[channel], &pulse_message))
         {

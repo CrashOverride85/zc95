@@ -166,7 +166,7 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
     if (maximum_power < 0)
         maximum_power = 0;
 
-    if (channel >= MAX_CHANNELS)
+    if (channel >= INTERNAL_CHANNEL_COUNT)
     {
         printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
         return;
@@ -593,7 +593,7 @@ void CDisplay::draw_power_level()
     hagl_bitmap_t bitmap;
     hagl_color_t tc = hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA);
 
-    for (uint8_t j=0; j<MAX_CHANNELS; j++) 
+    for (uint8_t j=0; j<INTERNAL_CHANNEL_COUNT; j++) 
     {
         snprintf(buffer, sizeof(buffer), "%3d", _channel_power[j].fp_power/10);
         bitmap.buffer = (uint8_t*)calloc(HAGL_CHAR_BUFFER_SIZE, sizeof(uint8_t));

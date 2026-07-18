@@ -90,7 +90,7 @@ class CDisplay
         std::string _option_c; // top right
         std::string _option_d; // bottom right
 
-        power_levels_t _channel_power[MAX_CHANNELS]; // Note that _channel_power[0] is channel 1, _channel_power[1] is channel 2, etc.
+        power_levels_t _channel_power[INTERNAL_CHANNEL_COUNT]; // Note that _channel_power[0] is channel 1, _channel_power[1] is channel 2, etc.
 
         uint64_t _last_update;
 

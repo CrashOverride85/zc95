@@ -29,7 +29,7 @@ CDirectPulse::CDirectPulse(uint8_t param)
 {
     printf("CDirectPulse()\n");
 
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         _chan_pos_pulse_width[chan] = DEFAULT_PULSE_WIDTH;
         _chan_neg_pulse_width[chan] = DEFAULT_PULSE_WIDTH;
@@ -46,8 +46,8 @@ void CDirectPulse::config(struct routine_conf *conf)
     conf->name = "DirectControl";
 
     // menu_id's 0-3 are for channel 0-3 power
-    struct menu_entry menu_chan_power[MAX_CHANNELS] = {0};
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    struct menu_entry menu_chan_power[INTERNAL_CHANNEL_COUNT] = {0};
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         menu_chan_power[chan].id = chan;
         menu_chan_power[chan].title = "Chan " + std::to_string(chan+1) + " power";
@@ -61,8 +61,8 @@ void CDirectPulse::config(struct routine_conf *conf)
     }
 
     // menu_id's 10-13 are for channel 0-3 positive pulse width
-    struct menu_entry menu_chan_pos_pulse_width[MAX_CHANNELS] = {0};
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    struct menu_entry menu_chan_pos_pulse_width[INTERNAL_CHANNEL_COUNT] = {0};
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         menu_chan_pos_pulse_width[chan].id = chan+10;
         menu_chan_pos_pulse_width[chan].title = "Chan " + std::to_string(chan+1) + " +pulse wid";
@@ -76,8 +76,8 @@ void CDirectPulse::config(struct routine_conf *conf)
     }
 
     // menu_id's 20-23 are for channel 0-3 negative pulse width
-    struct menu_entry menu_chan_neg_width[MAX_CHANNELS] = {0};
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    struct menu_entry menu_chan_neg_width[INTERNAL_CHANNEL_COUNT] = {0};
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         menu_chan_neg_width[chan].id = chan+20;
         menu_chan_neg_width[chan].title = "Chan " + std::to_string(chan+1) + " -pulse wid";
@@ -91,8 +91,8 @@ void CDirectPulse::config(struct routine_conf *conf)
     }
 
     // menu_id's 30-33 are for channel 0-3 frequency (hz)
-    struct menu_entry menu_chan_freq[MAX_CHANNELS] = {0};
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    struct menu_entry menu_chan_freq[INTERNAL_CHANNEL_COUNT] = {0};
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         menu_chan_freq[chan].id = chan+30;
         menu_chan_freq[chan].title = "Chan " + std::to_string(chan+1) + " freq";
@@ -106,8 +106,8 @@ void CDirectPulse::config(struct routine_conf *conf)
     }
 
     // menu_id's 40-43 are for channel 0-3 power enable (true/false)
-    struct menu_entry menu_chan_power_enable[MAX_CHANNELS] = {0};
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    struct menu_entry menu_chan_power_enable[INTERNAL_CHANNEL_COUNT] = {0};
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         menu_chan_power_enable[chan].id = chan+40;
         menu_chan_power_enable[chan].title = "Chan " + std::to_string(chan+1) + " power";
@@ -148,7 +148,7 @@ void CDirectPulse::get_config(struct routine_conf *conf)
 
 void CDirectPulse::menu_min_max_change(uint8_t menu_id, int16_t new_value) 
 {
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         // power level
         if (menu_id == chan)
@@ -212,7 +212,7 @@ void CDirectPulse::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)
         return;
     }
 
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         // power enable/disable
         if (menu_id == chan+40)
@@ -239,7 +239,7 @@ void CDirectPulse::trigger(trigger_socket socket, trigger_part part, bool active
 
 void CDirectPulse::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
-    if (channel < MAX_CHANNELS)
+    if (channel < INTERNAL_CHANNEL_COUNT)
     {
         if (_chan_last_power_level[channel] != power_level)
         {
@@ -255,7 +255,7 @@ void CDirectPulse::start()
 {
     set_all_channels_power(0);
 
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
         _chan_last_power_level[chan] = 0;
 }
 

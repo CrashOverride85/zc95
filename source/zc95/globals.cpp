@@ -9,7 +9,7 @@
 
 
 bool gInteruptable;
-queue_t gPulseQueue[MAX_CHANNELS];
+queue_t gPulseQueue[INTERNAL_CHANNEL_COUNT];
 
 queue_t gPatternTextOutputQueue;
 queue_t gBtRawHidQueue;

@@ -71,7 +71,7 @@
 
 // Note that just changing these two values would likely break everything
 #define MAX_POWER_LEVEL 1000
-#define MAX_CHANNELS 4
+#define INTERNAL_CHANNEL_COUNT 4
 
 // SPI Defines for display
 #define SPI_PORT spi0

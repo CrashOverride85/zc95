@@ -67,6 +67,13 @@ void CAudioWave::config(struct routine_conf *conf)
     conf->menu.push_back(menu_range);
 
     conf->force_channel_isolation = false;
+    conf->channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 3}
+    };
 }
 
 void CAudioWave::get_config(struct routine_conf *conf)
@@ -153,7 +160,7 @@ uint16_t CAudioWave::get_range_adjusted_power_level(uint16_t power_level)
 void CAudioWave::start()
 {
     set_all_channels_power(0);
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
         _chan_last_power_level[chan] = 0;
 
     set_channel_isolation(false);

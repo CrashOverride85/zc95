@@ -146,7 +146,7 @@ void CMenuChannelConfig::show()
     _display->set_option_d("Down");
 
     _channel_list->clear_options();
-    for (int n=0; n < MAX_CHANNELS; n++)
+    for (int n=0; n < INTERNAL_CHANNEL_COUNT; n++)
     {
         _channel_list->add_option("Channel " + std::to_string(n+1));
     }

@@ -116,7 +116,7 @@ void CBtGatt::loop()
     if (time_us_64() - _last_power_status_update_us > (250 * 1000)) // at most every 250ms
     {
         bool update_required = false;
-        for(uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+        for(uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
         {
             if (_routine_output->get_front_pannel_power(channel) != _channel_power_change[channel].power_level)
             {
@@ -179,7 +179,7 @@ void CBtGatt::packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pac
 
 void CBtGatt::disconnected()
 {
-    for(uint8_t c = 0; c < MAX_CHANNELS; c++)
+    for(uint8_t c = 0; c < INTERNAL_CHANNEL_COUNT; c++)
     {
         _channel_power_change[c].notifications_enabled = false;
         _channel_power_change[c].notification_pending = false;
@@ -196,7 +196,7 @@ void CBtGatt::send_notifications()
     if (_bt_connection_handle == HCI_CON_HANDLE_INVALID)
         return;
 
-    for (uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for (uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         uint16_t attribute_handle = 0;
         if (_channel_power_change[chan].notification_pending && _channel_power_change[chan].notifications_enabled)
@@ -547,7 +547,7 @@ void CBtGatt::process_pulse_message(ble_message_pulse_t *msg)
         return;
     }
 
-    for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan=0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         pulse_message_t pulse_msg = {0};
         pulse_msg.power_level = msg->amplitude;
@@ -636,7 +636,7 @@ void CBtGatt::routine_run(bool run)
        if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
         {
             // TODO: why? Set blue bar to max. Remote pattern affects yellow bar
-            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+            for (uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
                 _routine_output->set_remote_power(channel, 1000);
         }
     }
@@ -646,7 +646,7 @@ void CBtGatt::routine_run(bool run)
 
         if (_saved_settings->get_ble_remote_access_power_dial_mode() == CSavedSettings::ble_power_dial_mode_t::LIMIT)
         {
-            for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+            for (uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
                 _routine_output->set_remote_power(channel, 0);
         }
     }
