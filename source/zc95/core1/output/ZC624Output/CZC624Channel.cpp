@@ -10,6 +10,7 @@ COutputChannel(saved_settings, power_level_control, channel_id)
     _zc624_chan_index = zc624_chan_index;
     _channel_id = channel_id;
     _standby_led_colour = LedColour::Green;
+    _pulse_end_time = 0;
     set_led_colour(_standby_led_colour);
 }
 
@@ -37,11 +38,6 @@ void CZC624Channel::channel_single_pulse(uint8_t pos_us, uint8_t neg_us)
     _comms->send_message(msg);
 }
 
-void CZC624Channel::channel_pulse(uint16_t min_pulse_us)
-{
-    // TODO
-}
-
 void CZC624Channel::set_freq(uint16_t freq_hz)
 {
     CZC624Comms::message msg;
@@ -66,7 +62,19 @@ void CZC624Channel::set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_wi
     _comms->send_message(msg);
 }
 
+void CZC624Channel::channel_pulse(uint16_t min_pulse_us)
+{
+    _pulse_end_time = time_us_64() + (min_pulse_us * 1000);
+    send_on_cmd();
+}
+
 void CZC624Channel::on()
+{
+    send_on_cmd();
+    _pulse_end_time = 0;
+}
+
+void CZC624Channel::send_on_cmd()
 {
     CZC624Comms::message msg;
 
@@ -88,6 +96,7 @@ void CZC624Channel::off()
     msg.arg2 = 0;
 
     _comms->send_message(msg);
+    _pulse_end_time = 0;
 }
 
 void CZC624Channel::link_channel(uint8_t channel, uint8_t offset_percentage)
@@ -130,6 +139,14 @@ void CZC624Channel::loop(uint64_t time_us)
 
         _last_led_state = new_led_state;
         _last_led_update_us = time_us_64();
+    }
+
+    if (_pulse_end_time)
+    {
+        if (time_us > _pulse_end_time)
+        {
+            off();
+        }
     }
 }
 

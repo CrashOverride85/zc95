@@ -28,11 +28,13 @@ class CZC624Channel : public COutputChannel
         CChannel_types::channel_type get_channel_type();
 
     private:
+        void send_on_cmd();
         CZC624Comms *_comms;
         uint8_t _zc624_chan_index;
         uint8_t _channel_id;
         bool _last_led_state = false;
         uint64_t _last_led_update_us = 0;
+        uint64_t _pulse_end_time = 0;
 };
 
 #endif

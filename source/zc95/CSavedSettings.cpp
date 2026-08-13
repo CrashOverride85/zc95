@@ -320,29 +320,29 @@ void CSavedSettings::set_button_brightness(uint8_t button_brightness_byte)
     _eeprom_contents[(uint8_t)setting::ButtonLedBright] = button_brightness_byte;
 }
 
-bool CSavedSettings::get_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
+bool CSavedSettings::get_collar_config(uint8_t collar_index, struct collar_config &collar_conf)
 {
-    if (collar_id > 9)
+    if (collar_index > 9)
         return false;
 
-    collar_conf.channel = _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)];
-    collar_conf.mode    = _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)];
+    collar_conf.channel = _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)];
+    collar_conf.mode    = _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)];
 
-    collar_conf.id = _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] |
-                    (_eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] << 8);
+    collar_conf.id = _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] |
+                    (_eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] << 8);
     return true;
 }
 
-bool CSavedSettings::set_collar_config(uint8_t collar_id, struct collar_config &collar_conf)
+bool CSavedSettings::set_collar_config(uint8_t collar_index, struct collar_config &collar_conf)
 {
-    if (collar_id > 9)
+    if (collar_index > 9)
         return false;
 
-    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)] = collar_conf.channel;
-    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)] = collar_conf.mode;
+    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)] = collar_conf.channel;
+    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)] = collar_conf.mode;
 
-    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] = collar_conf.id & 0xFF;
-    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] = collar_conf.id >> 8;
+    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] = collar_conf.id & 0xFF;
+    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] = collar_conf.id >> 8;
 
     return true;
 }
@@ -699,8 +699,8 @@ void CSavedSettings::eeprom_initialise()
 
     _eeprom_contents[(uint8_t)setting::PowerLevelDisp]  = (uint8_t)power_level_show_percent::OFF;
 
-    for (uint8_t collar_id = 0; collar_id < EEPROM_CHANNEL_COUNT; collar_id++)
-        initialise_collar(collar_id);
+    for (uint8_t collar_index = 0; collar_index < EEPROM_CHANNEL_COUNT; collar_index++)
+        initialise_collar(collar_index);
 
     _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
     _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
@@ -720,11 +720,11 @@ void CSavedSettings::eeprom_initialise()
     save();
 }
 
-void CSavedSettings::initialise_collar(uint8_t collar_id)
+void CSavedSettings::initialise_collar(uint8_t collar_index)
 {
-    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_id*5)] = (uint8_t)CCollarComms::collar_channel::CH1;
-    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_id*5)] = (uint8_t)CCollarComms::collar_mode::VIBE;
+    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)] = (uint8_t)CCollarComms::collar_channel::CH1;
+    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)] = (uint8_t)CCollarComms::collar_mode::VIBE;
 
-    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_id*5)] = rand() & 0xFF;
-    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_id*5)] = rand() & 0xFF;
+    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] = rand() & 0xFF;
+    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] = rand() & 0xFF;
 }

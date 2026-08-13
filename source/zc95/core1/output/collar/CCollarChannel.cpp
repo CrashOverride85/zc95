@@ -28,8 +28,9 @@
 CCollarChannel::CCollarChannel(
     CSavedSettings *saved_settings, 
     CCollarComms *comms, 
-    CPowerLevelControl *power_level_control, 
-    uint8_t channel_id) :
+    CPowerLevelControl *power_level_control,
+    uint8_t collar_index, // which collar config to use
+    uint8_t channel_id) : // which channel it will be used as (0-3 correspond to the 4 dials on the front panel)
     COutputChannel(saved_settings, power_level_control, channel_id)
 {
     printf("CCollarChannel(%d)\n", channel_id);
@@ -39,6 +40,7 @@ CCollarChannel::CCollarChannel(
     _last_tx_time_us = 0;
     _led_off_time = 0;
     _channel_id = channel_id;
+    _collar_index = collar_index;
     _collar_level = 0;
 
     _standby_led_colour = LedColour::Yellow;
@@ -47,7 +49,7 @@ CCollarChannel::CCollarChannel(
 
 CCollarChannel::~CCollarChannel()
 {
-    printf("~CCollarChannel(%d)\n", _channel_id);
+    printf("~CCollarChannel(channel_id=%d, index=%d)\n", _channel_id, _collar_index);
     set_led_colour(LedColour::Black);
 }
 
@@ -64,7 +66,7 @@ void CCollarChannel::on()
     transmit( _collar_level);
 }
 
-void CCollarChannel::pulse(uint16_t minimum_duration_ms)
+void CCollarChannel::channel_pulse(uint16_t minimum_duration_ms)
 {
     _pulse_end_time = time_us_64() + (minimum_duration_ms * 1000);
     transmit(_collar_level);
@@ -75,6 +77,11 @@ void CCollarChannel::off()
 {
     _current_status = collar_status::OFF;
     _pulse_end_time = 0; 
+}
+
+CChannel_types::channel_type CCollarChannel::get_channel_type()
+{
+    return CChannel_types::channel_type::CHANNEL_COLLAR;
 }
 
 void CCollarChannel::loop(uint64_t time_us)
@@ -113,7 +120,7 @@ void CCollarChannel::set_collar_level_from_power(int16_t power)
     if (_collar_level > 99)
         _collar_level = 99;
 
-    printf("collar_level = %d (col %d)\n", _collar_level, _channel_id);
+    printf("collar_level = %d (chan %d, col idx %d)\n", _collar_level, _channel_id, _collar_index);
 }
 
 void CCollarChannel::transmit (uint8_t power)
@@ -126,7 +133,7 @@ void CCollarChannel::transmit (uint8_t power)
         return;
 
     CSavedSettings::collar_config collar_conf;
-    if (_saved_settings->get_collar_config(_channel_id, collar_conf))
+    if (_saved_settings->get_collar_config(_collar_index, collar_conf))
     {
         _comms->transmit(collar_conf.id, (CCollarComms::collar_channel)collar_conf.channel, (CCollarComms::collar_mode)collar_conf.mode, _collar_level);
         _last_tx_time_us = time_us_64();

@@ -446,7 +446,6 @@ void Core1::process_audio_pulse_queue()
     }
 }
 
-
 void Core1::activate_routine(uint8_t routine_id)
 {
     printf("Core1::activate_routine(%d)\n", routine_id);

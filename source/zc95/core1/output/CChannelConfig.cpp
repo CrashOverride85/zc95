@@ -111,9 +111,7 @@ COutputChannel* CChannelConfig::get_ouput_chanel(CChannel_types::channel_type ch
     switch (channel_type)
     {
         case CChannel_types::channel_type::CHANNEL_COLLAR:
-            // FIXME: read collar ID from eeprom:
-            //   active_channels[channel_id] = new CCollarChannel(_saved_settings, &_collar_comms, _power_level_control, channel_id); 
-            return new CDummyOutput(_saved_settings, _power_level_control, channel_id); // TODO/FIXME
+            return new CCollarChannel(_saved_settings, &_collar_comms, _power_level_control, channel_index, channel_id);
 
         case CChannel_types::channel_type::CHANNEL_INTERNAL:
             return new CZC624Channel(_saved_settings, &_zc624_comms, _power_level_control, channel_index, channel_id);

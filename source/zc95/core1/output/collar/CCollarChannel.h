@@ -14,12 +14,13 @@ class CCollarChannel : public COutputChannel
   public:
     enum class collar_status { ON, OFF };
 
-    CCollarChannel(CSavedSettings *saved_settings, CCollarComms *comms, CPowerLevelControl *power_level_control, uint8_t channel_id);
+    CCollarChannel(CSavedSettings *saved_settings, CCollarComms *comms, CPowerLevelControl *power_level_control, uint8_t collar_index, uint8_t channel_id);
     ~CCollarChannel();
     void on();
     void set_absolute_power(uint16_t power);
-    void pulse(uint16_t minimum_duration_ms);
+    void channel_pulse(uint16_t minimum_duration_ms);
     void off();
+    CChannel_types::channel_type get_channel_type();
     void loop(uint64_t time_us);
 
   private:
@@ -29,6 +30,7 @@ class CCollarChannel : public COutputChannel
     CSavedSettings* _saved_settings;
 
     uint8_t _channel_id;
+    uint8_t _collar_index;
     uint64_t _last_tx_time_us;
     collar_status _current_status;
     uint8_t _collar_level;
