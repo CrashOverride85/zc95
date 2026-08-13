@@ -27,7 +27,7 @@ class Core1
         ~Core1();
         void loop();
         void activate_routine(uint8_t routine_id);
-        void stop_routine();
+        void stop_routine(bool skip_chanel_restore);
     
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);

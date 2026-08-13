@@ -253,7 +253,7 @@ void Core1::process_message(message msg)
         break;
 
     case MESSAGE_ROUTINE_STOP:
-        stop_routine();
+        stop_routine(false);
         break;
 
     case MESSAGE_ROUTINE_MIN_MAX_CHANGE:
@@ -324,7 +324,7 @@ void Core1::process_message(message msg)
     }
 
     case MESSAGE_REINIT_CHANNELS:
-        stop_routine();
+        stop_routine(false);
         //init(); FIXME
         break;
 
@@ -450,6 +450,7 @@ void Core1::process_audio_pulse_queue()
 void Core1::activate_routine(uint8_t routine_id)
 {
     printf("Core1::activate_routine(%d)\n", routine_id);
+
     CRoutines::Routine routine = _routines[routine_id];
 
     if (!routine.routine_maker)
@@ -458,7 +459,7 @@ void Core1::activate_routine(uint8_t routine_id)
         return;
     }
 
-    stop_routine();
+    stop_routine(true);
 
     _active_routine = routine.routine_maker(routine.param);
 
@@ -477,7 +478,7 @@ void Core1::activate_routine(uint8_t routine_id)
     printf("Core1::activate_routine: completed\n");
 }
 
-void Core1::stop_routine()
+void Core1::stop_routine(bool skip_chanel_restore)
 {
      printf("Core1::stop_routine\n");
 
@@ -496,10 +497,17 @@ void Core1::stop_routine()
     printf("Core1::disable audio\n");
     set_audio_mode(audio_mode_t::OFF);
 
-    _channel_config.clear_chanel_config(&_active_channels);
+    // We skip chanel restore if stop_routine() is being called immediately before starting a new pattern.
+    // If we don't, we reset chanels to defaults, only to then chanage them straight away ready for the 
+    // pattern being started. Which is pointless, and results in a slight flicker of the LEDs, which looks
+    // a bit odd (although otherwise works ok).
+    if (!skip_chanel_restore)
+    {
+        _channel_config.clear_chanel_config(&_active_channels);
 
-    // Restore default channel config. This is mostly so the power dials work work and the LEDs show green when not running a pattern
-    _channel_config.configure_channels_from_saved_config(&_active_channels);
+        // Restore default channel config. This is mostly so the power dials work work and the LEDs show green when not running a pattern
+        _channel_config.configure_channels_from_saved_config(&_active_channels);
+    }
 }
 
 void Core1::set_output_chanels_to_off(bool enable_channel_isolation)

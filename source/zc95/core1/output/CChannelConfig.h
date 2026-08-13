@@ -34,6 +34,7 @@ class CChannelConfig
 
     private:
         COutputChannel* get_ouput_chanel(CChannel_types::channel_type channel_type, uint8_t channel_index, uint8_t channel_id);
+        uint8_t get_highest_enabled_channel_id();
         CSavedSettings *_saved_settings;
         CPowerLevelControl *_power_level_control;
         CCollarComms _collar_comms = CCollarComms(PIN_433TX); // 433MHz transmitter for collars

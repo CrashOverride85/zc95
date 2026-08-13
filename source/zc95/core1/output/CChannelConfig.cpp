@@ -58,13 +58,26 @@ void CChannelConfig::configure_channels_from_saved_config(std::vector<COutputCha
     }
     (*active_channels).clear();
 
-    for (int channel_id=0; channel_id < (*active_channels).size(); channel_id++)
+    for (int channel_id=0; channel_id <= get_highest_enabled_channel_id(); channel_id++)
     {
         CSavedSettings::channel_selection channel_details = _saved_settings->get_channel(channel_id);
         (*active_channels).push_back(get_ouput_chanel(channel_details.type, channel_details.index, channel_id));
     }
 
     printf("CChannelConfig::configure_channels_from_saved_config: active_channels.size=%d\n", (*active_channels).size());
+}
+
+uint8_t CChannelConfig::get_highest_enabled_channel_id()
+{
+    uint8_t highest_id = 0;
+    for (int channel_id=0; channel_id < EEPROM_CHANNEL_COUNT; channel_id++)
+    {
+        CSavedSettings::channel_selection channel_details = _saved_settings->get_channel(channel_id);
+        if (channel_details.type != CChannel_types::channel_type::CHANNEL_NONE)
+            highest_id = channel_id;
+    }
+
+    return highest_id;
 }
 
 void CChannelConfig::configure_channels(std::vector<COutputChannel*>* active_channels, std::vector<channel_config_t>& chanel_conf)
