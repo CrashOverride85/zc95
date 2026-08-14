@@ -26,6 +26,7 @@ class Core1
         Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);
         ~Core1();
         void loop();
+        void init();
         void activate_routine(uint8_t routine_id);
         void stop_routine(bool skip_chanel_restore);
     
@@ -48,6 +49,7 @@ class Core1
         void check_validity_of_lua_script();
         void set_audio_mode(audio_mode_t mode);
         void update_output_power_arrays();
+        void set_chanel_count(uint8_t chanel_count);
         static void __not_in_flash_func(core1_suspend)(void);
 
         CSavedSettings *_saved_settings;

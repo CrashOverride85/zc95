@@ -372,6 +372,12 @@ void CRoutineOutputCore1::process_message(message msg)
             _display->set_extended_ramp_progress(percent, seconds_remaining);
             break;
         }
+
+        case MESSAGE_SET_CHANEL_COUNT:
+        {
+            update_channel_count(msg.msg8[1]);
+            break;
+        }
     }
 }
 

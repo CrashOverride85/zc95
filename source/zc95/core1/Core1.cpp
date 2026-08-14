@@ -35,7 +35,8 @@ static uint32_t *_stack = NULL;
 void core1_entry()
 {
     printf("Core1::core1_entry()\n");
-   // core1->init();
+    
+    core1->init();
 
     while (1)
         core1->loop();
@@ -63,12 +64,17 @@ Core1 *core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *sa
     return core1;
 }
 
+void Core1::init()
+{
+    _channel_config.configure_channels_from_saved_config(&_active_channels);
+    update_output_power_arrays();
+    set_chanel_count(_active_channels.size());
+}
+
 Core1::Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings)  : _saved_settings(saved_settings), _routines(routines)
 {
     printf("Core1::Core1()\n");
     _active_routine = NULL;
-    _channel_config.configure_channels_from_saved_config(&_active_channels);
-    update_output_power_arrays();
 }
 
 void Core1::update_output_power_arrays()
@@ -81,6 +87,15 @@ void Core1::update_output_power_arrays()
 
     _output_power = new uint16_t[_active_channels.size()]();
     _output_power_max = new uint16_t[_active_channels.size()]();
+}
+
+void Core1::set_chanel_count(uint8_t chanel_count)
+{
+    message msg = {0};
+    msg.msg8[0] = MESSAGE_SET_CHANEL_COUNT;
+    msg.msg8[1] = chanel_count;
+
+    multicore_fifo_push_blocking(msg.msg32);
 }
 
 Core1::~Core1()
@@ -325,7 +340,6 @@ void Core1::process_message(message msg)
 
     case MESSAGE_REINIT_CHANNELS:
         stop_routine(false);
-        //init(); FIXME
         break;
 
     case MESSAGE_AUDIO_THRES_REACHED:
@@ -466,6 +480,7 @@ void Core1::activate_routine(uint8_t routine_id)
     _active_routine->get_routine_config(&conf);
     _channel_config.configure_channels(&_active_channels, conf.channels);
     update_output_power_arrays();
+    set_chanel_count(_active_channels.size());
 
     _active_routine->set_active_channels(&_active_channels);
 
@@ -506,6 +521,9 @@ void Core1::stop_routine(bool skip_chanel_restore)
 
         // Restore default channel config. This is mostly so the power dials work work and the LEDs show green when not running a pattern
         _channel_config.configure_channels_from_saved_config(&_active_channels);
+
+        update_output_power_arrays();
+        set_chanel_count(_active_channels.size());
     }
 }
 

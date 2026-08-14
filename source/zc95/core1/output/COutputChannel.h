@@ -71,7 +71,7 @@ class COutputChannel
 
         void set_led_colour(uint32_t colour)
         {
-            if (_channel_id >= 4)
+            if (_channel_id >= INTERNAL_CHANNEL_COUNT)
                 return;
 
             _led_colour = colour;

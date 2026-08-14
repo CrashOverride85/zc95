@@ -42,6 +42,7 @@
 #define MESSAGE_SET_MENU_VALUE              132
 
 #define MESSAGE_EXTENDED_RAMP_PROGRESS      140
+#define MESSAGE_SET_CHANEL_COUNT            141
 
 enum class lua_script_state_t { NOT_APPLICABLE = 0, VALID = 1 , INVALID = 2};
 
