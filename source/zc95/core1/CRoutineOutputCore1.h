@@ -23,7 +23,7 @@ class CRoutineOutputCore1 : public CRoutineOutput
         uint16_t get_front_pannel_power(uint8_t channel);
         uint16_t get_max_output_power(uint8_t channel);
         
-        void activate_routine(uint8_t routine_id, uint8_t channel_count);
+        void activate_routine(uint8_t routine_id);
         void stop_routine();
 
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);

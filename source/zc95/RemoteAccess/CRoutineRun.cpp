@@ -103,7 +103,7 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 
         set_pattern_config(index);
         update_channel_count(_pattern_conf.channels.size());
-        _routine_output->activate_routine(index, _pattern_conf.channels.size());
+        _routine_output->activate_routine(index);
         pattern_start = true;
         _running = true;
     }

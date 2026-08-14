@@ -46,7 +46,7 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     routine_ptr->get_routine_config(&_active_routine_conf);
     delete routine_ptr;
 
-    _routine_output->activate_routine(routine_id, _active_routine_conf.channels.size());
+    _routine_output->activate_routine(routine_id);
 
     _show_ramp_start = _saved_settings->get_extended_ramp_show_menu_option();
 

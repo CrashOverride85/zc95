@@ -111,10 +111,8 @@ uint16_t CRoutineOutputCore1::get_max_output_power(uint8_t channel){
     return _max_output_power[channel];
 }
 
-void CRoutineOutputCore1::activate_routine(uint8_t routine_id, uint8_t channel_count)
+void CRoutineOutputCore1::activate_routine(uint8_t routine_id)
 {
-    update_channel_count(channel_count);
-
     message msg = {0};
     msg.msg8[0] = MESSAGE_ROUTINE_LOAD;
     msg.msg8[1] = routine_id;

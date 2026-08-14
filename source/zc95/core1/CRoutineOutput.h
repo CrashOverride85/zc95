@@ -20,7 +20,7 @@ class CRoutineOutput
         virtual void enable_remote_power_mode() = 0;
         virtual void disable_remote_power_mode() = 0;
 
-        virtual void activate_routine(uint8_t routine_id, uint8_t channel_count) = 0;
+        virtual void activate_routine(uint8_t routine_id) = 0;
         virtual void stop_routine() = 0;
 
         virtual void menu_min_max_change(uint8_t menu_id, int16_t new_value) = 0;
