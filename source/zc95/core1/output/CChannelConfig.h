@@ -22,9 +22,9 @@ class CChannelConfig
     public:
         CChannelConfig(CSavedSettings *saved_settings);
         ~CChannelConfig();
-
-        void configure_channels(std::vector<COutputChannel*>* active_channels, std::vector<channel_config_t>& chanel_conf);
         void configure_channels_from_saved_config(std::vector<COutputChannel*>* active_channels);
+        void configure_channels(std::vector<COutputChannel*>* active_channels, std::vector<channel_config_t>& chanel_conf);
+        void populate_default_routine_chanels_from_config(struct routine_conf *conf);
         void clear_chanel_config(std::vector<COutputChannel*>* active_channels);
         void loop();
         CPowerLevelControl* PowerLevelControl();

@@ -33,7 +33,7 @@ CCollarChannel::CCollarChannel(
     uint8_t channel_id) : // which channel it will be used as (0-3 correspond to the 4 dials on the front panel)
     COutputChannel(saved_settings, power_level_control, channel_id)
 {
-    printf("CCollarChannel(%d)\n", channel_id);
+    printf("CCollarChannel(col idx=%d, channel_id=%d)\n", collar_index, channel_id);
     _saved_settings = saved_settings;
     _comms = comms;
     _current_status = collar_status::OFF;
@@ -49,7 +49,7 @@ CCollarChannel::CCollarChannel(
 
 CCollarChannel::~CCollarChannel()
 {
-    printf("~CCollarChannel(channel_id=%d, index=%d)\n", _channel_id, _collar_index);
+    printf("~CCollarChannel(col idx=%d, channel_id=%d)\n", _collar_index, _channel_id);
     set_led_colour(LedColour::Black);
 }
 

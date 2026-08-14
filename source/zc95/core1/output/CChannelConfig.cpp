@@ -48,23 +48,24 @@ CCollarComms* CChannelConfig::get_collar_comms()
 {
     return &_collar_comms;
 }
- 
+
 void CChannelConfig::configure_channels_from_saved_config(std::vector<COutputChannel*>* active_channels)
 {
-    // delete any existing configured chanels
-    for (size_t channel_id=0; channel_id < (*active_channels).size(); channel_id++)
-    {
-        delete (*active_channels)[channel_id];
-    }
-    (*active_channels).clear();
+    struct routine_conf conf;
+    populate_default_routine_chanels_from_config(&conf);
+    configure_channels(active_channels, conf.channels);
+}
 
-    for (int channel_id=0; channel_id <= get_highest_enabled_channel_id(); channel_id++)
+void CChannelConfig::populate_default_routine_chanels_from_config(struct routine_conf *conf)
+{
+    for (uint8_t chanel_id = 0; chanel_id <= get_highest_enabled_channel_id(); chanel_id++)
     {
-        CSavedSettings::channel_selection channel_details = _saved_settings->get_channel(channel_id);
-        (*active_channels).push_back(get_ouput_chanel(channel_details.type, channel_details.index, channel_id));
+        CSavedSettings::channel_selection channel_details = g_SavedSettings->get_channel(chanel_id);
+        channel_config_t chan;
+        chan.index = channel_details.index;
+        chan.type = channel_details.type;
+        conf->channels.push_back(chan);
     }
-
-    printf("CChannelConfig::configure_channels_from_saved_config: active_channels.size=%d\n", (*active_channels).size());
 }
 
 uint8_t CChannelConfig::get_highest_enabled_channel_id()

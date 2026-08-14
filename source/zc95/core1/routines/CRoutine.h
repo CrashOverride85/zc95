@@ -102,13 +102,7 @@ struct routine_conf
 {
     std::string name;
     std::vector<menu_entry> menu;
-    std::vector<channel_config_t> channels = 
-    {
-        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
-        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
-        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
-        {CChannel_types::channel_type::CHANNEL_INTERNAL, 3}
-    };
+    std::vector<channel_config_t> channels;
     std::string button_text[(int)soft_button::BUTTON_MAX];
     serial_config_t serial {false, 115200, 1, uart_parity_t::UART_PARITY_NONE, false};
     bool force_channel_isolation = true;  // If true, routine cannot disable channel isolation. If false, routine is prefixed with "(!)" in menu as a warning
@@ -155,13 +149,27 @@ class CRoutine
 
         void get_routine_config(struct routine_conf *conf)
         {
+            // Pre-populate conf->chanels with the default configured chanels (i.e. as set in 
+            // chanel config in the UI). This may be overriden by the pattern when get_config()
+            // is called, but most won't change it.
+            conf->channels.clear();
+            
+            for (uint8_t chanel_id = 0; chanel_id <= get_highest_enabled_channel_id(); chanel_id++)
+            {
+                CSavedSettings::channel_selection channel_details = g_SavedSettings->get_channel(chanel_id);
+                channel_config_t chan;
+                chan.index = channel_details.index;
+                chan.type = channel_details.type;
+                conf->channels.push_back(chan);
+            }
+            
             // Call get_config for the specific routine
             get_config(conf);
 
             // Add a min/max menu entry for any extra channels that have been configured
 
             // channel_id=0 is "CHAN1" on the front panel. channel_id=4 is the first "extra" channel, 
-            // which dont't have a dedicated dials on the front panel (expected to be a shock collars)
+            // which doesn't have dedicated dial on the front panel (expected to be a shock collar)
             for (size_t channel_id = conf->channels.size()-1; channel_id >= 4; channel_id--)
             {
                 menu_entry extra_channel;
@@ -358,6 +366,19 @@ class CRoutine
     private:
         std::vector<COutputChannel*>* _active_channels = NULL;
         bool _started = false;
+
+        uint8_t get_highest_enabled_channel_id()
+        {
+            uint8_t highest_id = 0;
+            for (int channel_id=0; channel_id < EEPROM_CHANNEL_COUNT; channel_id++)
+            {
+                CSavedSettings::channel_selection channel_details = g_SavedSettings->get_channel(channel_id);
+                if (channel_details.type != CChannel_types::channel_type::CHANNEL_NONE)
+                    highest_id = channel_id;
+            }
+
+            return highest_id;
+        }
 };
 
 #endif

@@ -71,7 +71,7 @@ CRoutineOutputCore1::~CRoutineOutputCore1()
 
 void CRoutineOutputCore1::set_front_panel_power(uint8_t channel, uint16_t power)
 {
-    if (channel > _channel_count)
+    if (channel >= _channel_count)
         return;
     
     if (_front_panel_power[channel] != power)
@@ -132,7 +132,7 @@ void CRoutineOutputCore1::stop_routine()
 
 void CRoutineOutputCore1::set_remote_power(uint8_t channel, uint16_t power)
 {
-    if (channel > _channel_count)
+    if (channel >= _channel_count)
         return;
     
     if (_remote_power[channel] != power)
