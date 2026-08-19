@@ -2,6 +2,10 @@
 
 ## Front panel
 
+### v1.1 (Mk2 Only)
+- Kindly designed by rootuz. Please note that whilst the project files (EasyEDA) & gerbers for this PCB are available, they are provided under the [CERN-OHL-S](../pcb-project/FrontPanelControls/v1_x/LICENSE.txt) licence
+- Updated to match the v1.1 FrontPanelControls board
+
 ### v0.5 (Mk2 only)
 - Updated for Mk2: USB-C, separate audio & serial sockets, output sockets changed from 2.5mm to 3.5mm
 
@@ -20,6 +24,13 @@
 First public version
 
 ## FrontPanelControls
+### v1.1 (Mk2 only)
+Technically this PCB should work on a Mk1, however there is no corresponding Front panel pcb
+- Kindly designed by rootuz. Please note that whilst the project files (EasyEDA) & gerbers for this PCB are available, they are provided under the [CERN-OHL-S](../pcb-project/FrontPanelControls/v1_x/LICENSE.txt) licence
+- Square buttons mounted direct to the PCB
+- As the PCB extends to the buttons, the display is mounted to this PCB
+- LEDs are surface mount, with light pipes to the front
+
 ### v0.2 (Mk1 & Mk2)
 - Requires firmware version >=1.8
 - Now mostly SMD aimed at JLCPCB's SMT assembly service
