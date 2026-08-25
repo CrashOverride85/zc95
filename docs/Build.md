@@ -128,7 +128,15 @@ Populated board, minus Picos:
 
 
 ### Front panel
-Follow appropriate notes depending on the version ordered:
+
+If using the "new" version of the display, there's a pull up resistor on the backlight enable pin that needs to be removed to prevent the display showing white on power on for a few seconds:
+
+![new ada358 display]
+
+The old version of the display (with a blue PCB and without the ribbon connector) doesn't have this issue, so there is nothing to remove.
+
+
+Then follow the appropriate notes depending on the version of the front panel ordered:
 
 * [Notes for v0.2 - round buttons](./Build_fp_0_2.md)
 * [Notes for v1.1 - square buttons](./Build_fp_1_x.md)
@@ -332,6 +340,7 @@ Possible causes (not exhaustive!) for calibration to fail:
 [fix1 C64 C65]: images/fix_c64_c65.jpg "C64 and C65 location on PCB"
 [fix1 100uF]: images/fix_cap1.jpg "100uF capacitor between switch and USB-C"
 [fix1 22uF]: images/fix_cap2.jpg "22uF capacitor on underside of PCB"
+[new ada358 display]: images/display_new.jpg "New version of the ADA358 display"
 [q1]: images/build_Q1.jpg "Use diode for Q1"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
 [gh46]: https://github.com/CrashOverride85/zc95/issues/46
