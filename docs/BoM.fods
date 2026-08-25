@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <office:document xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" xmlns:css3t="http://www.w3.org/TR/css3-text/" xmlns:grddl="http://www.w3.org/2003/g/data-view#" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:drawooo="http://openoffice.org/2010/draw" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:tableooo="http://openoffice.org/2009/table" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:rpt="http://openoffice.org/2005/report" xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" office:version="1.3" office:mimetype="application/vnd.oasis.opendocument.spreadsheet">
- <office:meta><meta:generator>LibreOffice/7.4.7.2$Linux_X86_64 LibreOffice_project/40$Build-2</meta:generator><dc:date>2026-08-19T22:30:39.962223669</dc:date><meta:editing-duration>PT7H37M37S</meta:editing-duration><meta:editing-cycles>81</meta:editing-cycles><dc:title>ZC95 BoM</dc:title><meta:document-statistic meta:table-count="4" meta:cell-count="600" meta:object-count="2"/></office:meta>
+ <office:meta><meta:generator>LibreOffice/7.4.7.2$Linux_X86_64 LibreOffice_project/40$Build-2</meta:generator><dc:date>2026-08-25T21:55:38.405357770</dc:date><meta:editing-duration>PT21H24M57S</meta:editing-duration><meta:editing-cycles>84</meta:editing-cycles><dc:title>ZC95 BoM</dc:title><meta:document-statistic meta:table-count="4" meta:cell-count="605" meta:object-count="2"/></office:meta>
  <office:settings>
   <config:config-item-set config:name="ooo:view-settings">
    <config:config-item config:name="VisibleAreaTop" config:type="int">487</config:config-item>
@@ -69,7 +69,7 @@
        <config:config-item config:name="AnchoredTextOverflowLegacy" config:type="boolean">false</config:config-item>
       </config:config-item-map-entry>
      </config:config-item-map-named>
-     <config:config-item config:name="ActiveTable" config:type="string">Misc</config:config-item>
+     <config:config-item config:name="ActiveTable" config:type="string">Front panel controls (v1.x)</config:config-item>
      <config:config-item config:name="HorizontalScrollbarWidth" config:type="int">1849</config:config-item>
      <config:config-item config:name="ZoomType" config:type="short">0</config:config-item>
      <config:config-item config:name="ZoomValue" config:type="int">100</config:config-item>
@@ -156,10 +156,10 @@
      <config:config-item config:name="CodeName" config:type="string">Main board</config:config-item>
     </config:config-item-map-entry>
     <config:config-item-map-entry config:name="Front panel controls (v0.2)">
-     <config:config-item config:name="CodeName" config:type="string">Front panel controls</config:config-item>
+     <config:config-item config:name="CodeName" config:type="string">Front panel controls (v0.2)</config:config-item>
     </config:config-item-map-entry>
     <config:config-item-map-entry config:name="Front panel controls (v1.x)">
-     <config:config-item config:name="CodeName" config:type="string">Front panel controls_2</config:config-item>
+     <config:config-item config:name="CodeName" config:type="string">Front panel controls (v1.x)</config:config-item>
     </config:config-item-map-entry>
    </config:config-item-map-named>
   </config:config-item-set>
@@ -765,7 +765,7 @@
    <style:table-cell-properties style:rotation-align="none"/>
    <style:text-properties fo:color="#000000" style:text-outline="false" style:text-line-through-style="none" style:text-line-through-type="none" style:font-name="Arial" fo:font-size="11pt" fo:font-style="normal" fo:text-shadow="none" style:text-underline-style="none" fo:font-weight="bold" style:font-size-asian="11pt" style:font-style-asian="normal" style:font-weight-asian="bold" style:font-name-complex="Arial" style:font-size-complex="11pt" style:font-style-complex="normal" style:font-weight-complex="bold"/>
   </style:style>
-  <style:style style:name="ce85" style:family="table-cell" style:parent-style-name="Default">
+  <style:style style:name="ce39" style:family="table-cell" style:parent-style-name="Default">
    <style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="middle"/>
    <style:paragraph-properties fo:text-align="center"/>
    <style:text-properties fo:font-size="13pt" fo:font-weight="bold" style:font-size-asian="13pt" style:font-weight-asian="bold" style:font-size-complex="13pt" style:font-weight-complex="bold"/>
@@ -1355,7 +1355,6 @@
     </table:table-row>
    </table:table>
    <table:table table:name="Main board" table:style-name="ta2">
-    <office:forms form:automatic-focus="false" form:apply-design-mode="false"/>
     <table:table-column table:style-name="co9" table:default-cell-style-name="ce65"/>
     <table:table-column table:style-name="co10" table:default-cell-style-name="ce73"/>
     <table:table-column table:style-name="co11" table:default-cell-style-name="ce78"/>
@@ -2666,7 +2665,6 @@
     </table:table-row>
    </table:table>
    <table:table table:name="Front panel controls (v0.2)" table:style-name="ta3">
-    <office:forms form:automatic-focus="false" form:apply-design-mode="false"/>
     <table:table-column table:style-name="co9" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co14" table:default-cell-style-name="ce89"/>
     <table:table-column table:style-name="co15" table:default-cell-style-name="Default"/>
@@ -2690,7 +2688,7 @@
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
     <table:table-row table:style-name="ro10">
-     <table:table-cell table:style-name="ce85" office:value-type="string" calcext:value-type="string" table:number-columns-spanned="6" table:number-rows-spanned="1">
+     <table:table-cell table:style-name="ce39" office:value-type="string" calcext:value-type="string" table:number-columns-spanned="6" table:number-rows-spanned="1">
       <text:p>V0.2 of PCB</text:p>
       <draw:frame draw:z-index="0" draw:name="Image 2" draw:style-name="gr1" draw:text-style-name="P1" svg:width="10.205cm" svg:height="3.91cm" svg:x="0.465cm" svg:y="0.517cm">
        <draw:image draw:mime-type="image/jpeg">
@@ -3894,7 +3892,7 @@
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro10" table:number-rows-repeated="7">
-     <table:table-cell table:style-name="ce85"/>
+     <table:table-cell table:style-name="ce39"/>
      <table:table-cell table:style-name="ce41"/>
      <table:table-cell table:style-name="ce67" table:number-columns-repeated="3"/>
      <table:table-cell table:number-columns-repeated="59"/>
@@ -4204,7 +4202,7 @@
      <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro10">
-     <table:table-cell table:style-name="ce85" office:value-type="string" calcext:value-type="string" table:number-columns-spanned="6" table:number-rows-spanned="1">
+     <table:table-cell table:style-name="ce39" office:value-type="string" calcext:value-type="string" table:number-columns-spanned="6" table:number-rows-spanned="1">
       <text:p>V1.1 of PCB</text:p>
       <draw:frame draw:z-index="0" draw:name="Image 1" draw:style-name="gr1" draw:text-style-name="P1" svg:width="10.636cm" svg:height="4.004cm" svg:x="0.296cm" svg:y="0.463cm">
        <draw:image draw:mime-type="image/jpeg">
@@ -5334,7 +5332,7 @@
      <table:covered-table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro10" table:number-rows-repeated="7">
-     <table:table-cell table:style-name="ce85"/>
+     <table:table-cell table:style-name="ce39"/>
      <table:table-cell table:style-name="ce41"/>
      <table:table-cell table:style-name="ce67" table:number-columns-repeated="3"/>
      <table:table-cell/>
@@ -5394,6 +5392,24 @@
       <text:p>1</text:p>
      </table:table-cell>
      <table:table-cell table:style-name="ce65"/>
+    </table:table-row>
+    <table:table-row table:style-name="ro1">
+     <table:table-cell/>
+     <table:table-cell table:style-name="ce73" office:value-type="string" calcext:value-type="string">
+      <text:p>(Ribbon cable)</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce81" office:value-type="string" calcext:value-type="string">
+      <text:p>FFC/FPC 18POS 0.5mm</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce81" office:value-type="string" calcext:value-type="string">
+      <text:p>C2857498</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
+      <text:p>1</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce65" office:value-type="string" calcext:value-type="string">
+      <text:p>Mouser alternative: 710-687618050002 </text:p>
+     </table:table-cell>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell/>
@@ -5503,7 +5519,7 @@
      <table:table-cell table:style-name="ce45" office:value-type="float" office:value="9" calcext:value-type="float">
       <text:p>9</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce65"/>
+     <table:table-cell table:style-name="ce86"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:style-name="ce65" office:value-type="string" calcext:value-type="string">
@@ -5619,10 +5635,6 @@
      <table:table-cell table:style-name="ce45" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce86"/>
-    </table:table-row>
-    <table:table-row table:style-name="ro3">
-     <table:table-cell table:style-name="ce86" table:number-columns-repeated="5"/>
      <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro3" table:number-rows-repeated="2">

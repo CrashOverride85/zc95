@@ -39,12 +39,13 @@ Photo of front panel controls board as it arrived from JLCPCB:
 
 
 ## Assembly
+There are two ways to attached the display to the front panel: either solder it, or connect it using an 18 way 0.5mm pitch FPC flat flexible ribbon cable (recommended).
 
 * Solder on a 2x4 IDC socket on the rear of the board for "P1" - make sure orientation matches the silkscreen.
 
 * Solder a 10 pin molex KK style connector for "H1" ("Mainboard LCD").
 
-* Solder 10 way pin header onto back on LCD
+* If soldering display to front panel: Solder 10 way pin header onto back on LCD. Skip this if using FPC ribbon.
 
 * If ordered/printed, fit the display frame to the display:
   
@@ -54,7 +55,11 @@ Photo of front panel controls board as it arrived from JLCPCB:
 
 * Remove all nuts & washers from the potentiometers & rotary encoder, and push the front panel onto the controls board, lining up display header with PCB
 
-* Ensure the rear/controls PCB is level (all buttons are level), and solder display in place
+* Either
+  1. Ensure the rear/controls PCB is level (all buttons are level), and solder display in place, **OR**
+  2. Plug in the FPC ribbon to the display and the front panel:
+
+     ![fp fpc]
 
 * Add remaining nuts for display/pcb, and add the 4x nuts & bolts around the potentiometers & rotary encoder
 
@@ -67,11 +72,13 @@ The assembled front panel should look something like this:
 
 ![fp assembled2]
 
+(shows assembled with display soldered to front panel)
 
 
 [fp v1.1]: images/fp_v1.1.jpg "Front panel v1.1"
 [fp front]: images/fp_v1_x_front.jpg "Front panel controls PCB, top side as it arrived from JLCPCB" 
 [fp back]: images/fp_v1_x_back.jpg "Front panel controls PCB, bottom side as it arrived from JLCPCB" 
+[fp fpc]: images/fp_v1_x_fpc.jpg "Front panel attached to display using FPC" 
 [fp]: images/fp_v1_x.jpg "Front panel as it arrived from JLCPCB"
 [display frame]: images/display_frame.jpg
 
