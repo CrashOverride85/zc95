@@ -14,6 +14,17 @@ The ZC95 is made up of 3 PCBs:
 
 1 + 2 have CPL & BOM files as well as gerbers, and are aimed at JLCPCB SMT assembly service. 
 
+For the pair of front panel PCBs, there are two options:
+1. Original version (v0.2): through hole LEDs, hand soldered (round) buttons with leads attaching to a smaller PCB
+  
+  ![zc95 powered up]
+
+2. New version (v1.1), kindly contributed by rootuz: SMD LEDs with light pipes to front, (square) buttons mounted directly onto a larger PCB
+
+  ![fp v1.1]
+
+For either option, order a matching pair of "Front panel controls" and "Front panel" boards.
+
 ### PCBs
 
 #### 1. Main board
@@ -27,20 +38,10 @@ On the next page, add the BOM and CPL files:
 * [BOM-main.csv](../pcb/MainBoard/BOM-main.csv)
 * [CPL-main.csv](../pcb/MainBoard/CPL-main.csv)
 
-#### 2. Front panel controls
-Order the board using [these gerbers](../pcb/FrontPanelControls/GERBER-PanelControls.zip) and the default options as per the main board.
-
-Select the "SMT Assembly" option again at the bottom - pick "Assemble **BOTTOM** side" (this is _not_ the default) and Tooling holes "Added by JLCPCB". 
-On the next page, add the BOM and CPL files:
-* [BOM-PanelControls.csv](../pcb/FrontPanelControls/BOM-PanelControls.csv)
-* [CPL-PanelControls.csv](../pcb/FrontPanelControls/CPL-PanelControls.csv)
-
-#### 3. Front panel
-Order the board using [these gerbers](../pcb/GERBER-FrontPanel.zip). Not essential, but as the board forms the front of the case, I would suggest:
-* **Order in black**; or at least, think about what colour you want the front panel to be and don't just go with the default of green unless that's what you really want
-* For "Mark on PCB" in the "High-spec Options" section, pick "Order Number (Specify Position)". This is makes sure the order number is put on the back of the PCB (the placeholder is already on the back of the board for this)
-
-Keep the other options as default.
+#### 2. Front panel
+Order a pair of matching front panel PCBs - see "Order PCBs" section in relevant notes:
+* [Notes for v0.2 - round buttons](./Build_fp_0_2.md)
+* [Notes for v1.1 - square buttons](./Build_fp_1_x.md)
 
 ### PCB Parts
 All remaining parts not covered by the JLC PCB assembly service required to populate the PCBs - with the exception of the transformers - can be purchased from LCSC, and this BOM spreadsheet lists required parts + quantity with the LCSC part number for each board on separate tabs:
@@ -50,11 +51,10 @@ All remaining parts not covered by the JLC PCB assembly service required to popu
 #### Part substitutions
 A few parts in particular are likely to cause problems if substituted:
 
-* Transformers. The zc95 is designed around the 42TL004, and that's what all my testing (Mk1 & Mk2) has been with. The larger 42TU200's would _likely_ also work, but I'm not sure if they'll physically fit - there is space / mounting holes on the main PCB for them, but I suspect there wouldn't be enough clearance between them and the front panel. Expect problems using other transformers unless they are very close match.
+* Transformers. The zc95 is designed around the 42TL004, and that's what all my testing (Mk1 & Mk2) has been with. The larger 42TU200's would _likely_ also work, but I'm not sure if they'll physically fit - there is space / mounting holes on the main PCB for them, but I suspect there wouldn't be enough clearance between them and the front panel. Expect problems using other transformers unless they are a very close match.
 
 * IRF9Z24NPBF P-chanel MOSFETs - if out of stock with JLC, I strongly advise either obtaining these elsewhere and fitting yourself, or waiting. The design is _very_ sensitive to any changes to this particular part. 
 
-* The WS2812D LEDs - watch out, not all have the same pinout
 
 ### Case
 There are two options for a case:
@@ -81,17 +81,6 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 * Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway). Be aware that a battery is _required_ for the ZC95 to function correctly. It might power on and pass the self test without it if you're lucky, but expect stability problems without it.
 
 * Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
-
-* Buttons: Consider what colour you want the buttons. The BoM lists LP1OA1A**B** for blue (as I used for the Mk1), but for this Mk2 I've gone with LP1OA1A**R** for red. Still not sure which I prefer ¯\_(ツ)_/¯
-
-### 3D printed parts
-These parts are optional.
-
-#### LED riser
-Order or 3d print LED riser: [STL file](../misc/led-riser/led-riser.stl). These make it easier to install the LEDs at the correct/consistent height.
-
-#### Display frame
-Allows the screws holding the Adafruit display to the front panel to be tightened without crushing the display. [STL file](../misc/display-frame/lcd_frame_ada.stl).
 
 ## Assembly
 
@@ -137,61 +126,20 @@ Populated board, minus Picos:
 
 ![main board populated]
 
-### Front panel controls 
-Photo of board as it arrived from JLCPCB:
-
-![front panel controls-bottom]
-![front panel controls-top]
-
-
-* If printed/ordered, use the LED risers to get the LEDs at the correct height, e.g.:
-
-  ![front panel LED riser]:
-
-  (Photo shows front panel attached to a mk1)
-
-  Thanks to @electro991 for this, see [#102][gh102].
-
-* Otherwise, getting the LEDs at the correct height can be a little awkward. Suggest soldering the POTs + rotary encoder first, putting the LEDs in (no solder yet), then attaching the board to the front panel (using 20mm bolts). Make sure the LEDs are level-ish, then solder in place.
-* Stating the obvious, but put all the hand-solder parts (LEDs, POTs and rotary encoder) on the side indicated by the silkscreen
-
-Fully assembled board:
-
-![front panel controls-top-populated]
 
 ### Front panel
-Photo of board as it arrived from JLCPCB:
 
-![front panel]
+If using the "new" version of the display, there's a pull up resistor on the backlight enable pin that needs to be removed to prevent the display showing white on power on for a few seconds:
 
-Perhaps the most annoying part of the whole build is wiring the 4 buttons to the front panel. The buttons should be attached to the corresponding position on the front panel controls PCB:
+![new ada358 display]
 
-![front panel buttons]
+The old version of the display (with a blue PCB and without the ribbon connector) doesn't have this issue, so there is nothing to remove.
 
-If using the illuminated LP1OA1Ax buttons, there are 4 wires per button - 2x for switch contacts and 2x for the LED. The LED part of the buttons should be connected like this:
 
-![button connections]
+Then follow the appropriate notes depending on the version of the front panel ordered:
 
-The pin marked with the white dot is the LED cathode, the opposite pin is the anode, the other two pins are the switch contacts.
-
-Once connected, it should look something like:
-
-![front panel buttons connected]
-
-_Optional_: If you ordered/printed the display frame, place it around the display before mounting to the front panel:
-
-![display frame]
-
-(Thanks to rootuz for this frame)
-
-Use the M2 nuts & 20mm bolts to attach the board to the front panel, then screw on the washers & nuts for the potentiometers. 
-
-Attach connector to back of LCD, then LCD to the front panel with M2 nuts, 12mm bolts.
-
-The assembled front panel should look something like this:
-
-![front panel back]
-
+* [Notes for v0.2 - round buttons](./Build_fp_0_2.md)
+* [Notes for v1.1 - square buttons](./Build_fp_1_x.md)
 
 ### Miscellaneous
 * Create a 10pin F-F cable for the display:
@@ -377,15 +325,8 @@ Possible causes (not exhaustive!) for calibration to fail:
 
 [main board populated]: images/main_board_populated.jpg "Populated main board"
 
-[front panel controls-bottom]: images/fpc_bottom.jpg "Unpopulated front panel controls board - bottom"
-[front panel controls-top]: images/fpc_top.jpg "Unpopulated front panel controls board - top"
-[front panel controls-top-populated]: images/fpc_top_populated.jpg "Populated front panel controls board - top"
-[front panel LED riser]: images/fpc_led_riser.jpg "Front panel with LED riser"
-[front panel]: images/fp.jpg "Front panel"
-[front panel buttons connected]: images/fpc_buttons.jpg "Front panel with buttons attached"
-[button connections]: images/button_connection.png "Front panel buttons to fpc board connection"
-[front panel buttons]: images/fp-abcd.jpg "Front panel with buttons labelled"
-[front panel back]: images/fp_back.jpg "Back of front panel with LCD and buttons attached"
+
+
 [10pin F-F cable]: images/10pinFF.jpg "10 pin F-F cable"
 [8w IDC]: images/8w_idc.jpg "2x4 IDC cable"
 [display frame]: images/display_frame.jpg
@@ -394,11 +335,13 @@ Possible causes (not exhaustive!) for calibration to fail:
 [zc95 assembled1]: images/assembled_3dprinted.jpg "Fully assembled ZC95 in 3d printed case, minus cover"
 [zc95 assembled2]: images/assembled_hammond.jpg "Fully assembled ZC95 in 1598DBK case, minus cover"
 [zc95 powered up]: images/powered_up.jpg "Fully assembled ZC95 powered up"
+[fp v1.1]: images/fp_v1.1.jpg "Front panel v1.1"
 [hw check fail]: images/hw_check_fail.jpg "Power up error"
 [fix1 C64 C65]: images/fix_c64_c65.jpg "C64 and C65 location on PCB"
 [fix1 100uF]: images/fix_cap1.jpg "100uF capacitor between switch and USB-C"
 [fix1 22uF]: images/fix_cap2.jpg "22uF capacitor on underside of PCB"
+[new ada358 display]: images/display_new.jpg "New version of the ADA358 display"
 [q1]: images/build_Q1.jpg "Use diode for Q1"
 [gh25]: https://github.com/CrashOverride85/zc95/discussions/25
 [gh46]: https://github.com/CrashOverride85/zc95/issues/46
-[gh102]: https://github.com/CrashOverride85/zc95/discussions/102
+
