@@ -9,7 +9,10 @@
 <body>
   <header>
     <h1>ZC95</h1>
-    <span id="status" class="status status-connecting">connecting&hellip;</span>
+    <div class="header-right">
+      <span id="status" class="status status-connecting">connecting&hellip;</span>
+      <button id="theme-toggle" class="btn-icon" title="Toggle light/dark theme" aria-label="Toggle light/dark theme">🌙</button>
+    </div>
   </header>
 
   <main>
@@ -23,7 +26,10 @@
 
     <section id="pattern-running" hidden>
       <div class="row row-space-between">
-        <h2 id="pattern-name"></h2>
+        <div class="row">
+          <h2 id="pattern-name"></h2>
+          <span id="triphase-badge" class="badge-warning" title="Uses triphase - channel isolation is disabled" hidden>(!) triphase</span>
+        </div>
         <button id="stop-btn" class="btn btn-danger">Stop</button>
       </div>
 
@@ -74,7 +80,11 @@
         <div class="channel-bar-max"></div>
         <div class="channel-bar-actual"></div>
       </div>
-      <input type="range" class="channel-slider" min="0" max="1000" step="10" value="0">
+      <div class="row channel-slider-row">
+        <button class="btn btn-step btn-dec">&minus;</button>
+        <input type="range" class="channel-slider" min="0" max="1000" step="10" value="0">
+        <button class="btn btn-step btn-inc">&plus;</button>
+      </div>
     </div>
   </template>
 

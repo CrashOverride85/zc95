@@ -13,8 +13,10 @@
   --max-power: #4d7cf0;
 }
 
+/* No explicit toggle choice stored -> follow the browser/OS preference live (falls back
+   to the dark :root defaults above if the browser doesn't report a preference at all) */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --bg: #f5f5f7;
     --bg-elevated: #ffffff;
     --text: #1c1c1e;
@@ -28,6 +30,22 @@
     --actual-power: #d6a600;
     --max-power: #3b63c2;
   }
+}
+
+/* Explicit choice made via the theme toggle (persisted client-side in localStorage) */
+:root[data-theme="light"] {
+  --bg: #f5f5f7;
+  --bg-elevated: #ffffff;
+  --text: #1c1c1e;
+  --text-muted: #6b6b70;
+  --border: #d8d8de;
+  --accent: #c62b6b;
+  --accent-text: #ffffff;
+  --danger: #b3261e;
+  --ok: #2e7d43;
+  --warn: #a06800;
+  --actual-power: #d6a600;
+  --max-power: #3b63c2;
 }
 
 * {
@@ -59,6 +77,29 @@ header h1 {
   margin: 0;
   font-size: 1.2rem;
   letter-spacing: 0.05em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-icon {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 .status {
@@ -100,6 +141,16 @@ label {
 h2 {
   margin: 0;
   font-size: 1.1rem;
+}
+
+.badge-warning {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
 .row {
@@ -318,6 +369,10 @@ input[type="range"]::-moz-range-thumb {
   width: 2px;
   left: 100%;
   background: var(--danger);
+}
+
+.channel-slider-row {
+  margin-top: 10px;
 }
 
 #log-section {

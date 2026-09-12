@@ -26,12 +26,19 @@ class WebHub:
 
     self._clients = set()
 
-    # Last known state, sent to newly (re)connected browser clients so they sync up
+    # Last known state, sent to newly (re)connected browser clients so they sync up.
+    # The ZC95 itself doesn't echo back PatternMinMaxChange/PatternMultiChoiceChange/SetPower
+    # to other connections, so this hub is what keeps multiple browser tabs/devices in sync
+    # with each other, not just with the box.
     self._patterns = []
     self._pattern_detail = None
     self._last_power_status = None
+    self._menu_values = {}  # MenuId -> current value (MIN_MAX) or choice id (MULTI_CHOICE)
+    self._last_power_request = None  # (chan1, chan2, chan3, chan4), as last requested by any client
 
-    # SetPower is throttled to at most one message every 250ms, same as pattern_gui.py
+    # SetPower is throttled to at most one message every 250ms, same as pattern_gui.py.
+    # The power_request broadcast to other browser clients (see _power_sender) is throttled
+    # along with it, rather than on every slider drag event.
     self._pending_power = None
     self._power_task = None
 
@@ -72,8 +79,13 @@ class WebHub:
     await self._send(websocket, {"type": "patterns", "patterns": self._patterns})
     if self._pattern_detail is not None:
       await self._send(websocket, {"type": "pattern_detail", "detail": self._pattern_detail})
+      for menu_id, value in self._menu_values.items():
+        await self._send(websocket, {"type": "menu_option_changed", "menu_id": menu_id, "value": value})
     if self._last_power_status is not None:
       await self._send(websocket, {"type": "power_status", "status": self._last_power_status})
+    if self._last_power_request is not None:
+      chan1, chan2, chan3, chan4 = self._last_power_request
+      await self._send(websocket, {"type": "power_request", "chan1": chan1, "chan2": chan2, "chan3": chan3, "chan4": chan4})
 
   # ---- browser -> zc95 ----
 
@@ -87,11 +99,15 @@ class WebHub:
       elif cmd == "set_power":
         self._pending_power = (message["chan1"], message["chan2"], message["chan3"], message["chan4"])
       elif cmd == "menu_min_max":
-        await self.zc.request(
-          {"Type": "PatternMinMaxChange", "MenuId": message["menu_id"], "NewValue": message["value"]}, "Ack")
+        menu_id, value = message["menu_id"], message["value"]
+        await self.zc.request({"Type": "PatternMinMaxChange", "MenuId": menu_id, "NewValue": value}, "Ack")
+        self._menu_values[menu_id] = value
+        await self._broadcast({"type": "menu_option_changed", "menu_id": menu_id, "value": value})
       elif cmd == "menu_multi_choice":
-        await self.zc.request(
-          {"Type": "PatternMultiChoiceChange", "MenuId": message["menu_id"], "ChoiceId": message["choice_id"]}, "Ack")
+        menu_id, choice_id = message["menu_id"], message["choice_id"]
+        await self.zc.request({"Type": "PatternMultiChoiceChange", "MenuId": menu_id, "ChoiceId": choice_id}, "Ack")
+        self._menu_values[menu_id] = choice_id
+        await self._broadcast({"type": "menu_option_changed", "menu_id": menu_id, "value": choice_id})
       elif cmd == "soft_button":
         await self.zc.request(
           {"Type": "PatternSoftButton", "Pressed": 1 if message["pressed"] else 0}, "Ack")
@@ -105,12 +121,16 @@ class WebHub:
     await self.zc.request({"Type": "PatternStart", "Index": pattern_id}, "Ack")
     self._pattern_detail = detail
     self._last_power_status = None
+    self._menu_values = {}
+    self._last_power_request = None
     await self._broadcast({"type": "pattern_detail", "detail": detail})
 
   async def _stop_pattern(self):
     await self.zc.request({"Type": "PatternStop"}, "Ack")
     self._pattern_detail = None
     self._last_power_status = None
+    self._menu_values = {}
+    self._last_power_request = None
     await self._broadcast({"type": "pattern_stopped"})
 
   async def _power_sender(self):
@@ -119,6 +139,8 @@ class WebHub:
       if self._pending_power is not None:
         chan1, chan2, chan3, chan4 = self._pending_power
         self._pending_power = None
+        self._last_power_request = (chan1, chan2, chan3, chan4)
+        await self._broadcast({"type": "power_request", "chan1": chan1, "chan2": chan2, "chan3": chan3, "chan4": chan4})
         try:
           await self.zc.request(
             {"Type": "SetPower", "Chan1": chan1, "Chan2": chan2, "Chan3": chan3, "Chan4": chan4}, "Ack")
@@ -137,6 +159,7 @@ class WebHub:
       self._last_power_status = message
       await self._broadcast({"type": "power_status", "status": message})
     elif msg_type == "MenuOptionChanged":
+      self._menu_values[message["MenuId"]] = message["Value"]
       await self._broadcast({"type": "menu_option_changed", "menu_id": message["MenuId"], "value": message["Value"]})
     elif msg_type == "LuaScriptOutput":
       await self._broadcast({"type": "lua_output", "text_type": message["TextType"], "text": message["Text"]})
