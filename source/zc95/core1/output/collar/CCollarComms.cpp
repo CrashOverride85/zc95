@@ -99,7 +99,7 @@ bool CCollarComms::transmit (struct collar_message message)
     tx_buffer(txbuf, sizeof(txbuf));
     tx_buffer(txbuf, sizeof(txbuf));
     _last_tx_time_us = time_us_64();
-    printf("CCollarComms::transmit: TX Done\n");
+    printf("CCollarComms::transmit: TX Done (power=%d)\n", txbuf[3]);
     return true;
 }
 

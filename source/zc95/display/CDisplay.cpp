@@ -168,7 +168,7 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
 
     if (channel >= INTERNAL_CHANNEL_COUNT)
     {
-        printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
+        // printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
         return;
     }
 

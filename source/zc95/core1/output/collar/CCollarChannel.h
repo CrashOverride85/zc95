@@ -34,7 +34,7 @@ class CCollarChannel : public COutputChannel
     uint64_t _last_tx_time_us;
     collar_status _current_status;
     uint8_t _collar_level;
-    uint64_t _pulse_end_time;
+    uint64_t _pulse_end_time_us;
     uint64_t _led_off_time;
 };
 

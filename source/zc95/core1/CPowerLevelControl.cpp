@@ -61,7 +61,7 @@ CPowerLevelControl::~CPowerLevelControl()
 }
 
 // Call with the power level set on the front panel 
-// power is 0-1000, channel is 0-3
+// power is 0-1000, channel is (usually) 0-3
 void CPowerLevelControl::set_front_panel_power(uint8_t channel, uint16_t power)
 {
     if (channel >= _channel_count)
@@ -75,7 +75,7 @@ void CPowerLevelControl::set_front_panel_power(uint8_t channel, uint16_t power)
 }
 
 // Call with power level set remotely
-// power is 0-1000, channel is 0-3
+// power is 0-1000, channel is (usually) 0-3
 void CPowerLevelControl::set_remote_power(uint8_t channel, uint16_t power)
 {
     if (channel >= _channel_count)

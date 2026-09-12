@@ -109,8 +109,12 @@
 
 
 
-#define MENU_ID_CHANNEL5  0xF5 // 240
+#define MENU_ID_CHANNEL5  0xF5 // 245
 //              CHANNEL6  0xF6
-//              ...
+//              CHANNEL7  0xF7
+//              CHANNEL8  0xF8
+//              CHANNEL9  0xF9
 #define MENU_ID_NO_PARAMS 0xFE
 #define MENU_ID_RAMP      0xFF
+
+#define MENU_ID_FIRST_RESERVED MENU_ID_CHANNEL5

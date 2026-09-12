@@ -62,13 +62,13 @@ void CCollarChannel::set_absolute_power(uint16_t power)
 void CCollarChannel::on()
 {
     _current_status = collar_status::ON;
-    _pulse_end_time = 0; // sent an On instruction, so don't switch off until off is called
+    _pulse_end_time_us = 0; // sent an On instruction, so don't switch off until off is called
     transmit( _collar_level);
 }
 
 void CCollarChannel::channel_pulse(uint16_t minimum_duration_ms)
 {
-    _pulse_end_time = time_us_64() + (minimum_duration_ms * 1000);
+    _pulse_end_time_us = time_us_64() + (minimum_duration_ms * 1000);
     transmit(_collar_level);
     _current_status = collar_status::ON;
 }
@@ -76,7 +76,7 @@ void CCollarChannel::channel_pulse(uint16_t minimum_duration_ms)
 void CCollarChannel::off()
 {
     _current_status = collar_status::OFF;
-    _pulse_end_time = 0; 
+    _pulse_end_time_us = 0; 
 }
 
 CChannel_types::channel_type CCollarChannel::get_channel_type()
@@ -86,9 +86,9 @@ CChannel_types::channel_type CCollarChannel::get_channel_type()
 
 void CCollarChannel::loop(uint64_t time_us)
 {
-    if (_pulse_end_time)
+    if (_pulse_end_time_us)
     {
-        if (time_us > _pulse_end_time)
+        if (time_us > _pulse_end_time_us)
         {
             off();
         }

@@ -225,6 +225,11 @@ class CRoutine
             return entry;
         }
 
+        uint8_t get_channel_count()
+        {
+            return _active_channels->size();
+        }
+
         void channel_pulse(uint8_t channel_id, uint16_t min_pulse_ms)
         {
             if (_active_channels != NULL && channel_id < _active_channels->size())

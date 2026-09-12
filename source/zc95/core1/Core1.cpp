@@ -478,6 +478,7 @@ void Core1::activate_routine(uint8_t routine_id)
 
     routine_conf conf;
     _active_routine->get_routine_config(&conf);
+    printf("Got routine config, configuring channels\n");
     _channel_config.configure_channels(&_active_channels, conf.channels);
     update_output_power_arrays();
     set_chanel_count(_active_channels.size());
@@ -557,7 +558,21 @@ void Core1::update_channel_power(uint8_t channel)
 
 void Core1::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 {
-    if (_active_routine != NULL)
+    if (menu_id >= MENU_ID_CHANNEL5 && menu_id <= MENU_ID_CHANNEL5+4)
+    {
+        // power change message
+
+        uint8_t channel_number = (menu_id - MENU_ID_CHANNEL5) + 5; // channel number: chan5 -> chan9
+        uint8_t channel_id = channel_number - 1; // channel_id: 4 => 8
+
+        if (_channel_config.PowerLevelControl() != NULL)
+        {
+            _channel_config.PowerLevelControl()->set_front_panel_power(channel_id, new_value * 10); // x10 because the menu allows 0-100 entry, but internally, power levels are 0-1000
+            update_channel_power(channel_id);
+        }
+    }
+
+    else if (_active_routine != NULL)
     {
         _active_routine->menu_min_max_change(menu_id, new_value);
     }

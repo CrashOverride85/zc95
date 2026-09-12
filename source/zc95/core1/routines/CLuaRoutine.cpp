@@ -214,7 +214,15 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
             lua_rawgeti(_lua_state, -1, i);
 
             entry.title = get_string_field("title");
-            entry.id = get_int_field("id");
+            int id = get_int_field("id");
+            if (id < 0 || id >= MENU_ID_FIRST_RESERVED)
+            {
+                printf("CLuaRoutine::get_and_validate_config: invalid ID of %d for [%s]. Must be between 0 and %d\n", 
+                    id, entry.title.c_str(), MENU_ID_FIRST_RESERVED-1);
+                lua_pop(_lua_state, 1);
+                continue;
+            }
+            entry.id = id;
             entry.group_id = get_int_field("group");
             std::string menu_type_str = get_string_field("type");
 
@@ -519,7 +527,7 @@ void CLuaRoutine::loop(uint64_t time_us)
 
 void CLuaRoutine::channel_pulse_processing()
 {
-    for (uint8_t channel_id = 0; channel_id < CHANNEL_COUNT; channel_id++)
+    for (uint8_t channel_id = 0; channel_id < get_channel_count(); channel_id++)
     {
         if (_channel_switch_off_at_us[channel_id])
         {
@@ -542,7 +550,7 @@ void CLuaRoutine::stop()
     }
 
     set_all_channels_power(0);
-    for (int channel_id=0; channel_id < CHANNEL_COUNT; channel_id++)    
+    for (int channel_id=0; channel_id < get_channel_count(); channel_id++)    
     {
         channel_off(channel_id);
         _channel_switch_off_at_us[channel_id] = 0;
@@ -890,7 +898,7 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
     while (lua_next(_lua_state, -2) != 0)
     {
         // Key is at -2; value is at -1
-        if (!lua_isnumber(_lua_state, -2))
+        if (lua_type(_lua_state, -2) != LUA_TNUMBER)
         {
             printf("CLuaRoutine::get_channel_config: Channel key is not numeric\n");
 
@@ -933,12 +941,12 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
     for (size_t channel_number = 1; channel_number <= highest_channel_number; channel_number++)
     {
         lua_rawgeti(_lua_state, -1, channel_number);
-
         if (lua_istable(_lua_state, -1))
         {
             std::string channel_type = get_string_field("channel_type", "NONE");
 
             int index = get_int_field("index", 0);
+            index--; // In lua script, indexes start at 1, elsewhere they start at 0
 
             if (index < 0 || index > UINT8_MAX)
             {
@@ -1055,7 +1063,7 @@ audio_mode_t CLuaRoutine::get_audio_processing_mode()
 
 bool CLuaRoutine::is_channel_number_valid(int channel_number)
 {
-    if (channel_number >= 1 && channel_number <= 4)
+    if (channel_number >= 1 && channel_number <= get_channel_count())
         return true;
     else
         return false;
