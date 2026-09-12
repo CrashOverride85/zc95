@@ -354,7 +354,7 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     int msg_count = (*doc)["MsgId"];
     int id = (*doc)["Id"];
 
-    DynamicJsonDocument response_message(4096);
+    DynamicJsonDocument response_message(5120);
 
     response_message["Type"] = "PatternDetail";
     response_message["MsgId"] = msg_count;
@@ -376,10 +376,24 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
         response_message["Name"] = conf.name;
         response_message["Id"] = id;
         response_message["ButtonA"] = conf.button_text[(int)soft_button::BUTTON_A];
+        
+        // Add channels
+        JsonArray pattern_channels = response_message.createNestedArray("Channels");
+        for (uint8_t channel_id = 0; channel_id < conf.channels.size(); channel_id++)
+        {
+            JsonObject json_channel = pattern_channels.createNestedObject();
+            json_channel["Number"] = channel_id+1; // channel_ids are 0-3, channels numbers are 1-4
+            json_channel["Type"]   = get_channel_type_str(conf.channels[channel_id].type);
+            json_channel["Index"]  = conf.channels[channel_id].index + 1;
+        }
 
+        // Add menus
         JsonArray menu_items = response_message.createNestedArray("MenuItems");
         for (std::vector<menu_entry>::iterator it = conf.menu.begin(); it != conf.menu.end(); it++)
         {
+            if (it->menu_type == menu_entry_type::POWER_LEVEL_SELECT)
+                continue;
+
             JsonObject menu_item = menu_items.createNestedObject();
             menu_item["Id"] = it->id;
             menu_item["Title"] = it->title;
@@ -448,6 +462,22 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     std::string generatedJson;
     serializeJson(response_message, generatedJson);
     _send(generatedJson);
+}
+
+std::string CMessageProcessor::get_channel_type_str(CChannel_types::channel_type type)
+{
+    switch(type)
+    {
+        case CChannel_types::channel_type::CHANNEL_COLLAR:
+            return "COLLAR";
+        
+        case CChannel_types::channel_type::CHANNEL_INTERNAL: 
+            return "INTERNAL";
+
+        case CChannel_types::channel_type::CHANNEL_NONE: 
+        default:
+            return "NONE";
+    }
 }
 
 void CMessageProcessor::send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)

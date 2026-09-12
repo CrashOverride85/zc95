@@ -200,6 +200,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
     switch (menu_item->menu_type)
     {
         case menu_entry_type::MIN_MAX:
+        case menu_entry_type::POWER_LEVEL_SELECT:
             new_current_val = menu_item->minmax.current_value + (change *  menu_item->minmax.increment_step);
 
             if (new_current_val > menu_item->minmax.max)
@@ -279,6 +280,7 @@ void CMenuRoutineAdjust::draw()
     switch (menu_item.menu_type)
     {
         case menu_entry_type::MIN_MAX:
+        case menu_entry_type::POWER_LEVEL_SELECT:
         {
             hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
                             
@@ -617,6 +619,7 @@ void CMenuRoutineAdjust::menu_changed_callback(menu_change_msg_t msg)
             switch (entry->menu_type)
             {
                 case menu_entry_type::MIN_MAX:
+                case menu_entry_type::POWER_LEVEL_SELECT:
                     if (msg.new_value >= entry->minmax.min && msg.new_value <= entry->minmax.max)
                     {
                         entry->minmax.current_value = msg.new_value;

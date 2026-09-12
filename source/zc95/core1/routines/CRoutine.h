@@ -20,7 +20,8 @@ enum class menu_entry_type
     AUDIO_VIEW_INTENSITY_STEREO,
     AUDIO_VIEW_INTENSITY_MONO,
     AUDIO_VIEW_VIRTUAL_3,
-    BLANK
+    BLANK,
+    POWER_LEVEL_SELECT // for controlling extended channels, i.e. beyond the usual 0-3
 };
 
 enum class trigger_socket
@@ -174,7 +175,7 @@ class CRoutine
             {
                 menu_entry extra_channel;
                 extra_channel.id = MENU_ID_CHANNEL5 + channel_id-4;
-                extra_channel.menu_type = menu_entry_type::MIN_MAX;
+                extra_channel.menu_type = menu_entry_type::POWER_LEVEL_SELECT;
                 extra_channel.title = "Channel " + std::to_string(channel_id+1);
                 extra_channel.minmax.current_value = 0;
                 extra_channel.minmax.min = 0;

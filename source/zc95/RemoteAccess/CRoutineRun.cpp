@@ -132,14 +132,17 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 
     else if (msgType == "SetPower")
     {
-        int channel_power[4] = {0};
-        channel_power[0] = (*doc)["Chan1"];
-        channel_power[1] = (*doc)["Chan2"];
-        channel_power[2] = (*doc)["Chan3"];
-        channel_power[3] = (*doc)["Chan4"];
-        
-        for (uint8_t channel = 0; channel < 4; channel++)
-            _routine_output->set_remote_power(channel, channel_power[channel]);
+        for (uint8_t channel = 0; channel < _channel_count; channel++)
+        {
+            char key[8];
+            snprintf(key, sizeof(key), "Chan%u", channel + 1);
+
+            if ((*doc)[key].is<uint16_t>())
+            {
+                uint16_t channel_power = (*doc)[key];
+                _routine_output->set_remote_power(channel, channel_power);
+            }
+        }
     }
 
     else if (msgType == "PatternStop")
@@ -238,7 +241,7 @@ void CRoutineRun::send_power_status_update()
         obj["Channel"]        = channel+1;
         obj["OutputPower"]    = _output_power[channel];
         obj["MaxOutputPower"] = _max_output_power[channel];
-        obj["PowerLimit"]     = _front_panel_power[channel];
+        obj["PowerLimit"]     = channel < INTERNAL_CHANNEL_COUNT ? _front_panel_power[channel] : 1000;
     }
 
     std::string generatedJson;

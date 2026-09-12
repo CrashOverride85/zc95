@@ -120,7 +120,7 @@ void CCollarChannel::set_collar_level_from_power(int16_t power)
     if (_collar_level > 99)
         _collar_level = 99;
 
-    printf("collar_level = %d (chan %d, col idx %d)\n", _collar_level, _channel_id, _collar_index);
+    // printf("collar_level = %d (chan %d, col idx %d)\n", _collar_level, _channel_id, _collar_index);
 }
 
 void CCollarChannel::transmit (uint8_t power)

@@ -163,7 +163,7 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
     if (channel >= _channel_count)
         return 0;
 
-    if (_remote_mode_active)
+    if (_remote_mode_active && channel < INTERNAL_CHANNEL_COUNT)
     {
         // Max power is limited by what's set on the front panel
         selected_power = _remote_access_power[channel];
@@ -242,6 +242,11 @@ void CPowerLevelControl::zero_power_level()
     }
 }
 
+bool CPowerLevelControl::is_remote_access_mode_active()
+{
+    return _remote_mode_active;
+}
+
 void CPowerLevelControl::loop()
 {
     bool _recalc_power = false;
@@ -283,7 +288,7 @@ void CPowerLevelControl::calc_output_power(uint8_t channel)
         scaled_power = (float)_routine_power[channel] * ((float)_remote_access_power[channel] / (float)1000);
 
         // in remote access mode, the front panel power is used as a power limit
-        if (scaled_power > _front_panel_power[channel]) 
+        if (scaled_power > _front_panel_power[channel] && channel < INTERNAL_CHANNEL_COUNT) 
             scaled_power = _front_panel_power[channel]; 
     }
     else

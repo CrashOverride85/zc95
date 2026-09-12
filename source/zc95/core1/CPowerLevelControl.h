@@ -60,6 +60,8 @@ class CPowerLevelControl
 
         void zero_power_level();
 
+        bool is_remote_access_mode_active();
+
         void loop();
 
     private:

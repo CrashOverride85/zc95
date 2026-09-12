@@ -91,9 +91,14 @@ void CChannelConfig::configure_channels(std::vector<COutputChannel*>* active_cha
     (*active_channels).clear();
 
     if (_power_level_control != NULL)
+    {
+        _remote_access_mode_active = _power_level_control->is_remote_access_mode_active();
         delete _power_level_control;
+    }
 
     _power_level_control = new CPowerLevelControl(_saved_settings, chanel_conf.size());
+    if (_remote_access_mode_active)
+        _power_level_control->remote_mode_enable();
 
     for (uint8_t channel_id=0; channel_id < chanel_conf.size(); channel_id++)
     {
@@ -136,6 +141,7 @@ void CChannelConfig::clear_chanel_config(std::vector<COutputChannel*>* active_ch
 
     if (_power_level_control != NULL)
     {
+        _remote_access_mode_active = _power_level_control->is_remote_access_mode_active();
         delete _power_level_control;
         _power_level_control = NULL;
     }
