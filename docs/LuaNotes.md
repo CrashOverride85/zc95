@@ -154,12 +154,14 @@ Config = {
 ```
 `name = "Toggle"` sets the name for the script - this is prefixed with `U:` then used on the patterns menu.
 
-Optional fields:
+### Optional fields
 * `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be grouped together, instead of appearing in one long list (useful for scripts with many options)
 * `audio_processing_mode` - if the script can use audio, sets the mode. Currently either `OFF` (default) or `AUDIO_INTENSITY`. See audio section later.
 * `bluetooth_remote_passthrough` - if present and set to `True`, keypresses from connected to bluetooth remotes are passed though to the `BluetoothRemoteKeypress()` function, instead of using the configured mappings from the config menu. See `BluetoothRemoteKeypress()` notes later for more details
 * `serial` - see later "Serial I/O" section for options available in the `serial` block. If supplied, allows access to the serial lines on the accessory port from the script.
+* `channels` - configures what channels will be used by the script. If omitted, the channel configuration from the Config -> Channel config menu is used. See "Channel config" section later for more details 
 
+### Script parameters
 A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
 
  There are four types supported:
@@ -545,6 +547,52 @@ end
 ```
 
 To send serial data, use the `zc.AccSerialWrite(<data>)` method, e.g.: `zc.AccSerialWrite("Hello world");`.
+
+
+## Channel configuration (shock collars)
+
+Currently the main purpose of this is to allow for Lua script to control shock collars.
+
+Example `channels` section:
+
+```
+    channels = {
+        [1] = {channel_type = "INTERNAL", index = 1},
+        [2] = {channel_type = "INTERNAL", index = 2},
+        [3] = {channel_type = "INTERNAL", index = 3},
+        [4] = {channel_type = "INTERNAL", index = 4},
+        [5] = {channel_type = "COLLAR"  , index = 1}
+    }
+```
+
+If the `channels` section is omitted, the configuration from the Config -> Channel config menu is used, which by default means scripts have access to the 4 output channels in the box, which would be equivalent to:
+
+```
+    channels = {
+        [1] = {channel_type = "INTERNAL", index = 1},
+        [2] = {channel_type = "INTERNAL", index = 2},
+        [3] = {channel_type = "INTERNAL", index = 3},
+        [4] = {channel_type = "INTERNAL", index = 4}
+    }
+```
+
+Fields:
+* [key] - channel number - 1-9
+* `channel_type` - Type of channel, currently can be one of `INTERNAL`, `COLLAR` or `NONE`. INTERNAL is one of the 4 channels in the box, and COLLAR is a shock collar configured in the Config -> Collar config menu.
+* `index` - combined with the channel_type, identifies the channel. For INTERNAL channels, index=1 is the channel labelled "CHAN1" on the box, etc. For COLLAR types, it corresponds to a shock collar in the Config -> Collar config menu.
+
+Each channel line in the `channels` section overwrites the corresponding channel configuration in the Config -> Channel config menu. E.g. with the box default 4 channels configured, all that is required to add a 5th channel as a shock collar is:
+
+```
+    channels = {
+        [5] = {channel_type = "COLLAR"  , index = 1}
+    }
+```
+
+If a shock collar is added as channel 1-4, the corresponding front panel dial can then be used to control it, and the LED turns yellow instead of green to indicate it's mapped to a shock collar.
+
+When using shock collars from Lua scripts, the `zc.SetPulseWidth` and `zc.SetFrequency` commands will have no affect. Additionally, shock collars are substantially slower to respond than internal channels, and the effective minimum pulse length is around 300mS. 
+`zc.ChannelPulseMs` is a particularly good fit for shock collars.
 
 [acc port]: images/lua_acc_port.png "Accessory port"
 [offset 0]: images/TriphaseOffset0pc.png "zc.LinkChannels(1, 2, 0)"
