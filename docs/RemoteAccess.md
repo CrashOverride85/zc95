@@ -14,7 +14,7 @@ The remote access options can be used to:
 ## Connecting using WiFi
 If a Pico-W is used, the Config -> Remote Access menu should include options relating to WiFi.
 
-At present, other than the initial WiFi setup, there is no web interface (yet) - all control is via python scripts ran on a PC.
+Once connected to WiFi, patterns can be controlled either using the python scripts below ran on a PC, or using the mobile-friendly web interface (`webgui.py`, see below) from any device on the same network - e.g. a phone.
 
 The basic process is use the "Config Wifi/AP mode" option, ideally connect to the ZC95 using a phone, then use the web interface to enter a WiFi SSID/Password. When the "Connect to Wifi" option is next used, these credentials will be used. At present, other than setting the WiFi SSID/password, nothing else can be done in ap mode.
 
@@ -84,9 +84,10 @@ There are a few Python scripts available in the `remote_access` folder for inter
 * pattern_list.py - lists all patterns available remotely, along with the ID number (excludes Audio patterns)
 * lua_manage.py - lists uploaded Lua scripts, and allows for them to be deleted
 * lua_upload.py - uploads a Lua script
-* pattern_gui.py - starts a GUI that starts a pattern and can then be used to control it
+* pattern_gui.py - starts a tkinter GUI that starts a pattern and can then be used to control it
+* webgui.py - starts a web server providing a mobile-friendly version of pattern_gui.py, so a pattern can be started and controlled from a phone/tablet browser (or several at once) instead
 
-For all scripts:
+For all scripts other than webgui.py (see its own section below):
 * Either ``--ip <IP address>`` _or_ ``--serial <serial port>`` must be specified
 * The optional `--debug` parameter can be used to show messages being sent/received, and sometimes other extra info
 
@@ -171,6 +172,23 @@ See [Lua](./LuaNotes.md) for notes on writing Lua scripts.
 ### pattern_gui.py
 See next section for more details on running a pattern remotely. 
 
+### webgui.py
+Starts a small local web server providing a mobile-friendly equivalent of pattern_gui.py - the pattern to run is picked from a dropdown in the browser rather than passed on the command line, and any number of devices/tabs on the same network can connect at once, all controlling (and seeing the state of) the same running pattern.
+
+Needs a couple of extra dependencies beyond the other scripts here:
+```
+$ pip3 install -r requirements-webgui.txt
+```
+
+Start it pointed at the ZC95's IP (serial isn't supported - a web interface reachable from a phone implies WiFi):
+```
+$ python3 webgui.py --ip 192.168.1.137
+Starting web interface - browse to http://<ip of this machine>:8080/ from your phone/tablet/PC
+```
+
+Then, from any device on the same network (e.g. a phone), browse to `http://<ip of the PC running webgui.py>:8080/`. Use `--port` to change the port it listens on, and `--debug` to log messages sent/received to/from the ZC95 to the console.
+
+See the next section for more on the power sliders/dials, which apply the same way here as with pattern_gui.py.
 
 ## Running a pattern remotely
 
