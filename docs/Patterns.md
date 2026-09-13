@@ -2,9 +2,14 @@
 
 **Note**: Any pattern in the list/menu prefixed with `(!)` should not be used above the waist, as channel isolation - where only one channel pulses at the exact same moment - is disabled.
 
+
+Most patterns will work to some degree with shock collars in place of an internal channel (if configured from the Config > Channel conf. menu). However, many will not work _well_ - patterns that pulse a channel (toggle, round robbin, fire etc.) will work best, those that keep a channel on and change the sensation (e.g. waves) will just leave the shock collar on constantly, so are a poor fit (essentially useless),
+
+Anything using triphase will not work at all with shock collars.
+
+
 ## Waves
 Gradually increasing and decreasing intensity on all channels at different rates. Varying intensity is achieved by altering the gap between pulses rather than changing the power level.
-Can NOT be used with shock collars.
 
 ### Menu options
 * Frequency - controls how fast the intensity increases/decreases. 1-64, lower is faster.
@@ -93,6 +98,8 @@ Triphase effect - fades triphase effect in and out at the selected speed.
 
 Only uses channel 1 & 2, and assumes they are connected together with a common electrode. Without the common electrode, the triphase effect won't be felt.
 
+Does not work with shock collars.
+
 ### Menu options
 * Cycle time - controls how long, in milliseconds, it takes for a full cycle/fade in-out. Lower is faster.
 
@@ -102,7 +109,8 @@ Only uses channel 1 & 2, and assumes they are connected together with a common e
 
 ## Toggle
 Switches between Channel 1+3 and 2+4. 
-Can be used with shock collars.
+
+At slower speeds, is suitable for shock collars.
 
 ### Menu options
 * Speed - controls how fast it switches between 1+3 and 2+4. Higher is faster.
@@ -114,7 +122,8 @@ Can be used with shock collars.
 
 ## RoundRobin
 Cycles through channels 1->2->3->4.
-Can be used with shock collars.
+
+At slower speeds, is suitable for shock collars.
 
 ### Menu options
 * Delay - How long (in ms) to wait before switching to the next channel. Lower is faster.
@@ -126,7 +135,6 @@ Can be used with shock collars.
 
 ## TENS
 Approximation of TENs style output, with all channels outputting the same.
-Can NOT be used with shock collars.
 
 ### Menu options
 * Mode - one of:
@@ -159,7 +167,6 @@ A remote button wired to trigger input 1.
 
 ## Fire
 When either soft button or a remote button is pressed, trigger a shock on all channels.
-Can be used with shock collars.
 
 ### Menu options
 * Mode
@@ -195,6 +202,8 @@ Well suited to estim audio tracks, with the audio [configured](./AudioInput-Oper
 The left audio channel is output on channels 1+2, the right on 3+4. It probably makes most sense to only use channel 1+3 (or 2+4) with this mode. 
 
 *Warning*: Enables triphase mode / disables channel isolation, so should not be used above the waist. 
+
+Does not work with shock collars.
 
 ### Menu options
 * Stereo view - Shows two wave forms - for left and right channels. 
@@ -236,6 +245,8 @@ Only available if audio enabled.
 Well suited to estim audio tracks, with the audio [configured](./AudioInput-Operation.md) for line level input. Generates a 3rd channel from the difference between the left and right channels, and outputs it on channel 3 (channel 4 is not used).
 
 Unlike the "Audio Wave" pattern, this does not disable channel isolation, so could be used above the waist with suitable electrode placement (usual warnings still apply). This also means the channels should *not* be connected with a common electrode.
+
+Does not work with shock collars.
 
 ### Menu options
 * Audio view - Shows three wave forms - left (channel 1), right (channel 2) and simulated "triphase" effect (channel 3).
