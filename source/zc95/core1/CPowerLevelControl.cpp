@@ -163,12 +163,16 @@ uint16_t CPowerLevelControl::get_max_power_level(uint8_t channel)
     if (channel >= _channel_count)
         return 0;
 
-    if (_remote_mode_active && channel < INTERNAL_CHANNEL_COUNT)
+    if (_remote_mode_active)
     {
-        // Max power is limited by what's set on the front panel
+        // Max power is limited by what's set on the front panel for internal channels
         selected_power = _remote_access_power[channel];
-        if (selected_power > _front_panel_power[channel])
-            selected_power = _front_panel_power[channel];
+
+        if (channel < INTERNAL_CHANNEL_COUNT)
+        {
+            if (selected_power > _front_panel_power[channel])
+                selected_power = _front_panel_power[channel];
+        }
     }
     else
     {
