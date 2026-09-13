@@ -7,17 +7,17 @@ There is also limited support for audio - so far only reacting to volume, and no
 
 
 ## Example scripts
-There are a few example scripts in `remote_access/lua`, which demonstrate some of things that can be done from Lua. These scripts are:
+There are a few example scripts in `remote_access/lua`, which demonstrate some of the things that can be done from Lua. These scripts are:
 
-* fire.lua - If the soft button is pressed, all channel's are activated for as long as the button is held down. If any of the 4 external triggers (assuming stereo connectors are being used), the the corresponding channel (1-4) is activated for as long the trigger is active.
+* fire.lua - If the soft button is pressed, all channels are activated for as long as the button is held down. If any of the 4 external triggers are activated (assuming stereo connectors are being used), the corresponding channel (1-4) is activated for as long as the trigger is active.
 
-* toggle.lua - switches between channel 1+2 & 3+4 at a speed that can be set via the menu. If the channels are switched on constant or just pulsed can also be set from the menu
+* toggle.lua - switches between channel 1+2 & 3+4 at a speed that can be set via the menu. Whether the channels are switched on constantly or just pulsed can also be set from the menu
 
 * waves.lua - a basic waves pattern. For each channel, this varies the frequency between 25Hz and 250Hz and the pulse width between 40us and 200us, with the time taken for each cycle being set per channel on the menu.
 
 * audio.lua - audio example assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency. Channels 3 & 4 react to volume changes
 
-* bluetooth_fire.lua - uses Left/Up/Down/Right buttons on a bluetooth remote to trigger chanel's 1 to 4 respectively for a configurable pulse duration
+* bluetooth_fire.lua - uses Left/Up/Down/Right buttons on a bluetooth remote to trigger channels 1 to 4 respectively for a configurable pulse duration
 
 * acc_test.lua - uses the accessory port to cycle between HIGH/LOW on the 3 output lines. See "AccIoWrite" section below for more details. Doesn't produce any estim output, so not really of any practical use, just a demo of how to use the accessory port.
 
@@ -25,7 +25,7 @@ The inbuilt Waves, Climb & Orgasm patterns are also written in Lua (contributed 
 
 ## toggle.lua
 
-It's probably easier to explain Lua as implemented in the ZC95 by going though one of the example scripts.
+It's probably easier to explain Lua as implemented in the ZC95 by going through one of the example scripts.
 
 toggle.lua:
 ```
@@ -155,9 +155,9 @@ Config = {
 `name = "Toggle"` sets the name for the script - this is prefixed with `U:` then used on the patterns menu.
 
 ### Optional fields
-* `group` - group number; this only has any affect when ran remotely using the GUI, and allows related options to be grouped together, instead of appearing in one long list (useful for scripts with many options)
+* `group` - group number; this only has any effect when run remotely using the GUI, and allows related options to be grouped together, instead of appearing in one long list (useful for scripts with many options)
 * `audio_processing_mode` - if the script can use audio, sets the mode. Currently either `OFF` (default) or `AUDIO_INTENSITY`. See audio section later.
-* `bluetooth_remote_passthrough` - if present and set to `True`, keypresses from connected to bluetooth remotes are passed though to the `BluetoothRemoteKeypress()` function, instead of using the configured mappings from the config menu. See `BluetoothRemoteKeypress()` notes later for more details
+* `bluetooth_remote_passthrough` - if present and set to `true`, keypresses from connected bluetooth remotes are passed through to the `BluetoothRemoteKeypress()` function, instead of using the configured mappings from the config menu. See `BluetoothRemoteKeypress()` notes later for more details
 * `serial` - see later "Serial I/O" section for options available in the `serial` block. If supplied, allows access to the serial lines on the accessory port from the script.
 * `channels` - configures what channels will be used by the script. If omitted, the channel configuration from the Config -> Channel config menu is used. See "Channel config" section later for more details 
 
@@ -165,7 +165,7 @@ Config = {
 A menu entry is displayed when the script is running for each item in `menu_items`; each must be given a unique id, numbered sequentially from 1.
 
  There are four types supported:
-* `MIN_MAX` - shows a horizontal bar graph that can be changed between the set min/max using the adjust dial. The unit of measure (uom) text is displayed as suffix to the numeric value in the bar chart 
+* `MIN_MAX` - shows a horizontal bar graph that can be changed between the set min/max using the adjust dial. The unit of measure (uom) text is displayed as a suffix to the numeric value in the bar chart 
 * `MULTI_CHOICE` - used to show a menu option that allows for one of multiple settings to be picked. Each choice must have a unique id.
 * `AUDIO_VIEW_INTENSITY_STEREO` - show a stereo waveform display; see audio section later
 * `AUDIO_VIEW_INTENSITY_MONO` - show a mono waveform display; see audio section later
@@ -205,7 +205,7 @@ function Loop(time_ms)
     end
 end
 ```
-The `Loop(time_ms)` function is mandatory, and is called periodically for as long as the Lua script is running. The time_ms parameter is how long, in milliseconds, since the box was powered up.
+The `Loop(time_ms)` function is mandatory, and is called periodically for as long as the Lua script is running. The `time_ms` parameter is how long it has been, in milliseconds, since the box was powered up.
 
 
 ```
@@ -246,25 +246,25 @@ The `ToggleChannel()` function (could have been named anything) is switching bet
 * `zc.ChannelOn(channel)` - switches a channel on until switched off
 * `zc.ChannelOff(channel)` - switches a channel off
 
-See zc.* functions section below for more details along with all available zc.functions
+See the `zc.*` functions section below for more details, along with all available `zc.*` functions.
 
 ## zc.* functions
-Functions that can be called from Lua scripts to control the box. In addition to these, `print("<whatever>")` can be used from scripts (no `zc.` prefix); the output will appear in the serial output prefixed with '`[LUA]`', and in the debug window of the `pattern_gui.py` GUI if running remotely. 
+Functions that can be called from Lua scripts to control the box. In addition to these, `print("<whatever>")` can be used from scripts (no `zc.` prefix); the output will appear in the serial output prefixed with `[LUA]`, and in the debug window of the `pattern_gui.py` GUI if running remotely. 
 
 ### SetPower
 ```
 Params:
-    * channel - 1-4
+    * channel - 1-9
     * power   - 0-1000
 ```
-Sets the output power of channel from 0 to 1000. This output power is scaled based on what the front panel dial is set to for the channel. E.g if the front panel is set to 50% and a power level of 500 is set, the result will be a power level of 250 (25%).
+Sets the output power of a channel from 0 to 1000. This output power is scaled based on what the front panel dial is set to for the channel. E.g. if the front panel is set to 50% and a power level of 500 is set, the result will be a power level of 250 (25%).
 
 If there is no `Setup()` function in the script, all channels will default to full power (i.e. only affected by front panel dials), so it often isn't necessary to use this. Most inbuilt patterns don't change the power level.
 
 ### SetFrequency
 ```
 Params:
-    * channel number (1-4)
+    * channel number (1-9)
     * frequency (1 - 300) Hz
 ```
 Sets the output frequency of the specified channel. Currently defaults to 150Hz, but this default may move into the config menus at some point.
@@ -272,7 +272,7 @@ Sets the output frequency of the specified channel. Currently defaults to 150Hz,
 ### SetPulseWidth
 ```
 Params:
-    * channel number (1-4)
+    * channel number (1-9)
     * positive pulse width (0-255) us
     * negative pulse width (0-255) us
 ```
@@ -292,12 +292,12 @@ For MIN_MAX type menu entries, the `value` must be between the configured `min` 
 
 For MULTI_CHOICE type menu entries, `value` must match one of the `choice_id`s. 
 
-**Important**: The change will result in the scripts `MinMaxChange` or `MultiChoiceChange` function being called asynchronously when the update takes effect. After calling `SetMenuOption`, it is possible (but not guaranteed) that the `Loop` function could be called many times _before_ the menu is updated.
+**Important**: The change will result in the script's `MinMaxChange` or `MultiChoiceChange` function being called asynchronously when the update takes effect. After calling `SetMenuOption`, it is possible (but not guaranteed) that the `Loop` function could be called many times _before_ the menu is updated.
 
 ### ChannelPulseMs
 ```
 Params:
-    * channel number (1-4)
+    * channel number (1-9)
     * duration (ms)
 ```
 Switch the channel on for the specified number of milliseconds, using the previously set frequency, pulse width and power level (or the defaults, if not changed).
@@ -306,14 +306,14 @@ Switch the channel on for the specified number of milliseconds, using the previo
 ### ChannelOn
 ```
 Params:
-    * channel number (1-4)
+    * channel number (1-9)
 ```
 Switch on the specified channel, until ChannelOff is called, using the previously set frequency, pulse width and power level (or the defaults, if not changed).
 
 ### ChannelOff
 ```
 Params:
-    * channel number (1-4)
+    * channel number (1-9)
 ```
 Switch off the specified channel.
 
@@ -334,8 +334,8 @@ Params:
 
 `EnableTriphase(true)` must be called first.
 
-Links `linked` channel to `lead` channel - causes a pulse on the linked channel to be generated to overlap with lead channel. An offset of 0% would generate the pulses simultaneously, where 100% would cause the pulses on the linked channel to be generated as the pulse on the lead finishes.
-Once a channel is linked, the linked chanel should not be controlled directly other than changing its power setting - i.e. don't call `ChannelOn`, `SetPulseWidth` etc. for it - doing so will cause it to be unlinked.
+Links `linked` channel to `lead` channel - causes a pulse on the linked channel to be generated to overlap with the lead channel. An offset of 0% would generate the pulses simultaneously, where 100% would cause the pulses on the linked channel to be generated as the pulse on the lead finishes.
+Once a channel is linked, the linked channel should not be controlled directly other than changing its power setting - i.e. don't call `ChannelOn`, `SetPulseWidth` etc. for it - doing so will cause it to be unlinked.
 
 See triphase section later for further details.
 
@@ -347,7 +347,7 @@ Params:
 ```
 Controls the 3 I/O lines on the accessory port - allows setting between high (3.3v) and low.
 
-Note that the default state of these 3 lines from power on is HIGH, so bear that in mind when connecting anything.
+Note that the default state of these 3 lines from power on is an input with a weak pull-up, so an unconnected line will read HIGH. Bear that in mind when connecting anything.
 These lines can only source a few milliamps safely, so should only be used for signalling, i.e. it's probably best to connect a logic level MOSFET to switch anything more substantial than an LED.
 
 Also worth noting that there is _very_ limited protection on this port, something to be corrected in a possible future hardware revision, so be careful to avoid higher voltages. In particular, there is 12v on pin 7 (in hindsight a poor decision) - connecting this to pretty much any other pin would be bad.
@@ -391,14 +391,14 @@ Called when a `MIN_MAX` type pattern option is changed, and is called with the m
 Called when a `MULTI_CHOICE` type pattern option is changed, and is called with the menu ID of the option, and the ID of the selected choice.
 
 ### SoftButton(pushed)
-Called with `pushed=True` when the top left soft button is pressed, and then again when it is released with `pushed=False`. The soft button text is set by specifying `soft_button = "<label>"` in the `Config = {}` section. See `fire.lua` script for an example.
+Called with `pushed=true` when the top left soft button is pressed, and then again when it is released with `pushed=false`. The soft button text is set by specifying `soft_button = "<label>"` in the `Config = {}` section. See `fire.lua` script for an example.
 
 ### ExternalTrigger(socket, part, active)
 Called when an external trigger happens.
 
 Socket: can be either "`TRIGGER1`", "`TRIGGER2`" or "`ACCESSORY`" for the Trigger1, Trigger2 or Accessory sockets respectively. 
 
-For the 3.5mm trigger sockets, part can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `True`, when released it will be `False`.
+For the 3.5mm trigger sockets, part can be either "`A`" or "`B`". With a stereo 3.5mm TRS cable inserted, shorting Tip and Sleeve is part `A` (trigger LED lights up green). Shorting Tip and Ring is part `B` (trigger LED lights up red). When triggered, `active` will be `true`; when released, it will be `false`.
 
 This function will also be called for input on the accessory port. Shorting ACC_IO_1, 2 or 3 to ground will result in a part of A, B or C respectively:
 
@@ -428,10 +428,10 @@ If `bluetooth_remote_passthrough = false` (or is absent), this function is never
 ### BluetoothHidEvent (usage_page, usage, value)
 Allows the ZC95 to receive events from custom bluetooth devices. See `bluetooth_hid.lua` and the example BT project that can be paired with the ZC95 and use this functionality [HidExample](../misc/Bluetooth/HidExample/).
 
-When paired to bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particularly familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
+When paired to a bluetooth HID device, this method will be called for each event received. If you value your sanity, I would suggest not attempting to write Lua scripts to support miscellaneous bluetooth devices unless you're particularly familiar with bt (I'm not) and _exactly_ what the device in question is sending. 
 
 ### SerialData(data)
-If serial enabled, is called whenever serial data is received. See "Serial I/O" section.
+If serial is enabled, this is called whenever serial data is received. See the "Serial I/O" section.
 
 ### AudioIntensityChange(left_chan, right_chan, virt_chan)
 Receive audio data from aux socket.
@@ -449,25 +449,25 @@ Called periodically for as long as the pattern is running. `time_ms` is how long
 If a specific frequency is required (rather than just as often as possible), a `loop_freq_hz = n` option can be added to the `Config = {}` block, where `n` is between 1 and 400. Be aware that for particularly complex scripts, higher values are unlikely to work well - and note that this setting will only reduce how often Loop() is called when compared to the default.
 
 ## Audio
-Lua scripts can be made to react to audio intensity/volume changes when being ran locally, or over Wifi.
+Lua scripts can be made to react to audio intensity/volume changes when being run locally, or over Wifi.
 
 To use audio support:
 * Configure the box for audio as per the usual [audio operation](./AudioInput-Operation.md) notes, and confirm that the inbuilt `Audio intensity` pattern is working as expected
 * Set `audio_processing_mode = "AUDIO_INTENSITY"` in the script `Config` section
-* Optionally, add a `AUDIO_VIEW_INTENSITY_STEREO` or `AUDIO_VIEW_INTENSITY_MONO` menu item. Only useful if the script isn't being ran remotely
+* Optionally, add an `AUDIO_VIEW_INTENSITY_STEREO` or `AUDIO_VIEW_INTENSITY_MONO` menu item. Only useful if the script isn't being run remotely
 * Implement `function AudioIntensityChange(left_chan, right_chan, virt_chan)` in the script to receive audio data
 
 ### Microphone input
-With the [microphone pre-amp enabled](./AudioInput-Operation.md), the amplified signal will be present in the `left_chan` value. `right_chan` will have the same signal, but without the mic pre-amp so will be much weaker - likely unusablely so - therefore should be discarded. For microphone input, if a waveform display is desired a `AUDIO_VIEW_INTENSITY_MONO` menu item should be added.
+With the [microphone pre-amp enabled](./AudioInput-Operation.md), the amplified signal will be present in the `left_chan` value. `right_chan` will have the same signal, but without the mic pre-amp so will be much weaker - likely unusably so - therefore should be discarded. For microphone input, if a waveform display is desired an `AUDIO_VIEW_INTENSITY_MONO` menu item should be added.
 
 ### Line input
 With the [microphone pre-amp disabled](./AudioInput-Operation.md), the line level signal will be present in `left_chan` and `right_chan` for the left and right audio channels respectively. 
 If the signal is expected to be stereo, a stereo waveform display can be shown by adding a menu item with the type `AUDIO_VIEW_INTENSITY_STEREO`.
 
 ### AudioIntensityChange(left_chan, right_chan, virt_chan)
-With `audio_processing_mode = "AUDIO_INTENSITY"` in the `Config` section of the script, it is expected that a `AudioIntensityChange` function will be present to receive audio volume/intensity changes. 
+With `audio_processing_mode = "AUDIO_INTENSITY"` in the `Config` section of the script, it is expected that an `AudioIntensityChange` function will be present to receive audio volume/intensity changes. 
 
-The `left_chan` and `right_chan` parameters are for the left and right audio channels respectively. The `virt_chan` is an attempt a simulating a triphase effect on a separate logical channel, and probably isn't much use - I suggest ignoring it for now.
+The `left_chan` and `right_chan` parameters are for the left and right audio channels respectively. The `virt_chan` is an attempt at simulating a triphase effect on a separate logical channel, and probably isn't much use - I suggest ignoring it for now.
 
 All values sent to these functions will be 0-255, so if used to modulate the output power of a channel, will need to be scaled to 0-1000.
 
@@ -475,26 +475,26 @@ All values sent to these functions will be 0-255, so if used to modulate the out
 The `audio.lua` script shows an example of audio support assuming microphone input. Channels 1 & 2 are on constant at the default pulse width/frequency, and channels 3 & 4 react to volume changes
 
 ## TriPhase
-The ZC95 now has _limited_ triphase support from Lua.
+The ZC95 now has _limited_ triphase support from Lua; this must used with the 1-4 INTERNAL channels (i.e. stick with the default channel configuration).
 
-As recap, "triphase" is where two channels are linked together with a common electrode. There is a good description of it on [Joanne's Reviews](https://www.sexmachinereviews.co.uk/estim-systems-triphase-cable-review.html). Due to the interactions between channels, it is more important to **not make any connections above the waist with triphase enabled.**
+As a recap, "triphase" is where two channels are linked together with a common electrode. There is a good description of it on [Joanne's Reviews](https://www.sexmachinereviews.co.uk/estim-systems-triphase-cable-review.html). Due to the interactions between channels, it is more important to **not make any connections above the waist with triphase enabled.**
 
-In normal operation, the ZC95 will never generate two pulses at same time - if the channels have been configured with frequencies that would cause two pulses to overlap, one is delayed. This is done as pulses overlapping in an uncontrolled/unintended manner can cause unexpected spikes if electrodes are in close proximately, and certainly if two have been joined together in a triphase configuration.
+In normal operation, the ZC95 will never generate two pulses at the same time - if the channels have been configured with frequencies that would cause two pulses to overlap, one is delayed. This is done as pulses overlapping in an uncontrolled/unintended manner can cause unexpected spikes if electrodes are in close proximity, and certainly if two have been joined together in a triphase configuration.
 
 The triphase support is used to allow the ZC95 to intentionally generate pulses that overlap, but in a controlled manner with consistent results. 
 
-At present, it only allows one channel to be linked to another, where a pulse on the linked linked channel is generated with a set overlap with the lead channel (further options likely to follow in the future).
+At present, it only allows one channel to be linked to another, where a pulse on the linked channel is generated with a set overlap with the lead channel (further options likely to follow in the future).
 
 ### Setup
 Before triphase can be used, the Config section must include `allow_triphase = true` - without this the triphase commands will be ignored. Setting this flag causes the pattern to be displayed prefixed with a `(!)` on the menu, as a warning that it uses triphase / disables channel isolation.
 
 With that set, `zc.EnableTriphase(true)` can then be called - the best place is probably in the `Setup` function, but it can be anywhere. With triphase enabled, the ZC95 will no longer do anything to stop pulses being generated at the same time, regardless of where the pulses are coming from. So be careful - even unlinked channels will start generating pulses that can overlap if the frequencies set will cause them to clash. For the time being, it's probably best to stick to 2 channels when using triphase until it's expanded to be more configurable.
 
-Finally, link two channel together using `zc.LinkChannels`, e.g. running `zc.LinkChannels(1, 2, 0)`, will link channel 2 to channel 1 (lead channel), and cause a pulses to be generated on channel 2 at the same time as pulses on channel 1. 
-Changing the pulse width & frequency of channel 1 will affect channel 2. Once linked, only the power level of the linked channel should should be changed.
+Finally, link two channels together using `zc.LinkChannels`, e.g. running `zc.LinkChannels(1, 2, 0)`, will link channel 2 to channel 1 (lead channel), and cause pulses to be generated on channel 2 at the same time as pulses on channel 1. 
+Changing the pulse width & frequency of channel 1 will affect channel 2. Once linked, only the power level of the linked channel should be changed.
 
 ### Example
-See [trifade.lua](../source/zc95/LuaScripts/trifade.lua) for an example Lua script that enables triphase, then continually alters the offset between to the two channels at a speed set from the menu.
+See [trifade.lua](../source/zc95/LuaScripts/trifade.lua) for an example Lua script that enables triphase, then continually alters the offset between the two channels at a speed set from the menu.
 
 A graphic example of what's happening may help.
 
@@ -532,14 +532,14 @@ Fields:
 * `enabled` - enables serial access. Defaults to false.
 * `parity` - valid options are `ODD`, `EVEN` or `NONE` (default)
 * `stop_bits` - valid options are 1 or 2. Defaults to 1.
-* `baud` - Only tested with 9600 and 115200, but all common rates between at least 150 and 115200 should work. Defaults to 115200.
-* `line_mode` - If true, received data is buffered until CR is received, then passed as a full line to the scripts `SerialData` function. If false, `SerialData` is called as data is received (can be 1 or a few characters at a time). When true, a CR is appended to any data sent using `zc.AccSerialWrite()`. Defaults to true.
+* `baud` - Only 9600 and 115200 have been tested. Most, if not all, common rates between 150 and 115200 should work. Higher rates may also work, but have not been tested. Defaults to 115200.
+* `line_mode` - If true, received data is buffered until CR is received, then passed as a full line to the script's `SerialData` function. If false, `SerialData` is called as data is received (can be 1 or a few characters at a time). When true, a CR is appended to any data sent using `zc.AccSerialWrite()`. Defaults to true.
     
     **Important**: with `line_mode = true`, any lines longer than 300 characters are discarded.
 
 Where a field is omitted, the default is used.
 
-When serial is enabled, it is expected that a 'SerialData` method will exist to receive serial data, e.g. to output received data:
+When serial is enabled, it is expected that a `SerialData` method will exist to receive serial data, e.g. to output received data:
 ```
 function SerialData(data)
   print("> " .. data)
@@ -551,7 +551,7 @@ To send serial data, use the `zc.AccSerialWrite(<data>)` method, e.g.: `zc.AccSe
 
 ## Channel configuration (shock collars)
 
-Currently the main purpose of this is to allow for Lua script to control shock collars.
+Currently the main purpose of this is to allow for a Lua script to control shock collars.
 
 Example `channels` section:
 
@@ -591,7 +591,7 @@ Each channel line in the `channels` section overwrites the corresponding channel
 
 If a shock collar is added as channel 1-4, the corresponding front panel dial can then be used to control it, and the LED turns yellow instead of green to indicate it's mapped to a shock collar.
 
-When using shock collars from Lua scripts, the `zc.SetPulseWidth` and `zc.SetFrequency` commands will have no affect. Additionally, shock collars are substantially slower to respond than internal channels, and the effective minimum pulse length is around 300mS. 
+When using shock collars from Lua scripts, the `zc.SetPulseWidth` and `zc.SetFrequency` commands will have no effect. Additionally, shock collars are substantially slower to respond than internal channels, and the effective minimum pulse length is around 300ms. 
 `zc.ChannelPulseMs` is a particularly good fit for shock collars.
 
 [acc port]: images/lua_acc_port.png "Accessory port"
