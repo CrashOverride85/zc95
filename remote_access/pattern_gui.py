@@ -95,7 +95,12 @@ class ZcPatternGui:
     if "Channels" not in self.pattern_config or len(self.pattern_config["Channels"]) == 0:
       return [{"Number": channel} for channel in range(1, 5)]
 
-    return sorted(self.pattern_config["Channels"], key=lambda channel: channel["Number"])
+    channels = []
+    for channel in self.pattern_config["Channels"]:
+      if channel.get("Type") != "NONE":
+        channels.append(channel)
+
+    return sorted(channels, key=lambda channel: channel["Number"])
 
   def DrawPatternFrame(self, root, row, col):
     pattern_frame = Frame(root, width=400, height=400)

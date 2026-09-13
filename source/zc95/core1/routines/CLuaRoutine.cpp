@@ -950,7 +950,8 @@ void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
 
             if (index < 0 || index > UINT8_MAX)
             {
-                printf("CLuaRoutine::get_channel_config: Invalid index %d for channel %d; using NONE/0\n", index, channel_number);
+                if (strcasecmp(channel_type.c_str(), "NONE"))
+                    printf("CLuaRoutine::get_channel_config: Invalid index %d for channel %d; using NONE/0\n", index, channel_number);
 
                 channel_type = "NONE";
                 index = 0;

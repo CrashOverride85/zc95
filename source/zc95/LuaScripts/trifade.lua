@@ -5,8 +5,8 @@ _duration_ms = 5000
 Config = {
     name = "TriFade",
     channels = {
-        [1] = {channel_type = "INTERNAL", index = 0},
-        [2] = {channel_type = "INTERNAL", index = 1},
+        [1] = {channel_type = "INTERNAL", index = 1},
+        [2] = {channel_type = "INTERNAL", index = 2},
         [3] = {channel_type = "NONE"    , index = 0},
         [4] = {channel_type = "NONE"    , index = 0}
     },
