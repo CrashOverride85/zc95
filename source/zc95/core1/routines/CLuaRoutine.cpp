@@ -282,12 +282,8 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     if (!runnable())
         return;
 
-    if (menu_id >= MENU_ID_CHANNEL5)
-    {
-        uint8_t channel_id = menu_id - MENU_ID_CHANNEL5 + 4;
-        handle_extra_channel_power_change(channel_id, new_value);
+    if (menu_id >= MENU_ID_FIRST_RESERVED)
         return;
-    }
 
     lua_getglobal(_lua_state, "MinMaxChange");
     if (lua_isfunction(_lua_state, -1))
@@ -300,13 +296,6 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
     {
         lua_pop(_lua_state, 1);
     }
-}
-
-void CLuaRoutine::handle_extra_channel_power_change(uint8_t channel_id, uint8_t power_percent)
-{
-    if (power_percent > 100)
-        return;
-
 }
 
 void CLuaRoutine::menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id)

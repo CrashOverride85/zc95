@@ -59,7 +59,6 @@ class CLuaRoutine : public CRoutine
         void channel_pulse_processing();
         void start_acc_serial(serial_config_t* serial_config);
         void process_serial();
-        void handle_extra_channel_power_change(uint8_t channel_id, uint8_t power_percent);
 
         static void s_lua_hook(lua_State *L, lua_Debug *ar);
 
