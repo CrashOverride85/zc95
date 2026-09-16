@@ -245,8 +245,8 @@ class CSavedSettings
         void set_button_brightness(uint8_t button_brightness_byte);
 
         // Collar
-        bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
-        bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
+        bool get_collar_config(uint8_t collar_index, struct collar_config &collar_conf);
+        bool set_collar_config(uint8_t collar_index, struct collar_config &collar_conf);
 
         // Bluetooth enabled
         bool get_bluethooth_enabled();
@@ -315,7 +315,7 @@ class CSavedSettings
     private:
         bool eeprom_initialised();
         
-        void initialise_collar(uint8_t collar_id);
+        void initialise_collar(uint8_t collar_index);
         CEeprom *_eeprom;
         uint8_t _eeprom_contents[EEPROM_SIZE];
 };

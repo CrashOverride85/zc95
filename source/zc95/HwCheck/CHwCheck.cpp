@@ -424,7 +424,7 @@ void CHwCheck::report_zc624_fault(int *y)
     if (_zc624_status != 0xFF)
     {
         put_text("Overall status: FAULT", 0, ((*y)++ * 10), hagl_color(_hagl_backend, 0xFF, 0xFF, 0xFF));
-        for (uint8_t chan = 1; chan <= MAX_CHANNELS; chan++)
+        for (uint8_t chan = 1; chan <= INTERNAL_CHANNEL_COUNT; chan++)
         {
             if (_zc624_status & 1 << chan)
                 chan_state = "FAULT";

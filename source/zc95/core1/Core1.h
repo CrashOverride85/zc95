@@ -9,8 +9,6 @@
 #include "output/CChannelConfig.h"
 #include "output/collar/CCollarComms.h"
 
-#include "output/CFullChannelAsSimpleChannel.h"
-
 #include "../CSavedSettings.h"
 #include "CPowerLevelControl.h"
 #include "Core1Messages.h"
@@ -27,10 +25,10 @@ class Core1
     public:
         Core1(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);
         ~Core1();
-        void init();
         void loop();
+        void init();
         void activate_routine(uint8_t routine_id);
-        void stop_routine();
+        void stop_routine(bool skip_chanel_restore);
     
         void menu_min_max_change(uint8_t menu_id, int16_t new_value);
         void menu_multi_choice_change(uint8_t menu_id, uint8_t choice_id);
@@ -42,7 +40,6 @@ class Core1
         void bluetooth_remote_keypress(CBluetoothRemote::keypress_t key);
 
     private:
-        void delete_fullChannelAsSimpleChannels_and_restore_channels();
         void process_messages();
         void process_message(message msg);
         void update_power_levels();
@@ -51,20 +48,19 @@ class Core1
         void process_audio_pulse_queue();
         void check_validity_of_lua_script();
         void set_audio_mode(audio_mode_t mode);
+        void update_output_power_arrays();
+        void set_chanel_count(uint8_t chanel_count);
         static void __not_in_flash_func(core1_suspend)(void);
 
-        CChannelConfig *_channel_config;
-        CRoutine *_active_routine = NULL;
-        COutputChannel* _active_channels[MAX_CHANNELS];
-        CFullChannelAsSimpleChannel *_fullChannelAsSimpleChannels[MAX_CHANNELS];
         CSavedSettings *_saved_settings;
-        COutputChannel *_real_output_channel[MAX_CHANNELS];
         std::vector<CRoutines::Routine>& _routines;
-        uint16_t _output_power[MAX_CHANNELS] = {0};
-        uint16_t _output_power_max[MAX_CHANNELS] = {0};    
-        pulse_message_t _pulse_messages[MAX_CHANNELS] = {0};
+        CChannelConfig _channel_config = CChannelConfig(_saved_settings);
+        CRoutine *_active_routine = NULL;
+        std::vector<COutputChannel*> _active_channels;
+        uint16_t* _output_power = NULL;
+        uint16_t* _output_power_max = NULL;
+        pulse_message_t _pulse_messages[INTERNAL_CHANNEL_COUNT] = {0};
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
-        CPowerLevelControl *_power_level_control;
         uint8_t _extended_ramp_percent = 0xFF;
         uint16_t _extended_ramp_remaining_seconds = 0xFFFF;
 };

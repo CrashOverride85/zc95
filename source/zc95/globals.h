@@ -8,7 +8,7 @@
 #include <string>
 
 extern bool gInteruptable;
-extern queue_t gPulseQueue[MAX_CHANNELS];
+extern queue_t gPulseQueue[INTERNAL_CHANNEL_COUNT];
 
 extern queue_t gPatternTextOutputQueue;
 extern queue_t gBtRawHidQueue;

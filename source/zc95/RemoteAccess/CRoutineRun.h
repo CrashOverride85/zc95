@@ -33,12 +33,14 @@ class CRoutineRun
         void script_output(pattern_text_output_t output);
         void set_pattern_config(uint8_t index);
         void menu_changed_callback(menu_change_msg_t msg);
-        
+        void update_channel_count(uint8_t channel_count);
+
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine>& _routines;
-        uint16_t _output_power[MAX_CHANNELS];
-        uint16_t _max_output_power[MAX_CHANNELS];
-        uint16_t _front_panel_power[MAX_CHANNELS]; // acts as power limit in remote access mode
+        uint8_t _channel_count = 0;
+        uint16_t* _output_power = NULL;
+        uint16_t* _max_output_power = NULL;
+        uint16_t* _front_panel_power = NULL; // acts as power limit in remote access mode
         uint64_t _last_power_status_update_us = 0;
         lua_script_state_t _lua_script_state = lua_script_state_t::NOT_APPLICABLE;
         struct routine_conf _pattern_conf;

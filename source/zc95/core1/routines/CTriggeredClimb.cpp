@@ -58,12 +58,6 @@ void CTriggeredClimb::config(struct routine_conf *conf)
     conf->name = "Triggered Climb";
     conf->button_text[(int)soft_button::BUTTON_A] = "Reset";
 
-    // Lets use all four channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Climb duration" - how long (in seconds) it takes to reach maximum power
     struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CLIMB_DURATION;
@@ -150,11 +144,11 @@ void CTriggeredClimb::start()
     _climbing_power_level = 0;
     _shock_power_level = 1;
     
-    simple_channel_set_power(0, _climbing_power_level);
-    simple_channel_set_power(1, _climbing_power_level);
+    channel_set_power(0, _climbing_power_level);
+    channel_set_power(1, _climbing_power_level);
 
-    simple_channel_on(0);
-    simple_channel_on(1);
+    channel_on(0);
+    channel_on(1);
 
     _shock_required = false;
 }
@@ -167,38 +161,38 @@ void CTriggeredClimb::loop(uint64_t time_us)
         _shock_required = false;
         
         // Climb channels off, and reset power to 0
-        simple_channel_off(0);
-        simple_channel_off(1);
+        channel_off(0);
+        channel_off(1);
         _climbing_power_level= 0;
 
-        simple_channel_set_power(0, _climbing_power_level);
-        simple_channel_set_power(1, _climbing_power_level);
+        channel_set_power(0, _climbing_power_level);
+        channel_set_power(1, _climbing_power_level);
 
         // Shock channels on
-        simple_channel_on(2);
-        simple_channel_on(3);
+        channel_on(2);
+        channel_on(3);
     }
 
     else if (_shock_end_us && time_us > _shock_end_us)
     {
         // Shock channels off
         _shock_end_us = 0;
-        simple_channel_off(2);
-        simple_channel_off(3);
+        channel_off(2);
+        channel_off(3);
 
         // Now increment the shock for next time
         _shock_power_level += _shock_inc_by;
         if (_shock_power_level > 1000)
             _shock_power_level = 1000;
-        simple_channel_set_power(2, _shock_power_level);
-        simple_channel_set_power(3, _shock_power_level);
+        channel_set_power(2, _shock_power_level);
+        channel_set_power(3, _shock_power_level);
 
 
         // Climb channels on
         _climbing_power_level = 0;
         _next_increment_power_at_us = time_us + (_power_increment_period_ms * 1000);
-        simple_channel_on(0);
-        simple_channel_on(1);
+        channel_on(0);
+        channel_on(1);
     }
 
     else if ((!_shock_end_us && time_us > _next_increment_power_at_us) || _next_increment_power_at_us == 0)
@@ -206,8 +200,8 @@ void CTriggeredClimb::loop(uint64_t time_us)
         if (_climbing_power_level < 1000)
             _climbing_power_level++; 
 
-        simple_channel_set_power(0, _climbing_power_level);
-        simple_channel_set_power(1, _climbing_power_level);
+        channel_set_power(0, _climbing_power_level);
+        channel_set_power(1, _climbing_power_level);
 
         _next_increment_power_at_us = time_us + (_power_increment_period_ms * 1000);
     }
@@ -216,26 +210,26 @@ void CTriggeredClimb::loop(uint64_t time_us)
 
 void CTriggeredClimb::reset() 
 {
-    simple_channel_off(2);
-    simple_channel_off(3);
+    channel_off(2);
+    channel_off(3);
 
     _climbing_power_level = 0;
     _shock_power_level = 1;
     _shock_end_us = 0;
     _next_increment_power_at_us = 0;
     
-    simple_channel_set_power(0, _climbing_power_level);
-    simple_channel_set_power(1, _climbing_power_level);
-    simple_channel_set_power(2, _shock_power_level);
-    simple_channel_set_power(3, _shock_power_level);
+    channel_set_power(0, _climbing_power_level);
+    channel_set_power(1, _climbing_power_level);
+    channel_set_power(2, _shock_power_level);
+    channel_set_power(3, _shock_power_level);
 
-    simple_channel_on(0);
-    simple_channel_on(1);
+    channel_on(0);
+    channel_on(1);
     _shock_required = false;
 }
 
 void CTriggeredClimb::stop()
 {   
     for (int x = 0; x < 4; x++)
-        simple_channel_off(x);
+        channel_off(x);
 }

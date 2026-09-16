@@ -19,6 +19,6 @@ class CAudioWave: public CRoutine
 
     private:
         uint16_t get_range_adjusted_power_level(uint16_t power_level);
-        uint16_t _chan_last_power_level[MAX_CHANNELS] = {0};
+        uint16_t _chan_last_power_level[INTERNAL_CHANNEL_COUNT] = {0};
         uint8_t _range_percent = 100;
 };

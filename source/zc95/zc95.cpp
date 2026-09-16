@@ -109,7 +109,7 @@ void process_front_panel_input(CMenu *current_menu)
 
 void update_power_levels_from_front_panel(CRoutineOutput *routine_output)
 {
-    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    for (int chan=0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         uint16_t fp_power = _hal->front_panel()->get_channel_power_level(chan);
         routine_output->set_front_panel_power(chan, fp_power);   
@@ -267,7 +267,7 @@ int main()
     hw_check.check_part2(); // If a fault is found, this never returns
 
     // Queue used for pulses from audio processing on core0 being sent to core1 for output
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
         queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
 
     // Queue used for routines (so far just Lua) running on Core1 to send debug messages (via print())

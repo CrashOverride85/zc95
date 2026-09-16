@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <queue>
 
-#include "../CSimpleOutputChannel.h"
+#include "../COutputChannel.h"
 
 #include "pico/stdlib.h"
 #include "hardware/pio.h"

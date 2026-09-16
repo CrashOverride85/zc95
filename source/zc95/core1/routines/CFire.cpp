@@ -44,12 +44,6 @@ void CFire::config(struct routine_conf *conf)
     conf->name = "Fire";
     conf->button_text[(int)soft_button::BUTTON_A] = "Fire";
 
-    // Want 4x simple channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Mode" - pulse for present length, or continuous whilst button pressed
     struct menu_entry menu_mode = new_menu_entry();
     menu_mode.id = menu_ids::MODE;
@@ -140,7 +134,7 @@ void CFire::stop()
 {
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 void CFire::all_channels(bool on)
@@ -148,9 +142,9 @@ void CFire::all_channels(bool on)
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {
         if (on)
-            simple_channel_on(x);
+            channel_on(x);
         else
-            simple_channel_off(x);
+            channel_off(x);
     }
 }
 
@@ -158,6 +152,6 @@ void CFire::all_channels_pulse(uint16_t pulse_len_ms)
 {
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {
-        simple_channel_pulse(x, pulse_len_ms);
+        channel_pulse(x, pulse_len_ms);
     }
 }
