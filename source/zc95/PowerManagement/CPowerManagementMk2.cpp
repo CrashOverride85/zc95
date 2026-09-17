@@ -41,7 +41,7 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
 void CPowerManagementMk2::init_fuel_gauge()
 {
     BQ27441_enterConfig(true);
-    const uint16_t battery_capacity_mah = 5300;
+    const uint16_t battery_capacity_mah = BATTERY_CAPACITY_MAH;
 
     BQ27441_setCapacity(battery_capacity_mah);
     BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
@@ -57,8 +57,8 @@ void CPowerManagementMk2::init_fuel_gauge()
     }
     else
     {
-        const uint16_t bq25601_termination_current_ma = 180; // default value for bq25601, which isn't changed
-        taper_rate = (float)battery_capacity_mah / (0.1f * (bq25601_termination_current_ma * 1.15f));
+        taper_rate = (float)battery_capacity_mah / (0.1f * ((float)BATTERY_CHARGE_TERMINAION_CURRENT_MA * 1.15f));
+        BQ27441_setChargeVChgTermination(BATTERY_MAX_CHARGE_MILLIVOLTS);
     }
     BQ27441_setTaperRateTime(taper_rate);
 
@@ -199,7 +199,6 @@ void CPowerManagementMk2::loop()
     // update stats at most every 1 second
     if (time_us_64() - _last_batt_param_refresh > (1000 * 1000) || _last_batt_param_refresh == 0)
     {
-
         _battery_percentage = BQ27441_soc(soc_measure::FILTERED);
         _battery_voltage = BQ27441_voltage();
         _current_mA = BQ27441_current(current_measure::AVG); // -ve is power drawn from battery, +ve is change current into battery

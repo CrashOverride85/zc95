@@ -10,6 +10,8 @@ CUsbPower::CUsbPower(hw_variant_t variant)
         _charge_ctl.set_register_reset(true); // reset to defaults
         _charge_ctl.set_watchdog_reset(BQ25601::watchdog_reset_enum::RESET);
         _charge_ctl.read_all_registers();
+        _charge_ctl.set_charge_termination_current_mA(BATTERY_CHARGE_TERMINAION_CURRENT_MA);
+        _charge_ctl.set_vreg_mV(BATTERY_MAX_CHARGE_MILLIVOLTS); // set max charge voltage to 4.15v
 
         // If the BQ25601's watchdog resets it (which would happen some time after the zc95 is 
         // switched off, if not disabled), the charge current gets reset to the default of 2040 mA, 
@@ -84,6 +86,9 @@ void CUsbPower::set_cc2_voltage_mV(int16_t mv)
 
 void CUsbPower::set_charge_current()
 {
+    if (g_SavedSettings == NULL)
+        return;
+
     _charge_ctl.read_register(BQ25601_REG02);
     uint16_t charge_current = _charge_ctl.get_fast_charge_current_mA();
 
