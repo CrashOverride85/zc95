@@ -23,6 +23,8 @@ class CPowerManagementMk1 : public IPowerManagement
         bool get_stat(int16_t* stat, power_stat_t type);
         uint8_t get_battery_percentage();
 
+        void fuel_gauge_reset() {};
+
     private:
         static int cmpfunc (const void *a, const void *b);
         static int cmpfunc_uint8_t (const void *a, const void *b);

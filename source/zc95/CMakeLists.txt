@@ -120,6 +120,7 @@ add_executable(zc95
   display/config/CMenuSettingOutput.cpp
   display/config/CMenuSettingOutputExtRamp.cpp
   display/config/CMenuSettingBatteryInfo.cpp
+  display/config/CMenuSettingsBatteryReset.cpp
 
   display/config/bluetooth_peripherals/CMenuBluetooth.cpp
   display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp

@@ -74,6 +74,13 @@ class IPowerManagement
          */
         virtual uint8_t get_battery_percentage() = 0;
 
+        /**
+         * @brief Reset the battery fuel gauge. Call after a new battery is installed, or of the
+         *        battery gauge isn't showing sensible values
+         * 
+         */
+        virtual void fuel_gauge_reset() = 0;
+
         virtual ~IPowerManagement() {}
 };
 

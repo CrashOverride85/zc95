@@ -17,13 +17,15 @@
 */
 
 #include "CMenuSettingBatteryInfo.h"
+#include "CMenuSettingsBatteryReset.h"
 #include "../git_version.h"
 
-CMenuSettingBatteryInfo::CMenuSettingBatteryInfo(CDisplay* display, IPowerManagement* power_management)
+CMenuSettingBatteryInfo::CMenuSettingBatteryInfo(CDisplay* display, IHal* hal)
 {
     printf("CMenuSettingBatteryInfo() \n");
     _display = display;
-    _power_management = power_management;
+    _hal = hal;
+    _allow_batt_reset = (_hal->hardware_version() == zc95_version_t::MKII);
 }
 
 CMenuSettingBatteryInfo::~CMenuSettingBatteryInfo()
@@ -45,6 +47,13 @@ void CMenuSettingBatteryInfo::button_pressed(Button button)
                 _exit_menu = true;
                 break;
 
+            case Button::C: // Batt reset
+                if (_allow_batt_reset)
+                {
+                    set_active_menu(new CMenuSettingsBatteryReset(_display, _hal));
+                }
+                break;
+
             default:
                 break;
         }
@@ -62,9 +71,11 @@ void CMenuSettingBatteryInfo::draw()
     display_area disp_area = _display->get_display_area();
     int16_t stat = -1;
 
-    put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF),     "SoC      : " + std::to_string(_power_management->get_battery_percentage()) + "%");
+    IPowerManagement* power_management = _hal->power_management();
+
+    put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF),     "SoC      : " + std::to_string(power_management->get_battery_percentage()) + "%");
     
-    if (_power_management->get_stat(&stat, IPowerManagement::power_stat_t::BatVoltage))
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::BatVoltage))
     {
         char buffer[10] = {0};
         float voltage = (float)stat / (float)1000;
@@ -73,16 +84,16 @@ void CMenuSettingBatteryInfo::draw()
         put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "Voltage  : " + std::string(buffer));
     }
 
-    if (_power_management->get_stat(&stat, IPowerManagement::power_stat_t::RemainingCapacity))
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::RemainingCapacity))
         put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "Remain   : " + std::to_string(stat) + " mAh");
     
-    if (_power_management->get_stat(&stat, IPowerManagement::power_stat_t::FullCapacity))
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::FullCapacity))
         put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "Full cap.: " + std::to_string(stat) + " mAh");
 
-    if (_power_management->get_stat(&stat, IPowerManagement::power_stat_t::BatCurrent))
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::BatCurrent))
         put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "Current  : " + std::to_string(stat) + " mA");
 
-    if (_power_management->get_stat(&stat, IPowerManagement::power_stat_t::VbusVoltage))
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::VbusVoltage))
     {
         char buffer[10] = {0};
         float voltage = (float)stat / (float)1000;
@@ -105,7 +116,12 @@ void CMenuSettingBatteryInfo::show()
 {
     _display->set_option_a("");
     _display->set_option_b("Back");
-    _display->set_option_c("");
+
+    if (_allow_batt_reset)
+        _display->set_option_c("Batt Reset");
+    else
+        _display->set_option_c("");
+
     _display->set_option_d("");
 
     _exit_menu = false;

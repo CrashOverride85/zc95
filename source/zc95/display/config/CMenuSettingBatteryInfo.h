@@ -3,12 +3,13 @@
 
 #include "../CMenu.h"
 #include "../CDisplay.h"
+#include "../../Hal/IHal.h"
 #include "../../PowerManagement/IPowerManagement.h"
 
 class CMenuSettingBatteryInfo : public CMenu
 {
     public:
-        CMenuSettingBatteryInfo(CDisplay* display,  IPowerManagement* power_management);
+        CMenuSettingBatteryInfo(CDisplay* display, IHal* hal);
         ~CMenuSettingBatteryInfo();
         void button_pressed(Button button);
         void draw();
@@ -18,7 +19,8 @@ class CMenuSettingBatteryInfo : public CMenu
     private:
         void put_text_line(int16_t x, int16_t y, uint8_t line, hagl_color_t colour, std::string text);
         CDisplay* _display;
-        IPowerManagement* _power_management;
+        IHal* _hal;
+        bool _allow_batt_reset = false;
 };
 
 #endif

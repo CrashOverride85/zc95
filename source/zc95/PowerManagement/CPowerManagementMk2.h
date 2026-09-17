@@ -28,6 +28,7 @@ class CPowerManagementMk2 : public IPowerManagement
 
         void add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len);
         void set_inital_cc_voltages_and_set_input_current_limit(int16_t cc1_mv, int16_t cc2_mv);
+        void fuel_gauge_reset();
 
     private:
         static int s_cmpfunc (const void *a, const void *b);
@@ -38,6 +39,8 @@ class CPowerManagementMk2 : public IPowerManagement
         void set_adc0_source(CMainBoardPortExp::adc0_select_t adc_source);
         void loop_v2_0();
         void loop_v2_2();
+
+        void init_fuel_gauge();
 
         CMainBoardPortExp* _mainboard_port_exp = NULL;
         hw_variant_t _variant;

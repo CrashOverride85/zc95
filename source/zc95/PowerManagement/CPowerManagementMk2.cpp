@@ -27,29 +27,7 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
             // without power. Despite this, the battery gauge won't be great until a full discharge / charge cycle has been completed.
             printf("CPowerManagementMk2(): BQ27441 ITPOR flag is set, reloading inital config (device has lost power)\n");
 
-            BQ27441_enterConfig(true);
-            const uint16_t battery_capacity_mah = 5300;
-
-            BQ27441_setCapacity(battery_capacity_mah);
-            BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
-            BQ27441_setTerminateVoltageMin(2900); // From U14 / HY2111-GB
-
-            // Mostly from "Quickstart Guide for bq27441-G1" (SLUUAP7)
-            uint16_t taper_rate;
-            if (_variant == hw_variant_t::V2_0)
-            {
-                // TP4056's terminate charge when current drops below 10% of the programmed charge current
-                const uint16_t tp4056_charge_current_ma = 780;
-                taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
-            }
-            else
-            {
-                const uint16_t bq25601_termination_current_ma = 180; // default value for bq25601, which isn't changed
-                taper_rate = (float)battery_capacity_mah / (0.1f * (bq25601_termination_current_ma * 1.15f));
-            }
-            BQ27441_setTaperRateTime(taper_rate);
-
-            BQ27441_exitConfig(true);
+            init_fuel_gauge();
         }
 
         loop();
@@ -58,6 +36,33 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
         printf("CPowerManagementMk2(): BQ27441 init FAILURE\n");
 
     set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_VBUS);
+}
+
+void CPowerManagementMk2::init_fuel_gauge()
+{
+    BQ27441_enterConfig(true);
+    const uint16_t battery_capacity_mah = 5300;
+
+    BQ27441_setCapacity(battery_capacity_mah);
+    BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
+    BQ27441_setTerminateVoltageMin(2900); // From U14 / HY2111-GB
+
+    // Mostly from "Quickstart Guide for bq27441-G1" (SLUUAP7)
+    uint16_t taper_rate;
+    if (_variant == hw_variant_t::V2_0)
+    {
+        // TP4056's terminate charge when current drops below 10% of the programmed charge current
+        const uint16_t tp4056_charge_current_ma = 780;
+        taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
+    }
+    else
+    {
+        const uint16_t bq25601_termination_current_ma = 180; // default value for bq25601, which isn't changed
+        taper_rate = (float)battery_capacity_mah / (0.1f * (bq25601_termination_current_ma * 1.15f));
+    }
+    BQ27441_setTaperRateTime(taper_rate);
+
+    BQ27441_exitConfig(true);
 }
 
 void CPowerManagementMk2::print_status()
@@ -368,6 +373,11 @@ uint8_t CPowerManagementMk2::get_battery_percentage()
     }
 
     return _battery_percentage;
+}
+
+void CPowerManagementMk2::fuel_gauge_reset()
+{
+    init_fuel_gauge();
 }
 
 void CPowerManagementMk2::set_adc0_source(CMainBoardPortExp::adc0_select_t source)
