@@ -160,7 +160,7 @@ bool CLuaRoutine::is_script_valid()
 
 void CLuaRoutine::get_config(struct routine_conf *conf)
 {
-    get_and_validate_config(conf); 
+    get_and_validate_config(conf);
 }
 
 bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
@@ -172,11 +172,6 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
     {
         return false;
     }
-
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
 
     lua_getglobal(_lua_state, "Config");
     if (lua_istable(_lua_state, -1))
@@ -206,6 +201,7 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
         conf->audio_processing_mode = get_audio_processing_mode();
 
         get_serial_config(&conf->serial);
+        get_channel_config(conf->channels);
 
         lua_pushstring(_lua_state, "menu_items");
         lua_gettable(_lua_state, -2);
@@ -218,7 +214,15 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
             lua_rawgeti(_lua_state, -1, i);
 
             entry.title = get_string_field("title");
-            entry.id = get_int_field("id");
+            int id = get_int_field("id");
+            if (id < 0 || id >= MENU_ID_FIRST_RESERVED)
+            {
+                printf("CLuaRoutine::get_and_validate_config: invalid ID of %d for [%s]. Must be between 0 and %d\n", 
+                    id, entry.title.c_str(), MENU_ID_FIRST_RESERVED-1);
+                lua_pop(_lua_state, 1);
+                continue;
+            }
+            entry.id = id;
             entry.group_id = get_int_field("group");
             std::string menu_type_str = get_string_field("type");
 
@@ -276,6 +280,9 @@ void CLuaRoutine::menu_min_max_change(uint8_t menu_id, int16_t new_value)
 {
     load_lua_script_if_required();
     if (!runnable())
+        return;
+
+    if (menu_id >= MENU_ID_FIRST_RESERVED)
         return;
 
     lua_getglobal(_lua_state, "MinMaxChange");
@@ -509,13 +516,13 @@ void CLuaRoutine::loop(uint64_t time_us)
 
 void CLuaRoutine::channel_pulse_processing()
 {
-    for (uint8_t channel_id = 0; channel_id < CHANNEL_COUNT; channel_id++)
+    for (uint8_t channel_id = 0; channel_id < get_channel_count(); channel_id++)
     {
         if (_channel_switch_off_at_us[channel_id])
         {
             if (time_us_64() >  _channel_switch_off_at_us[channel_id])
             {
-                full_channel_off(channel_id);
+                channel_off(channel_id);
                 _channel_switch_off_at_us[channel_id] = 0;
             }
         }
@@ -532,9 +539,9 @@ void CLuaRoutine::stop()
     }
 
     set_all_channels_power(0);
-    for (int channel_id=0; channel_id < CHANNEL_COUNT; channel_id++)    
+    for (int channel_id=0; channel_id < get_channel_count(); channel_id++)    
     {
-        full_channel_off(channel_id);
+        channel_off(channel_id);
         _channel_switch_off_at_us[channel_id] = 0;
     }
 
@@ -846,6 +853,149 @@ void CLuaRoutine::get_serial_config(serial_config_t* serial_config)
     lua_pop(_lua_state, 1);
 }
 
+void CLuaRoutine::get_channel_config(std::vector<channel_config_t> &channels)
+{
+    /* channels is set up so that the index is a channel_id (usually 0-3),
+     * but the Lua script deals with channel numbers (1-4)
+     */
+
+    constexpr uint8_t maximum_channel_count = 10;
+
+    // The Config table is expected to be at the top of the Lua stack
+    lua_getfield(_lua_state, -1, "channels");
+
+    if (lua_isnil(_lua_state, -1))
+    {
+        lua_pop(_lua_state, 1);
+        return;
+    }
+
+    if (!lua_istable(_lua_state, -1))
+    {
+        printf("CLuaRoutine::get_channel_config: Config.channels is not a table\n");
+        lua_pop(_lua_state, 1);
+        return;
+    }
+
+    size_t highest_channel_number = channels.size();
+
+    /*
+     * Validate all keys before modifying the output vector.
+     * Valid keys must be integer numbers from 1 to 10.
+     */
+    lua_pushnil(_lua_state);
+    while (lua_next(_lua_state, -2) != 0)
+    {
+        // Key is at -2; value is at -1
+        if (lua_type(_lua_state, -2) != LUA_TNUMBER)
+        {
+            printf("CLuaRoutine::get_channel_config: Channel key is not numeric\n");
+
+            lua_pop(_lua_state, 2); // Value and key
+            lua_pop(_lua_state, 1); // Channels table
+            return;
+        }
+
+        int lua_channel_number = lua_tonumber(_lua_state, -2);
+
+        if (lua_channel_number < 1 ||
+            lua_channel_number > maximum_channel_count)
+        {
+            printf("CLuaRoutine::get_channel_config: Channel number %d is outside the valid range 1-%d\n",
+                lua_channel_number,
+                maximum_channel_count);
+
+            lua_pop(_lua_state, 2);
+            lua_pop(_lua_state, 1);
+            return;
+        }
+        uint8_t channel_number = lua_channel_number;
+
+        if (channel_number > highest_channel_number)
+            highest_channel_number = channel_number;
+
+        // Remove the value, retaining the key for lua_next()
+        lua_pop(_lua_state, 1);
+    }
+
+    /*
+     * Update channels to combine the chanels already present, and what's in the Lua script.
+     * If the Lua script doesn't specify a chanel, the default/existing value should be used.
+     * If it's in both, the Lua script value should be used.
+     * For example, if the script only specifies that chanel=5 is a shock collar, then 1-4 
+     * should be left alone, with 5 added.
+     * If a script wants to specifically remove a channel, it could, e.g., list channel 4 and 
+     * set the type to NONE.
+     */
+    for (size_t channel_number = 1; channel_number <= highest_channel_number; channel_number++)
+    {
+        lua_rawgeti(_lua_state, -1, channel_number);
+        if (lua_istable(_lua_state, -1))
+        {
+            std::string channel_type = get_string_field("channel_type", "NONE");
+
+            int index = get_int_field("index", 0);
+            index--; // In lua script, indexes start at 1, elsewhere they start at 0
+
+            if (index < 0 || index > UINT8_MAX)
+            {
+                if (strcasecmp(channel_type.c_str(), "NONE"))
+                    printf("CLuaRoutine::get_channel_config: Invalid index %d for channel %d; using NONE/0\n", index, channel_number);
+
+                channel_type = "NONE";
+                index = 0;
+            }
+
+            if (channels.size() > channel_number - 1)
+                // Chanel is in both the current list passed in, and in the Lua script. Update to match Lua script.
+                channels[channel_number - 1] = get_channel_config_t(channel_type, index);
+            else
+                // Chanel is not in current list passed in, but is in the Lua script. Add.
+                channels.push_back(get_channel_config_t(channel_type, index));
+        }
+        else // chanel channel_number is not mentioned in Lua script
+        {
+            if (!lua_isnil(_lua_state, -1))
+            {
+                printf("CLuaRoutine::get_channel_config: Configuration for channel %d is not a table; using NONE/0\n", channel_number);
+            }
+
+            if (!(channels.size() > channel_number - 1))
+                // Chanel is not in the current list passed in, nor in the Lua script. And a blank/none entry 
+                // to avoid gaps in the sequence (e.g. if chanels 1, 3 & 4 are used, and a NONE entry for 2)
+                channels.push_back(get_channel_config_t("NONE", 0));                
+        }
+
+        lua_pop(_lua_state, 1);
+    }
+
+    // Remove the Config.channels table
+    lua_pop(_lua_state, 1);
+}
+
+channel_config_t CLuaRoutine::get_channel_config_t(std::string channel_type, uint8_t index)
+{
+   CChannel_types::channel_type type;
+
+    if (!strcasecmp(channel_type.c_str(), "INTERNAL"))
+        type = CChannel_types::channel_type::CHANNEL_INTERNAL;
+
+    else if (!strcasecmp(channel_type.c_str(), "COLLAR"))
+        type = CChannel_types::channel_type::CHANNEL_COLLAR;
+    
+    else if (!strcasecmp(channel_type.c_str(), "NONE"))
+        type = CChannel_types::channel_type::CHANNEL_NONE;
+
+    else
+    {
+        type = CChannel_types::channel_type::CHANNEL_NONE;
+        index = 0;
+        print(text_type_t::ERROR, "Invalid channel type: %s\n", channel_type);
+    }
+
+    return {type, index};
+}
+
 int CLuaRoutine::get_int_field(const char *field_name, int default_value)
 {
     int number;
@@ -903,7 +1053,7 @@ audio_mode_t CLuaRoutine::get_audio_processing_mode()
 
 bool CLuaRoutine::is_channel_number_valid(int channel_number)
 {
-    if (channel_number >= 1 && channel_number <= 4)
+    if (channel_number >= 1 && channel_number <= get_channel_count())
         return true;
     else
         return false;
@@ -972,7 +1122,7 @@ int CLuaRoutine::lua_channel_on(lua_State *L)
 	int chan = lua_tointeger(L, 1);
     if (!is_channel_number_valid(chan)) return 0;
 
-    full_channel_on(chan-1);
+    channel_on(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
     return 0;
 }
@@ -983,7 +1133,7 @@ int CLuaRoutine::lua_channel_off(lua_State *L)
     int chan = lua_tointeger(L, 1);
     if (!is_channel_number_valid(chan)) return 0;
 
-    full_channel_off(chan-1);
+    channel_off(chan-1);
     _channel_switch_off_at_us[chan-1] = 0;
     return 0;
 }
@@ -1000,7 +1150,7 @@ int CLuaRoutine::lua_channel_pulse_ms(lua_State *L)
     if (duration_ms < 0) return 0;
 
     _channel_switch_off_at_us[chan-1] = time_us_64() + (duration_ms * 1000);
-    full_channel_on(chan-1);
+    channel_on(chan-1);
 
     return 0;
 }
@@ -1015,7 +1165,7 @@ int CLuaRoutine::lua_set_power(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
     if (power < 0 || power > 1000) return 0;
 
-    full_channel_set_power(chan-1, power);
+    channel_set_power(chan-1, power);
     return 0;
 }
 
@@ -1029,7 +1179,7 @@ int CLuaRoutine::lua_set_freq(lua_State *L)
     if (!is_channel_number_valid(chan)) return 0;
     if (freq <= 0 || freq > 300) return 0;
 
-    full_channel_set_freq(chan-1, freq);
+    channel_set_freq(chan-1, freq);
     return 0;
 }
 
@@ -1047,7 +1197,7 @@ int CLuaRoutine::lua_set_pulse_width(lua_State *L)
     if (pos < 0 || pos > 255) return 0;
     if (neg < 0 || neg > 255) return 0;
 
-    full_channel_set_pulse_width(chan-1, pos, neg);
+    channel_set_pulse_width(chan-1, pos, neg);
     return 0;
 }
 
@@ -1142,7 +1292,7 @@ int CLuaRoutine::lua_link_channel(lua_State *L)
     if (linked < 0 || linked > 255) return 0;
     if (offset < 0 || offset > 100) return 0;
 
-    full_channel_link_channel(lead-1, linked-1, offset);
+    channel_link_channel(lead-1, linked-1, offset);
     return 0;
 }
 
@@ -1172,7 +1322,7 @@ int CLuaRoutine::lua_set_menu_option(lua_State *L)
     int menu_id = lua_tointeger(L, 1);
     int value   = lua_tointeger(L, 2);
     
-    if (menu_id > 0xFF || menu_id < 0)
+    if (menu_id >= MENU_ID_CHANNEL5 || menu_id < 0)
         return 0;
 
     if (value > 0xFFFF || value < 0)

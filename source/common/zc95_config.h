@@ -71,7 +71,7 @@
 
 // Note that just changing these two values would likely break everything
 #define MAX_POWER_LEVEL 1000
-#define MAX_CHANNELS 4
+#define INTERNAL_CHANNEL_COUNT 4
 
 // SPI Defines for display
 #define SPI_PORT spi0
@@ -107,3 +107,14 @@
 #define BOOTLOADER_SIZE_K 48
 #define PROGRAM_OFFSET (BOOTLOADER_SIZE_K * 1024)  // where does the main firmware start in flash
 
+
+
+#define MENU_ID_CHANNEL5  0xF5 // 245
+//              CHANNEL6  0xF6
+//              CHANNEL7  0xF7
+//              CHANNEL8  0xF8
+//              CHANNEL9  0xF9
+#define MENU_ID_NO_PARAMS 0xFE
+#define MENU_ID_RAMP      0xFF
+
+#define MENU_ID_FIRST_RESERVED MENU_ID_CHANNEL5

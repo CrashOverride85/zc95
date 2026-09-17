@@ -68,7 +68,7 @@ void CFrontPanelV01::process(bool always_update)
 
 uint16_t CFrontPanelV01::get_channel_power_level(uint8_t channel)
 {
-    if (channel >= MAX_CHANNELS)
+    if (channel >= INTERNAL_CHANNEL_COUNT)
         return 0;
 
     return _power_level[channel];

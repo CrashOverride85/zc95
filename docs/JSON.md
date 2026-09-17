@@ -184,6 +184,28 @@ Response:
    "Name":"Toggle",
    "Id":11,
    "ButtonA":"",
+   "Channels": [
+      {
+         "Number": 1,
+         "Type": "INTERNAL",
+         "Index": 1
+      },
+      {
+         "Number": 2,
+         "Type": "INTERNAL",
+         "Index": 2
+      },
+      {
+         "Number": 3,
+         "Type": "INTERNAL",
+         "Index": 3
+      },
+      {
+         "Number": 4,
+         "Type": "INTERNAL",
+         "Index": 4
+      }
+   ],
    "MenuItems":[
       {
          "Id":1,
@@ -217,6 +239,19 @@ Response:
    "Result":"OK"
 }
 ```
+
+##### Channels
+The `Channels` section will normally appear as it does in the above example, however if channel configuration (either the default via menus or in a Lua script) has been changed, it may be different.
+
+Fields:
+* Number - channel number, as used in SetPower & PowerStatus messages
+* Type - channel type - currently either `INTERNAL` or `COLLAR` (for control purposes, both should be treated the same)
+* Index - for information only: combined with Type, identifies the channel being controlled. E.g. `INTERNAL` & "1" means physical channel 1, `COLLAR` & "2" means "Collar 2" as configured in the config -> collar config menu. 
+
+Note that:
+* theoretically up to 9 channels can be reported; but the 4 internal channels plus a shock collar as the 5th channel is probably more likely.
+* shock collars may appear in one of the 1-4 channel slots
+
 
 #### GetVersion
 Used to query the zc95 for its version.
@@ -391,6 +426,8 @@ Send:
 {"Type": "SetPower", "MsgId": 5, "Chan1": 0, "Chan2": 0, "Chan3": 0, "Chan4": 0}
 ```
 
+If additional channels have been reported in the PatternDetails message for the running pattern, Chan5, Chan6 etc fields can be included.
+
 Receive:
 ```
 {"Type":"Ack","MsgId":5,"Result":"OK"}
@@ -435,8 +472,9 @@ Receive:
 Sent whenever the front panel dials are changed, or the script changes the requested output power.
 
 Fields:
+* `Channel` - 1-9. Channel power status update relates to.
 * `OutputPower` - 0-1000. Actual output power after front panel power limit, power sent in the `SetPower` message, and level requested by script considered. Corresponds to the yellow bar on the display
-* `MaxOutputPower` - 0-1000. The lower of the power set for the chanel using the `SetPower` message, and the limit set on the front panel
+* `MaxOutputPower` - 0-1000. The lower of the power set for the channel using the `SetPower` message, and the limit set on the front panel
 * `PowerLimit` - 0-1000. Power limit set on the front panel
 
 Receive:

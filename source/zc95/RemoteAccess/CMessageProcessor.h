@@ -40,6 +40,7 @@ class CMessageProcessor
         void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         std::string get_serial();
+        std::string get_channel_type_str(CChannel_types::channel_type type);
 
         std::function<void(std::string)> _send;
 

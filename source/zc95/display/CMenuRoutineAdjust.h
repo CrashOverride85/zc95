@@ -17,9 +17,6 @@
 #include <string>
 #include <vector>
 
-#define MENU_ID_RAMP      0xFF
-#define MENU_ID_NO_PARAMS 0xFE
-
 class CMenuRoutineAdjust : public CMenu
 {
     public:
@@ -30,7 +27,8 @@ class CMenuRoutineAdjust : public CMenu
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
-                CSavedSettings *saved_settings);
+                CSavedSettings *saved_settings,
+                uint8_t routine_id);
         ~CMenuRoutineAdjust();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -60,6 +58,7 @@ class CMenuRoutineAdjust : public CMenu
         CAudio *_audio;
         CBluetooth *_bluetooth = NULL;
         CSavedSettings *_saved_settings;
+        uint8_t _routine_id = 0;
 
         bool _show_ramp_start = true;
 };

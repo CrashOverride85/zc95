@@ -48,12 +48,6 @@ void CWaves::config(struct routine_conf *conf)
 {
     conf->name = "Waves";
 
-    // Want four output channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     // menu entry 1: "Speed"
     struct menu_entry speed = new_menu_entry();
     speed.id = menu_ids::WAVES_SPEED;
@@ -116,7 +110,7 @@ void CWaves::channel_loop(uint64_t time_us, chan_info *chan)
 {
     if (time_us > chan->next_pulse_time)
     {
-        full_channel_pulse(chan->chan_id, DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
+        channel_single_pulse(chan->chan_id, DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
 
         if (chan->gap_increasing)
         {

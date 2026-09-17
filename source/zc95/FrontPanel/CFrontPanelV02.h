@@ -95,7 +95,7 @@ class CFrontPanelV02 : public CFrontPanel
 
         CSavedSettings **_saved_settings;
         uint8_t _last_port_exp_read;
-        int16_t _power_level[MAX_CHANNELS];
+        int16_t _power_level[INTERNAL_CHANNEL_COUNT];
         CRotEnc _rot_encoder;
         int16_t _adjust_value;
         volatile bool _interrupt;

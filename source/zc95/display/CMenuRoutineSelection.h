@@ -5,7 +5,6 @@
 #include "CDisplay.h"
 #include "COptionsList.h"
 #include "CMenuRoutineSelection.h"
-#include "../core1/output/CFullChannelAsSimpleChannel.h"
 #include "../core1/output/CChannelConfig.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutine.h"
