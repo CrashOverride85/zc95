@@ -22,6 +22,7 @@
 
 #include "CMenuSettingsBatteryReset.h"
 #include "../CDisplayMessage.h"
+#include "../../../globals.h"
 #include <algorithm>
 
 CMenuSettingsBatteryReset::CMenuSettingsBatteryReset(CDisplay* display, IHal* hal)
@@ -64,7 +65,13 @@ void CMenuSettingsBatteryReset::button_pressed(Button button)
                 break;
 
             case Button::D: // Yes/Reset
+                printf("Clear fuel gauge learned data in eeprom\n");
+                g_SavedSettings->fuel_gauge_invalidate_learned_data();
+                g_SavedSettings->save();
+
+                printf("Reset fuel gauge\n");
                 _hal->power_management()->fuel_gauge_reset();
+
                 set_active_menu(new CDisplayMessage(_display, _hal, "Battery stats reset"));
                 _exit_menu = true;
                 break;

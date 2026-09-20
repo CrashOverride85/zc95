@@ -40,6 +40,7 @@ class CPowerManagementMk2 : public IPowerManagement
         void loop_v2_2();
 
         void init_fuel_gauge();
+        void save_fuel_gauge_data_if_changed();
 
         CMainBoardPortExp* _mainboard_port_exp = NULL;
         hw_variant_t _variant;
@@ -61,6 +62,7 @@ class CPowerManagementMk2 : public IPowerManagement
         uint16_t _input_limit = 0;
 
         uint64_t _last_batt_param_refresh = 0;
+        uint64_t _last_fuel_gauge_learned_data_check_us = 0;
         uint64_t _last_adc0_read;
         CMainBoardPortExp::adc0_select_t _adc0_source;
         bool _inital_startup = true;

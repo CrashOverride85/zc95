@@ -650,6 +650,56 @@ void CSavedSettings::set_extended_ramp_shape(int8_t shape)
     _eeprom_contents[(uint8_t)setting::ExtenedRampShape] = (uint8_t)shape;
 }
 
+bool CSavedSettings::fuel_gauge_is_saved_learned_data_valid()
+{
+    uint8_t expected_checksum = fuel_gauge_calc_learned_data_checksum(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
+    uint8_t actual_checksum   = _eeprom_contents[(uint8_t)setting::FuelGaugeEnd];
+
+    return expected_checksum == actual_checksum;
+}
+
+void CSavedSettings::fuel_gauge_invalidate_learned_data()
+{
+    memset(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 0, 33); // 33 not 32 as also want to clear checksum byte
+}
+
+bool CSavedSettings::fuel_gauge_get_learned_data(uint8_t* out_data, uint8_t size)
+{
+    if (size != 32)
+    {
+        printf("CSavedSettings::fuel_gauge_get_learned_data: passed unexpected size of %d (expected 32)\n", size);
+        return false;
+    }
+
+    if (!fuel_gauge_is_saved_learned_data_valid())
+        return false;
+
+    memcpy(out_data, &_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
+    return true;
+}
+
+void CSavedSettings::fuel_gauge_set_learned_data(uint8_t* data, uint8_t size)
+{
+    if (size != 32)
+    {
+        printf("CSavedSettings::fuel_gauge_set_learned_data: passed unexpected size of %d (expected 32)\n", size);
+        return;
+    }
+
+    memcpy(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], data, 32);
+    _eeprom_contents[(uint8_t)setting::FuelGaugeEnd] = fuel_gauge_calc_learned_data_checksum(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
+}
+
+uint8_t CSavedSettings::fuel_gauge_calc_learned_data_checksum(uint8_t* data, uint8_t size)
+{
+    uint8_t checksum = 10; // if the eeprom is cleared (all 0xFF or 0x00) make sure the checksum isn't valid
+
+    for (uint8_t n = 0; n < size; n++)
+        checksum += data[n];
+
+    return checksum;
+}
+
 bool CSavedSettings::eeprom_initialised()
 {
     return (_eeprom->read((uint16_t)setting::EepromInit) == EEPROM_MAGIC_VAL);

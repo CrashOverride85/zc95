@@ -76,7 +76,9 @@ class CSavedSettings
         LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
         BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR, // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootloader code
         ExtenedRampShape = 233,
-        BatteryStatus    = 234  // What to show inside the battery status icon
+        BatteryStatus    = 234, // What to show inside the battery status icon
+        FuelGaugeStart   = 235, // Fuel gauge learned data block - start (33 bytes: 32 bytes data + 1 byte checksum)
+        FuelGaugeEnd     = 267  // Fuel gauge learned data block - end
     };
 
     public:
@@ -309,6 +311,12 @@ class CSavedSettings
 
         int8_t get_extended_ramp_shape();
         void set_extended_ramp_shape(int8_t shape);
+
+        bool fuel_gauge_is_saved_learned_data_valid();
+        void fuel_gauge_invalidate_learned_data();
+        bool fuel_gauge_get_learned_data(uint8_t* out_data, uint8_t size);
+        void fuel_gauge_set_learned_data(uint8_t* data, uint8_t size);
+        uint8_t fuel_gauge_calc_learned_data_checksum(uint8_t* data, uint8_t size);
 
         void eeprom_initialise();
 

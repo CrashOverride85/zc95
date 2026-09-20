@@ -87,6 +87,7 @@ static uint8_t BQ27441_computeBlockChecksum (void);
 static bool BQ27441_writeBlockChecksum (uint8_t csum);
 static uint8_t BQ27441_readExtendedData (uint8_t classID, uint8_t offset);
 static bool BQ27441_writeExtendedData (uint8_t classID, uint8_t offset, uint8_t *data, uint8_t len);
+static bool BQ27441_readExtendedDataBytes (uint8_t classID, uint8_t offset, uint8_t *data, uint8_t len);
 
 
 static volatile bool sealFlag = false; // Global to identify that IC was previously sealed
@@ -208,7 +209,7 @@ bool BQ27441_setTaperRateTime(uint16_t rate) {
     if (rate > 2000)
         rate = 2000;
 
-    uint8_t trData[2] = {rate >> 8, rate & 0x00F};
+    uint8_t trData[2] = {rate >> 8, rate & 0x00FF};
     return BQ27441_writeExtendedData(BQ27441_ID_STATE, 27, trData, 2);
 }
 
@@ -601,6 +602,129 @@ bool BQ27441_initComp(void){
     uint16_t stat = BQ27441_status();
     return stat & BQ27441_STATUS_INITCOMP;
 
+}
+
+bool BQ27441_qmaxUpdated(void)
+{
+    uint16_t stat = BQ27441_status();
+    return (stat & BQ27441_STATUS_QMAX_UP) != 0;
+}
+
+bool BQ27441_resistanceUpdated(void)
+{
+    uint16_t stat = BQ27441_status();
+    return (stat & BQ27441_STATUS_RES_UP) != 0;
+}
+
+bool BQ27441_getQmax(uint8_t data[BQ27441_QMAX_SIZE])
+{
+    return BQ27441_readExtendedDataBytes(
+        BQ27441_ID_STATE,
+        0,
+        data,
+        BQ27441_QMAX_SIZE);
+}
+
+bool BQ27441_setQmax(const uint8_t data[BQ27441_QMAX_SIZE])
+{
+    return BQ27441_writeExtendedData(
+        BQ27441_ID_STATE,
+        0,
+        (uint8_t *)data,
+        BQ27441_QMAX_SIZE);
+}
+
+bool BQ27441_getRaTable(uint8_t data[BQ27441_RA_TABLE_SIZE])
+{
+    return BQ27441_readExtendedDataBytes(
+        BQ27441_ID_R_A_RAM,
+        0,
+        data,
+        BQ27441_RA_TABLE_SIZE);
+}
+
+bool BQ27441_setRaTable(const uint8_t data[BQ27441_RA_TABLE_SIZE])
+{
+    return BQ27441_writeExtendedData(
+        BQ27441_ID_R_A_RAM,
+        0,
+        (uint8_t *)data,
+        BQ27441_RA_TABLE_SIZE);
+}
+
+bool BQ27441_getLearnedData(BQ27441_learned_data_t *data)
+{
+    if (data == NULL)
+        return false;
+
+    bool wasSealed = BQ27441_sealed();
+
+    if (wasSealed)
+    {
+        if (!BQ27441_unseal())
+            return false;
+    }
+
+    bool success = true;
+
+    // Qmax Cell 0:
+    // State subclass 82, offset 0, 2 bytes.
+    if (!BQ27441_readExtendedDataBytes(
+            BQ27441_ID_STATE,
+            0,
+            data->qmax,
+            BQ27441_QMAX_SIZE))
+    {
+        success = false;
+    }
+
+    // Learned resistance table:
+    // R_a RAM subclass 89, offsets 0-29.
+    if (success &&
+        !BQ27441_readExtendedDataBytes(
+            BQ27441_ID_R_A_RAM,
+            0,
+            data->ra_table,
+            BQ27441_RA_TABLE_SIZE))
+    {
+        success = false;
+    }
+
+    if (wasSealed)
+    {
+        if (!BQ27441_seal())
+            success = false;
+    }
+
+    return success;
+}
+
+bool BQ27441_setLearnedData(const BQ27441_learned_data_t *data)
+{
+    if (data == NULL)
+        return false;
+
+    // Qmax Cell 0 - State subclass 82, offset 0.
+    if (!BQ27441_writeExtendedData(
+            BQ27441_ID_STATE,
+            0,
+            (uint8_t *)data->qmax,
+            BQ27441_QMAX_SIZE))
+    {
+        return false;
+    }
+
+    // Learned resistance table - R_a RAM subclass 89.
+    if (!BQ27441_writeExtendedData(
+            BQ27441_ID_R_A_RAM,
+            0,
+            (uint8_t *)data->ra_table,
+            BQ27441_RA_TABLE_SIZE))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -1038,6 +1162,29 @@ static uint8_t BQ27441_readExtendedData(uint8_t classID, uint8_t offset) {
     if (!userConfigControl) BQ27441_exitConfig(true);
 
     return retData;
+}
+
+static bool BQ27441_readExtendedDataBytes(uint8_t classID, uint8_t offset, uint8_t *data, uint8_t len)
+{
+    if (data == NULL || len == 0 || len > 32)
+        return false;
+
+    // Don't allow the read to cross a 32-byte block boundary.
+    if (((offset % 32) + len) > 32)
+        return false;
+
+    if (!BQ27441_blockDataControl())
+        return false;
+
+    if (!BQ27441_blockDataClass(classID))
+        return false;
+
+    if (!BQ27441_blockDataOffset(offset / 32))
+        return false;
+
+    uint8_t address = BQ27441_EXTENDED_BLOCKDATA + (offset % 32);
+
+    return BQ27441_i2cReadBytes(address, data, len);
 }
 
 /**
