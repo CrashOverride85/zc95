@@ -174,10 +174,12 @@ bool BQ27441_getRaTable(uint8_t data[BQ27441_RA_TABLE_SIZE]);
 bool BQ27441_setRaTable(const uint8_t data[BQ27441_RA_TABLE_SIZE]);
 
 bool BQ27441_getLearnedData(BQ27441_learned_data_t *data);
-bool BQ27441_setLearnedData(const BQ27441_learned_data_t *data);
+bool BQ27441_setLearnedDataQmax(uint8_t* data, uint8_t size);
+bool BQ27441_setLearnedDataRa(uint8_t* data, uint8_t size);
 
 bool BQ27441_qmaxUpdated(void);
 bool BQ27441_resistanceUpdated(void);
+bool BQ27441_rup_dis_set(void);
 
 #ifdef __cplusplus
 }

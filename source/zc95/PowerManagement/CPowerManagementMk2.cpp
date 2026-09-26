@@ -32,6 +32,8 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
         }
 
         loop();
+
+        printf("CPowerManagementMk2():BQ27441 QMAX_UP: %d, RES_UP: %d, RUP_DIS: %d\n", BQ27441_qmaxUpdated(), BQ27441_resistanceUpdated(), BQ27441_rup_dis_set());
     }
     else
         printf("CPowerManagementMk2(): BQ27441 init FAILURE\n");
@@ -58,19 +60,19 @@ void CPowerManagementMk2::init_fuel_gauge()
     }
     else
     {
-        taper_rate = (float)battery_capacity_mah / (0.1f * ((float)BATTERY_CHARGE_TERMINAION_CURRENT_MA * 1.15f));
+        taper_rate = (float)battery_capacity_mah / (0.1f * ((float)BATTERY_CHARGE_TERMINAION_CURRENT_MA * 1.33));
         BQ27441_setChargeVChgTermination(BATTERY_MAX_CHARGE_MILLIVOLTS);
     }
     BQ27441_setTaperRateTime(taper_rate);
 
     // If previous learned data from the fuel gauge in eeprom is valid, load it now
-    if (g_SavedSettings->fuel_gauge_is_saved_learned_data_valid())
+    if (g_SavedSettings->fuel_gauge_data_is_qmax_valid())
     {
-        printf("Fuel gauge data in eeprom is valid, reloading\n");
-        BQ27441_learned_data_t learned_data;
+        printf("Fuel gauge data/qmax in eeprom is valid, reloading\n");
+        uint8_t qmax[BQ27441_QMAX_SIZE];
 
-        g_SavedSettings->fuel_gauge_get_learned_data((uint8_t*)(&learned_data), sizeof(BQ27441_learned_data_t));
-        BQ27441_setLearnedData(&learned_data);
+        g_SavedSettings->fuel_gauge_data_get_qmax(qmax, BQ27441_QMAX_SIZE);
+        BQ27441_setLearnedDataQmax(qmax, BQ27441_QMAX_SIZE);
     }
     else
     {
@@ -84,45 +86,41 @@ void CPowerManagementMk2::init_fuel_gauge()
 // If it doesn't match, update eeprom.
 // This is so if the fuel gauge gets reset (ie. BQ27441_itporFlag() retuns true),
 // we can reload the data, which should significantly improve fuel gauge accuracy.
+// Currently not storing the Ra table, as the box doesn't generally reach the amount
+// of current draw to trigger it to be updated.
 void CPowerManagementMk2::save_fuel_gauge_data_if_changed()
 {
-    bool qmax_set   = BQ27441_qmaxUpdated();
-    bool res_up_set = BQ27441_resistanceUpdated();
-    if (!(qmax_set && res_up_set))
-    {
-        printf("save_fuel_gauge_data_if_changed: QMAX_UP (%d) or RES_UP (%d) not set, exit.\n", qmax_set, res_up_set);
+    if (!BQ27441_qmaxUpdated())
         return;
-    }
 
     BQ27441_learned_data_t current_learned_data;
-
     if (!BQ27441_getLearnedData(&current_learned_data))
     {
         printf("save_fuel_gauge_data_if_changed: failed to get learned data from fuel gauge\n");
         return;
     }
 
-    if (g_SavedSettings->fuel_gauge_is_saved_learned_data_valid())
+    if (g_SavedSettings->fuel_gauge_data_is_qmax_valid())
     {
-        BQ27441_learned_data_t saved_learned_data;
-        if (!g_SavedSettings->fuel_gauge_get_learned_data((uint8_t*)(&saved_learned_data), sizeof(BQ27441_learned_data_t)))
+        uint8_t saved_qmax[BQ27441_QMAX_SIZE];
+        if (!g_SavedSettings->fuel_gauge_data_get_qmax(saved_qmax, BQ27441_QMAX_SIZE))
         {
             // This shouldn't happen: fuel_gauge_is_saved_learned_data_valid returned true, so there should be no problem getting the data 
             printf("save_fuel_gauge_data_if_changed: Failed to get fuel gauge saved data\n");
             return;
         }
 
-        if (memcmp(&saved_learned_data, &current_learned_data, sizeof(BQ27441_learned_data_t)) == 0)
+        if (memcmp(saved_qmax, current_learned_data.qmax, BQ27441_QMAX_SIZE) == 0)
         {
             // successfully compared current learned data to saved learned data, and found no changes. nothing to do.
-            printf("save_fuel_gauge_data_if_changed: no changes\n");
+            // printf("save_fuel_gauge_data_if_changed: no changes\n");
             return;
         }
     }
 
     // now save the fuel gauge data to eeprom
-    g_SavedSettings->fuel_gauge_set_learned_data((uint8_t*)(&current_learned_data), sizeof(BQ27441_learned_data_t));
-    printf("save_fuel_gauge_data_if_changed: updating eeprom\n");
+    g_SavedSettings->fuel_gauge_data_set_qmax(current_learned_data.qmax, BQ27441_QMAX_SIZE);
+    printf("save_fuel_gauge_data_if_changed: changes detected, updating eeprom\n");
     g_SavedSettings->save();
 }
 
@@ -278,7 +276,7 @@ void CPowerManagementMk2::loop()
         _usb_power.loop();
     }
 
-    uint64_t fg_check_freq_seconds = 10;
+    uint64_t fg_check_freq_seconds = 300; // every 5 minutes
     if (time_us_64() - _last_fuel_gauge_learned_data_check_us > (1000 * 1000 * fg_check_freq_seconds) || _last_fuel_gauge_learned_data_check_us == 0)
     {
         save_fuel_gauge_data_if_changed();
@@ -444,6 +442,7 @@ uint8_t CPowerManagementMk2::get_battery_percentage()
 
 void CPowerManagementMk2::fuel_gauge_reset()
 {
+    BQ27441_Full_Reset();
     init_fuel_gauge();
 }
 

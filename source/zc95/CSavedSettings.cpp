@@ -93,171 +93,171 @@ void CSavedSettings::set_channel(channel_selection chan, uint8_t channel_id)
 {
     if (channel_id < EEPROM_CHANNEL_COUNT)
     {
-        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)chan.type;
-        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = chan.index;
+        _eeprom_contents[(uint16_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)chan.type;
+        _eeprom_contents[(uint16_t)setting::ChannelIndex + (channel_id*2)] = chan.index;
     }
 }
 
 uint8_t CSavedSettings::get_led_brightness()
 {
-    return _eeprom_contents[(uint8_t)setting::LEDBrightness];
+    return _eeprom_contents[(uint16_t)setting::LEDBrightness];
 }
 
 void CSavedSettings::set_led_brightness(uint8_t led_brightness_percent)
 {
-    _eeprom_contents[(uint8_t)setting::LEDBrightness] = led_brightness_percent;
+    _eeprom_contents[(uint16_t)setting::LEDBrightness] = led_brightness_percent;
 }
 
 uint8_t CSavedSettings::get_power_step_interval()
 {
-    return _eeprom_contents[(uint8_t)setting::PowerStep];
+    return _eeprom_contents[(uint16_t)setting::PowerStep];
 }
 
 void CSavedSettings::set_power_step_interval(uint8_t power_step)
 {
-    _eeprom_contents[(uint8_t)setting::PowerStep] = power_step;
+    _eeprom_contents[(uint16_t)setting::PowerStep] = power_step;
 }
 
 uint8_t CSavedSettings::get_initial_ramp_up_time_seconds()
 {
-    return _eeprom_contents[(uint8_t)setting::RampUpTimeSecs];
+    return _eeprom_contents[(uint16_t)setting::RampUpTimeSecs];
 }
 
 void CSavedSettings::set_ramp_up_time_seconds(uint8_t time_secs)
 {
-    _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = time_secs;
+    _eeprom_contents[(uint16_t)setting::RampUpTimeSecs] = time_secs;
 }
 
 uint8_t CSavedSettings::get_audio_gain_left()
 {
-    return _eeprom_contents[(uint8_t)setting::AudioGainL];
+    return _eeprom_contents[(uint16_t)setting::AudioGainL];
 }
 
 uint8_t CSavedSettings::get_audio_gain_right()
 {
-    return _eeprom_contents[(uint8_t)setting::AudioGainR];
+    return _eeprom_contents[(uint16_t)setting::AudioGainR];
 }
 
 void CSavedSettings::set_audio_gain_left(uint8_t gain)
 {
-    _eeprom_contents[(uint8_t)setting::AudioGainL] = gain;
+    _eeprom_contents[(uint16_t)setting::AudioGainL] = gain;
 }
 
 void CSavedSettings::set_audio_gain_right(uint8_t gain)
 {
-    _eeprom_contents[(uint8_t)setting::AudioGainR] = gain;
+    _eeprom_contents[(uint16_t)setting::AudioGainR] = gain;
 }
 
 bool CSavedSettings::get_mic_preamp_enabled()
 {
-    return _eeprom_contents[(uint8_t)setting::MicPreAmp] > 0;
+    return _eeprom_contents[(uint16_t)setting::MicPreAmp] > 0;
 }
 
 void CSavedSettings::set_mic_preamp_enabled(bool enabled)
 {
-    _eeprom_contents[(uint8_t)setting::MicPreAmp] = enabled ? 1 : 0;
+    _eeprom_contents[(uint16_t)setting::MicPreAmp] = enabled ? 1 : 0;
 }
 
 bool CSavedSettings::get_mic_power_enabled()
 {
-    return _eeprom_contents[(uint8_t)setting::MicPower] > 0;
+    return _eeprom_contents[(uint16_t)setting::MicPower] > 0;
 }
 
 void CSavedSettings::set_mic_power_enabled(bool enabled)
 {
-    _eeprom_contents[(uint8_t)setting::MicPower] = enabled ? 1 : 0;
+    _eeprom_contents[(uint16_t)setting::MicPower] = enabled ? 1 : 0;
 }
 
 CSavedSettings::setting_audio CSavedSettings::get_audio_setting()
 {
-    return (CSavedSettings::setting_audio)_eeprom_contents[(uint8_t)setting::Audio];
+    return (CSavedSettings::setting_audio)_eeprom_contents[(uint16_t)setting::Audio];
 }
 
 void CSavedSettings::set_audio_setting(setting_audio setting)
 {
-    _eeprom_contents[(uint8_t)setting::Audio] = (uint8_t)setting;
+    _eeprom_contents[(uint16_t)setting::Audio] = (uint8_t)setting;
 }
 
 CSavedSettings::setting_debug CSavedSettings::get_debug_dest()
 {
-return (CSavedSettings::setting_debug)_eeprom_contents[(uint8_t)setting::Debug];
+return (CSavedSettings::setting_debug)_eeprom_contents[(uint16_t)setting::Debug];
 }
 
 void CSavedSettings::set_debug_dest(setting_debug setting)
 {
-    _eeprom_contents[(uint8_t)setting::Debug] = (uint8_t)setting;
+    _eeprom_contents[(uint16_t)setting::Debug] = (uint8_t)setting;
 }
 
 CSavedSettings::setting_aux_port_use CSavedSettings::get_aux_port_use()
 {
-    return (CSavedSettings::setting_aux_port_use)_eeprom_contents[(uint8_t)setting::AuxPort];
+    return (CSavedSettings::setting_aux_port_use)_eeprom_contents[(uint16_t)setting::AuxPort];
 }
 
 void CSavedSettings::set_aux_port_use(setting_aux_port_use setting)
 {
-    _eeprom_contents[(uint8_t)setting::AuxPort] = (uint8_t)setting;
+    _eeprom_contents[(uint16_t)setting::AuxPort] = (uint8_t)setting;
 }
 
 bool CSavedSettings::get_wifi_credentials(std::string &out_ssid, std::string &out_password)
 {
     // If wifi not yet configured, don't try to get ssid/password
-    if (_eeprom_contents[(uint8_t)setting::WiFiConfigured] != EEPROM_MAGIC_VAL)
+    if (_eeprom_contents[(uint16_t)setting::WiFiConfigured] != EEPROM_MAGIC_VAL)
         return false;
 
     // If the last character of the ssid isn't a NULL, somethings gone wrong (WifiPSK is the next thing after WifiSSID)
-    if (_eeprom_contents[(uint8_t)setting::WifiPSK - 1] != '\0')
+    if (_eeprom_contents[(uint16_t)setting::WifiPSK - 1] != '\0')
         return false;
     
     // If the last character of the password isn't a NULL, somethings gone wrong (WiFiConfigured is the next thing after WifiPSK)
-    if (_eeprom_contents[(uint8_t)setting::WiFiConfigured - 1] != '\0')
+    if (_eeprom_contents[(uint16_t)setting::WiFiConfigured - 1] != '\0')
         return false;
     
-    out_ssid = (char*)&_eeprom_contents[(uint8_t)setting::WifiSSID];
-    out_password = (char*)&_eeprom_contents[(uint8_t)setting::WifiPSK];
+    out_ssid = (char*)&_eeprom_contents[(uint16_t)setting::WifiSSID];
+    out_password = (char*)&_eeprom_contents[(uint16_t)setting::WifiPSK];
 
     return true;
 }
 
 bool CSavedSettings::set_wifi_credentials(std::string ssid, std::string password)
 {
-    if (ssid.length() > (uint8_t)setting::WifiPSK - (uint8_t)setting::WifiSSID - 1)
+    if (ssid.length() > (uint16_t)setting::WifiPSK - (uint16_t)setting::WifiSSID - 1)
     {
         printf("ssid [%s] too long, not saving\n", ssid.c_str());
         return false;
     }
 
-    if (ssid.length() > (uint8_t)setting::WiFiConfigured - (uint8_t)setting::WifiPSK - 1)
+    if (ssid.length() > (uint16_t)setting::WiFiConfigured - (uint16_t)setting::WifiPSK - 1)
     {
         printf("password [%s] too long, not saving\n", password.c_str());
         return false;
     }
 
-    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiSSID], ssid.c_str()    );
-    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiPSK] , password.c_str());
-    _eeprom_contents[(uint8_t)setting::WiFiConfigured] = EEPROM_MAGIC_VAL;
+    strcpy((char*)&_eeprom_contents[(uint16_t)setting::WifiSSID], ssid.c_str()    );
+    strcpy((char*)&_eeprom_contents[(uint16_t)setting::WifiPSK] , password.c_str());
+    _eeprom_contents[(uint16_t)setting::WiFiConfigured] = EEPROM_MAGIC_VAL;
 
     return true;
 }
 
 void CSavedSettings::clear_wifi_credentials()
 {
-    memset(&_eeprom_contents[(uint8_t)setting::WifiSSID], 0, (uint8_t)setting::WifiPSK - (uint8_t)setting::WifiSSID);
-    _eeprom_contents[(uint8_t)setting::WiFiConfigured] = 0;
+    memset(&_eeprom_contents[(uint16_t)setting::WifiSSID], 0, (uint16_t)setting::WifiPSK - (uint16_t)setting::WifiSSID);
+    _eeprom_contents[(uint16_t)setting::WiFiConfigured] = 0;
 }
 
 bool CSavedSettings::wifi_is_configured()
 {
-    return (_eeprom_contents[(uint8_t)setting::WiFiConfigured] == EEPROM_MAGIC_VAL);
+    return (_eeprom_contents[(uint16_t)setting::WiFiConfigured] == EEPROM_MAGIC_VAL);
 }
 
 bool CSavedSettings::get_wifi_ap_psk(std::string &out_psk)
 {
     out_psk = "";
     // If the last character of the psk isn't a NULL, somethings gone wrong
-    if (_eeprom_contents[(uint8_t)setting::WifiApPskEnd] != '\0')
+    if (_eeprom_contents[(uint16_t)setting::WifiApPskEnd] != '\0')
         return false;
 
-    out_psk = (char*)&_eeprom_contents[(uint8_t)setting::WifiApPsk];
+    out_psk = (char*)&_eeprom_contents[(uint16_t)setting::WifiApPsk];
     
     // A psk length < 8 is invalid and won't work
     return (out_psk.length() >= 8);    
@@ -278,46 +278,46 @@ bool CSavedSettings::set_wifi_ap_psk(std::string psk)
     }
 
     clear_saved_ap_psk();
-    strcpy((char*)&_eeprom_contents[(uint8_t)setting::WifiApPsk], psk.c_str());
+    strcpy((char*)&_eeprom_contents[(uint16_t)setting::WifiApPsk], psk.c_str());
 
     return true;
 }
 
 void CSavedSettings::clear_saved_ap_psk()
 {
-    memset(&_eeprom_contents[(uint8_t)setting::WifiApPsk], 0, ((uint8_t)setting::WifiApPskEnd - (uint8_t)setting::WifiApPsk) + 1);
+    memset(&_eeprom_contents[(uint16_t)setting::WifiApPsk], 0, ((uint16_t)setting::WifiApPskEnd - (uint16_t)setting::WifiApPsk) + 1);
 }
 
 CSavedSettings::power_level_show_percent CSavedSettings::get_power_level_display()
 {
-    return (CSavedSettings::power_level_show_percent)_eeprom_contents[(uint8_t)setting::PowerLevelDisp];
+    return (CSavedSettings::power_level_show_percent)_eeprom_contents[(uint16_t)setting::PowerLevelDisp];
 }
 
 bool CSavedSettings::power_level_show_in_bar_graph()
 {
-    return ((_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::IN_BAR_GRAPH) ||
-            (_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
+    return ((_eeprom_contents[(uint16_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::IN_BAR_GRAPH) ||
+            (_eeprom_contents[(uint16_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
 }
 
 bool CSavedSettings::power_level_show_disappearing_text()
 {
-    return ((_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::DISAPPEARING_TEXT) ||
-            (_eeprom_contents[(uint8_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
+    return ((_eeprom_contents[(uint16_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::DISAPPEARING_TEXT) ||
+            (_eeprom_contents[(uint16_t)setting::PowerLevelDisp] == (uint8_t)power_level_show_percent::BOTH));
 }
 
 void CSavedSettings::set_power_level_display(power_level_show_percent setting)
 {
-    _eeprom_contents[(uint8_t)setting::PowerLevelDisp] = (uint8_t)setting;
+    _eeprom_contents[(uint16_t)setting::PowerLevelDisp] = (uint8_t)setting;
 }
 
 uint8_t CSavedSettings::get_button_brightness()
 {
-    return _eeprom_contents[(uint8_t)setting::ButtonLedBright];
+    return _eeprom_contents[(uint16_t)setting::ButtonLedBright];
 }
 
 void CSavedSettings::set_button_brightness(uint8_t button_brightness_byte)
 {
-    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = button_brightness_byte;
+    _eeprom_contents[(uint16_t)setting::ButtonLedBright] = button_brightness_byte;
 }
 
 bool CSavedSettings::get_collar_config(uint8_t collar_index, struct collar_config &collar_conf)
@@ -325,11 +325,11 @@ bool CSavedSettings::get_collar_config(uint8_t collar_index, struct collar_confi
     if (collar_index > 9)
         return false;
 
-    collar_conf.channel = _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)];
-    collar_conf.mode    = _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)];
+    collar_conf.channel = _eeprom_contents[(uint16_t)setting::Collar0Chan + (collar_index*5)];
+    collar_conf.mode    = _eeprom_contents[(uint16_t)setting::Collar0Mode + (collar_index*5)];
 
-    collar_conf.id = _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] |
-                    (_eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] << 8);
+    collar_conf.id = _eeprom_contents[(uint16_t)setting::Collar0IdLow  + (collar_index*5)] |
+                    (_eeprom_contents[(uint16_t)setting::Collar0IdHigh + (collar_index*5)] << 8);
     return true;
 }
 
@@ -338,47 +338,47 @@ bool CSavedSettings::set_collar_config(uint8_t collar_index, struct collar_confi
     if (collar_index > 9)
         return false;
 
-    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)] = collar_conf.channel;
-    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)] = collar_conf.mode;
+    _eeprom_contents[(uint16_t)setting::Collar0Chan + (collar_index*5)] = collar_conf.channel;
+    _eeprom_contents[(uint16_t)setting::Collar0Mode + (collar_index*5)] = collar_conf.mode;
 
-    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] = collar_conf.id & 0xFF;
-    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] = collar_conf.id >> 8;
+    _eeprom_contents[(uint16_t)setting::Collar0IdLow  + (collar_index*5)] = collar_conf.id & 0xFF;
+    _eeprom_contents[(uint16_t)setting::Collar0IdHigh + (collar_index*5)] = collar_conf.id >> 8;
 
     return true;
 }
 
 bool CSavedSettings::get_bluethooth_enabled()
 {
-    return (_eeprom_contents[(uint8_t)setting::BluetoothOn] != 0) && CHwCheck::running_on_picow();
+    return (_eeprom_contents[(uint16_t)setting::BluetoothOn] != 0) && CHwCheck::running_on_picow();
 }
 
 void CSavedSettings::set_bluethooth_enabled(bool setting)
 {
-    _eeprom_contents[(uint8_t)setting::BluetoothOn] = setting;
+    _eeprom_contents[(uint16_t)setting::BluetoothOn] = setting;
 }
 
 void CSavedSettings::get_paired_bt_address(bd_addr_t *address)
 {
-    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    if (sizeof(bd_addr_t) != ((uint16_t)setting::BTAddrEnd+1) - (uint16_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
     {
         // this should never happen!
         printf("get_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
         return;
     }
 
-    memcpy(address, &_eeprom_contents[(uint8_t)setting::BTAddrStart], sizeof(bd_addr_t));
+    memcpy(address, &_eeprom_contents[(uint16_t)setting::BTAddrStart], sizeof(bd_addr_t));
 }
 
 void CSavedSettings::set_paired_bt_address(bd_addr_t address)
 {
-    if (sizeof(bd_addr_t) != ((uint8_t)setting::BTAddrEnd+1) - (uint8_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
+    if (sizeof(bd_addr_t) != ((uint16_t)setting::BTAddrEnd+1) - (uint16_t)setting::BTAddrStart) // +1 because range is start->end *inclusive*
     {
         // this should never happen!
         printf("set_paired_bt_address: BUG: bd_addr_t size does not match space allocated in eeprom!\n");
         return;
     }
 
-    memcpy(&_eeprom_contents[(uint8_t)setting::BTAddrStart], address, sizeof(bd_addr_t));
+    memcpy(&_eeprom_contents[(uint16_t)setting::BTAddrStart], address, sizeof(bd_addr_t));
 }
 
 CBluetoothRemote::keypress_action_t CSavedSettings::get_bt_keypress_action(CBluetoothRemote::keypress_t key)
@@ -388,31 +388,31 @@ CBluetoothRemote::keypress_action_t CSavedSettings::get_bt_keypress_action(CBlue
     switch(key)
     {
         case CBluetoothRemote::keypress_t::KEY_BUTTON:
-            action = _eeprom_contents[(uint8_t)setting::BTButtonAction];
+            action = _eeprom_contents[(uint16_t)setting::BTButtonAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_UP:
-            action = _eeprom_contents[(uint8_t)setting::BTUpAction];
+            action = _eeprom_contents[(uint16_t)setting::BTUpAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_DOWN:
-            action = _eeprom_contents[(uint8_t)setting::BTDownAction];
+            action = _eeprom_contents[(uint16_t)setting::BTDownAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_LEFT:
-            action = _eeprom_contents[(uint8_t)setting::BTLeftAction];
+            action = _eeprom_contents[(uint16_t)setting::BTLeftAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_RIGHT:
-            action = _eeprom_contents[(uint8_t)setting::BTRightAction];
+            action = _eeprom_contents[(uint16_t)setting::BTRightAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_SHUTTER:
-            action = _eeprom_contents[(uint8_t)setting::BTShutterAction];
+            action = _eeprom_contents[(uint16_t)setting::BTShutterAction];
             break;
 
         case CBluetoothRemote::keypress_t::KEY_UNKNOWN:
-            action = _eeprom_contents[(uint8_t)setting::BTUnknownAction];
+            action = _eeprom_contents[(uint16_t)setting::BTUnknownAction];
             break;
 
         default:
@@ -429,31 +429,31 @@ void CSavedSettings::set_bt_keypress_action(CBluetoothRemote::keypress_t key, CB
     switch(key)
     {
         case CBluetoothRemote::keypress_t::KEY_BUTTON:
-            _eeprom_contents[(uint8_t)setting::BTButtonAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTButtonAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_UP:
-            _eeprom_contents[(uint8_t)setting::BTUpAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTUpAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_DOWN:
-            _eeprom_contents[(uint8_t)setting::BTDownAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTDownAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_LEFT:
-            _eeprom_contents[(uint8_t)setting::BTLeftAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTLeftAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_RIGHT:
-            _eeprom_contents[(uint8_t)setting::BTRightAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTRightAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_SHUTTER:
-            _eeprom_contents[(uint8_t)setting::BTShutterAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTShutterAction] = action;
             break;
 
         case CBluetoothRemote::keypress_t::KEY_UNKNOWN:
-            _eeprom_contents[(uint8_t)setting::BTUnknownAction] = action;
+            _eeprom_contents[(uint16_t)setting::BTUnknownAction] = action;
             break;
 
         default:
@@ -464,42 +464,42 @@ void CSavedSettings::set_bt_keypress_action(CBluetoothRemote::keypress_t key, CB
 
 CSavedSettings::bt_device_type_t CSavedSettings::get_paired_bt_type()
 {
-    return (CSavedSettings::bt_device_type_t)_eeprom_contents[(uint8_t)setting::BtDeviceType];
+    return (CSavedSettings::bt_device_type_t)_eeprom_contents[(uint16_t)setting::BtDeviceType];
 }
 
 void CSavedSettings::set_paired_bt_type(bt_device_type_t type)
 {
-    _eeprom_contents[(uint8_t)setting::BtDeviceType] = (uint8_t)type;
+    _eeprom_contents[(uint16_t)setting::BtDeviceType] = (uint8_t)type;
 }
 
 bool CSavedSettings::get_ble_remote_disable_channel_isolation_permitted()
 {
-    return (_eeprom_contents[(uint8_t)setting::BleAllowTriphase] == 1);
+    return (_eeprom_contents[(uint16_t)setting::BleAllowTriphase] == 1);
 }
 
 void CSavedSettings::set_ble_remote_disable_channel_isolation_permitted(bool setting)
 {
-    _eeprom_contents[(uint8_t)setting::BleAllowTriphase] = setting;
+    _eeprom_contents[(uint16_t)setting::BleAllowTriphase] = setting;
 }
 
 CSavedSettings::ble_power_dial_mode_t CSavedSettings::get_ble_remote_access_power_dial_mode()
 {
-    return (ble_power_dial_mode_t)(_eeprom_contents[(uint8_t)setting::BlePowerMode]);
+    return (ble_power_dial_mode_t)(_eeprom_contents[(uint16_t)setting::BlePowerMode]);
 }
 
 void CSavedSettings::set_ble_remote_access_power_dial_mode(ble_power_dial_mode_t mode)
 {
-    _eeprom_contents[(uint8_t)setting::BlePowerMode] = (uint8_t)mode;
+    _eeprom_contents[(uint16_t)setting::BlePowerMode] = (uint8_t)mode;
 }
 
 CSavedSettings::power_level_t CSavedSettings::get_power_level()
 {
-    return (power_level_t)(_eeprom_contents[(uint8_t)setting::PowerLevel]);
+    return (power_level_t)(_eeprom_contents[(uint16_t)setting::PowerLevel]);
 }
 
 void CSavedSettings::set_power_level(CSavedSettings::power_level_t power_level)
 {
-    _eeprom_contents[(uint8_t)setting::PowerLevel] = (uint8_t)power_level;
+    _eeprom_contents[(uint16_t)setting::PowerLevel] = (uint8_t)power_level;
 }
 
 // Warning: charge_current is divided by 60 before saving, then multiplied by 60 when retrieved - i.e. there is a significant 
@@ -513,39 +513,39 @@ void CSavedSettings::set_batt_charge_current(uint16_t charge_current)
         return;
     }
 
-    _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = (uint8_t)charge_current;
+    _eeprom_contents[(uint16_t)setting::BatChargeCurrent] = (uint8_t)charge_current;
 }
 
 uint16_t CSavedSettings::get_batt_charge_current_mA()
 {
-    uint8_t stored_cc = _eeprom_contents[(uint8_t)setting::BatChargeCurrent];
+    uint8_t stored_cc = _eeprom_contents[(uint16_t)setting::BatChargeCurrent];
     uint16_t current_mA = stored_cc * 60;
     return current_mA;
 }
 
 CSavedSettings::status_bar_text_t CSavedSettings::get_status_bar_option()
 {
-    return (status_bar_text_t)(_eeprom_contents[(uint8_t)setting::StatusBarOption]);
+    return (status_bar_text_t)(_eeprom_contents[(uint16_t)setting::StatusBarOption]);
 }
 
 void CSavedSettings::set_status_bar_option(status_bar_text_t status_bar_option)
 {
-    _eeprom_contents[(uint8_t)setting::StatusBarOption] = (uint8_t)status_bar_option;
+    _eeprom_contents[(uint16_t)setting::StatusBarOption] = (uint8_t)status_bar_option;
 }
 
 CSavedSettings::battery_status_t CSavedSettings::get_battery_status()
 {
-    return (battery_status_t)(_eeprom_contents[(uint8_t)setting::BatteryStatus]);
+    return (battery_status_t)(_eeprom_contents[(uint16_t)setting::BatteryStatus]);
 }
 
 void CSavedSettings::set_battery_status(battery_status_t battery_status)
 {
-    _eeprom_contents[(uint8_t)setting::BatteryStatus] = (uint8_t)battery_status;
+    _eeprom_contents[(uint16_t)setting::BatteryStatus] = (uint8_t)battery_status;
 }
 
 uint8_t CSavedSettings::get_display_brightness_percent()
 {
-    uint8_t percent = (_eeprom_contents[(uint8_t)setting::DisplayBrightness]);
+    uint8_t percent = (_eeprom_contents[(uint16_t)setting::DisplayBrightness]);
     
     // Don't allow switching off display. Also when upgrading, the eeprom value will have been 0.
     if (percent == 0)
@@ -555,12 +555,12 @@ uint8_t CSavedSettings::get_display_brightness_percent()
 
 void CSavedSettings::set_display_brightness_percent(uint8_t percent)
 {
-    _eeprom_contents[(uint8_t)setting::DisplayBrightness] = percent;
+    _eeprom_contents[(uint16_t)setting::DisplayBrightness] = percent;
 }
 
 uint8_t CSavedSettings::get_extended_ramp_level()
 {
-    uint8_t level = _eeprom_contents[(uint8_t)setting::ExtendedRampLevel];
+    uint8_t level = _eeprom_contents[(uint16_t)setting::ExtendedRampLevel];
     if (level == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
         return 70;
     else if (level > 99)
@@ -571,12 +571,12 @@ uint8_t CSavedSettings::get_extended_ramp_level()
 
 void CSavedSettings::set_extended_ramp_level(uint8_t percent)
 {
-    _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = percent;
+    _eeprom_contents[(uint16_t)setting::ExtendedRampLevel] = percent;
 }
 
 uint8_t CSavedSettings::get_extended_ramp_time_seconds()
 {
-    uint8_t seconds = _eeprom_contents[(uint8_t)setting::ExtenedRampTime];
+    uint8_t seconds = _eeprom_contents[(uint16_t)setting::ExtenedRampTime];
     if (seconds == 0) // not valid, will be 0 after upgrading from f/w without this option. Use default.
         return 20;
     else
@@ -585,119 +585,148 @@ uint8_t CSavedSettings::get_extended_ramp_time_seconds()
 
 bool CSavedSettings::get_extended_ramp_show_menu_option()
 {
-    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
+    return (_eeprom_contents[(uint16_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
 }
 
 void CSavedSettings::set_extended_ramp_show_menu_option(bool show)
 {
-    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    uint8_t value = _eeprom_contents[(uint16_t)setting::ExtendedRampShow];
     if (show)
         value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU;
     else
         value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_ON_PATTERN_MENU);
 
-    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
+    _eeprom_contents[(uint16_t)setting::ExtendedRampShow] = value;
 }
 
 bool CSavedSettings::get_extended_ramp_show_on_status_bar()
 {
-    return (_eeprom_contents[(uint8_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
+    return (_eeprom_contents[(uint16_t)setting::ExtendedRampShow] & (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
 }
 
 void CSavedSettings::set_extended_ramp_show_on_status_bar(bool show)
 {
-    uint8_t value = _eeprom_contents[(uint8_t)setting::ExtendedRampShow];
+    uint8_t value = _eeprom_contents[(uint16_t)setting::ExtendedRampShow];
     if (show)
         value |= (uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR;
     else
         value &= ~((uint8_t)extended_ramp_show_bitmask_t::EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR);
 
-    _eeprom_contents[(uint8_t)setting::ExtendedRampShow] = value;
+    _eeprom_contents[(uint16_t)setting::ExtendedRampShow] = value;
 }
 
 void CSavedSettings::set_extended_ramp_time_seconds(uint8_t seconds)
 {
-    _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = seconds;
+    _eeprom_contents[(uint16_t)setting::ExtenedRampTime] = seconds;
 }
 
 CSavedSettings::led_colour_format_t CSavedSettings::get_led_colour_format()
 {
-    return (led_colour_format_t)(_eeprom_contents[(uint8_t)setting::LedColourFormat]);
+    return (led_colour_format_t)(_eeprom_contents[(uint16_t)setting::LedColourFormat]);
 }
 
 void CSavedSettings::set_led_colour_format(led_colour_format_t led_colour_format)
 {
-    _eeprom_contents[(uint8_t)setting::LedColourFormat] = (uint8_t)led_colour_format;
+    _eeprom_contents[(uint16_t)setting::LedColourFormat] = (uint8_t)led_colour_format;
 }
 
 CSavedSettings::bootloader_mode_t CSavedSettings::get_bootloader_mode()
 {
-    return (bootloader_mode_t)(_eeprom_contents[(uint8_t)setting::BootloaderMode]);
+    return (bootloader_mode_t)(_eeprom_contents[(uint16_t)setting::BootloaderMode]);
 }
    
 void CSavedSettings::set_bootloader_mode(bootloader_mode_t mode)
 {
-    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)mode;
+    _eeprom_contents[(uint16_t)setting::BootloaderMode] = (uint8_t)mode;
 }
 
 int8_t CSavedSettings::get_extended_ramp_shape()
 {
-    return (int8_t)(_eeprom_contents[(uint8_t)setting::ExtenedRampShape]);
+    return (int8_t)(_eeprom_contents[(uint16_t)setting::ExtenedRampShape]);
 }
 
 void CSavedSettings::set_extended_ramp_shape(int8_t shape)
 {
-    _eeprom_contents[(uint8_t)setting::ExtenedRampShape] = (uint8_t)shape;
-}
-
-bool CSavedSettings::fuel_gauge_is_saved_learned_data_valid()
-{
-    uint8_t expected_checksum = fuel_gauge_calc_learned_data_checksum(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
-    uint8_t actual_checksum   = _eeprom_contents[(uint8_t)setting::FuelGaugeEnd];
-
-    return expected_checksum == actual_checksum;
+    _eeprom_contents[(uint16_t)setting::ExtenedRampShape] = (uint8_t)shape;
 }
 
 void CSavedSettings::fuel_gauge_invalidate_learned_data()
 {
-    memset(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 0, 33); // 33 not 32 as also want to clear checksum byte
+    memset(&_eeprom_contents[(uint16_t)setting::FuelGaugeQmax1], 0, 2);
+    memset(&_eeprom_contents[(uint16_t)setting::FuelGaugeRaStart], 0, 30);
+    _eeprom_contents[(uint16_t)setting::FuelGaugeStatus] = 0;
 }
 
-bool CSavedSettings::fuel_gauge_get_learned_data(uint8_t* out_data, uint8_t size)
+bool CSavedSettings::fuel_gauge_data_is_qmax_valid()
 {
-    if (size != 32)
+    return (_eeprom_contents[(uint16_t)setting::FuelGaugeStatus] & (uint8_t)fuel_gauge_data_valid_bitmask_t::FUEL_GAUGE_DATA_QMAX_VALID);
+}
+
+bool CSavedSettings::fuel_gauge_data_is_ra_valid()
+{
+    return (_eeprom_contents[(uint16_t)setting::FuelGaugeStatus] & (uint8_t)fuel_gauge_data_valid_bitmask_t::FUEL_GAUGE_DATA_RA_VALID);
+}
+
+bool CSavedSettings::fuel_gauge_data_get_qmax(uint8_t* out_data, uint8_t size)
+{
+    if (size != 2)
     {
-        printf("CSavedSettings::fuel_gauge_get_learned_data: passed unexpected size of %d (expected 32)\n", size);
+        printf("CSavedSettings::fuel_gauge_data_get_qmax: passed unexpected size of %d (expected 2)\n", size);
         return false;
     }
 
-    if (!fuel_gauge_is_saved_learned_data_valid())
+    if (!fuel_gauge_data_is_qmax_valid())
         return false;
 
-    memcpy(out_data, &_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
+    memcpy(out_data, &_eeprom_contents[(uint16_t)setting::FuelGaugeQmax1], 2);
     return true;
 }
 
-void CSavedSettings::fuel_gauge_set_learned_data(uint8_t* data, uint8_t size)
+bool CSavedSettings::fuel_gauge_data_get_ra  (uint8_t* out_data, uint8_t size)
 {
-    if (size != 32)
+    if (size != 30)
     {
-        printf("CSavedSettings::fuel_gauge_set_learned_data: passed unexpected size of %d (expected 32)\n", size);
+        printf("CSavedSettings::fuel_gauge_data_get_ra: passed unexpected size of %d (expected 30)\n", size);
+        return false;
+    }
+
+    if (!fuel_gauge_data_is_ra_valid())
+        return false;
+        
+    memcpy(out_data, &_eeprom_contents[(uint16_t)setting::FuelGaugeRaStart], 30);
+    return true;
+}
+
+void CSavedSettings::fuel_gauge_data_set_qmax(uint8_t* data, uint8_t size)
+{
+    if (size != 2)
+    {
+        printf("CSavedSettings::fuel_gauge_data_set_qmax: passed unexpected size of %d (expected 2)\n", size);
         return;
     }
 
-    memcpy(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], data, 32);
-    _eeprom_contents[(uint8_t)setting::FuelGaugeEnd] = fuel_gauge_calc_learned_data_checksum(&_eeprom_contents[(uint8_t)setting::FuelGaugeStart], 32);
+    memcpy(&_eeprom_contents[(uint16_t)setting::FuelGaugeQmax1], data, 2);
+
+    // set qmax valid in fuel gauge status
+    uint8_t value = _eeprom_contents[(uint16_t)setting::FuelGaugeStatus];
+    value |= (uint8_t)fuel_gauge_data_valid_bitmask_t::FUEL_GAUGE_DATA_QMAX_VALID;
+    _eeprom_contents[(uint16_t)setting::FuelGaugeStatus] = value;
 }
 
-uint8_t CSavedSettings::fuel_gauge_calc_learned_data_checksum(uint8_t* data, uint8_t size)
+void CSavedSettings::fuel_gauge_data_set_ra  (uint8_t* data, uint8_t size)
 {
-    uint8_t checksum = 10; // if the eeprom is cleared (all 0xFF or 0x00) make sure the checksum isn't valid
+    if (size != 30)
+    {
+        printf("CSavedSettings::fuel_gauge_data_set_ra: passed unexpected size of %d (expected 30)\n", size);
+        return;
+    }
 
-    for (uint8_t n = 0; n < size; n++)
-        checksum += data[n];
+    memcpy(&_eeprom_contents[(uint16_t)setting::FuelGaugeRaStart], data, 30);
 
-    return checksum;
+    // set ra valid in fuel gauge status
+    uint8_t value = _eeprom_contents[(uint16_t)setting::FuelGaugeStatus];
+    value |= (uint8_t)fuel_gauge_data_valid_bitmask_t::FUEL_GAUGE_DATA_RA_VALID;
+    _eeprom_contents[(uint16_t)setting::FuelGaugeStatus] = value;
 }
 
 bool CSavedSettings::eeprom_initialised()
@@ -715,52 +744,52 @@ void CSavedSettings::eeprom_initialise()
     // Set channels 0->internal Chan1, 1->internal chan2, etc..., and the rest to none
     for (int channel_id=0; channel_id < 4; channel_id++)
     {
-        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_INTERNAL;
-        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = channel_id;
+        _eeprom_contents[(uint16_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_INTERNAL;
+        _eeprom_contents[(uint16_t)setting::ChannelIndex + (channel_id*2)] = channel_id;
     }
 
     // Set any remaining channels to nothing
     for (int channel_id=4; channel_id < EEPROM_CHANNEL_COUNT; channel_id++)
     {
-        _eeprom_contents[(uint8_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_NONE;
-        _eeprom_contents[(uint8_t)setting::ChannelIndex + (channel_id*2)] = 0;
+        _eeprom_contents[(uint16_t)setting::ChannelType  + (channel_id*2)] = (uint8_t)CChannel_types::channel_type::CHANNEL_NONE;
+        _eeprom_contents[(uint16_t)setting::ChannelIndex + (channel_id*2)] = 0;
     }
 
     // Default LED brightness to 10
-    _eeprom_contents[(uint8_t)setting::LEDBrightness] = 10;
+    _eeprom_contents[(uint16_t)setting::LEDBrightness] = 10;
 
     // Default power level step to 10, giving 100 power levels. TODO: Remove. no longer applicable with POTs for power adjustment, not rotary encoders.
-    _eeprom_contents[(uint8_t)setting::PowerStep] = 10;
+    _eeprom_contents[(uint16_t)setting::PowerStep] = 10;
 
     // Ramp up time - 5 secs seems like a reasonable default
-    _eeprom_contents[(uint8_t)setting::RampUpTimeSecs] = 5;
+    _eeprom_contents[(uint16_t)setting::RampUpTimeSecs] = 5;
 
     // Gain - put it somewhere near the middle. Note that the config screen changes
     // it in 5 step increments, so it's best if the default is a multiple of 5
-    _eeprom_contents[(uint8_t)setting::AudioGainL] = 130;
-    _eeprom_contents[(uint8_t)setting::AudioGainR] = 130;
+    _eeprom_contents[(uint16_t)setting::AudioGainL] = 130;
+    _eeprom_contents[(uint16_t)setting::AudioGainR] = 130;
 
     // Default microphone power and preamp to off - i.e. default is line level input
-    _eeprom_contents[(uint8_t)setting::MicPower]  = 0;
-    _eeprom_contents[(uint8_t)setting::MicPreAmp] = 0;
+    _eeprom_contents[(uint16_t)setting::MicPower]  = 0;
+    _eeprom_contents[(uint16_t)setting::MicPreAmp] = 0;
 
-    _eeprom_contents[(uint8_t)setting::Audio]  = (uint8_t)setting_audio::AUTO;
-    _eeprom_contents[(uint8_t)setting::Debug]  = (uint8_t)setting_debug::ACC_PORT;
+    _eeprom_contents[(uint16_t)setting::Audio]  = (uint8_t)setting_audio::AUTO;
+    _eeprom_contents[(uint16_t)setting::Debug]  = (uint8_t)setting_debug::ACC_PORT;
 
-    _eeprom_contents[(uint8_t)setting::PowerLevelDisp]  = (uint8_t)power_level_show_percent::OFF;
+    _eeprom_contents[(uint16_t)setting::PowerLevelDisp]  = (uint8_t)power_level_show_percent::OFF;
 
     for (uint8_t collar_index = 0; collar_index < EEPROM_CHANNEL_COUNT; collar_index++)
         initialise_collar(collar_index);
 
-    _eeprom_contents[(uint8_t)setting::ButtonLedBright] = 10;
-    _eeprom_contents[(uint8_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
-    _eeprom_contents[(uint8_t)setting::StatusBarOption]  = (uint8_t)status_bar_text_t::RUNNING_PATTERN;
-    _eeprom_contents[(uint8_t)setting::BatteryStatus]    = (uint8_t)battery_status_t::PERCENTAGE;
+    _eeprom_contents[(uint16_t)setting::ButtonLedBright] = 10;
+    _eeprom_contents[(uint16_t)setting::BatChargeCurrent] = 25; // 25 * 60 = 1500 mA
+    _eeprom_contents[(uint16_t)setting::StatusBarOption]  = (uint8_t)status_bar_text_t::RUNNING_PATTERN;
+    _eeprom_contents[(uint16_t)setting::BatteryStatus]    = (uint8_t)battery_status_t::PERCENTAGE;
 
-    _eeprom_contents[(uint8_t)setting::ExtendedRampLevel] = 70;
-    _eeprom_contents[(uint8_t)setting::ExtenedRampTime] = 20;
+    _eeprom_contents[(uint16_t)setting::ExtendedRampLevel] = 70;
+    _eeprom_contents[(uint16_t)setting::ExtenedRampTime] = 20;
 
-    _eeprom_contents[(uint8_t)setting::BootloaderMode] = (uint8_t)bootloader_mode_t::NORMAL_BOOT;
+    _eeprom_contents[(uint16_t)setting::BootloaderMode] = (uint8_t)bootloader_mode_t::NORMAL_BOOT;
 
     // Save changes
     save();
@@ -772,9 +801,9 @@ void CSavedSettings::eeprom_initialise()
 
 void CSavedSettings::initialise_collar(uint8_t collar_index)
 {
-    _eeprom_contents[(uint8_t)setting::Collar0Chan + (collar_index*5)] = (uint8_t)CCollarComms::collar_channel::CH1;
-    _eeprom_contents[(uint8_t)setting::Collar0Mode + (collar_index*5)] = (uint8_t)CCollarComms::collar_mode::VIBE;
+    _eeprom_contents[(uint16_t)setting::Collar0Chan + (collar_index*5)] = (uint8_t)CCollarComms::collar_channel::CH1;
+    _eeprom_contents[(uint16_t)setting::Collar0Mode + (collar_index*5)] = (uint8_t)CCollarComms::collar_mode::VIBE;
 
-    _eeprom_contents[(uint8_t)setting::Collar0IdLow  + (collar_index*5)] = rand() & 0xFF;
-    _eeprom_contents[(uint8_t)setting::Collar0IdHigh + (collar_index*5)] = rand() & 0xFF;
+    _eeprom_contents[(uint16_t)setting::Collar0IdLow  + (collar_index*5)] = rand() & 0xFF;
+    _eeprom_contents[(uint16_t)setting::Collar0IdHigh + (collar_index*5)] = rand() & 0xFF;
 }

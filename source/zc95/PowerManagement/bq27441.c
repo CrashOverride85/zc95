@@ -616,6 +616,12 @@ bool BQ27441_resistanceUpdated(void)
     return (stat & BQ27441_STATUS_RES_UP) != 0;
 }
 
+bool BQ27441_rup_dis_set(void)
+{
+    uint16_t stat = BQ27441_status();
+    return (stat & BQ27441_STATUS_RUP_DIS) != 0;
+}
+
 bool BQ27441_getQmax(uint8_t data[BQ27441_QMAX_SIZE])
 {
     return BQ27441_readExtendedDataBytes(
@@ -699,32 +705,28 @@ bool BQ27441_getLearnedData(BQ27441_learned_data_t *data)
     return success;
 }
 
-bool BQ27441_setLearnedData(const BQ27441_learned_data_t *data)
+bool BQ27441_setLearnedDataQmax(uint8_t* data, uint8_t size)
 {
+    if (size != BQ27441_QMAX_SIZE)
+        return false;
+
     if (data == NULL)
         return false;
 
     // Qmax Cell 0 - State subclass 82, offset 0.
-    if (!BQ27441_writeExtendedData(
-            BQ27441_ID_STATE,
-            0,
-            (uint8_t *)data->qmax,
-            BQ27441_QMAX_SIZE))
-    {
-        return false;
-    }
+    return BQ27441_writeExtendedData(BQ27441_ID_STATE, 0, data, BQ27441_QMAX_SIZE);
+}
 
-    // Learned resistance table - R_a RAM subclass 89.
-    if (!BQ27441_writeExtendedData(
-            BQ27441_ID_R_A_RAM,
-            0,
-            (uint8_t *)data->ra_table,
-            BQ27441_RA_TABLE_SIZE))
-    {
+bool BQ27441_setLearnedDataRa(uint8_t* data, uint8_t size)
+{
+    if (size != BQ27441_RA_TABLE_SIZE)
         return false;
-    }
 
-    return true;
+    if (data == NULL)
+        return false;
+
+    // Learned resistance table - R_a RAM subclass 89.        
+    return BQ27441_writeExtendedData(BQ27441_ID_R_A_RAM, 0, data, BQ27441_RA_TABLE_SIZE);    
 }
 
 /**
@@ -934,13 +936,22 @@ static bool BQ27441_seal(void) {
  *
  * @return true on success
  * */
-static bool BQ27441_unseal(void) {
-    // To unseal the BQ27441, write the key to the control
-    // command. Then immediately write the same key to control again.
-    if (BQ27441_readControlWord(BQ27441_UNSEAL_KEY)) {
-        return BQ27441_readControlWord(BQ27441_UNSEAL_KEY);
-    }
-    return false;
+static bool BQ27441_unseal(void)
+{
+    uint8_t key[2] = {
+        BQ27441_UNSEAL_KEY & 0xff,
+        BQ27441_UNSEAL_KEY >> 8
+    };
+
+    if (!BQ27441_i2cWriteBytes(BQ27441_COMMAND_CONTROL, key, 2))
+        return false;
+
+    if (!BQ27441_i2cWriteBytes(BQ27441_COMMAND_CONTROL, key, 2))
+        return false;
+
+    sleep_ms(10);
+
+    return !BQ27441_sealed();
 }
 
 /**
@@ -1164,7 +1175,11 @@ static uint8_t BQ27441_readExtendedData(uint8_t classID, uint8_t offset) {
     return retData;
 }
 
-static bool BQ27441_readExtendedDataBytes(uint8_t classID, uint8_t offset, uint8_t *data, uint8_t len)
+static bool BQ27441_readExtendedDataBytes(
+    uint8_t classID,
+    uint8_t offset,
+    uint8_t *data,
+    uint8_t len)
 {
     if (data == NULL || len == 0 || len > 32)
         return false;
@@ -1182,6 +1197,9 @@ static bool BQ27441_readExtendedDataBytes(uint8_t classID, uint8_t offset, uint8
     if (!BQ27441_blockDataOffset(offset / 32))
         return false;
 
+    // Wait for selected block to become available
+    sleep_ms(1);
+
     uint8_t address = BQ27441_EXTENDED_BLOCKDATA + (offset % 32);
 
     return BQ27441_i2cReadBytes(address, data, len);
@@ -1197,33 +1215,74 @@ static bool BQ27441_readExtendedDataBytes(uint8_t classID, uint8_t offset, uint8
  *          len is the number of bytes to be written
  * @return true on success
  * */
-static bool BQ27441_writeExtendedData(uint8_t classID, uint8_t offset, uint8_t * data, uint8_t len) {
-    if (len > 32)
+static bool BQ27441_writeExtendedData(
+    uint8_t classID,
+    uint8_t offset,
+    uint8_t *data,
+    uint8_t len)
+{
+    if (data == NULL || len == 0 || len > 32)
         return false;
 
-    if (!userConfigControl) BQ27441_enterConfig(false);
+    uint8_t blockOffset = offset % 32;
 
-    if (!BQ27441_blockDataControl()) // // enable block data memory control
-        return false; // Return false if enable fails
-    if (!BQ27441_blockDataClass(classID)) // Write class ID using DataBlockClass()
+    // Don't allow writes to cross a 32-byte block boundary.
+    if ((blockOffset + len) > 32)
         return false;
 
-    BQ27441_blockDataOffset(offset / 32); // Write 32-bit block offset (usually 0)
-    BQ27441_computeBlockChecksum(); // Compute checksum going in
-    /*uint8_t oldCsum =*/ BQ27441_blockDataChecksum();
+    if (!BQ27441_blockDataControl())
+        return false;
 
-    // Write data bytes:
-    for (int i = 0; i < len; i++) {
-        // Write to offset, mod 32 if offset is greater than 32
-        // The blockDataOffset above sets the 32-bit block
-        BQ27441_writeBlockData((offset % 32) + i, data[i]);
+    if (!BQ27441_blockDataClass(classID))
+        return false;
+
+    if (!BQ27441_blockDataOffset(offset / 32))
+        return false;
+
+    // As with reads, allow the selected block time to become available.
+    sleep_ms(1);
+
+    // Read the complete existing block so we can calculate the new checksum.
+    uint8_t blockData[32];
+
+    if (!BQ27441_i2cReadBytes(
+            BQ27441_EXTENDED_BLOCKDATA,
+            blockData,
+            sizeof(blockData)))
+    {
+        return false;
     }
 
-    // Write new checksum using BlockDataChecksum (0x60)
-    uint8_t newCsum = BQ27441_computeBlockChecksum(); // Compute the new checksum
-    BQ27441_writeBlockChecksum(newCsum);
+    // Update our local copy.
+    for (uint8_t i = 0; i < len; i++)
+    {
+        blockData[blockOffset + i] = data[i];
+    }
 
-    if (!userConfigControl) BQ27441_exitConfig(true);
+    // Write the changed bytes into the BlockData command area.
+    for (uint8_t i = 0; i < len; i++)
+    {
+        if (!BQ27441_writeBlockData(
+                blockOffset + i,
+                data[i]))
+        {
+            return false;
+        }
+    }
+
+    // Checksum is 255 - sum(all 32 block bytes).
+    uint8_t sum = 0;
+
+    for (uint8_t i = 0; i < sizeof(blockData); i++)
+    {
+        sum += blockData[i];
+    }
+
+    uint8_t newChecksum = 255 - sum;
+
+    // Writing the checksum commits the modified block to Data Memory.
+    if (!BQ27441_writeBlockChecksum(newChecksum))
+        return false;
 
     return true;
 }
