@@ -43,6 +43,18 @@ void CMenuSettingBatteryInfo::button_pressed(Button button)
     {
         switch (button)
         {
+            case Button::A:
+                if (_hal->hardware_variant() == hw_variant_t::V2_2)
+                {
+                    if (_page == page_t::PAGE_1)
+                        _page = page_t::PAGE_2;
+                    else
+                        _page = page_t::PAGE_1;
+                
+                    update_menu_text();
+                }
+                break;
+
             case Button::B: // "Back"
                 _exit_menu = true;
                 break;
@@ -66,6 +78,14 @@ void CMenuSettingBatteryInfo::adjust_rotary_encoder_change(int8_t change)
 }
 
 void CMenuSettingBatteryInfo::draw()
+{
+    if (_page == page_t::PAGE_1)
+        draw_page_1();
+    else
+        draw_page_2();
+}
+
+void CMenuSettingBatteryInfo::draw_page_1()
 {
     uint8_t line = 2;
     display_area disp_area = _display->get_display_area();
@@ -101,10 +121,26 @@ void CMenuSettingBatteryInfo::draw()
         
         put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "USB VBUS : " + std::string(buffer));
     }
-    line++;
-//    put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "State: ");
-//    put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "  Charge   : ");
-//    put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "  Power    : ");
+}
+
+void CMenuSettingBatteryInfo::draw_page_2()
+{
+    uint8_t line = 2;
+    display_area disp_area = _display->get_display_area();
+
+    IPowerManagement* power_management = _hal->power_management();
+
+    std::vector<std::pair<std::string, std::string>> charger_status = power_management->get_charger_status();
+
+    for (const auto& item : charger_status)
+    {
+        put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), item.first + " : " + item.second);
+    }
+
+    int16_t stat = -1;
+    if (power_management->get_stat(&stat, IPowerManagement::power_stat_t::InputCurrentLimit))
+        put_text_line(disp_area.x0+2, disp_area.y0, line++, hagl_color(_display->get_hagl_backed(), 0xFF, 0xFF, 0xFF), "Input lim. : " + std::to_string(stat) + "mA");
+    
 }
 
 void CMenuSettingBatteryInfo::put_text_line(int16_t x, int16_t y, uint8_t line, hagl_color_t colour, std::string text)
@@ -114,15 +150,36 @@ void CMenuSettingBatteryInfo::put_text_line(int16_t x, int16_t y, uint8_t line, 
 
 void CMenuSettingBatteryInfo::show()
 {
-    _display->set_option_a("");
-    _display->set_option_b("Back");
-
-    if (_allow_batt_reset)
-        _display->set_option_c("Batt Reset");
-    else
-        _display->set_option_c("");
-
-    _display->set_option_d("");
+    update_menu_text();
 
     _exit_menu = false;
+}
+
+void CMenuSettingBatteryInfo::update_menu_text()
+{
+    if (_page == page_t::PAGE_1)
+    {
+        if (_hal->hardware_variant() == hw_variant_t::V2_2)
+            _display->set_option_a("Charger sts.");
+        else
+            _display->set_option_a("");
+
+        _display->set_option_b("Back");
+
+        if (_allow_batt_reset)
+            _display->set_option_c("Batt Reset");
+        else
+            _display->set_option_c("");
+
+        _display->set_option_d("");
+    }
+
+    else // page 2
+    {
+        _display->set_option_a("Batt info");
+        _display->set_option_b("Back");
+
+        _display->set_option_c("");
+        _display->set_option_d("");
+    }
 }

@@ -28,6 +28,7 @@ class CPowerManagementMk2 : public IPowerManagement
         void add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len);
         void set_inital_cc_voltages_and_set_input_current_limit(int16_t cc1_mv, int16_t cc2_mv);
         void fuel_gauge_reset();
+        std::vector<std::pair<std::string, std::string>> get_charger_status();
 
     private:
         static int s_cmpfunc (const void *a, const void *b);

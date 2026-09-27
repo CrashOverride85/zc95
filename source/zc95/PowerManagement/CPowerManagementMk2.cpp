@@ -429,6 +429,14 @@ bool CPowerManagementMk2::get_stat(int16_t* stat, power_stat_t type)
             *stat = s_bq27441_read_error_count;
             return true;
 
+        case power_stat_t::InputCurrentLimit:
+            if (_variant == hw_variant_t::V2_2)
+            {
+                *stat = _usb_power.get_input_current_limit();
+                return true;
+            }
+            return false;
+
         default:
             return false;
     }
@@ -450,9 +458,16 @@ void CPowerManagementMk2::fuel_gauge_reset()
     init_fuel_gauge();
 }
 
+std::vector<std::pair<std::string, std::string>> CPowerManagementMk2::get_charger_status()
+{
+    if (_variant == hw_variant_t::V2_2)
+        return _usb_power.get_charger_status();
+    else 
+        return {};
+}
+
 void CPowerManagementMk2::set_adc0_source(CMainBoardPortExp::adc0_select_t source)
 {
     _adc0_source = source;
     _mainboard_port_exp->set_adc0_source(source);
 }
-

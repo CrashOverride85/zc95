@@ -3,6 +3,7 @@
 
 #include <string>
 #include <inttypes.h>
+#include <vector>
 
 /**
  * @brief Power management functions to get power status - charging/charged/plugged in/on battery/battery voltage
@@ -76,11 +77,16 @@ class IPowerManagement
         virtual uint8_t get_battery_percentage() = 0;
 
         /**
-         * @brief Reset the battery fuel gauge. Call after a new battery is installed, or of the
+         * @brief Reset the battery fuel gauge. Call after a new battery is installed, or if the
          *        battery gauge isn't showing sensible values
          * 
          */
         virtual void fuel_gauge_reset() = 0;
+
+        /**
+         * @brief Get a key/value pair list of charger status data. E.g. "Change : pre" for pre-charging 
+         */
+        virtual std::vector<std::pair<std::string, std::string>> get_charger_status() = 0;
 
         virtual ~IPowerManagement() {}
 };
