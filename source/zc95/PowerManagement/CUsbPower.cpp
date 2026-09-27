@@ -61,6 +61,7 @@ std::vector<std::pair<std::string, std::string>> CUsbPower::get_charger_status()
     std::vector<std::pair<std::string, std::string>> values;
 
     std::string value;
+    _charge_ctl.read_register(BQ25601_REG09);
     switch (_charge_ctl.ntc_fault())
     {
         case BQ25601::ntc_fault_enum::NORMAL:
@@ -119,6 +120,7 @@ std::vector<std::pair<std::string, std::string>> CUsbPower::get_charger_status()
     else
         values.push_back({"Bat fault ", "No"});
 
+    _charge_ctl.read_register(BQ25601_REG08);
     switch (_charge_ctl.charge_status())
     {
         case BQ25601::charge_status_enum::NOT_CHARGING:
