@@ -35,7 +35,8 @@ class IPowerManagement
             RemainingCapacity,  // mAh
             FullCapacity,       // mAh held by battery when full
             VbusVoltage,        // millivolts
-            InputCurrentLimit   // milliamps
+            InputCurrentLimit,  // milliamps
+            ReadErrorCount      // How many consecutive times a read from the fuel gauge (if present) has failed
         };
 
         /**

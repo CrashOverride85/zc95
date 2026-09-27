@@ -253,6 +253,7 @@ bool CZC624Comms::test_spi_comms(uint8_t test_val)
 // Instruct the zc624 to exit bootloader mode and start main firmware
 bool CZC624Comms::exit_bootloader()
 {
+    printf("Requesting zc624 to exit bootloader and start main firmware\n");
     return write_i2c_register(i2c_reg_t::Bootloader, ZC624_REG_BOOTLOADER_STATE_RUN_MAIN_FIRMWARE);
 }
 

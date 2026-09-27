@@ -425,6 +425,10 @@ bool CPowerManagementMk2::get_stat(int16_t* stat, power_stat_t type)
             *stat = _vbus_voltage;
             return true;
 
+        case power_stat_t::ReadErrorCount:
+            *stat = s_bq27441_read_error_count;
+            return true;
+
         default:
             return false;
     }
