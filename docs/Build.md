@@ -78,7 +78,7 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 ### Misc parts
 [The BoM spreadsheet](BoM.fods) includes a Misc tab with the rest of the parts required to complete the build (battery, display, etc.).
 
-* Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway). Be aware that a battery is _required_ for the ZC95 to function correctly. It might power on and pass the self test without it if you're lucky, but expect stability problems without it.
+* Battery: Use a **protected** 26650 cell that can can be safely charged at 2000 mA. The firmware currently has a hardcoded assumption of a 5300mAh cell, but it will learn the battery to an extent after a full discharge/charge cycle, so anything reasonably close should be fine (and it only affects the battery gauge anyway). Be aware that a battery is _required_.
 
 * Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
 
@@ -234,7 +234,7 @@ Here, it can't find the two ICs on the front panel (in this case, the IDC cable 
 There is serial debugging output on the "Accessory" DB9 connector (tx pin 3, ground pin 5) on the front panel. Either 3v3 TTL or RS232, depending on jumper settings.
 
 ## Battery gauge is wrong
-If the battery gauge is showing filled green to indicate finished charging, but the percentage is some way off 100%, the best approach is to disconnect the charger, leave the box on until it shuts off due to low battery, then fully charge it (this should only need doing once). If you're impatient, removing the battery, leaving it a few minutes (maybe 15 to be sure), then reinstalling it and connecting the charger will probably improve it. But a full discharge/recharge cycle is best if you want it to be accurate. 
+If the battery gauge is showing filled green to indicate finished charging, but the percentage is some way off 100%, the best approach is to disconnect the charger, leave the box on until it shuts off due to low battery, then fully charge it (this should only need doing once). Using the config -> battery info -> batt reset function may improve it. But a full discharge/recharge cycle is best if you want it to be accurate. 
 
 ## Clearing saved settings / EEPROM
 So far I've never found it necessary, but the EEPROM and user settings in flash can be reset to defaults by holding down the top right button and powering the box on. This will show a confirmation screen asking what should be reset:
