@@ -125,7 +125,37 @@ Configuration options so far:
 
     Adjust the colour format until the LEDs on the front panel show as above.
 
-* Battery info - MKI & MKII: Shows battery voltage and state of charge (%). MKII only: Also shows estimated battery capacity and capacity remaining in mAh along with current flow in/out of battery in mA (-ve is out of battery, +ve is in, i.e. charging).
+* Battery info - MKI & MKII: Shows battery voltage and state of charge (%). 
+
+  MKII only: Also shows estimated battery capacity and capacity remaining in mAh along with current flow in/out of battery in mA (-ve is out of battery, +ve is in, i.e. charging).
+
+  The "Batt Reset" button (top right) can be used to reset the fuel gauge and saved battery data. This should be used either after the battery is replaced, or if the battery gauge is inaccurate. After resetting, the gauge will be inaccurate until after a full discharge / charge cycle (and especially inaccurate until the first full charge).
+
+  MKII, PCB >= v2.2: "Charge sts." button (top left): shows status information relating to battery charging:
+
+    - NTC status: `Normal` / `hot` / `cold`. If it's not `Normal`, charging has stopped due to battery temperature (or a bad NTC sensor)
+
+    - Charge flt: "Charger fault", can be one of:
+      * `(none)` - Ok / no fault
+      * `In flt` - Input fault
+      * `Therm.` - Thermal shutdown
+      * `Time` - Charge Safety Timer Expiration
+
+    - Bat fault: `No` (ok) or `Yes` (Battery over-voltage)
+
+    - Charge sts: Charging status, can be one of:
+      * `Not ch` - Not charging. If not plugged in, this is normal
+      * `Pre` - Pre/slow charging. Could happen if the battery was very flat, until it's charged up a bit
+      * `Charge` - Normal charging
+      * `Term` - Charge termination, i.e. finished charging
+
+    - Chg. Tpy. : Type of charger detected. One of:
+      * `Unkn.` - Unknown charger type / no charger connected. Input current limit set to 500mA
+      * `1A` - Charger can supply 1A
+      * `1.5A` - Charger can supply 1.5A
+      * `3A` - Charger can supply 3A
+
+    - Input lim. : Input current limit in mA. Typically follows "Chg. Tpy.", but may drop if the charger isn't able to reliably supply what it reports it can, with a bad cable, etc.
 
 * About - shows firmware version of main board, and zc624 output board
 

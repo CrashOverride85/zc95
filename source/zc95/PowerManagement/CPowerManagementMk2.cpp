@@ -8,6 +8,7 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
     _mainboard_port_exp = mainboard_port_exp;
     _variant = variant;
     s_bq27441_read_error_count = 0;
+    _last_fuel_gauge_learned_data_check_us = 0;
 
     BQ27441_ctx_t _BQ27441 = {
             .BQ27441_i2c_address = BQ27441_I2C_ADDRESS,
@@ -27,37 +28,100 @@ CPowerManagementMk2::CPowerManagementMk2(CMainBoardPortExp* mainboard_port_exp, 
             // without power. Despite this, the battery gauge won't be great until a full discharge / charge cycle has been completed.
             printf("CPowerManagementMk2(): BQ27441 ITPOR flag is set, reloading inital config (device has lost power)\n");
 
-            BQ27441_enterConfig(true);
-            const uint16_t battery_capacity_mah = 5300;
-
-            BQ27441_setCapacity(battery_capacity_mah);
-            BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
-            BQ27441_setTerminateVoltageMin(2900); // From U14 / HY2111-GB
-
-            // Mostly from "Quickstart Guide for bq27441-G1" (SLUUAP7)
-            uint16_t taper_rate;
-            if (_variant == hw_variant_t::V2_0)
-            {
-                // TP4056's terminate charge when current drops below 10% of the programmed charge current
-                const uint16_t tp4056_charge_current_ma = 780;
-                taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
-            }
-            else
-            {
-                const uint16_t bq25601_termination_current_ma = 180; // default value for bq25601, which isn't changed
-                taper_rate = (float)battery_capacity_mah / (0.1f * (bq25601_termination_current_ma * 1.15f));
-            }
-            BQ27441_setTaperRateTime(taper_rate);
-
-            BQ27441_exitConfig(true);
+            init_fuel_gauge();
         }
 
         loop();
+
+        printf("CPowerManagementMk2():BQ27441 QMAX_UP: %d, RES_UP: %d, RUP_DIS: %d\n", BQ27441_qmaxUpdated(), BQ27441_resistanceUpdated(), BQ27441_rup_dis_set());
     }
     else
         printf("CPowerManagementMk2(): BQ27441 init FAILURE\n");
 
     set_adc0_source(CMainBoardPortExp::adc0_select_t::USB_VBUS);
+}
+
+void CPowerManagementMk2::init_fuel_gauge()
+{
+    BQ27441_enterConfig(true);
+    const uint16_t battery_capacity_mah = BATTERY_CAPACITY_MAH;
+
+    BQ27441_setCapacity(battery_capacity_mah);
+    BQ27441_setDesignEnergy((float)battery_capacity_mah * 3.7);
+    BQ27441_setTerminateVoltageMin(2900); // From U14 / HY2111-GB
+
+    // Mostly from "Quickstart Guide for bq27441-G1" (SLUUAP7)
+    uint16_t taper_rate;
+    if (_variant == hw_variant_t::V2_0)
+    {
+        // TP4056's terminate charge when current drops below 10% of the programmed charge current
+        const uint16_t tp4056_charge_current_ma = 780;
+        taper_rate = (float)battery_capacity_mah / (0.1f * (((float)tp4056_charge_current_ma/10.0f) * 1.15f));
+    }
+    else
+    {
+        taper_rate = (float)battery_capacity_mah / (0.1f * ((float)BATTERY_CHARGE_TERMINAION_CURRENT_MA * 1.33));
+        BQ27441_setChargeVChgTermination(BATTERY_MAX_CHARGE_MILLIVOLTS);
+    }
+    BQ27441_setTaperRateTime(taper_rate);
+
+    // If previous learned data from the fuel gauge in eeprom is valid, load it now
+    if (g_SavedSettings->fuel_gauge_data_is_qmax_valid())
+    {
+        printf("Fuel gauge data/qmax in eeprom is valid, reloading\n");
+        uint8_t qmax[BQ27441_QMAX_SIZE];
+
+        g_SavedSettings->fuel_gauge_data_get_qmax(qmax, BQ27441_QMAX_SIZE);
+        BQ27441_setLearnedDataQmax(qmax, BQ27441_QMAX_SIZE);
+    }
+    else
+    {
+        printf("Fuel gauge data in eeprom is NOT valid, not reloading\n");
+    }
+
+    BQ27441_exitConfig(true);
+}
+
+// Compare the learned battery data from the fuel gauge to that saved in eeprom.
+// If it doesn't match, update eeprom.
+// This is so if the fuel gauge gets reset (ie. BQ27441_itporFlag() retuns true),
+// we can reload the data, which should significantly improve fuel gauge accuracy.
+// Currently not storing the Ra table, as the box doesn't generally reach the amount
+// of current draw to trigger it to be updated.
+void CPowerManagementMk2::save_fuel_gauge_data_if_changed()
+{
+    if (!BQ27441_qmaxUpdated())
+        return;
+
+    BQ27441_learned_data_t current_learned_data;
+    if (!BQ27441_getLearnedData(&current_learned_data))
+    {
+        printf("save_fuel_gauge_data_if_changed: failed to get learned data from fuel gauge\n");
+        return;
+    }
+
+    if (g_SavedSettings->fuel_gauge_data_is_qmax_valid())
+    {
+        uint8_t saved_qmax[BQ27441_QMAX_SIZE];
+        if (!g_SavedSettings->fuel_gauge_data_get_qmax(saved_qmax, BQ27441_QMAX_SIZE))
+        {
+            // This shouldn't happen: fuel_gauge_is_saved_learned_data_valid returned true, so there should be no problem getting the data 
+            printf("save_fuel_gauge_data_if_changed: Failed to get fuel gauge saved data\n");
+            return;
+        }
+
+        if (memcmp(saved_qmax, current_learned_data.qmax, BQ27441_QMAX_SIZE) == 0)
+        {
+            // successfully compared current learned data to saved learned data, and found no changes. nothing to do.
+            // printf("save_fuel_gauge_data_if_changed: no changes\n");
+            return;
+        }
+    }
+
+    // now save the fuel gauge data to eeprom
+    g_SavedSettings->fuel_gauge_data_set_qmax(current_learned_data.qmax, BQ27441_QMAX_SIZE);
+    printf("save_fuel_gauge_data_if_changed: changes detected, updating eeprom\n");
+    g_SavedSettings->save();
 }
 
 void CPowerManagementMk2::print_status()
@@ -194,7 +258,6 @@ void CPowerManagementMk2::loop()
     // update stats at most every 1 second
     if (time_us_64() - _last_batt_param_refresh > (1000 * 1000) || _last_batt_param_refresh == 0)
     {
-
         _battery_percentage = BQ27441_soc(soc_measure::FILTERED);
         _battery_voltage = BQ27441_voltage();
         _current_mA = BQ27441_current(current_measure::AVG); // -ve is power drawn from battery, +ve is change current into battery
@@ -211,6 +274,13 @@ void CPowerManagementMk2::loop()
         // print_status();
 
         _usb_power.loop();
+    }
+
+    uint64_t fg_check_freq_seconds = 300; // every 5 minutes
+    if (time_us_64() - _last_fuel_gauge_learned_data_check_us > (1000 * 1000 * fg_check_freq_seconds) || _last_fuel_gauge_learned_data_check_us == 0)
+    {
+        save_fuel_gauge_data_if_changed();
+        _last_fuel_gauge_learned_data_check_us = time_us_64();
     }
 }
 
@@ -355,6 +425,18 @@ bool CPowerManagementMk2::get_stat(int16_t* stat, power_stat_t type)
             *stat = _vbus_voltage;
             return true;
 
+        case power_stat_t::ReadErrorCount:
+            *stat = s_bq27441_read_error_count;
+            return true;
+
+        case power_stat_t::InputCurrentLimit:
+            if (_variant == hw_variant_t::V2_2)
+            {
+                *stat = _usb_power.get_input_current_limit();
+                return true;
+            }
+            return false;
+
         default:
             return false;
     }
@@ -370,9 +452,22 @@ uint8_t CPowerManagementMk2::get_battery_percentage()
     return _battery_percentage;
 }
 
+void CPowerManagementMk2::fuel_gauge_reset()
+{
+    BQ27441_Full_Reset();
+    init_fuel_gauge();
+}
+
+std::vector<std::pair<std::string, std::string>> CPowerManagementMk2::get_charger_status()
+{
+    if (_variant == hw_variant_t::V2_2)
+        return _usb_power.get_charger_status();
+    else 
+        return {};
+}
+
 void CPowerManagementMk2::set_adc0_source(CMainBoardPortExp::adc0_select_t source)
 {
     _adc0_source = source;
     _mainboard_port_exp->set_adc0_source(source);
 }
-

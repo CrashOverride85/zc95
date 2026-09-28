@@ -126,7 +126,8 @@ COutputChannel* CChannelConfig::get_ouput_chanel(CChannel_types::channel_type ch
             return new CDummyOutput(_saved_settings, _power_level_control, channel_id);
 
         default:
-            printf("ChannelConfig::get_ouput_chanel: Error - unexpected channel type encountered\n");
+            printf("ChannelConfig::get_ouput_chanel: Error - unexpected channel type encountered (type: %d, for channel_id: %d)\n",
+                (uint8_t)channel_type, channel_id);
             return new CDummyOutput(_saved_settings, _power_level_control, channel_id);
     }
 }

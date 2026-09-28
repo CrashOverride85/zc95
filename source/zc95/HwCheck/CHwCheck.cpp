@@ -105,8 +105,6 @@ void CHwCheck::set_expected_devices(front_panel_version_t ver, zc95_version_t hw
 void CHwCheck::check_part1()
 {
     bool ok = true;
-    int ret;
-    uint8_t rxdata;
 
     enum Cause cause = Cause::UNKNOWN;
 
@@ -120,7 +118,7 @@ void CHwCheck::check_part1()
     _i2c_device_count = i2c_scan::scan(i2c0);
     printf("\n");
 
-    // Check battery isn't flat
+    // For Mk1's, check battery isn't flat
     if (_hal->hardware_version() == zc95_version_t::MKI) // Mk2 has hardware low voltage cutoff
     {
         uint8_t batt_percentage = _hal->power_management()->get_battery_percentage();
@@ -133,6 +131,29 @@ void CHwCheck::check_part1()
         }
     }
 
+    // For Mk2 pcb >=v2.2, check the battery is present, as there can be severe stability problems without it.
+    // In particular, starting the zc624 firmware (_zc624_comms->exit_bootloader) causes it start its calibration /
+    // self test, which with a lower powered charger & no battery can pull enough current to (sometimes only
+    // partially) reset the box.
+    // The fuel gauge is powered directly from the battery, so without a battery it either won't be detected, 
+    // or there will be significant numbers of read errors.
+    else
+    {
+        bool bq25601_present = is_device_present(BQ25601_CHARGE_CONTROLLER);
+        if (bq25601_present) // bq25601 being present means we must be on a pcb >=v2.2
+        {
+            // Without a battery, there will be read errors with the fuel gauge, or the fuel gauge won't be detected (get_stat retuns false in that case)
+            int16_t read_error_count = 0;
+            bool ret =_hal->power_management()->get_stat(&read_error_count, IPowerManagement::power_stat_t::ReadErrorCount);
+            if (!ret || read_error_count > 1)
+            {
+                printf("Fault: Fuel gauge not detected, or read errors (detected=%d, errors=%d) => battery issue\n", ret, read_error_count);
+                ok = false;
+                cause = Cause::BATTERY;
+            }
+        }
+    }
+
     front_panel_version_t fp_version = front_panel_version_t::UNKNOWN;
     if (_hal->front_panel() != NULL)
         fp_version = _hal->front_panel()->verion();
@@ -142,8 +163,8 @@ void CHwCheck::check_part1()
     for (it = _devices.begin(); it != _devices.end(); ++it)
     {
         printf("    %s...", it->description.c_str());
-        ret = i2c_read_blocking(i2c0, it->address, &rxdata, 1, false);
-        if (ret >= 0)
+
+        if (is_device_present(it->address))
         {
             printf("Ok\n");
             it->present = true;
@@ -175,18 +196,18 @@ void CHwCheck::check_part1()
         ok = false;
     }
 
-    // Start main firmware on zc624 (i.e. exit bootloader)
-#ifdef PICO_RP2350
-    // If running on Pico2's, there (currently) isn't a bootloader. If the zc624 is an original
-    // pico (with a bootloader) and we're running on a pico2, then by the time we hit this point, 
-    // the 624 isn't going to be ready to respond. Give it time to start up.
-    sleep_ms(500);
-#endif
-    _zc624_comms->exit_bootloader();
-
     if (ok)
     {
         printf("Status: Ok\n\n");
+
+        // Start main firmware on zc624 (i.e. exit bootloader)
+#ifdef PICO_RP2350
+        // If running on Pico2's, there (currently) isn't a bootloader. If the zc624 is an original
+        // pico (with a bootloader) and we're running on a pico2, then by the time we hit this point, 
+        // the 624 isn't going to be ready to respond. Give it time to start up.
+        sleep_ms(500);
+#endif
+        _zc624_comms->exit_bootloader();
     }
     else
     {
@@ -361,7 +382,10 @@ void CHwCheck::hw_check_failed(enum Cause cause)
             break;
 
         case Cause::BATTERY:
-            show_error_text_message(&y, "Battery is flat!");
+            if (_hal->hardware_version() == zc95_version_t::MKI)
+                show_error_text_message(&y, "Battery is flat!");
+            else
+                show_error_text_message(&y, "Battery / fuel gauge fault");
             break;
 
         case Cause::ZC624_STUCK_BOOTLOADER:
@@ -716,3 +740,9 @@ void CHwCheck::fail_status_line()
     put_text("MK : " + hw_ver + ", FP : " + front_panel_version, 0, (MIPI_DISPLAY_HEIGHT-1) - 9, text_colour);
 }
 
+bool CHwCheck::is_device_present(uint8_t address)
+{
+    uint8_t rxdata;
+    int ret = i2c_read_blocking(i2c0, address, &rxdata, 1, false);
+    return ret >= 0;
+}

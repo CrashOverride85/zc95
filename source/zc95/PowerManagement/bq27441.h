@@ -27,6 +27,8 @@ extern "C" {
 #include "bq27441_definitions.h"
 
 #define BQ72441_I2C_TIMEOUT 20000
+#define BQ27441_QMAX_SIZE       2
+#define BQ27441_RA_TABLE_SIZE  30
 
 typedef int16_t (*i2c_write_byte)(uint8_t, uint8_t, uint8_t *, uint8_t);
 typedef int16_t (*i2c_read_byte)(uint8_t, uint8_t, uint8_t *, uint8_t);
@@ -37,6 +39,13 @@ typedef struct {
     i2c_write_byte  write_reg;
     i2c_read_byte   read_reg;
 } BQ27441_ctx_t;
+
+typedef struct __attribute__((__packed__)) 
+{
+    uint8_t qmax[BQ27441_QMAX_SIZE];
+    uint8_t ra_table[BQ27441_RA_TABLE_SIZE];
+} BQ27441_learned_data_t;
+
 
 // Parameters for the current() function, to specify which current to read
 typedef enum {
@@ -150,6 +159,27 @@ bool BQ27441_SET_HIBERNATE(void);
 bool BQ27441_CLEAR_HIBERNATE(void);
 
 void BQ27441_Full_Reset(void);
+
+/*****************************************************************************
+ *************************** Learned data ************************************
+ *****************************************************************************/
+
+bool BQ27441_qmaxUpdated(void);
+bool BQ27441_resistanceUpdated(void);
+
+bool BQ27441_getQmax(uint8_t data[BQ27441_QMAX_SIZE]);
+bool BQ27441_setQmax(const uint8_t data[BQ27441_QMAX_SIZE]);
+
+bool BQ27441_getRaTable(uint8_t data[BQ27441_RA_TABLE_SIZE]);
+bool BQ27441_setRaTable(const uint8_t data[BQ27441_RA_TABLE_SIZE]);
+
+bool BQ27441_getLearnedData(BQ27441_learned_data_t *data);
+bool BQ27441_setLearnedDataQmax(uint8_t* data, uint8_t size);
+bool BQ27441_setLearnedDataRa(uint8_t* data, uint8_t size);
+
+bool BQ27441_qmaxUpdated(void);
+bool BQ27441_resistanceUpdated(void);
+bool BQ27441_rup_dis_set(void);
 
 #ifdef __cplusplus
 }

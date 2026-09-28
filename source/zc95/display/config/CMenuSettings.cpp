@@ -148,7 +148,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::BATTERY:
-            set_active_menu(new CMenuSettingBatteryInfo(_display, _hal->power_management()));
+            set_active_menu(new CMenuSettingBatteryInfo(_display, _hal));
             break;
     }
 }

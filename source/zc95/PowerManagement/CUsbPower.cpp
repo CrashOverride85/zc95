@@ -10,6 +10,8 @@ CUsbPower::CUsbPower(hw_variant_t variant)
         _charge_ctl.set_register_reset(true); // reset to defaults
         _charge_ctl.set_watchdog_reset(BQ25601::watchdog_reset_enum::RESET);
         _charge_ctl.read_all_registers();
+        _charge_ctl.set_charge_termination_current_mA(BATTERY_CHARGE_TERMINAION_CURRENT_MA);
+        _charge_ctl.set_vreg_mV(BATTERY_MAX_CHARGE_MILLIVOLTS); // set max charge voltage to 4.15v
 
         // If the BQ25601's watchdog resets it (which would happen some time after the zc95 is 
         // switched off, if not disabled), the charge current gets reset to the default of 2040 mA, 
@@ -54,6 +56,105 @@ void CUsbPower::read_input_current_limit_from_charge_controller()
     }
 }
 
+std::vector<std::pair<std::string, std::string>> CUsbPower::get_charger_status()
+{
+    std::vector<std::pair<std::string, std::string>> values;
+
+    std::string value;
+    _charge_ctl.read_register(BQ25601_REG09);
+    switch (_charge_ctl.ntc_fault())
+    {
+        case BQ25601::ntc_fault_enum::NORMAL:
+            value = "Normal";
+            break;
+
+        case BQ25601::ntc_fault_enum::WARM:
+            value = "Warm";
+            break;
+
+        case BQ25601::ntc_fault_enum::COOL:
+            value = "Cool";
+            break;
+
+        case BQ25601::ntc_fault_enum::COLD:
+            value = "Cold";
+            break;
+
+        case BQ25601::ntc_fault_enum::HOT:
+            value = "Hot";
+            break;
+
+        default:
+            value = "?";
+            break;
+    }
+    values.push_back({"NTC status", value});
+
+
+    switch (_charge_ctl.charge_fault())
+    {
+        case BQ25601::charge_fault_enum::NORMAL:
+            value = "(none)";
+            break;
+
+        case BQ25601::charge_fault_enum::INPUT_FAULT:
+            value = "In flt";
+            break;
+
+        case BQ25601::charge_fault_enum::THERM_SHDN:
+            value = "Them.";
+            break;
+
+        case BQ25601::charge_fault_enum::TIMER_EXP:
+            value = "Time";
+            break;
+
+        default:
+            value = "?";
+            break;
+    }
+     values.push_back({"Charge flt", value});
+
+    if (_charge_ctl.bat_fault())
+        values.push_back({"Bat fault ", "Yes"});
+    else
+        values.push_back({"Bat fault ", "No"});
+
+    _charge_ctl.read_register(BQ25601_REG08);
+    switch (_charge_ctl.charge_status())
+    {
+        case BQ25601::charge_status_enum::NOT_CHARGING:
+            value = "Not ch";
+            break;
+
+        case BQ25601::charge_status_enum::PRE_CHARGE:
+            value = "Pre";
+            break;
+
+        case BQ25601::charge_status_enum::FAST_CHARGING:
+            value = "Charge";
+            break;
+
+        case BQ25601::charge_status_enum::CHARGE_TERM:
+            value = "Term.";
+            break;
+
+        default:
+            value = "?";
+            break;
+    }
+    values.push_back({"Charge sts", value});
+
+    values.push_back({"Chg. Typ. ", usb_power_status_string(_usb_power)});    
+
+    return values;
+}
+
+uint16_t CUsbPower::get_input_current_limit()
+{
+    return _reported_current_limit_ma;
+}
+
 bool CUsbPower::ext_power_good()
 {
     if (!_active)
@@ -84,6 +185,9 @@ void CUsbPower::set_cc2_voltage_mV(int16_t mv)
 
 void CUsbPower::set_charge_current()
 {
+    if (g_SavedSettings == NULL)
+        return;
+
     _charge_ctl.read_register(BQ25601_REG02);
     uint16_t charge_current = _charge_ctl.get_fast_charge_current_mA();
 
@@ -158,6 +262,6 @@ std::string CUsbPower::usb_power_status_string(usb_power_t usb_power_status)
         case usb_power_t::CURRENT_1A:       return "1A";
         case usb_power_t::CURRENT_1_5A:     return "1.5A";
         case usb_power_t::CURRENT_3A:       return "3A";
-        default:                            return "Unknown";
+        default:                            return "Unkn.";
     }
 }

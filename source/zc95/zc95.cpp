@@ -172,6 +172,7 @@ int main()
     }
 #endif
 
+    g_SavedSettings = NULL;
     CSavedSettings* settings = NULL;
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;

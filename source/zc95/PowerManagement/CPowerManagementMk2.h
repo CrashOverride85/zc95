@@ -1,4 +1,3 @@
-
 #ifndef _CCPOWERMANAGEMENTMK2_H
 #define _CCPOWERMANAGEMENTMK2_H
 
@@ -28,6 +27,8 @@ class CPowerManagementMk2 : public IPowerManagement
 
         void add_raw_adc_readings(const uint8_t *raw_adc_readings_buffer, uint8_t buffer_array_len);
         void set_inital_cc_voltages_and_set_input_current_limit(int16_t cc1_mv, int16_t cc2_mv);
+        void fuel_gauge_reset();
+        std::vector<std::pair<std::string, std::string>> get_charger_status();
 
     private:
         static int s_cmpfunc (const void *a, const void *b);
@@ -38,6 +39,9 @@ class CPowerManagementMk2 : public IPowerManagement
         void set_adc0_source(CMainBoardPortExp::adc0_select_t adc_source);
         void loop_v2_0();
         void loop_v2_2();
+
+        void init_fuel_gauge();
+        void save_fuel_gauge_data_if_changed();
 
         CMainBoardPortExp* _mainboard_port_exp = NULL;
         hw_variant_t _variant;
@@ -59,6 +63,7 @@ class CPowerManagementMk2 : public IPowerManagement
         uint16_t _input_limit = 0;
 
         uint64_t _last_batt_param_refresh = 0;
+        uint64_t _last_fuel_gauge_learned_data_check_us = 0;
         uint64_t _last_adc0_read;
         CMainBoardPortExp::adc0_select_t _adc0_source;
         bool _inital_startup = true;
