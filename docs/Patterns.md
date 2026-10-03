@@ -3,7 +3,7 @@
 **Note**: Any pattern in the list/menu prefixed with `(!)` should not be used above the waist, as channel isolation - where only one channel pulses at the exact same moment - is disabled.
 
 
-Most patterns will work to some degree with shock collars in place of an internal channel (if configured from the Config > Channel conf. menu). However, many will not work _well_ - patterns that pulse a channel (toggle, round robbin, fire etc.) will work best, those that keep a channel on and change the sensation (e.g. waves) will just leave the shock collar on constantly, so are a poor fit (essentially useless),
+Most patterns will work to some degree with shock collars in place of an internal channel (if configured from the Config > Channel conf. menu). However, many will not work _well_ - patterns that pulse a channel (toggle, round robbin, fire etc.) will work best, those that keep a channel on and change the sensation (e.g. waves) will just leave the shock collar on constantly, so are a poor fit (essentially useless).
 
 Anything using triphase will not work at all with shock collars.
 
@@ -162,7 +162,7 @@ Channels 3+4 can be shock collars. Unlike Climb, this achieves increasing intens
 * Soft button "Reset" - Reset power levels back to zero
 
 ### Extra hardware required
-A remote button wired to trigger input 1.
+A remote button wired to trigger input 1, or to any of the ACC_IO_* lines on the accessory port.
 
 
 ## Fire
@@ -276,7 +276,10 @@ Channels 3+4 can be shock collars.
 
 ## Predicament
 Designed for predicament bondage scenarios. I'm finding this difficult to explain, so hopefully some examples will help.
-Requires at least one input, ideally two, connected to the Trigger1 & Trigger2 ports. Based on the settings, delivers a shock
+
+Requires at least one input, ideally two, connected to either the Trigger1 & Trigger2 ports, or ACC_IO_1 & ACC_IO_2 on the accessory port (but do not use trigger ports and IO lines on the accessory port at the same time). 
+
+Based on the settings, delivers a shock
 based on which inputs have been triggered.
 For example, if two foot pedals are used, it can deliver a shock unless both are kept pressed (this is the default settings).
 
@@ -293,12 +296,12 @@ For example, if two foot pedals are used, it can deliver a shock unless both are
 | No           | No           | And   | Yes        | Default. Shock if either button not pressed
 | No           | No           | And   | No         | Shock if both both buttons pressed
 | No           | No           | Or    | No         | Shock if either button pressed
-| Yes          | Yes          | Or    | No         | Shock if either button not pressed (different way achieving the default behavior)
+| Yes          | Yes          | Or    | No         | Shock if either button not pressed (different way achieving the default behaviour)
 | No           | No           | Or    | Yes        | If only one button connected to trigger1, shock when it is not pressed
 
 
 ### Extra hardware required
-Yes - Sensors (e.g. foot pedals) connected to trigger inputs 1 & 2
+Yes - Sensors (e.g. foot pedals) connected to trigger inputs 1 & 2, or ACC_IO_1 & ACC_IO_2 on the accessory port
 
 
 

@@ -131,11 +131,22 @@ void CPredicament::soft_button_pushed (soft_button button, bool pushed)
 
 void CPredicament::trigger(trigger_socket socket, trigger_part part, bool active)
 {
-    if (socket == trigger_socket::Trigger1 && part == trigger_part::A)
+    if (
+        (socket == trigger_socket::Trigger1 && part == trigger_part::A) ||
+        (socket == trigger_socket::Acc      && part == trigger_part::A) 
+       )
+    {
         _trigger1_active = active;
+    }
 
-    if (socket == trigger_socket::Trigger2 && part == trigger_part::A)
+    if (
+        (socket == trigger_socket::Trigger2 && part == trigger_part::A) ||
+        (socket == trigger_socket::Acc      && part == trigger_part::B)
+       )
+    {
         _trigger2_active = active; 
+    }
+
 }
 
 void CPredicament::start()
