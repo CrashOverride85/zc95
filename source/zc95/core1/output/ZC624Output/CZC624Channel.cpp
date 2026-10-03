@@ -12,6 +12,11 @@ COutputChannel(saved_settings, power_level_control, channel_id)
     _standby_led_colour = LedColour::Green;
     _pulse_end_time = 0;
     set_led_colour(_standby_led_colour);
+
+    // ensure we're starting with defaults
+    set_freq(DEFAULT_FREQ_HZ);
+    set_pulse_width(DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
+    set_channel_isolation(true);
 }
 
 CZC624Channel::~CZC624Channel()
