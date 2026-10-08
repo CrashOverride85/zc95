@@ -192,6 +192,9 @@ add_executable(zc95
   RemoteAccess/CBtGatt.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
   RemoteAccess/GattProfile.h
+
+  SdCard/hwconfig.c
+  SdCard/CSdCard.cpp 
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -236,6 +239,7 @@ target_link_libraries(zc95
         git_version
         lua_static
         ArduinoJson
+        FatFs_SPI
         )
 
 pico_add_extra_outputs(zc95)
@@ -244,6 +248,7 @@ add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
 add_subdirectory(external/lua)
 add_subdirectory(external/ArduinoJson)
+add_subdirectory(external/FatFs_SPI build)
 
 target_compile_definitions(zc95 PRIVATE
   NDEBUG

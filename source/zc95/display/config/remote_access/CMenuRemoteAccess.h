@@ -8,6 +8,7 @@
 #include "../../../Hal/IHal.h"
 #include "../../../core1/CRoutineOutput.h"
 #include "../../../Bluetooth/CBluetooth.h"
+#include "../../../SdCard/CSdCard.h"
 
 class CMenuRemoteAccess : public CMenu
 {
@@ -21,7 +22,8 @@ class CMenuRemoteAccess : public CMenu
             std::vector<CRoutines::Routine> &routines,
             CBluetooth *bluetooth,
             CRadio *radio,
-            IHal* hal);
+            IHal* hal,
+            CSdCard* sd_card);
 
         ~CMenuRemoteAccess();
         void button_pressed(Button button);
@@ -71,4 +73,5 @@ class CMenuRemoteAccess : public CMenu
         CBluetooth *_bluetooth;
         CRadio *_radio;
         IHal* _hal;
+        CSdCard* _sd_card;
 };

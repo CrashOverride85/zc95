@@ -36,7 +36,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CWifi *wifi,
     CBluetooth *bluetooth,
     CRadio *radio,
-    IHal* hal) : _routines(routines)
+    IHal* hal,
+    CSdCard* sd_card) : _routines(routines)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -52,6 +53,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _bluetooth = bluetooth;
     _radio = radio;
     _hal = hal;
+    _sd_card = sd_card;
 
     _populate_pattern_list = true;
     populate_routine_list();
@@ -100,7 +102,7 @@ void CMenuRoutineSelection::button_pressed(Button button)
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio, _hal));
+            set_active_menu(new CMenuSettings(_display, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio, _hal, _sd_card));
             _populate_pattern_list = true; // If remote access has been used - accessed via the config menu - the pattern list may have changed
         }
         

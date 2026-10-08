@@ -25,7 +25,8 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     CSavedSettings *saved_settings,
     CRoutineOutput *routine_output,
     std::vector<CRoutines::Routine> &routines,
-    CBluetooth *bluetooth)
+    CBluetooth *bluetooth,
+    CSdCard* sd_card)
 {
     printf("CMenuRemoteAccessSerial() \n");
     _display = display;
@@ -35,10 +36,11 @@ CMenuRemoteAccessSerial::CMenuRemoteAccessSerial(
     _exit_menu = false;
     _routine_output = routine_output;
     _bluetooth = bluetooth;
+    _sd_card = sd_card;
     
     _bt_enabled = _saved_settings->get_bluethooth_enabled();
 
-    _serial_connection = new CSerialConnection(AUX_PORT_UART, routine_output, routines);
+    _serial_connection = new CSerialConnection(AUX_PORT_UART, routine_output, routines, _sd_card);
     if (_bt_enabled)
     {
         queue_init(&_bt_keypress_queue, sizeof(CBluetoothRemote::bt_keypress_queue_entry_t), 5);

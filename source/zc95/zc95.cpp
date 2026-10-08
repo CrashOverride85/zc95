@@ -73,6 +73,7 @@
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
 
+#include "SdCard/CSdCard.h"
 
 #include "ECButtons.h"
 #include "FlashHelper.h"
@@ -177,6 +178,7 @@ int main()
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;
     set_leds_to_purple(&led);
+    CSdCard sd_card;
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -291,10 +293,10 @@ int main()
     routine_output = new CRoutineOutputCore1(&display, &led, _hal, _audio);
 
     _audio->set_routine_output(routine_output);
-    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines);
+    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines, &sd_card);
     flash_helper_init(&_analogueCapture, routine_output);
 
-    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal);
+    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal, &sd_card);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);
@@ -305,6 +307,11 @@ int main()
     _hal->loop();
 
     set_normal_bootloader_mode(settings);
+
+    _analogueCapture.stop();
+
+    sd_card.mount();
+    sd_card.dir_list();
 
     while (1) 
     {

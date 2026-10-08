@@ -19,6 +19,7 @@
 #include "CLuaRoutine.h"
 #include "CDirectPulse.h"
 #include "../../LuaScripts/LuaScripts.h"
+#include "../../SdCard/CSdCard.h"
 
 class CRoutines
 {
@@ -32,13 +33,15 @@ class CRoutines
             int param;
         };
 
-        static void get_routines(std::vector<Routine> &routines)
+        static void get_routines(std::vector<Routine> &routines, CSdCard* sd_card)
         {
             // Loop through and add all valid lua scripts
             for (uint8_t index = 0; index < lua_script_count(); index++)
             {
                 add_routine_if_lua_script_valid(routines, index);
             }
+
+            add_routines_from_sd_card(routines, sd_card);
             
             add_routine(CToggle::create         , routines);
             add_routine(CRoundRobin::create     , routines);
@@ -85,6 +88,11 @@ class CRoutines
 
                 routines.push_back({&(CLuaRoutine::create), conf.name, conf.hidden_from_menu, conf.audio_processing_mode, index});
             }
+        }
+
+        static void add_routines_from_sd_card(std::vector<Routine> &routines, CSdCard* sd_card)
+        {
+            
         }
 };
 

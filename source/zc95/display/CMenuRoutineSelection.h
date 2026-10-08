@@ -19,6 +19,7 @@
 #include "../RemoteAccess/CWifi.h"
 #include "../Bluetooth/CBluetooth.h"
 #include "../Hal/IHal.h"
+#include "../SdCard/CSdCard.h"
 
 #include <string>
 #include <vector>
@@ -39,7 +40,8 @@ class CMenuRoutineSelection : public CMenu
                 CWifi *wifi, 
                 CBluetooth *bluetooth,
                 CRadio *radio,
-                IHal* hal);
+                IHal* hal,
+                CSdCard* sd_card);
 
         ~CMenuRoutineSelection();
         void button_pressed(Button button);
@@ -65,6 +67,7 @@ class CMenuRoutineSelection : public CMenu
         CRadio *_radio;
         bool _populate_pattern_list = false;
         IHal* _hal;
+        CSdCard* _sd_card;
 };
 
 #endif
