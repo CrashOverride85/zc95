@@ -49,7 +49,8 @@ typedef struct {
     uint rx_dma;
     dma_channel_config tx_dma_cfg;
     dma_channel_config rx_dma_cfg;
-    irq_handler_t dma_isr; // Ignored: no longer used
+    irq_handler_t dma_isr;
+    bool irq_shared;
     bool initialized;  
     semaphore_t sem;
     mutex_t mutex;    
@@ -63,6 +64,7 @@ bool __not_in_flash_func(spi_transfer)(spi_t *pSPI, const uint8_t *tx, uint8_t *
 void spi_lock(spi_t *pSPI);
 void spi_unlock(spi_t *pSPI);
 bool my_spi_init(spi_t *pSPI);
+bool my_spi_deinit(spi_t *pSPI);
 void set_spi_dma_irq_channel(bool useChannel1, bool shared);
 
 #ifdef __cplusplus

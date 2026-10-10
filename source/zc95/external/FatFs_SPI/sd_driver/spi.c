@@ -30,7 +30,7 @@ static bool irqShared = true;
 static void in_spi_irq_handler(const uint DMA_IRQ_num, io_rw_32 *dma_hw_ints_p) {
     for (size_t i = 0; i < spi_get_num(); ++i) {
         spi_t *spi_p = spi_get_by_num(i);
-        if (DMA_IRQ_num == spi_p->DMA_IRQ_num)  {
+        if (spi_p && spi_p->initialized && DMA_IRQ_num == spi_p->DMA_IRQ_num)  {
             // Is the SPI's channel requesting interrupt?
             if (*dma_hw_ints_p & (1 << spi_p->rx_dma)) {
                 *dma_hw_ints_p = 1 << spi_p->rx_dma;  // Clear it.
@@ -47,6 +47,18 @@ static void __not_in_flash_func(spi_irq_handler_0)() {
 }
 static void __not_in_flash_func(spi_irq_handler_1)() {
     in_spi_irq_handler(DMA_IRQ_1, &dma_hw->ints1);
+}
+
+static irq_handler_t spi_irq_handler_for_irq(uint dma_irq_num) {
+    switch (dma_irq_num) {
+        case DMA_IRQ_0:
+            return spi_irq_handler_0;
+        case DMA_IRQ_1:
+            return spi_irq_handler_1;
+        default:
+            assert(false);
+            return spi_irq_handler_0;
+    }
 }
 
 void set_spi_dma_irq_channel(bool useChannel1, bool shared) {
@@ -217,34 +229,93 @@ bool my_spi_init(spi_t *spi_p) {
 
         spi_p->DMA_IRQ_num = irqChannel1 ? DMA_IRQ_1 : DMA_IRQ_0;
 
-        // Tell the DMA to raise IRQ line 0/1 when the channel finishes a block        
-        static void (*spi_irq_handler_p)();
+        // Tell the DMA to raise IRQ line 0/1 when the channel finishes a block
         switch (spi_p->DMA_IRQ_num) {
         case DMA_IRQ_0:
-            spi_irq_handler_p = spi_irq_handler_0;
             dma_channel_set_irq0_enabled(spi_p->rx_dma, true);
             dma_channel_set_irq0_enabled(spi_p->tx_dma, false);
         break;
         case DMA_IRQ_1:
-            spi_irq_handler_p = spi_irq_handler_1;
             dma_channel_set_irq1_enabled(spi_p->rx_dma, true);
             dma_channel_set_irq1_enabled(spi_p->tx_dma, false);
         break;
         default:
             assert(false);
         }
+        spi_p->dma_isr = spi_irq_handler_for_irq(spi_p->DMA_IRQ_num);
+        spi_p->irq_shared = irqShared;
         if (irqShared) {
             irq_add_shared_handler(
-                spi_p->DMA_IRQ_num, *spi_irq_handler_p,
+                spi_p->DMA_IRQ_num, spi_p->dma_isr,
                 PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
         } else {
-            irq_set_exclusive_handler(spi_p->DMA_IRQ_num, *spi_irq_handler_p);
+            irq_set_exclusive_handler(spi_p->DMA_IRQ_num, spi_p->dma_isr);
         }
         irq_set_enabled(spi_p->DMA_IRQ_num, true);
         LED_INIT();
         spi_p->initialized = true;
         spi_unlock(spi_p);
     }
+    mutex_exit(&my_spi_init_mutex);
+    return true;
+}
+
+bool my_spi_deinit(spi_t *spi_p) {
+    if (!spi_p) return false;
+
+    auto_init_mutex(my_spi_init_mutex);
+    mutex_enter_blocking(&my_spi_init_mutex);
+
+    if (spi_p->initialized) {
+        spi_lock(spi_p);
+
+        uint32_t dma_mask = (1u << spi_p->tx_dma) | (1u << spi_p->rx_dma);
+        switch (spi_p->DMA_IRQ_num) {
+        case DMA_IRQ_0:
+            dma_channel_set_irq0_enabled(spi_p->rx_dma, false);
+            dma_channel_set_irq0_enabled(spi_p->tx_dma, false);
+            dma_hw->ints0 = dma_mask;
+            break;
+        case DMA_IRQ_1:
+            dma_channel_set_irq1_enabled(spi_p->rx_dma, false);
+            dma_channel_set_irq1_enabled(spi_p->tx_dma, false);
+            dma_hw->ints1 = dma_mask;
+            break;
+        default:
+            assert(false);
+        }
+
+        dma_channel_abort(spi_p->tx_dma);
+        dma_channel_abort(spi_p->rx_dma);
+
+        switch (spi_p->DMA_IRQ_num) {
+        case DMA_IRQ_0:
+            dma_hw->ints0 = dma_mask;
+            break;
+        case DMA_IRQ_1:
+            dma_hw->ints1 = dma_mask;
+            break;
+        default:
+            break;
+        }
+
+        if (spi_p->dma_isr) {
+            if (!spi_p->irq_shared) {
+                irq_set_enabled(spi_p->DMA_IRQ_num, false);
+            }
+            irq_remove_handler(spi_p->DMA_IRQ_num, spi_p->dma_isr);
+            spi_p->dma_isr = 0;
+        }
+
+        dma_channel_cleanup(spi_p->tx_dma);
+        dma_channel_unclaim(spi_p->tx_dma);
+        dma_channel_cleanup(spi_p->rx_dma);
+        dma_channel_unclaim(spi_p->rx_dma);
+
+        spi_p->initialized = false;
+        spi_unlock(spi_p);
+    }
+
     mutex_exit(&my_spi_init_mutex);
     return true;
 }

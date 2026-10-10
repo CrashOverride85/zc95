@@ -1130,6 +1130,7 @@ static int sd_init_medium(sd_card_t *pSD) {
 }
 static int sd_init(sd_card_t *pSD);
 static bool sd_test_com(sd_card_t *pSD);
+static bool sd_driver_initialized = false;
 
 static void sd_ctor(sd_card_t *pSD) {
     // State variables:
@@ -1140,10 +1141,9 @@ static void sd_ctor(sd_card_t *pSD) {
     pSD->sd_test_com = sd_test_com;
 }
 bool sd_init_driver() {
-    static bool initialized;
     auto_init_mutex(sd_init_driver_mutex);
     mutex_enter_blocking(&sd_init_driver_mutex);
-    if (!initialized) {
+    if (!sd_driver_initialized) {
         for (size_t i = 0; i < sd_get_num(); ++i) {
             sd_card_t *pSD = sd_get_by_num(i);
 
@@ -1171,10 +1171,45 @@ bool sd_init_driver() {
                 return false;
             }
         }
-        initialized = true;
+        sd_driver_initialized = true;
     }
     mutex_exit(&sd_init_driver_mutex);
     return true;
+}
+
+void sd_deinit_driver() {
+    auto_init_mutex(sd_init_driver_mutex);
+    mutex_enter_blocking(&sd_init_driver_mutex);
+
+    if (sd_driver_initialized) {
+        for (size_t i = 0; i < sd_get_num(); ++i) {
+            sd_card_t *pSD = sd_get_by_num(i);
+            if (!pSD) continue;
+
+            bool card_mutex_initialized = mutex_is_initialized(&pSD->mutex);
+            if (card_mutex_initialized) sd_lock(pSD);
+
+            gpio_put(pSD->ss_gpio, 1);
+            gpio_set_dir(pSD->ss_gpio, GPIO_OUT);
+            gpio_put(pSD->ss_gpio, 1);
+
+            pSD->m_Status |= STA_NOINIT;
+            pSD->sectors = 0;
+            pSD->card_type = SDCARD_NONE;
+            pSD->mounted = false;
+
+            if (card_mutex_initialized) sd_unlock(pSD);
+        }
+
+        for (size_t i = 0; i < spi_get_num(); ++i) {
+            spi_t *pSPI = spi_get_by_num(i);
+            my_spi_deinit(pSPI);
+        }
+
+        sd_driver_initialized = false;
+    }
+
+    mutex_exit(&sd_init_driver_mutex);
 }
 static int sd_init(sd_card_t *pSD) {
     TRACE_PRINTF("> %s\r\n", __FUNCTION__);

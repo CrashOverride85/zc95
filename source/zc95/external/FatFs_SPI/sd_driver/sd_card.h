@@ -91,6 +91,7 @@ bool sd_card_detect(sd_card_t *pSD);
 uint64_t sd_sectors(sd_card_t *pSD);
 
 bool sd_init_driver();
+void sd_deinit_driver();
 bool sd_card_detect(sd_card_t *sd_card_p);
 
 #ifdef __cplusplus

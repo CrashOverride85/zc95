@@ -178,7 +178,7 @@ int main()
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;
     set_leds_to_purple(&led);
-    CSdCard sd_card;
+    CSdCard sd_card(&_analogueCapture);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -265,7 +265,7 @@ int main()
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
-    CRoutines::get_routines(routines);
+    CRoutines::get_routines(routines, &sd_card);
    
     hw_check.check_part2(); // If a fault is found, this never returns
 
@@ -307,11 +307,6 @@ int main()
     _hal->loop();
 
     set_normal_bootloader_mode(settings);
-
-    _analogueCapture.stop();
-
-    sd_card.mount();
-    sd_card.dir_list();
 
     while (1) 
     {

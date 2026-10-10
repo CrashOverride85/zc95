@@ -511,5 +511,5 @@ void CMessageProcessor::reload_routines()
 {
     printf("CMessageProcessor::reload_routines(): routines list has changed, updating\n");
     _routines.clear();
-    CRoutines::get_routines(_routines);
+    CRoutines::get_routines(_routines, _sd_card);
 }

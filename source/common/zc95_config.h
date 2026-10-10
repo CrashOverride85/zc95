@@ -124,3 +124,5 @@
 #define BATTERY_CHARGE_TERMINAION_CURRENT_MA 300
 #define BATTERY_MAX_CHARGE_MILLIVOLTS 4150
 
+
+#define LUA_ON_SD_SCRIPT_MAX_FILE_LEN 17 // any longer that this, and the full name won't appear on the display, so you can't tell them apart

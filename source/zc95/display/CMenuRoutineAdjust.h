@@ -13,6 +13,7 @@
 #include "../AudioInput/CAudio.h"
 #include "../Bluetooth/CBluetooth.h"
 #include "../Hal/IHal.h"
+#include "../SdCard/CSdCard.h"
 
 #include <string>
 #include <vector>
@@ -28,7 +29,8 @@ class CMenuRoutineAdjust : public CMenu
                 CAudio *audio, 
                 CBluetooth *bluetooth,
                 CSavedSettings *saved_settings,
-                uint8_t routine_id);
+                uint8_t routine_id,
+                CSdCard* sd_card);
         ~CMenuRoutineAdjust();
         void button_pressed(Button button);
         void button_released(Button button);
@@ -59,6 +61,7 @@ class CMenuRoutineAdjust : public CMenu
         CBluetooth *_bluetooth = NULL;
         CSavedSettings *_saved_settings;
         uint8_t _routine_id = 0;
+        CSdCard* _sd_card;
 
         bool _show_ramp_start = true;
 };
