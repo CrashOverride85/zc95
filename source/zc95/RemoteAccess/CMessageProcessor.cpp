@@ -136,7 +136,8 @@ void CMessageProcessor::set_state(state_t new_state)
                         _send,
                         std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                         _routine_output,
-                        _routines);
+                        _routines,
+                        _sd_card);
             }
             break;
     }
@@ -368,6 +369,11 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     }
     else
     {
+        if (_routines[id].on_sd_card)
+        {
+            _sd_card->copy_file_to_flash(_routines[id].script_name);
+        }
+
         // Get pattern config
         struct routine_conf conf;
         CRoutines::Routine routine = _routines[id];

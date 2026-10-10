@@ -23,10 +23,7 @@ class CSdCard
         void mount();
         void unmount();
         void dir_list();
-
         bool write_file(std::string filename, const char* contents, size_t len);
-        bool copy_file_to_flash(int file_index); // file_index is where the file appears in the results returned by get_lua_scripts()
-
         bool copy_file_to_flash(std::string script_title); // script title is the script name as it appears in the menu (U: + file name of lua script, minus the .lua extension)
 
         std::vector<std::string> get_lua_scripts();
@@ -36,11 +33,13 @@ class CSdCard
         std::string get_filepath_from_index(int file_index);
         bool remove_lua_extension(char *str);
 
+        std::string _script_in_flash = ""; // script currently loaded into flash
+
         CAnalogueCapture* _analogue_capture;
         bool _set_analogue_capture_running_on_unmount = false;
         CLuaStorage *_lua_storage;
         bool _mounted = false;
-        int _currently_loaded_file_index = - 1; // what file is currently loaded into the flash slot. -1 means unknown / none
+        
         uint8_t *_file_buffer = NULL;
 };
 

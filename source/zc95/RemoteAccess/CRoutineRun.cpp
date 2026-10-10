@@ -42,13 +42,15 @@ CRoutineRun::CRoutineRun(
         std::function<void(std::string)> send_function, 
         std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
         CRoutineOutput *routine_output,
-        std::vector<CRoutines::Routine> &routines
+        std::vector<CRoutines::Routine> &routines,
+        CSdCard* sd_card
 )  : _routines(routines)
 {
     printf("CRoutineRun()\n");
     _send = send_function;
     _send_ack = send_ack_func;
     _routine_output = routine_output;
+    _sd_card = sd_card;
 
     _routine_output->set_text_callback_function(std::bind(&CRoutineRun::script_output, this, std::placeholders::_1));
     _routine_output->set_menu_change_callback_function(std::bind(&CRoutineRun::menu_changed_callback, this, std::placeholders::_1));
@@ -99,6 +101,11 @@ bool CRoutineRun::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
         {
             send_ack("ERROR", msgId);
             return true; // finished
+        }
+
+        if (_routines[index].on_sd_card)
+        {
+            _sd_card->copy_file_to_flash(_routines[index].script_name);
         }
 
         set_pattern_config(index);

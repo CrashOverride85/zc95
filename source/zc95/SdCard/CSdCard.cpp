@@ -8,7 +8,7 @@ CSdCard::CSdCard(CAnalogueCapture* analogue_capture)
     _lua_storage = new CLuaStorage();
     _analogue_capture = analogue_capture;
 
-    _file_buffer = (uint8_t*)calloc(LUA_UPLOAD_BUFFER_SIZE, sizeof(uint8_t));
+    _file_buffer = (uint8_t*)calloc(LUA_UPLOAD_BUFFER_SIZE, sizeof(uint8_t)); // this is a bit big to allocate on the stack
     if (_file_buffer == NULL)
     {
         panic("CSdCard::CSdCard(): ERROR - calloc returned NULL. Out of memory.");
@@ -39,6 +39,7 @@ void CSdCard::mount()
     {
         _analogue_capture->stop();
     }
+    gpio_put(MIPI_DISPLAY_PIN_CS, 1); // stops interference showing on LCD
 
     sd_card_t* pSD = sd_get_by_num(0);
 
@@ -58,11 +59,11 @@ void CSdCard::mount()
     _mounted = true;
 
     // Create Lua directory
-    //result = f_mkdir("Lua");
-    //if (FR_OK != result)
-   // {
+    result = f_mkdir("Lua");
+    if (FR_OK != result)
+    {
         // printf("failure: f_mkdir error: %s (%d)\n", FRESULT_str(result), result);
-   // }
+    }
 }
 
 void CSdCard::unmount()
@@ -206,74 +207,14 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
     return true;
 }
 
-bool CSdCard::copy_file_to_flash(int file_index)
-{
-    uint8_t staging_slot = sd_staging_slot();
-    FIL fsrc;
-    UINT bytes_read;
-
-    bool was_mounted = _mounted;
-    if (!_mounted)
-        mount();
-
-    _lua_storage->delete_script_at_index(staging_slot);
-
-    std::string filename = get_filepath_from_index(file_index);
-
-    printf("CSdCard::copy_file_to_flash: copying file [%s] (index=%d) to lua flash slot %d\n", filename.c_str(), file_index, staging_slot);
-
-    FRESULT result = f_open(&fsrc, filename.c_str(), FA_READ);
-    if (result)
-    {
-        printf("failure: f_open error: %s (%d)\n", FRESULT_str(result), result);
-        if (!was_mounted)
-            unmount();
-        return false;
-    } 
-
-    // Copy file to flash
-    uint8_t section = 0;
-    bool store_result = true;
-    for (;;) 
-    {
-        memset(_file_buffer, 0, LUA_UPLOAD_BUFFER_SIZE);
-        result = f_read(&fsrc, _file_buffer, LUA_UPLOAD_BUFFER_SIZE, &bytes_read); /* Read a chunk of data from the source file */
-        if (bytes_read == 0) break; // error or eof
-
-        store_result = _lua_storage->store_script_section(staging_slot, section, (const char*)_file_buffer, LUA_UPLOAD_BUFFER_SIZE);
-
-        if (!store_result)
-        {
-            printf("CSdCard::copy_file_to_flash: failed to write section %d to flash\n", section);
-            break;
-        }
-        
-        section++;
-    }
-
-    bool retval = true;
-    if (result)
-    {
-        printf("failure: f_read error: %s (%d)\n", FRESULT_str(result), result);
-        retval = false;
-    }
-
-    result = f_close(&fsrc);
-    if (result)
-    {
-        printf("failure: f_close error: %s (%d)\n", FRESULT_str(result), result);
-        retval = false;
-    } 
-
-    if (!was_mounted)
-        unmount();
-
-    printf("CSdCard::copy_file_to_flash: done copying file from SD to flash\n");
-    return retval;
-}
-
 bool CSdCard::copy_file_to_flash(std::string script_title)
 {
+    if (script_title == _script_in_flash)
+    {
+        printf("CSdCard::copy_file_to_flash: script [%s] already loaded into flash, nothing to do\n", script_title.c_str());
+        return true; // nothing's gone wrong, so consider this a success
+    }
+
     uint8_t staging_slot = sd_staging_slot();
     FIL fsrc;
     UINT bytes_read;
@@ -333,6 +274,9 @@ bool CSdCard::copy_file_to_flash(std::string script_title)
 
     if (!was_mounted)
         unmount();
+
+    if (retval)
+        _script_in_flash = script_title;
 
     printf("CSdCard::copy_file_to_flash: done copying file from SD to flash\n");
     return retval;
