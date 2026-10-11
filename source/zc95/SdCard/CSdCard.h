@@ -22,7 +22,6 @@ class CSdCard
 
         void mount();
         void unmount();
-        void dir_list();
         bool write_file(std::string filename, const char* contents, size_t len);
         bool copy_file_to_flash(std::string script_title); // script title is the script name as it appears in the menu (U: + file name of lua script, minus the .lua extension)
 

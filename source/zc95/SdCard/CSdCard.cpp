@@ -87,36 +87,6 @@ void CSdCard::unmount()
     }
 }
 
-void CSdCard::dir_list()
-{
-    FRESULT res;
-    DIR dir;
-    FILINFO fno;
-    int nfile, ndir;
-
-
-    res = f_opendir(&dir, "");                   /* Open the directory */
-    if (res == FR_OK) {
-        nfile = ndir = 0;
-        for (;;) {
-            res = f_readdir(&dir, &fno);           /* Read a directory item */
-            if (fno.fname[0] == 0) break;          /* Error or end of dir */
-            if (fno.fattrib & AM_DIR) {            /* It is a directory */
-                printf("   <DIR>   %s\n", fno.fname);
-                ndir++;
-            } else {                               /* It is a file */
-                printf("%10u %s\n", fno.fsize, fno.fname);
-                nfile++;
-            }
-        }
-        f_closedir(&dir);
-        printf("%d dirs, %d files.\n", ndir, nfile);
-    } else {
-        printf("Failed to open \"%s\". (%u)\n", "", res);
-    }
-    return;
-}
-
 std::vector<std::string> CSdCard::get_lua_scripts()
 {
     std::vector<std::string> result;
