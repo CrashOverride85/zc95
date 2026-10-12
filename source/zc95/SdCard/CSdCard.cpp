@@ -149,7 +149,7 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
     FRESULT res;
     FIL file;
     uint bytes_written=0;
-    std::string filepath = "0:Lua/" + filename + ".lua";
+    std::string filepath = "0:Lua/" + filename.substr(0, LUA_ON_SD_SCRIPT_MAX_FILE_LEN) + ".lua";
 
     printf("CSdCard::write_file: writing %d bytes to %s\n", len, filepath.c_str());
 
@@ -312,7 +312,7 @@ std::string CSdCard::get_filepath_from_index(int file_index)
         return "";
     }
 
-    std::string filepath = "0:Lua/" + scripts[file_index].substr(2) + ".lua";
+    std::string filepath = "0:Lua/" + scripts[file_index].substr(2) + ".lua"; // substr to remove "U:"
 
     return filepath;
 }
