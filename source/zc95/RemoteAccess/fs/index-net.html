@@ -8,8 +8,9 @@
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#1d252c;background:#f6f7f4}
 *{box-sizing:border-box}body{margin:0}.wrap{max-width:860px;margin:0 auto;padding:20px}
 header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
-h1{font-size:24px;margin:0}.meta{font-size:12px;color:#66727c;text-align:right}
+h1{font-size:24px;margin:0}h2{font-size:16px;margin:0}.meta{font-size:12px;color:#66727c;text-align:right}
 .panel{background:#fff;border:1px solid #d7ddd5;border-radius:8px;padding:14px;margin-bottom:12px}
+.section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:18px 0 8px}
 .bar{display:flex;gap:8px;align-items:center}
 .conn{flex:1;font-size:14px;color:#46525c}
 button{border:1px solid #9ba9a4;border-radius:6px;background:#eef3ef;color:#172027;padding:8px 11px;font:inherit;cursor:pointer}
@@ -20,7 +21,7 @@ th,td{padding:10px;border-bottom:1px solid #e6ebe7;text-align:left}th{font-size:
 tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{width:170px;text-align:right;white-space:nowrap}
 .invalid{color:#9d6a00}.empty{color:#71808a}.progress{height:8px;background:#e5ebe7;border-radius:999px;overflow:hidden;margin-top:6px}
 .fill{width:0;height:100%;background:#287a48;transition:width .12s}.hidden{display:none}.small{font-size:12px;color:#66727c}
-@media(max-width:640px){.wrap{padding:12px}header{display:block}.meta{text-align:left;margin-top:6px}.bar{flex-wrap:wrap}.conn{flex-basis:100%}table,tbody,tr,td{display:block}thead{display:none}tr{border-bottom:1px solid #d7ddd5}td{border:0;padding:7px 10px}.actions{text-align:left;width:auto}.slot:before{content:"Slot ";font-weight:600}.state:before{content:"State: ";font-weight:600}}
+@media(max-width:640px){.wrap{padding:12px}header{display:block}.meta{text-align:left;margin-top:6px}.section-head{align-items:flex-start;flex-direction:column}.bar{flex-wrap:wrap}.conn{flex-basis:100%}table,tbody,tr,td{display:block}thead{display:none}tr{border-bottom:1px solid #d7ddd5}td{border:0;padding:7px 10px}.actions{text-align:left;width:auto}td[data-label]:before{content:attr(data-label) ": ";font-weight:600}}
 </style>
 </head>
 <body>
@@ -39,11 +40,29 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
     <div class="status" id="status"></div>
   </section>
 
+  <div class="section-head">
+    <h2>Script slots</h2>
+  </div>
   <table aria-label="Lua script slots">
     <thead><tr><th class="slot">Slot</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
     <tbody id="slots"><tr><td colspan="4" class="empty">Connect to load script slots.</td></tr></tbody>
   </table>
   <input id="file" class="hidden" type="file" accept=".lua,text/x-lua,text/plain">
+
+  <div class="section-head">
+    <h2>SD card scripts</h2>
+    <button id="sd-upload" disabled>Upload to SD card</button>
+  </div>
+  <table aria-label="SD card Lua scripts">
+    <thead><tr><th class="slot">Index</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
+    <tbody id="sd-scripts"><tr><td colspan="4" class="empty">Connect to load SD card scripts.</td></tr></tbody>
+  </table>
+  <div class="panel hidden" id="sd-progress">
+    <div class="small" id="sd-progress-text"></div>
+    <div class="progress"><div class="fill" id="sd-progress-fill"></div></div>
+    <div class="small" id="sd-progress-count"></div>
+  </div>
+  <input id="sd-file" class="hidden" type="file" accept=".lua,text/x-lua,text/plain" multiple>
 </div>
 
 <script>
@@ -53,14 +72,24 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
   var connectBtn=document.getElementById("connect"),connEl=document.getElementById("conn");
   var refreshBtn=document.getElementById("refresh"),statusEl=document.getElementById("status");
   var slotsEl=document.getElementById("slots"),fileEl=document.getElementById("file"),versionEl=document.getElementById("version");
+  var sdEl=document.getElementById("sd-scripts"),sdFileEl=document.getElementById("sd-file"),sdUploadBtn=document.getElementById("sd-upload");
+  var sdProgressEl=document.getElementById("sd-progress"),sdProgressText=document.getElementById("sd-progress-text");
+  var sdProgressCount=document.getElementById("sd-progress-count"),sdProgressFill=document.getElementById("sd-progress-fill");
 
   connectBtn.onclick=function(){ws&&ws.readyState===1?disconnect("Disconnected."):connect()};
   refreshBtn.onclick=function(){loadInfo().catch(function(){})};
   fileEl.onchange=function(){var f=fileEl.files[0];fileEl.value="";if(f)upload(selectedSlot,f)};
+  sdUploadBtn.onclick=function(){if(!uploading)sdFileEl.click()};
+  sdFileEl.onchange=function(){var files=Array.prototype.slice.call(sdFileEl.files||[]);sdFileEl.value="";if(files.length)uploadSdFiles(files)};
   slotsEl.onclick=function(e){
     var b=e.target.closest("button"); if(!b||uploading)return;
     var i=Number(b.getAttribute("data-slot"));
     if(b.getAttribute("data-act")==="upload"){selectedSlot=i;fileEl.click()}
+    if(b.getAttribute("data-act")==="delete")del(i);
+  };
+  sdEl.onclick=function(e){
+    var b=e.target.closest("button"); if(!b||uploading)return;
+    var i=Number(b.getAttribute("data-slot"));
     if(b.getAttribute("data-act")==="delete")del(i);
   };
   connect();
@@ -127,62 +156,118 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
     return send("GetVersion",null,"VersionDetails").then(function(v){
       showVersion(v);
       return send("GetLuaScripts",null,"LuaScripts");
-    }).then(function(s){renderSlots(s.Scripts||[]);setStatus("Script slots loaded.","ok")})
+    }).then(function(s){renderScripts(s.Scripts||[]);setStatus("Scripts loaded.","ok")})
       .catch(function(e){setStatus(e.message,"err");throw e})
       .then(function(v){refreshBtn.disabled=!connected()||uploading;return v},function(e){refreshBtn.disabled=!connected()||uploading;throw e});
   }
   function showVersion(v){
     versionEl.textContent=(v.ZC95||"Unknown version")+" | Serial "+(v.SerialNo||"unknown");
   }
-  function renderSlots(scripts){
-    var byIndex={},max=4;
-    scripts.forEach(function(s){byIndex[s.Index]=s;if(s.Index>max)max=s.Index});
-    scripts=[];
-    for(var i=0;i<=max;i++)scripts.push(byIndex[i]||{Index:i,Empty:true,Valid:false,Name:"<unknown>",Missing:true});
+  function renderScripts(scripts){
+    renderSlots(scripts);
+    renderSdScripts(scripts);
+  }
+  function renderSlots(allScripts){
+    var byIndex={},scripts=[];
+    allScripts.forEach(function(s){if(s.Index>=0&&s.Index<=4)byIndex[s.Index]=s});
+    for(var i=0;i<=4;i++)scripts.push(byIndex[i]||{Index:i,Empty:true,Valid:false,Name:"<unknown>",Missing:true});
     slotsEl.innerHTML=scripts.map(function(s){
       var state=s.Missing?"Unknown":(s.Empty?"Empty":(s.Valid?"Valid":"Invalid"));
       var cls=s.Empty?"empty":(s.Valid?"":"invalid");
-      return '<tr data-row="'+s.Index+'"><td class="slot">'+esc(s.Index)+'</td><td>'+esc(s.Name||"")+'<div class="small hidden" data-prog="'+s.Index+'"><span></span><div class="progress"><div class="fill"></div></div></div></td><td class="state '+cls+'">'+state+'</td><td class="actions"><button data-act="upload" data-slot="'+s.Index+'">Upload</button> <button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
+      return '<tr data-row="'+s.Index+'"><td class="slot" data-label="Slot">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'<div class="small hidden" data-prog="'+s.Index+'"><span></span><div class="progress"><div class="fill"></div></div></div></td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button data-act="upload" data-slot="'+s.Index+'">Upload</button> <button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
+    }).join("");
+    renderButtons();
+  }
+  function renderSdScripts(allScripts){
+    var scripts=allScripts.filter(function(s){return s.Index>=100}).sort(function(a,b){return a.Index-b.Index});
+    if(!scripts.length){
+      sdEl.innerHTML='<tr><td colspan="4" class="empty">No SD card scripts found.</td></tr>';
+      renderButtons();
+      return;
+    }
+    sdEl.innerHTML=scripts.map(function(s){
+      var state=s.Empty?"Empty":(s.Valid?"Valid":"Invalid");
+      var cls=s.Empty?"empty":(s.Valid?"":"invalid");
+      return '<tr data-row="'+s.Index+'"><td class="slot" data-label="Index">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'</td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
     }).join("");
     renderButtons();
   }
   function renderButtons(){
     var dis=!connected()||uploading;
     slotsEl.querySelectorAll("button").forEach(function(b){b.disabled=dis});
+    sdEl.querySelectorAll("button").forEach(function(b){b.disabled=dis});
+    sdUploadBtn.disabled=dis;
   }
   function del(i){
     if(!connected())return;
-    setBusy(true);setStatus("Deleting slot "+i+"...");
+    var label=i>=100?"SD script "+i:"slot "+i;
+    setBusy(true);setStatus("Deleting "+label+"...");
     send("DeleteLuaScript",{Index:i},"Ack").then(loadInfo)
-      .then(function(){setStatus("Deleted slot "+i+".","ok")})
+      .then(function(){setStatus("Deleted "+label+".","ok")})
       .catch(function(e){setStatus(e.message,"err")})
       .then(function(){setBusy(false)});
   }
   function upload(i,file){
     if(i===null||!connected())return;
     setBusy(true);setStatus("Reading "+file.name+"...");
-    readText(file).then(function(text){
-      var lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
-      if(lines.length&&lines[lines.length-1]==="")lines.pop();
-      return send("LuaStart",{Index:i},"Ack").then(function(){return sendLines(i,lines,0)});
-    }).then(function(){return send("LuaEnd",null,"Ack")})
+    uploadFileToIndex(i,file,{slot:i})
       .then(loadInfo)
       .then(function(){setStatus("Uploaded "+file.name+" to slot "+i+".","ok")})
       .catch(function(e){setStatus(e.message,"err")})
       .then(function(){hideProgress(i);setBusy(false)});
   }
-  function sendLines(slot,lines,n){
-    progress(slot,n,lines.length);
-    if(n>=lines.length)return Promise.resolve();
-    return send("LuaLine",{LineNumber:n,Text:lines[n]},"Ack").then(function(){return sendLines(slot,lines,n+1)});
+  function uploadSdFiles(files){
+    if(!connected())return;
+    setBusy(true);showSdProgress(files[0],0,null,0,files.length);
+    return uploadSdFileAt(files,0)
+      .then(loadInfo)
+      .then(function(){setStatus("Uploaded "+files.length+" file"+(files.length===1?"":"s")+" to SD card.","ok")})
+      .catch(function(e){setStatus(e.message,"err");return loadInfo().catch(function(){}).then(function(){setStatus(e.message,"err")});})
+      .then(function(){hideSdProgress();setBusy(false)});
   }
-  function progress(slot,done,total){
+  function uploadSdFileAt(files,index){
+    if(index>=files.length)return Promise.resolve();
+    var file=files[index];
+    setStatus("Reading "+file.name+"...");
+    showSdProgress(file,0,null,index,files.length);
+    return uploadFileToIndex(-1,file,{sd:true,fileIndex:index,totalFiles:files.length})
+      .then(function(){return uploadSdFileAt(files,index+1)});
+  }
+  function uploadFileToIndex(index,file,progressTarget){
+    return readText(file).then(function(text){
+      var lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+      if(lines.length&&lines[lines.length-1]==="")lines.pop();
+      return send("LuaStart",{Index:index},"Ack").then(function(){return sendLines(progressTarget,lines,0)});
+    }).then(function(){return send("LuaEnd",null,"Ack")});
+  }
+  function sendLines(target,lines,n){
+    progress(target,n,lines.length);
+    if(n>=lines.length)return Promise.resolve();
+    return send("LuaLine",{LineNumber:n,Text:lines[n]},"Ack").then(function(){return sendLines(target,lines,n+1)});
+  }
+  function progress(target,done,total){
+    if(target&&target.sd){showSdProgress(null,done,total,target.fileIndex,target.totalFiles);return}
+    var slot=target&&target.slot;
     var box=slotsEl.querySelector('[data-prog="'+slot+'"]'); if(!box)return;
     var pct=total?Math.round(done*100/total):100;
     box.classList.remove("hidden"); box.querySelector("span").textContent="Uploading "+pct+"%";
     box.querySelector(".fill").style.width=pct+"%";
   }
   function hideProgress(slot){var box=slotsEl.querySelector('[data-prog="'+slot+'"]');if(box)box.classList.add("hidden")}
+  function showSdProgress(file,done,total,fileIndex,totalFiles){
+    var pct=total===0?100:(total?Math.round(done*100/total):0);
+    var left=Math.max(totalFiles-fileIndex-1,0);
+    sdProgressEl.classList.remove("hidden");
+    if(file)sdProgressEl.setAttribute("data-file",file.name);
+    sdProgressText.textContent="Uploading "+(sdProgressEl.getAttribute("data-file")||"file")+" - "+pct+"%";
+    sdProgressCount.textContent="File "+(fileIndex+1)+" of "+totalFiles+"; "+left+" left";
+    sdProgressFill.style.width=pct+"%";
+  }
+  function hideSdProgress(){
+    sdProgressEl.classList.add("hidden");
+    sdProgressEl.removeAttribute("data-file");
+    sdProgressFill.style.width="0";
+  }
   function readText(file){
     return new Promise(function(resolve,reject){
       var r=new FileReader(); r.onload=function(){resolve(String(r.result||""))}; r.onerror=function(){reject(new Error("Could not read file."))}; r.readAsText(file);

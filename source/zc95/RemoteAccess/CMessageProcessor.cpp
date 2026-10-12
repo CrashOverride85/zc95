@@ -276,7 +276,7 @@ void CMessageProcessor::loop()
 void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    DynamicJsonDocument response_message(1000);
+    DynamicJsonDocument response_message(4096);
 
     response_message["Type"] = "LuaScripts";
     response_message["MsgId"] = msg_count;
@@ -290,7 +290,18 @@ void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE>
         obj["Index"] = it->index;
         obj["Empty"] = it->empty;
         obj["Valid"] = it->valid;
-        obj["Name"] = it->name;
+        obj["Name"]  = it->name;
+    }
+
+    // add scripts on SD card (if any)
+    std::vector<std::string> scripts_on_sd_card = _sd_card->get_lua_scripts();
+    for (uint idx=0; idx < scripts_on_sd_card.size(); idx++)
+    {
+        JsonObject obj = scripts.createNestedObject();
+        obj["Index"] = LUA_ON_SD_INDEX_OFFSET + idx;
+        obj["Empty"] = false;
+        obj["Valid"] = true; // asuming scripts on SD are valid, as they shouldn't have been saved there if they're not
+        obj["Name"]  = scripts_on_sd_card[idx];
     }
 
     response_message["Result"] = "OK";
@@ -304,13 +315,24 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
 {
     int msg_count = (*doc)["MsgId"];
     int index = (*doc)["Index"];
-    CLuaStorage lua_storage = CLuaStorage();
-    
-    if (lua_storage.delete_script_at_index(index))
-        send_ack("OK", msg_count);
-    else
-        send_ack("ERROR", msg_count);
 
+    if (index >= LUA_ON_SD_INDEX_OFFSET)
+    {
+        uint index_to_delete = index - LUA_ON_SD_INDEX_OFFSET;
+        if (_sd_card->delete_script_at_index(index_to_delete))
+            send_ack("OK", msg_count);
+        else
+            send_ack("ERROR", msg_count);
+    }
+    else
+    {
+        CLuaStorage lua_storage = CLuaStorage();
+        
+        if (lua_storage.delete_script_at_index(index))
+            send_ack("OK", msg_count);
+        else
+            send_ack("ERROR", msg_count);
+    }
     reload_routines();
 }
 

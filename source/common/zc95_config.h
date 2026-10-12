@@ -126,3 +126,5 @@
 
 
 #define LUA_ON_SD_SCRIPT_MAX_FILE_LEN 17 // any longer that this, and the full name won't appear on the display, so you can't tell them apart
+#define LUA_ON_SD_INDEX_OFFSET 100 // When referring to lua scripts saved on SD card for messages like GetLuaScripts, what value should be added to the index
+

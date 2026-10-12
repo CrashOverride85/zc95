@@ -184,6 +184,9 @@ std::list<CLuaStorage::lua_script_t> CLuaStorage::get_lua_scripts(bool writeable
             continue;
         }
 
+        if (get_sd_staging_slot() == index)
+            continue;
+
         CLuaStorage::lua_script_t lua_script;
         lua_script.index = index;
         lua_script.empty = true;

@@ -144,7 +144,6 @@ std::vector<std::string> CSdCard::get_lua_scripts()
     return result;
 }
 
-
 bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
 {
     FRESULT res;
@@ -154,27 +153,40 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
 
     printf("CSdCard::write_file: writing %d bytes to %s\n", len, filepath.c_str());
 
+    bool retval = false;
+    bool was_mounted = _mounted;
+    if (!_mounted)
+        mount();
+
     res = f_open(&file, filepath.c_str(), FA_CREATE_ALWAYS | FA_WRITE);
     if (res)
     {
         printf("failure: f_open error: %s (%d)\n", FRESULT_str(res), res);
-        return false;
-    } 
-
-    res = f_write(&file, contents, len, &bytes_written);
-    if (bytes_written < len || res) 
+    }
+    
+    else
     {
-        printf("failure: f_write error: %s (%d). Len=%u, written=%u\n", FRESULT_str(res), res, len, bytes_written);
-    }  
+        res = f_write(&file, contents, len, &bytes_written);
+        if (bytes_written < len || res) 
+        {
+            printf("failure: f_write error: %s (%d). Len=%u, written=%u\n", FRESULT_str(res), res, len, bytes_written);
+        }  
 
-    res = f_close(&file);
-    if (res)
-    {
-        printf("failure: f_close error: %s (%d)\n", FRESULT_str(res), res);
-        return false;
-    } 
+        res = f_close(&file);
+        if (res)
+        {
+            printf("failure: f_close error: %s (%d)\n", FRESULT_str(res), res);
+        }
+        else
+        {
+            retval = true;
+        }
+    }
 
-    return true;
+    if (!was_mounted)
+        unmount();
+
+    return retval;
 }
 
 bool CSdCard::copy_file_to_flash(std::string script_title)
@@ -252,6 +264,34 @@ bool CSdCard::copy_file_to_flash(std::string script_title)
     return retval;
 }
 
+bool CSdCard::delete_script_at_index(uint index)
+{
+    bool retval = false;
+    bool was_mounted = _mounted;
+    if (!_mounted)
+        mount();
+
+    std::string filename = get_filepath_from_index(index);
+    if (filename != "")
+    {
+        printf("CSdCard::delete_script_at_index: deleteing [%s]\n", filename.c_str());
+        FRESULT result = f_unlink(filename.c_str());
+        if (result)
+        {
+            printf("failure: f_unlink error: %s (%d)\n", FRESULT_str(result), result);
+        }
+        else
+        {
+            retval = true;
+        }
+    }
+
+    if (!was_mounted)
+        unmount();
+
+    return retval;
+}
+
 uint8_t CSdCard::sd_staging_slot()
 {
     int sd_staging_slot = get_sd_staging_slot();
@@ -272,7 +312,7 @@ std::string CSdCard::get_filepath_from_index(int file_index)
         return "";
     }
 
-    std::string filepath = "0:Lua/" + scripts[file_index];
+    std::string filepath = "0:Lua/" + scripts[file_index].substr(2) + ".lua";
 
     return filepath;
 }
