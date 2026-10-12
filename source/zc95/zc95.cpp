@@ -178,7 +178,6 @@ int main()
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;
     set_leds_to_purple(&led);
-    CSdCard sd_card(&_analogueCapture);
 
     // I2C Initialisation
     i2c_init(i2c_default, 100 * 1000);
@@ -229,6 +228,8 @@ int main()
         _hal = new HalDummy();
     }
     _hal->set_backlight(false);
+
+    CSdCard sd_card(&_analogueCapture);
 
     CHwCheck hw_check(_hal, &led);
     hw_check.check_part1(); // If a fault is found, this never returns

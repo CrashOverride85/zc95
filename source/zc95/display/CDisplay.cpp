@@ -93,7 +93,7 @@ uint8_t CDisplay::get_font_height()
 
         // It takes ~18ms for the display to finish refreshing (via DMA from hagl_flush()), so don't
         // start altering the back buffer if it's less than that, even if _update_required is set
-        (time_us_64() - _last_update > (18*1000)) 
+        (time_us_64() - _last_update > (25*1000)) 
        )
     {
         _interruptable_section.start();

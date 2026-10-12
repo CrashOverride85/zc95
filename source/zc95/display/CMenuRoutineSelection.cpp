@@ -175,16 +175,26 @@ void CMenuRoutineSelection::populate_routine_list()
             // Hide audio routines from menu if audio hardware not present. Show everything else.        
             if (routine.audio_mode == audio_mode_t::OFF)
             {
-                _routine_display_list->add_option(routine.script_name, index);
+                _routine_display_list->add_option(get_routine_display_name(routine.script_name), index);
             }
             else
             {
                 if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
                 {
-                    _routine_display_list->add_option(routine.script_name, index);
+                    _routine_display_list->add_option(get_routine_display_name(routine.script_name), index);
                 }
             }
         }
         index++;
     }
+}
+
+std::string CMenuRoutineSelection::get_routine_display_name(const std::string& name)
+{
+    if (name.compare(0, 5, "U:(!)") == 0)
+    {
+        return "(!)U:" + name.substr(5);
+    }
+
+    return name;
 }

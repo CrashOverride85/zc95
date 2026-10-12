@@ -52,6 +52,7 @@ class CMenuRoutineSelection : public CMenu
 
     private:
         void populate_routine_list();
+        std::string get_routine_display_name(const std::string& name);
         COptionsList *_routine_display_list = NULL;
         struct display_area _area;
         CDisplay* _display;

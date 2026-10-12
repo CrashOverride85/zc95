@@ -13,6 +13,14 @@ CSdCard::CSdCard(CAnalogueCapture* analogue_capture)
     {
         panic("CSdCard::CSdCard(): ERROR - calloc returned NULL. Out of memory.");
     }
+
+    _sd_card_available = mount(true);
+    if (_sd_card_available)
+        printf("CSdCard::CSdCard: SD card detected\n");
+    else
+        printf("CSdCard::CSdCard: SD card NOT detected\n");
+
+    unmount();
 }
 
 CSdCard::~CSdCard()
@@ -32,8 +40,11 @@ CSdCard::~CSdCard()
     }
 }
 
-void CSdCard::mount()
+bool CSdCard::mount(bool force)
 {
+    if (!_sd_card_available && !force)
+        return false;
+
     _set_analogue_capture_running_on_unmount = _analogue_capture->is_running();
     if (_set_analogue_capture_running_on_unmount)
     {
@@ -52,7 +63,7 @@ void CSdCard::mount()
             _analogue_capture->start();
             _set_analogue_capture_running_on_unmount = false;
         }
-        return;
+        return false;
     }
     
     printf("SD card mounted\n");
@@ -64,6 +75,8 @@ void CSdCard::mount()
     {
         // printf("failure: f_mkdir error: %s (%d)\n", FRESULT_str(result), result);
     }
+
+    return true;
 }
 
 void CSdCard::unmount()
@@ -90,6 +103,8 @@ void CSdCard::unmount()
 std::vector<std::string> CSdCard::get_lua_scripts()
 {
     std::vector<std::string> result;
+    if (!_sd_card_available)
+        return result;
 
     FRESULT res;
     DIR dir;
@@ -144,8 +159,14 @@ std::vector<std::string> CSdCard::get_lua_scripts()
     return result;
 }
 
-bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
+bool CSdCard::write_file(std::string filename, const char* contents, size_t len, std::string& error)
 {
+    if (!_sd_card_available)
+    {
+        error = "No SD card found";
+        return false;
+    }
+
     FRESULT res;
     FIL file;
     uint bytes_written=0;
@@ -161,6 +182,7 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
     res = f_open(&file, filepath.c_str(), FA_CREATE_ALWAYS | FA_WRITE);
     if (res)
     {
+        error = "SD file open error: " + std::string(FRESULT_str(res));
         printf("failure: f_open error: %s (%d)\n", FRESULT_str(res), res);
     }
     
@@ -169,16 +191,19 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
         res = f_write(&file, contents, len, &bytes_written);
         if (bytes_written < len || res) 
         {
+            error = "SD write error: " + std::string(FRESULT_str(res));
             printf("failure: f_write error: %s (%d). Len=%u, written=%u\n", FRESULT_str(res), res, len, bytes_written);
         }  
 
         res = f_close(&file);
         if (res)
         {
+            error = "SD file close error: " + std::string(FRESULT_str(res));
             printf("failure: f_close error: %s (%d)\n", FRESULT_str(res), res);
         }
         else
         {
+            error = "";
             retval = true;
         }
     }
@@ -191,6 +216,9 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len)
 
 bool CSdCard::copy_file_to_flash(std::string script_title)
 {
+    if (!_sd_card_available)
+        return false;
+
     if (script_title == _script_in_flash)
     {
         printf("CSdCard::copy_file_to_flash: script [%s] already loaded into flash, nothing to do\n", script_title.c_str());
@@ -266,6 +294,9 @@ bool CSdCard::copy_file_to_flash(std::string script_title)
 
 bool CSdCard::delete_script_at_index(uint index)
 {
+    if (!_sd_card_available)
+        return false;
+
     bool retval = false;
     bool was_mounted = _mounted;
     if (!_mounted)

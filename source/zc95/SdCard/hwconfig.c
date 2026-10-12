@@ -45,8 +45,7 @@ static spi_t spis[] = {  // One for each SPI.
         .miso_gpio = PIN_MISO, // GPIO number (not pin number)
         .mosi_gpio = PIN_MOSI,
         .sck_gpio  = PIN_SCK,
-        .baud_rate = 12500 * 1000, 
-        //.baud_rate = 25 * 1000 * 1000, // Actual frequency: 20833333. 
+        .baud_rate = MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ
     }
 };
 

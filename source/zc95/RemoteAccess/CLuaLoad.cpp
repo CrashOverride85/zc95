@@ -212,7 +212,23 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
                     // Copy to SD card
                     struct routine_conf conf;
                     lua.get_config(&conf);
-                    _sd_card->write_file(conf.name, lua_script, strlen(lua_script));
+
+                    std::string script_title;
+                    if (conf.force_channel_isolation)
+                        script_title = conf.name;
+                    else
+                        script_title = "(!)" + conf.name;
+
+                    std::string error;
+                    bool store_result =_sd_card->write_file(script_title, lua_script, strlen(lua_script), error);
+                    if (!store_result)
+                    {
+                        // Most likely cause is probably no SD card installed
+                        printf("CLuaLoad::process(): failed write script to SD card, error: %s\n", error.c_str());
+                        _send_ack("ERROR", msgId, error);
+                        reset();
+                        return true;
+                    }
                 }
 
                 else

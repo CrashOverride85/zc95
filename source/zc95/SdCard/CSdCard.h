@@ -20,9 +20,9 @@ class CSdCard
         CSdCard(CAnalogueCapture* analogue_capture);
         ~CSdCard();
 
-        void mount();
+        bool mount(bool force = false);
         void unmount();
-        bool write_file(std::string filename, const char* contents, size_t len);
+        bool write_file(std::string filename, const char* contents, size_t len, std::string& error);
         bool copy_file_to_flash(std::string script_title); // script title is the script name as it appears in the menu (U: + file name of lua script, minus the .lua extension)
         bool delete_script_at_index(uint index);
         std::vector<std::string> get_lua_scripts();
@@ -38,7 +38,7 @@ class CSdCard
         bool _set_analogue_capture_running_on_unmount = false;
         CLuaStorage *_lua_storage;
         bool _mounted = false;
-        
+        bool _sd_card_available = false;
         uint8_t *_file_buffer = NULL;
 };
 
