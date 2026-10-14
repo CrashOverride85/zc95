@@ -29,11 +29,12 @@ extern "C" {
 #endif
 
 
-#ifdef NDEBUG           /* required by ANSI standard */
-# define DBG_PRINTF(fmt, args...) {} /* Don't do anything in release builds*/
-#else
-# define DBG_PRINTF my_printf
-#endif
+//#ifdef NDEBUG           /* required by ANSI standard */
+//# define DBG_PRINTF(fmt, args...) {} /* Don't do anything in release builds*/
+//#else
+//# define DBG_PRINTF my_printf
+//#endif
+#define DBG_PRINTF printf
 
 #ifdef NDEBUG           /* required by ANSI standard */
 # define myASSERT(__e) ((void)0)

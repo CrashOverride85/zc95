@@ -229,8 +229,6 @@ int main()
     }
     _hal->set_backlight(false);
 
-    CSdCard sd_card(&_analogueCapture);
-
     CHwCheck hw_check(_hal, &led);
     hw_check.check_part1(); // If a fault is found, this never returns
 
@@ -263,6 +261,7 @@ int main()
     sleep_ms(25);
 
     _hal->set_backlight(true);
+    CSdCard sd_card(&_analogueCapture);
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
