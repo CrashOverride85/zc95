@@ -156,6 +156,7 @@ std::vector<std::string> CSdCard::get_lua_scripts()
     if (!was_mounted)
         unmount();
 
+    _script_count = result.size();
     return result;
 }
 
@@ -164,6 +165,12 @@ bool CSdCard::write_file(std::string filename, const char* contents, size_t len,
     if (!_sd_card_available)
     {
         error = "No SD card found";
+        return false;
+    }
+
+    if (_script_count >= LUA_ON_SD_MAX_SCRIPTS)
+    {
+        error = "Script limit reached";
         return false;
     }
 

@@ -41,6 +41,7 @@ class CSdCard
         bool _mounted = false;
         bool _sd_card_available = false;
         uint8_t *_file_buffer = NULL;
+        uint16_t _script_count = 0;
 };
 
 #endif
