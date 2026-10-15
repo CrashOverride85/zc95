@@ -50,6 +50,7 @@ class Core1
         void set_audio_mode(audio_mode_t mode);
         void update_output_power_arrays();
         void set_chanel_count(uint8_t chanel_count);
+        void update_audio_mode();
         static void __not_in_flash_func(core1_suspend)(void);
 
         CSavedSettings *_saved_settings;
@@ -63,6 +64,8 @@ class Core1
         lua_script_state_t _script_script_state = lua_script_state_t::NOT_APPLICABLE;
         uint8_t _extended_ramp_percent = 0xFF;
         uint16_t _extended_ramp_remaining_seconds = 0xFFFF;
+        audio_mode_t _current_audio_mode = audio_mode_t::OFF;
+        audio_mode_t _requested_audio_mode = audio_mode_t::OFF;
 };
 
 Core1* core1_start(std::vector<CRoutines::Routine>& routines, CSavedSettings *saved_settings);

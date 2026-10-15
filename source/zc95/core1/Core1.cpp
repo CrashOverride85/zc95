@@ -134,7 +134,7 @@ void Core1::loop()
     update_extended_ramp_progress();
     process_messages();
     check_validity_of_lua_script();
-
+    update_audio_mode();
 
     if (gFatalError)
     {
@@ -633,12 +633,22 @@ void Core1::bluetooth_remote_keypress(CBluetoothRemote::keypress_t key)
 
 void Core1::set_audio_mode(audio_mode_t mode)
 {
+    _requested_audio_mode = mode;
+}
+
+void Core1::update_audio_mode()
+{
+    if (_requested_audio_mode == _current_audio_mode)
+        return;
+
     message msg = {0};
     msg.msg8[0] = MESSAGE_SET_AUDIO_MODE;
-    msg.msg8[1] = (uint8_t)mode;
+    msg.msg8[1] = (uint8_t)_requested_audio_mode;
 
     if (multicore_fifo_wready())
     {
         multicore_fifo_push_blocking(msg.msg32);
+        _current_audio_mode = _requested_audio_mode;
     }
 }
+
