@@ -242,6 +242,10 @@ void CMessageProcessor::loop()
         {
             delete_lua_script(&doc);
         }
+        else if (msgType == "DeleteLuaScripts")
+        {
+            delete_lua_scripts(&doc);
+        }
         else if (msgType == "GetPatterns")
         {
             send_pattern_list(&doc);
@@ -319,7 +323,7 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
     if (index >= LUA_ON_SD_INDEX_OFFSET)
     {
         uint index_to_delete = index - LUA_ON_SD_INDEX_OFFSET;
-        if (_sd_card->delete_script_at_index(index_to_delete))
+        if (_sd_card->delete_scripts_at_index({index_to_delete}))
             send_ack("OK", msg_count);
         else
             send_ack("ERROR", msg_count);
@@ -334,6 +338,62 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
             send_ack("ERROR", msg_count);
     }
     reload_routines();
+}
+
+void CMessageProcessor::delete_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgId"];
+
+    JsonArray json_indexes = (*doc)["Indexes"].as<JsonArray>();
+
+    if (json_indexes.isNull() || json_indexes.size() == 0)
+    {
+        send_ack("ERROR", msg_count);
+        return;
+    }
+
+    std::set<uint> sd_indexes;
+    std::set<uint, std::greater<uint>> internal_indexes;
+
+    for (JsonVariant value : json_indexes)
+    {
+        if (!value.is<int>() || value.as<int>() < 0)
+        {
+            send_ack("ERROR", msg_count);
+            return;
+        }
+
+        int index = value.as<int>();
+
+        if (index >= LUA_ON_SD_INDEX_OFFSET)
+            sd_indexes.insert(index - LUA_ON_SD_INDEX_OFFSET);
+        else
+            internal_indexes.insert(index);
+    }
+
+    bool success = true;
+
+    // Delete all SD card scripts in one operation
+    if (!sd_indexes.empty())
+    {
+        if (!_sd_card->delete_scripts_at_index(sd_indexes))
+            success = false;
+    }
+
+    // Delete internal scripts in descending index order
+    if (!internal_indexes.empty())
+    {
+        CLuaStorage lua_storage;
+
+        for (uint index : internal_indexes)
+        {
+            if (!lua_storage.delete_script_at_index(index))
+                success = false;
+        }
+    }
+
+    reload_routines();
+    send_ack(success ? "OK" : "ERROR", msg_count);
 }
 
 void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)

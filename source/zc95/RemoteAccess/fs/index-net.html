@@ -11,6 +11,8 @@ header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;
 h1{font-size:24px;margin:0}h2{font-size:16px;margin:0}.meta{font-size:12px;color:#66727c;text-align:right}
 .panel{background:#fff;border:1px solid #d7ddd5;border-radius:8px;padding:14px;margin-bottom:12px}
 .section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:18px 0 8px}
+.section-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.select-all{display:flex;gap:6px;align-items:center;font-size:14px;white-space:nowrap}
+input[type="checkbox"]{width:18px;height:18px;margin:0;vertical-align:middle;cursor:pointer}input[type="checkbox"]:disabled{cursor:not-allowed}.selection{width:38px}
 .bar{display:flex;gap:8px;align-items:center}
 .conn{flex:1;font-size:14px;color:#46525c}
 button{border:1px solid #9ba9a4;border-radius:6px;background:#eef3ef;color:#172027;padding:8px 11px;font:inherit;cursor:pointer}
@@ -42,20 +44,28 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
 
   <div class="section-head">
     <h2>Script slots</h2>
+    <div class="section-tools">
+      <label class="select-all"><input id="slots-all" type="checkbox" disabled>Select all</label>
+      <button id="slots-delete" class="danger" disabled>Delete selected</button>
+    </div>
   </div>
   <table aria-label="Lua script slots">
-    <thead><tr><th class="slot">Slot</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
-    <tbody id="slots"><tr><td colspan="4" class="empty">Connect to load script slots.</td></tr></tbody>
+    <thead><tr><th class="selection" aria-label="Selection"></th><th class="slot">Slot</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
+    <tbody id="slots"><tr><td colspan="5" class="empty">Connect to load script slots.</td></tr></tbody>
   </table>
   <input id="file" class="hidden" type="file" accept=".lua,text/x-lua,text/plain">
 
   <div class="section-head">
     <h2>SD card scripts</h2>
-    <button id="sd-upload" disabled>Upload to SD card</button>
+    <div class="section-tools">
+      <label class="select-all"><input id="sd-all" type="checkbox" disabled>Select all</label>
+      <button id="sd-delete" class="danger" disabled>Delete selected</button>
+      <button id="sd-upload" disabled>Upload to SD card</button>
+    </div>
   </div>
   <table aria-label="SD card Lua scripts">
-    <thead><tr><th class="slot">Index</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
-    <tbody id="sd-scripts"><tr><td colspan="4" class="empty">Connect to load SD card scripts.</td></tr></tbody>
+    <thead><tr><th class="selection" aria-label="Selection"></th><th class="slot">Index</th><th>Name</th><th class="state">State</th><th class="actions">Actions</th></tr></thead>
+    <tbody id="sd-scripts"><tr><td colspan="5" class="empty">Connect to load SD card scripts.</td></tr></tbody>
   </table>
   <div class="panel hidden" id="sd-progress">
     <div class="small" id="sd-progress-text"></div>
@@ -75,6 +85,20 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
   var sdEl=document.getElementById("sd-scripts"),sdFileEl=document.getElementById("sd-file"),sdUploadBtn=document.getElementById("sd-upload");
   var sdProgressEl=document.getElementById("sd-progress"),sdProgressText=document.getElementById("sd-progress-text");
   var sdProgressCount=document.getElementById("sd-progress-count"),sdProgressFill=document.getElementById("sd-progress-fill");
+  var selectionGroups=[
+    {el:slotsEl,all:document.getElementById("slots-all"),deleteBtn:document.getElementById("slots-delete")},
+    {el:sdEl,all:document.getElementById("sd-all"),deleteBtn:document.getElementById("sd-delete")}
+  ];
+
+  selectionGroups.forEach(function(group){
+    group.el.onchange=function(){renderButtons()};
+    group.all.onchange=function(){
+      if(!connected()||uploading)return;
+      group.el.querySelectorAll("input[data-select]").forEach(function(c){c.checked=group.all.checked});
+      renderButtons();
+    };
+    group.deleteBtn.onclick=function(){deleteScripts(selectedIndexes(group))};
+  });
 
   connectBtn.onclick=function(){ws&&ws.readyState===1?disconnect("Disconnected."):connect()};
   refreshBtn.onclick=function(){loadInfo().catch(function(){})};
@@ -85,12 +109,12 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
     var b=e.target.closest("button"); if(!b||uploading)return;
     var i=Number(b.getAttribute("data-slot"));
     if(b.getAttribute("data-act")==="upload"){selectedSlot=i;fileEl.click()}
-    if(b.getAttribute("data-act")==="delete")del(i);
+    if(b.getAttribute("data-act")==="delete")deleteScripts([i]);
   };
   sdEl.onclick=function(e){
     var b=e.target.closest("button"); if(!b||uploading)return;
     var i=Number(b.getAttribute("data-slot"));
-    if(b.getAttribute("data-act")==="delete")del(i);
+    if(b.getAttribute("data-act")==="delete")deleteScripts([i]);
   };
   connect();
 
@@ -174,35 +198,53 @@ tr:last-child td{border-bottom:0}.slot{width:70px}.state{width:90px}.actions{wid
     slotsEl.innerHTML=scripts.map(function(s){
       var state=s.Missing?"Unknown":(s.Empty?"Empty":(s.Valid?"Valid":"Invalid"));
       var cls=s.Empty?"empty":(s.Valid?"":"invalid");
-      return '<tr data-row="'+s.Index+'"><td class="slot" data-label="Slot">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'<div class="small hidden" data-prog="'+s.Index+'"><span></span><div class="progress"><div class="fill"></div></div></div></td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button data-act="upload" data-slot="'+s.Index+'">Upload</button> <button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
+      return '<tr data-row="'+s.Index+'">'+selectionCell(s,"slot")+'<td class="slot" data-label="Slot">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'<div class="small hidden" data-prog="'+s.Index+'"><span></span><div class="progress"><div class="fill"></div></div></div></td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button data-act="upload" data-slot="'+s.Index+'">Upload</button> <button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
     }).join("");
     renderButtons();
   }
   function renderSdScripts(allScripts){
     var scripts=allScripts.filter(function(s){return s.Index>=100}).sort(function(a,b){return a.Index-b.Index});
     if(!scripts.length){
-      sdEl.innerHTML='<tr><td colspan="4" class="empty">No SD card scripts found.</td></tr>';
+      sdEl.innerHTML='<tr><td colspan="5" class="empty">No SD card scripts found.</td></tr>';
       renderButtons();
       return;
     }
     sdEl.innerHTML=scripts.map(function(s){
       var state=s.Empty?"Empty":(s.Valid?"Valid":"Invalid");
       var cls=s.Empty?"empty":(s.Valid?"":"invalid");
-      return '<tr data-row="'+s.Index+'"><td class="slot" data-label="Index">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'</td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
+      return '<tr data-row="'+s.Index+'">'+selectionCell(s,"SD script")+'<td class="slot" data-label="Index">'+esc(s.Index)+'</td><td data-label="Name">'+esc(s.Name||"")+'</td><td class="state '+cls+'" data-label="State">'+state+'</td><td class="actions" data-label="Actions"><button class="danger" data-act="delete" data-slot="'+s.Index+'">Delete</button></td></tr>';
     }).join("");
     renderButtons();
+  }
+  function selectionCell(s,label){
+    var attrs=s.Empty||s.Missing?' disabled':' data-select="'+s.Index+'"';
+    return '<td class="selection"><input type="checkbox" aria-label="'+esc("Select "+label+" "+s.Index+(s.Name?": "+s.Name:""))+'"'+attrs+'></td>';
+  }
+  function selectedIndexes(group){
+    return Array.prototype.filter.call(group.el.querySelectorAll("input[data-select]"),function(c){return c.checked})
+      .map(function(c){return Number(c.getAttribute("data-select"))});
   }
   function renderButtons(){
     var dis=!connected()||uploading;
     slotsEl.querySelectorAll("button").forEach(function(b){b.disabled=dis});
     sdEl.querySelectorAll("button").forEach(function(b){b.disabled=dis});
+    selectionGroups.forEach(function(group){
+      var boxes=group.el.querySelectorAll("input[data-select]"),count=selectedIndexes(group).length;
+      boxes.forEach(function(c){c.disabled=dis});
+      group.all.disabled=dis||!boxes.length;
+      group.all.checked=boxes.length>0&&count===boxes.length;
+      group.all.indeterminate=count>0&&count<boxes.length;
+      group.deleteBtn.disabled=dis||!count;
+      group.deleteBtn.textContent="Delete selected"+(count?" ("+count+")":"");
+    });
     sdUploadBtn.disabled=dis;
   }
-  function del(i){
-    if(!connected())return;
-    var label=i>=100?"SD script "+i:"slot "+i;
+  function deleteScripts(indexes){
+    if(!connected()||uploading||!indexes.length)return;
+    var label=indexes.length+" script"+(indexes.length===1?"":"s");
+    if(!window.confirm("Are you sure you want to delete "+label+"?"))return;
     setBusy(true);setStatus("Deleting "+label+"...");
-    send("DeleteLuaScript",{Index:i},"Ack").then(loadInfo)
+    return send("DeleteLuaScripts",{Indexes:indexes},"Ack").then(loadInfo)
       .then(function(){setStatus("Deleted "+label+".","ok")})
       .catch(function(e){setStatus(e.message,"err")})
       .then(function(){setBusy(false)});

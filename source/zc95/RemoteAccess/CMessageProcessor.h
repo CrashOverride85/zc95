@@ -38,6 +38,7 @@ class CMessageProcessor
         void reload_routines();
         void send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        void delete_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);

@@ -53,6 +53,7 @@ In the active state, these messages are recognised:
 
 * GetLuaScripts
 * DeleteLuaScript
+* DeleteLuaScripts
 * GetPatterns
 * GetPatternDetail
 * GetVersion
@@ -132,6 +133,19 @@ It likely makes the most sense to re-query the box for the Lua scripts list by c
 Send:
 ```
 {"Type": "DeleteLuaScript", "MsgId": 5, "Index": 1}
+```
+
+Response:
+```
+{"Type":"Ack","MsgId":5,"Result":"OK"}
+```
+
+#### DeleteLuaScripts
+Similar to `DeleteLuaScript`, except it can be used to delete multiple scripts on one go.
+
+Send:
+```
+{"Type":"DeleteLuaScripts","MsgId":5,"Indexes":[1,100,102]}
 ```
 
 Response:

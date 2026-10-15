@@ -292,7 +292,7 @@ bool CSdCard::copy_file_to_flash(std::string script_title)
     return retval;
 }
 
-bool CSdCard::delete_script_at_index(uint index)
+bool CSdCard::delete_scripts_at_index(std::set<uint> indexes)
 {
     if (!_sd_card_available)
         return false;
@@ -302,18 +302,29 @@ bool CSdCard::delete_script_at_index(uint index)
     if (!_mounted)
         mount();
 
-    std::string filename = get_filepath_from_index(index);
-    if (filename != "")
+    std::vector<std::string> scripts = get_lua_scripts();
+
+    // Generate list of scripts to delete
+    std::vector<std::string> filenames_to_delete;
+    for (uint index : indexes)
     {
-        printf("CSdCard::delete_script_at_index: deleteing [%s]\n", filename.c_str());
+        std::string filename = get_filepath_from_index(scripts, index);
+        if (filename != "")
+        {
+            filenames_to_delete.push_back(filename);
+        }
+    }
+
+    // Delete scripts
+    retval = true;
+    for (std::string& filename : filenames_to_delete)
+    {
+        printf("CSdCard::delete_scripts_at_index: deleteing [%s]\n", filename.c_str());
         FRESULT result = f_unlink(filename.c_str());
         if (result)
         {
             printf("failure: f_unlink error: %s (%d)\n", FRESULT_str(result), result);
-        }
-        else
-        {
-            retval = true;
+            retval = false;
         }
     }
 
@@ -333,10 +344,8 @@ uint8_t CSdCard::sd_staging_slot()
     return (uint8_t)sd_staging_slot;
 }
 
-std::string CSdCard::get_filepath_from_index(int file_index)
+std::string CSdCard::get_filepath_from_index(std::vector<std::string> scripts, int file_index)
 {
-    std::vector<std::string> scripts = get_lua_scripts();
-
     if (file_index < 0 || file_index >= (int)scripts.size())
     {
         printf("CSdCard::get_filename_from_index: invalid file_index: %d\n", file_index);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "../CLuaStorage.h"
 #include "../CAnalogueCapture.h"
@@ -24,12 +25,12 @@ class CSdCard
         void unmount();
         bool write_file(std::string filename, const char* contents, size_t len, std::string& error);
         bool copy_file_to_flash(std::string script_title); // script title is the script name as it appears in the menu (U: + file name of lua script, minus the .lua extension)
-        bool delete_script_at_index(uint index);
+        bool delete_scripts_at_index(std::set<uint> indexes);
         std::vector<std::string> get_lua_scripts();
 
     private:
         uint8_t sd_staging_slot();
-        std::string get_filepath_from_index(int file_index);
+        std::string get_filepath_from_index(std::vector<std::string> scripts, int file_index);
         bool remove_lua_extension(char *str);
 
         std::string _script_in_flash = ""; // script currently loaded into flash
