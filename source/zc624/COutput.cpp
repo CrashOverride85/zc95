@@ -207,7 +207,7 @@ void COutput::sync_chanel(uint8_t channel_lead, uint8_t channel_linked, uint8_t 
     // Don't allow a linked channel to be linked to another. E.g. if 1 is linked to 2, don't allow 
     // 2 to be linked to anything. This is mostly to prevent loops (e.g. 1 -> 2 -> 1). We could be 
     // smarter in the future and explicitly look for (and stop) creating loops, but not yet.
-    for (uint8_t chan=0; chan++; chan < 4)
+    for (uint8_t chan=0; chan < 4; chan++)
     {
         if (_channel_triphase[chan].linked_channel == channel_lead)
         {
