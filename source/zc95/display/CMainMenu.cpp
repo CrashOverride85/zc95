@@ -31,7 +31,8 @@ CMainMenu::CMainMenu(
     CWifi *wifi,
     CBluetooth *bluetooth,
     CRadio *radio,
-    IHal* hal
+    IHal* hal,
+    CSdCard* sd_card
 ) : _routines(routines)
 {
     printf("CMainMenu() \n");
@@ -39,8 +40,9 @@ CMainMenu::CMainMenu(
     _settings = settings;
     _bluetooth = bluetooth;
     _radio = radio;
+    _sd_card = sd_card;
 
-    _submenu_active = new CMenuRoutineSelection(_display, _routines, _settings, routine_output, hwCheck, audio, analogueCapture, wifi, bluetooth, _radio, hal);
+    _submenu_active = new CMenuRoutineSelection(_display, _routines, _settings, routine_output, hwCheck, audio, analogueCapture, wifi, bluetooth, _radio, hal, _sd_card);
     _submenu_active->show();
 }
 

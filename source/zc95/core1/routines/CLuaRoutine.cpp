@@ -267,6 +267,13 @@ bool CLuaRoutine::get_and_validate_config(struct routine_conf *conf)
     if  ((_script == NULL) && (lua_scripts[_script_index].writeable))
         conf->name = "U:" + conf->name;
 
+    // If this is the sd staging slot / slot reserved for scripts loaded from SD card, don't 
+    // show it on the menu (the script already appears in the list from the SD directory listing)
+    if (_script == NULL && _script_index == get_sd_staging_slot())
+    {
+        conf->hidden_from_menu = true;
+    }
+
     printf("get_and_validate_config: returning [%d]\n", is_valid);
     return is_valid;
 }

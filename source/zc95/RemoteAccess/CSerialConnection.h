@@ -11,11 +11,12 @@
 #include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CSerialConnection
 {
     public:
-        CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
+        CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card);
         ~CSerialConnection();
         // void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);
@@ -50,6 +51,7 @@ class CSerialConnection
         uint16_t _recv_buffer_position;
         volatile bool _reset_connection;
         queue_t _tx_queue;
+        CSdCard* _sd_card;
 };
 
 #endif

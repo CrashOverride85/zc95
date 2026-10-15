@@ -73,6 +73,7 @@
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
 
+#include "SdCard/CSdCard.h"
 
 #include "ECButtons.h"
 #include "FlashHelper.h"
@@ -260,10 +261,11 @@ int main()
     sleep_ms(25);
 
     _hal->set_backlight(true);
+    CSdCard sd_card(&_analogueCapture);
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
-    CRoutines::get_routines(routines);
+    CRoutines::get_routines(routines, &sd_card);
    
     hw_check.check_part2(); // If a fault is found, this never returns
 
@@ -291,10 +293,10 @@ int main()
     routine_output = new CRoutineOutputCore1(&display, &led, _hal, _audio);
 
     _audio->set_routine_output(routine_output);
-    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines);
+    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines, &sd_card);
     flash_helper_init(&_analogueCapture, routine_output);
 
-    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal);
+    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal, &sd_card);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);

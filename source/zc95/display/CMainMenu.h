@@ -15,6 +15,7 @@
 #include "../RemoteAccess/CWifi.h"
 #include "../Bluetooth/CBluetooth.h"
 #include "../Hal/IHal.h"
+#include "../SdCard/CSdCard.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +36,8 @@ class CMainMenu : public CMenu
             CWifi *wifi, 
             CBluetooth *bluetooth,
             CRadio *radio,
-            IHal* hal);
+            IHal* hal,
+            CSdCard* sd_card);
 
         ~CMainMenu();
         void button_pressed(Button button);
@@ -50,4 +52,5 @@ class CMainMenu : public CMenu
         CSavedSettings *_settings;
         CBluetooth *_bluetooth;
         CRadio *_radio;
+        CSdCard* _sd_card;
 };

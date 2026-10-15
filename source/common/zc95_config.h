@@ -124,3 +124,12 @@
 #define BATTERY_CHARGE_TERMINAION_CURRENT_MA 300
 #define BATTERY_MAX_CHARGE_MILLIVOLTS 4150
 
+
+#define LUA_ON_SD_SCRIPT_MAX_FILE_LEN 17 // any longer that this, and the full name won't appear on the display, so you can't tell them apart
+#define LUA_ON_SD_INDEX_OFFSET 100 // When referring to lua scripts saved on SD card for messages like GetLuaScripts, what value should be added to the index
+
+ // Maximum number of scripts that can be put on the SD card. Each script does take up a 
+ // small amount of RAM as the filename is held in a list, so there needs to be a some 
+ // kind of limit, although 35 may be a little low. 
+#define LUA_ON_SD_MAX_SCRIPTS 35
+

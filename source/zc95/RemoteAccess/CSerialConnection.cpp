@@ -37,12 +37,13 @@
 extern CSerialConnection *g_SerialConnection;
 CSerialConnection *CSerialConnection::_s_instance = NULL;
 
-CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines)  : _routines(routines)
+CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card)  : _routines(routines)
 {
     printf("CSerialConnection::CSerialConnection()\n");
     _s_instance = this;
     _uart = uart;
     _routine_output = routine_output;
+    _sd_card = sd_card;
 
     _recv_buffer_position = 0;
     memset(_recv_buffer, 0, sizeof(_recv_buffer));
@@ -56,7 +57,7 @@ CSerialConnection::CSerialConnection(uart_inst_t *uart, CRoutineOutput *routine_
     irq_set_enabled(_uart_irq, true);
     uart_set_irq_enables(_uart, true, true);
 
-    _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+    _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1), _sd_card);
     g_SerialConnection = this;
 }
 
@@ -180,7 +181,7 @@ void CSerialConnection::loop()
         if (_messageProcessor)
             delete _messageProcessor;
 
-        _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1));
+        _messageProcessor = new CMessageProcessor(_routine_output, _routines, std::bind(&CSerialConnection::send, this, std::placeholders::_1), _sd_card);
 
         _state = state_t::IDLE;
         _reset_connection = false;

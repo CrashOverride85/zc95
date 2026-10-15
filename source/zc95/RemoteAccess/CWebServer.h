@@ -9,11 +9,12 @@
 #include "CWsConnection.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CWebServer
 {
     public:
-        CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine>* routines);
+        CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine>* routines, CSdCard* sd_card);
         ~CWebServer();
         void start();
         void stop();
@@ -28,6 +29,7 @@ class CWebServer
         static std::vector<CRoutines::Routine>* _s_routines;
         static std::map<struct tcp_pcb*, CWsConnection*> _s_ws_connections;
         static CRoutineOutput *_s_routine_output;
+        static CSdCard* _s_sd_card;
 };
 
 #endif

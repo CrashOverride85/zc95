@@ -53,6 +53,7 @@ In the active state, these messages are recognised:
 
 * GetLuaScripts
 * DeleteLuaScript
+* DeleteLuaScripts
 * GetPatterns
 * GetPatternDetail
 * GetVersion
@@ -102,6 +103,12 @@ Response:
          "Empty":true,
          "Valid":false,
          "Name":"<empty>"
+      },
+      {
+         "Index": 100,
+         "Empty": false,
+         "Valid": true,
+         "Name": "U:ScriptOnSD"
       }
    ],
    "Result":"OK"
@@ -110,7 +117,7 @@ Response:
 Assume scripts array is unordered, as the order may change in future versions.
 
 Fields:
-- `Index` - script slot. Currently 0-4, may be extended in the future
+- `Index` - script slot. Currently 0-4 are in flash, and are always included in the results even if empty. An index of 100 or above indicates the script is on the SD card; for SD card scripts, only populated "slots" are included
 - `Empty` - true if there is no script in the slot
 - `Valid` - true if there is a script uploaded, and it parses ok
 - `Name` - name of script as displayed on the zc95 scripts menu
@@ -120,9 +127,25 @@ Clears a Lua script slot, removing the script from the menu. It is _not_ necessa
 
 There is no error when deleting an already empty script slot.
 
+When deleting a script that resides on the SD card (i.e. index is >= 100), scripts after it will be moved down by 1 in the index order. e.g. deleting script 102 will cause 103 to be renumbered to 102, 104 to become 103, etc.
+It likely makes the most sense to re-query the box for the Lua scripts list by calling `GetLuaScripts` after deleting each script.
+
 Send:
 ```
 {"Type": "DeleteLuaScript", "MsgId": 5, "Index": 1}
+```
+
+Response:
+```
+{"Type":"Ack","MsgId":5,"Result":"OK"}
+```
+
+#### DeleteLuaScripts
+Similar to `DeleteLuaScript`, except it can be used to delete multiple scripts on one go.
+
+Send:
+```
+{"Type":"DeleteLuaScripts","MsgId":5,"Indexes":[1,100,102]}
 ```
 
 Response:
@@ -271,7 +294,7 @@ The `ZC95` field holds the firmware version of the zc95 - this will match the te
 `WsMajor` is likely to be increased for breaking changes to this JSON interface, and the `WsMinor` for additional features. For time being, don't trust them, and consider everything on this page to be work in progress. At some point I'll start incrementing them, and keeping a proper change log for the messages.
 
 #### LuaStart
-Used to start the upload of a Lua script, and switch to the `LUA_LOAD` state on success. Expects an `Index` parameter, which is the script slot (0-4) to upload the following script to.
+Used to start the upload of a Lua script, and switch to the `LUA_LOAD` state on success. Expects an `Index` parameter, which is either a script slot (0-4) to upload the following script to, or -1 if the script should be put on the SD card (if present).
 
 Send:
 ```

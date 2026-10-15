@@ -230,3 +230,20 @@ https://github.com/cvetaevvitaliy/bq27441
  
 ### Use:
 Battery monitoring
+
+----
+
+### Library/code: 
+FatFs - Generic FAT Filesystem Module
+    
+### License:
+    * ~ 1-clause BSD license
+    * Copyright (C) 20xx, ChaN, all right reserved
+
+### URL:
+https://elm-chan.org/fsw/ff/
+ 
+### Use:
+SD card access
+
+Some modifications made to allow for de-init of SD card / SPI.

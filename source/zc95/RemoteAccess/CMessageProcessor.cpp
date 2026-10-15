@@ -36,13 +36,15 @@
 CMessageProcessor::CMessageProcessor(
     CRoutineOutput *routine_output, 
     std::vector<CRoutines::Routine> &routines,
-    std::function<void(std::string)> send_function) : _routines(routines)
+    std::function<void(std::string)> send_function,
+    CSdCard* sd_card) : _routines(routines)
 {
     printf("CMessageProcessor::CMessageProcessor()\n");
     _pending_message_buffer = (char*)calloc(MAX_WS_MESSAGE_SIZE+1, sizeof(char));
     _pending_message = false;
     _routine_output = routine_output;
     _send = send_function;
+    _sd_card = sd_card;
 }
 
 CMessageProcessor::~CMessageProcessor()
@@ -124,7 +126,7 @@ void CMessageProcessor::set_state(state_t new_state)
             if (_lua_load == NULL) // this should always be true
                 _lua_load = new CLuaLoad(
                         _send,
-                        std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                        std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), _sd_card);
             break;
 
         case state_t::ROUTINE_RUN:
@@ -134,7 +136,8 @@ void CMessageProcessor::set_state(state_t new_state)
                         _send,
                         std::bind(&CMessageProcessor::send_ack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                         _routine_output,
-                        _routines);
+                        _routines,
+                        _sd_card);
             }
             break;
     }
@@ -239,6 +242,10 @@ void CMessageProcessor::loop()
         {
             delete_lua_script(&doc);
         }
+        else if (msgType == "DeleteLuaScripts")
+        {
+            delete_lua_scripts(&doc);
+        }
         else if (msgType == "GetPatterns")
         {
             send_pattern_list(&doc);
@@ -273,7 +280,7 @@ void CMessageProcessor::loop()
 void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    DynamicJsonDocument response_message(1000);
+    DynamicJsonDocument response_message(4096);
 
     response_message["Type"] = "LuaScripts";
     response_message["MsgId"] = msg_count;
@@ -287,7 +294,18 @@ void CMessageProcessor::send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE>
         obj["Index"] = it->index;
         obj["Empty"] = it->empty;
         obj["Valid"] = it->valid;
-        obj["Name"] = it->name;
+        obj["Name"]  = it->name;
+    }
+
+    // add scripts on SD card (if any)
+    std::vector<std::string> scripts_on_sd_card = _sd_card->get_lua_scripts();
+    for (uint idx=0; idx < scripts_on_sd_card.size(); idx++)
+    {
+        JsonObject obj = scripts.createNestedObject();
+        obj["Index"] = LUA_ON_SD_INDEX_OFFSET + idx;
+        obj["Empty"] = false;
+        obj["Valid"] = true; // asuming scripts on SD are valid, as they shouldn't have been saved there if they're not
+        obj["Name"]  = scripts_on_sd_card[idx];
     }
 
     response_message["Result"] = "OK";
@@ -301,14 +319,81 @@ void CMessageProcessor::delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE
 {
     int msg_count = (*doc)["MsgId"];
     int index = (*doc)["Index"];
-    CLuaStorage lua_storage = CLuaStorage();
-    
-    if (lua_storage.delete_script_at_index(index))
-        send_ack("OK", msg_count);
+
+    if (index >= LUA_ON_SD_INDEX_OFFSET)
+    {
+        uint index_to_delete = index - LUA_ON_SD_INDEX_OFFSET;
+        if (_sd_card->delete_scripts_at_index({index_to_delete}))
+            send_ack("OK", msg_count);
+        else
+            send_ack("ERROR", msg_count);
+    }
     else
+    {
+        CLuaStorage lua_storage = CLuaStorage();
+        
+        if (lua_storage.delete_script_at_index(index))
+            send_ack("OK", msg_count);
+        else
+            send_ack("ERROR", msg_count);
+    }
+    reload_routines();
+}
+
+void CMessageProcessor::delete_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
+{
+    int msg_count = (*doc)["MsgId"];
+
+    JsonArray json_indexes = (*doc)["Indexes"].as<JsonArray>();
+
+    if (json_indexes.isNull() || json_indexes.size() == 0)
+    {
         send_ack("ERROR", msg_count);
+        return;
+    }
+
+    std::set<uint> sd_indexes;
+    std::set<uint, std::greater<uint>> internal_indexes;
+
+    for (JsonVariant value : json_indexes)
+    {
+        if (!value.is<int>() || value.as<int>() < 0)
+        {
+            send_ack("ERROR", msg_count);
+            return;
+        }
+
+        int index = value.as<int>();
+
+        if (index >= LUA_ON_SD_INDEX_OFFSET)
+            sd_indexes.insert(index - LUA_ON_SD_INDEX_OFFSET);
+        else
+            internal_indexes.insert(index);
+    }
+
+    bool success = true;
+
+    // Delete all SD card scripts in one operation
+    if (!sd_indexes.empty())
+    {
+        if (!_sd_card->delete_scripts_at_index(sd_indexes))
+            success = false;
+    }
+
+    // Delete internal scripts in descending index order
+    if (!internal_indexes.empty())
+    {
+        CLuaStorage lua_storage;
+
+        for (uint index : internal_indexes)
+        {
+            if (!lua_storage.delete_script_at_index(index))
+                success = false;
+        }
+    }
 
     reload_routines();
+    send_ack(success ? "OK" : "ERROR", msg_count);
 }
 
 void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
@@ -366,6 +451,11 @@ void CMessageProcessor::send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SI
     }
     else
     {
+        if (_routines[id].on_sd_card)
+        {
+            _sd_card->copy_file_to_flash(_routines[id].script_name);
+        }
+
         // Get pattern config
         struct routine_conf conf;
         CRoutines::Routine routine = _routines[id];
@@ -507,7 +597,7 @@ std::string CMessageProcessor::get_serial()
 
 void CMessageProcessor::reload_routines()
 {
-    printf("CMessageProcessor::reload_routines(): routines list have have changed, updating\n");
+    printf("CMessageProcessor::reload_routines(): routines list has changed, updating\n");
     _routines.clear();
-    CRoutines::get_routines(_routines);
+    CRoutines::get_routines(_routines, _sd_card);
 }

@@ -42,7 +42,8 @@ CMenuSettings::CMenuSettings(
         std::vector<CRoutines::Routine> &routines,
         CBluetooth *bluetooth,
         CRadio *radio,
-        IHal* hal) : _routines(routines)
+        IHal* hal,
+        CSdCard* sd_card) : _routines(routines)
 {
     printf("CMenuSettings() \n");
     _display = display;
@@ -57,6 +58,7 @@ CMenuSettings::CMenuSettings(
     _bluetooth = bluetooth;
     _radio = radio;
     _hal = hal;
+    _sd_card = sd_card;
 }
 
 CMenuSettings::~CMenuSettings()
@@ -136,7 +138,7 @@ void CMenuSettings::show_selected_setting()
             break;
 
         case setting_id::REMOTE_ACCESS:
-            set_active_menu(new CMenuRemoteAccess(_display, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio, _hal));
+            set_active_menu(new CMenuRemoteAccess(_display, _saved_settings, _wifi, _analogueCapture, _routine_output, _routines, _bluetooth, _radio, _hal, _sd_card));
             break;
 
         case setting_id::ABOUT:

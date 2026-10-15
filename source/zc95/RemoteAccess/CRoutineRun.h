@@ -9,6 +9,7 @@
 #include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CRoutineRun
 {
@@ -17,7 +18,8 @@ class CRoutineRun
             std::function<void(std::string)> send_function, 
             std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
             CRoutineOutput *routine_output,
-            std::vector<CRoutines::Routine> &routines);
+            std::vector<CRoutines::Routine> &routines,
+            CSdCard* sd_card);
         ~CRoutineRun();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         bool StartPattern(ArduinoJson6200_71::StaticJsonDocument<300U> *doc, int msgId, bool &pattern_start, bool &retFlag);
@@ -37,6 +39,7 @@ class CRoutineRun
 
         CRoutineOutput *_routine_output;
         std::vector<CRoutines::Routine>& _routines;
+        CSdCard* _sd_card;
         uint8_t _channel_count = 0;
         uint16_t* _output_power = NULL;
         uint16_t* _max_output_power = NULL;

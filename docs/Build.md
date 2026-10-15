@@ -82,6 +82,8 @@ I got mine produced by JLCPCB, and went for the "FDM(Plastic)", "ABS", black opt
 
 * Display: I would advise sticking to the ADA358 despite the cost, as the front panel has been designed for it. However I'm aware of at least one person who used a generic 1.8" ST7735 display from aliexpress, and it mostly worked ok. 
 
+* SD card: Optional - used to store extra Lua scripts (beyond 5 in flash). Only a few megabytes will be used, so I suggest picking the cheapest branded card from a reputable supplier. Cards over 32GB may cause problems, cards >=2TB certainly will (as well as being a complete waste).
+
 ## Assembly
 
 ### Case
@@ -135,6 +137,9 @@ If using the "new" version of the display, there's a pull up resistor on the bac
 
 The old version of the display (with a blue PCB and without the ribbon connector) doesn't have this issue, so there is nothing to remove.
 
+The ZC95 can make use of on SD card to store additional Lua scripts (beyond the 5 inbuilt slots). If you're planning to install an SD card, now is the time as it can be very awkward to get to once fully assembled.
+
+The SD card should be FAT formatted, with a single directory named "Lua". Whilst Windows/Linux formatting of the card should work fine, there's an image [here](../misc/sdcard.img.zip) that's known to work that can be written to the card.
 
 Then follow the appropriate notes depending on the version of the front panel ordered:
 

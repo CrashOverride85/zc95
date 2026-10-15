@@ -29,12 +29,13 @@
 #include "CWsConnection.h"
 #include "../git_version.h"
 
-CWsConnection::CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines) 
+CWsConnection::CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card) 
 {
     printf("CWsConnection::CWsConnection()\n");
     _pcb = pcb;
+    _sd_card = sd_card;
     _state = state_t::ACTIVE;
-    _messageProcessor = new CMessageProcessor(routine_output, routines, std::bind(&CWsConnection::send, this, std::placeholders::_1));
+    _messageProcessor = new CMessageProcessor(routine_output, routines, std::bind(&CWsConnection::send, this, std::placeholders::_1), _sd_card);
 }
 
 CWsConnection::~CWsConnection()

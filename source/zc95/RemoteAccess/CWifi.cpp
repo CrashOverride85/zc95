@@ -26,12 +26,13 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-CWifi::CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines)  : _routines(routines)
+CWifi::CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card)  : _routines(routines)
 {
     printf("CWifi()\n");
     _analogue_capture = analogueCapture;
     _routine_output = routine_output;
     _radio = radio;
+    _sd_card = sd_card;
 }
 
 
@@ -152,7 +153,7 @@ void CWifi::start_webserver()
 {
     if (!_web_server)
     {
-        _web_server = new CWebServer(_routine_output, &_routines);
+        _web_server = new CWebServer(_routine_output, &_routines, _sd_card);
         _web_server->start();
     }
 }

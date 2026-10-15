@@ -36,7 +36,8 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     CWifi *wifi,
     CBluetooth *bluetooth,
     CRadio *radio,
-    IHal* hal) : _routines(routines)
+    IHal* hal,
+    CSdCard* sd_card) : _routines(routines)
 {
     printf("CMenuRoutineSelection() \n");
     _display = display;
@@ -52,6 +53,7 @@ CMenuRoutineSelection::CMenuRoutineSelection(
     _bluetooth = bluetooth;
     _radio = radio;
     _hal = hal;
+    _sd_card = sd_card;
 
     _populate_pattern_list = true;
     populate_routine_list();
@@ -95,12 +97,12 @@ void CMenuRoutineSelection::button_pressed(Button button)
             uint8_t routine_id = _routine_display_list->get_current_selection_id();
             CRoutines::Routine routine = _routines[routine_id];
             _last_selection = _routine_display_list->get_current_selection();
-            set_active_menu(new CMenuRoutineAdjust(_display, routine, _hal, _routine_output, _audio, _bluetooth, _settings, routine_id));
+            set_active_menu(new CMenuRoutineAdjust(_display, routine, _hal, _routine_output, _audio, _bluetooth, _settings, routine_id, _sd_card));
         }
 
         if (button == Button::B) // "Config"
         {
-            set_active_menu(new CMenuSettings(_display, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio, _hal));
+            set_active_menu(new CMenuSettings(_display, _settings, _routine_output, _hwCheck, _audio, _analogueCapture, _wifi, _routines, _bluetooth, _radio, _hal, _sd_card));
             _populate_pattern_list = true; // If remote access has been used - accessed via the config menu - the pattern list may have changed
         }
         
@@ -173,16 +175,26 @@ void CMenuRoutineSelection::populate_routine_list()
             // Hide audio routines from menu if audio hardware not present. Show everything else.        
             if (routine.audio_mode == audio_mode_t::OFF)
             {
-                _routine_display_list->add_option(routine.script_name, index);
+                _routine_display_list->add_option(get_routine_display_name(routine.script_name), index);
             }
             else
             {
                 if (_audio->get_audio_hardware_state() != audio_hardware_state_t::NOT_PRESENT)
                 {
-                    _routine_display_list->add_option(routine.script_name, index);
+                    _routine_display_list->add_option(get_routine_display_name(routine.script_name), index);
                 }
             }
         }
         index++;
     }
+}
+
+std::string CMenuRoutineSelection::get_routine_display_name(const std::string& name)
+{
+    if (name.compare(0, 5, "U:(!)") == 0)
+    {
+        return "(!)U:" + name.substr(5);
+    }
+
+    return name;
 }

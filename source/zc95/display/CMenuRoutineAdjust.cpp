@@ -27,7 +27,8 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CAudio *audio, 
                 CBluetooth *bluetooth,
                 CSavedSettings *saved_settings,
-                uint8_t routine_id) 
+                uint8_t routine_id,
+                CSdCard* sd_card) 
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -40,6 +41,16 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     _saved_settings = saved_settings;
     _routine_output = routine_output;
     _routine_id = routine_id;
+    _sd_card = sd_card;
+
+    // If the script is on the SD card, load it into flash now.
+    // routine.param is already set to the (hidden from the menu) index of a 
+    // spare lua slot in flash, reserved for loading files from SD card to.
+    // So put the script into that slot, so everything else works as usual.
+    if (routine.on_sd_card)
+    {
+        _sd_card->copy_file_to_flash(routine.script_name);
+    }
 
     // get routine config
     CRoutine* routine_ptr = routine.routine_maker(routine.param);

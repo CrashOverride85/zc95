@@ -38,18 +38,27 @@
 
 CLuaLoad::CLuaLoad(
         std::function<void(std::string)> send_function, 
-        std::function<void(std::string result, int msg_count, std::string error)> send_ack_func
+        std::function<void(std::string result, int msg_count, std::string error)> send_ack_func,
+        CSdCard* sd_card
 )
 {
     printf("CLuaLoad::CLuaLoad()\n");
     _send = send_function;
     _send_ack = send_ack_func;
+    _sd_card = sd_card;
     _lua_storage = new CLuaStorage();
     _lua_buffer = (uint8_t*)calloc(LUA_UPLOAD_BUFFER_SIZE, sizeof(uint8_t));
     if (_lua_buffer == NULL)
     {
         panic("CLuaLoad::CLuaLoad(): ERROR - calloc returned NULL. Out of memory.");
     }
+
+    int sd_staging_slot = get_sd_staging_slot();
+    if (sd_staging_slot < 0 || sd_staging_slot >= 255)
+    {
+        panic("CLuaLoad::CLuaLoad(): Failed to determine SD card staging slot in flash");
+    }
+    _sd_staging_slot = (uint8_t)sd_staging_slot;
 }
 
 CLuaLoad::~CLuaLoad()
@@ -97,6 +106,9 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
     {
         reset();
         _index = (*doc)["Index"];
+
+        if (_index == -1)
+            _index = _sd_staging_slot;
 
         if (_index >= lua_script_count())
         {
@@ -195,17 +207,45 @@ bool CLuaLoad::process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
             {
                 printf("CLuaLoad::process() script ok\n");
 
-                // Script is good (or at least not horribly broken), now remove that inital null so it will get processed at startup and show on the patterns list
-                memcpy(_lua_buffer, (const char *)(lua_scripts[_index].start), LUA_UPLOAD_BUFFER_SIZE);
-                _lua_buffer[0] = '\n';
-                bool store_result = _lua_storage->store_script_section(_index, 0, (const char*)_lua_buffer, LUA_UPLOAD_BUFFER_SIZE);
-                if (!store_result)
+                if (_index == _sd_staging_slot)
                 {
-                    // I don't think this should be possible
-                    printf("CLuaLoad::process(): failed to clear NULL at script of script\n");
-                    _send_ack("ERROR", msgId, "Internal error");
-                    reset();
-                    return true;                    
+                    // Copy to SD card
+                    struct routine_conf conf;
+                    lua.get_config(&conf);
+
+                    std::string script_title;
+                    if (conf.force_channel_isolation)
+                        script_title = conf.name;
+                    else
+                        script_title = "(!)" + conf.name;
+
+                    std::string error;
+                    bool store_result =_sd_card->write_file(script_title, lua_script, strlen(lua_script), error);
+                    if (!store_result)
+                    {
+                        // Most likely cause is probably no SD card installed
+                        printf("CLuaLoad::process(): failed write script to SD card, error: %s\n", error.c_str());
+                        _send_ack("ERROR", msgId, error);
+                        reset();
+                        return true;
+                    }
+                }
+
+                else
+                {
+                    // Normal upload to Lua flash slot
+                    // Script is good (or at least not horribly broken), now remove that inital null so it will get processed at startup and show on the patterns list
+                    memcpy(_lua_buffer, (const char *)(lua_scripts[_index].start), LUA_UPLOAD_BUFFER_SIZE);
+                    _lua_buffer[0] = '\n';
+                    bool store_result = _lua_storage->store_script_section(_index, 0, (const char*)_lua_buffer, LUA_UPLOAD_BUFFER_SIZE);
+                    if (!store_result)
+                    {
+                        // I don't think this should be possible
+                        printf("CLuaLoad::process(): failed to clear NULL at script of script\n");
+                        _send_ack("ERROR", msgId, "Internal error");
+                        reset();
+                        return true;                    
+                    }
                 }
             }
             else

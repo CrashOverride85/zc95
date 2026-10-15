@@ -7,6 +7,7 @@
 #include <functional>
 #include <ArduinoJson.h>
 #include "../CLuaStorage.h"
+#include "../SdCard/CSdCard.h"
 #include "../../common/zc95_config.h"
 
 class CLuaLoad
@@ -14,7 +15,8 @@ class CLuaLoad
     public:
         CLuaLoad(
             std::function<void(std::string)> send_function, 
-            std::function<void(std::string result, int msg_count, std::string error)> send_ack_func);
+            std::function<void(std::string result, int msg_count, std::string error)> send_ack_func, 
+            CSdCard* sd_card);
         ~CLuaLoad();
         bool process(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
 
@@ -28,8 +30,10 @@ class CLuaLoad
         size_t _lua_slot_size = 0;
         uint8_t _lua_slot_section = 0;
         uint32_t _lua_buffer_postion = 0;
+        uint8_t _sd_staging_slot ;
         int _index = -1;
         CLuaStorage *_lua_storage;
+        CSdCard* _sd_card;
 };
 
 #endif
