@@ -47,8 +47,8 @@ class CAnalogueCapture
         static void s_dma_handler1();
         static void s_dma_handler2();
 
-        uint8_t capture_buf1[CAPTURE_DEPTH] __attribute__((aligned(2048)));
-        uint8_t capture_buf2[CAPTURE_DEPTH] __attribute__((aligned(2048)));
+        uint8_t capture_buf1[CAPTURE_DEPTH] __attribute__((aligned(1024)));
+        uint8_t capture_buf2[CAPTURE_DEPTH] __attribute__((aligned(1024)));
 
         uint8_t _audio_buffer_l[CAPTURE_DEPTH/3] = {0};
         uint8_t _audio_buffer_r[CAPTURE_DEPTH/3] = {0};

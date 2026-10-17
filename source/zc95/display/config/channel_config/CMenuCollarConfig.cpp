@@ -38,6 +38,11 @@ CMenuCollarConfig::CMenuCollarConfig(CDisplay* display, IHal *hal, CSavedSetting
 CMenuCollarConfig::~CMenuCollarConfig()
 {
     printf("~CMenuCollarConfig() \n");
+    if (_collar_list != NULL)
+    {
+        delete _collar_list;
+        _collar_list = NULL;
+    }
 }
 
 void CMenuCollarConfig::button_pressed(Button button)

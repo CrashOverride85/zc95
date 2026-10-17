@@ -68,20 +68,20 @@ CRoutineRun::~CRoutineRun()
 
     if (_front_panel_power != NULL)
     {
-        delete _front_panel_power;
+        delete[] _front_panel_power;
         _front_panel_power = NULL;
     }
 
     if (_output_power != NULL)
     {
+        delete[] _output_power;
         _output_power = NULL;
-        delete _output_power;
     }
 
     if (_max_output_power != NULL)
     {
+        delete[] _max_output_power;
         _max_output_power = NULL;
-        delete _max_output_power;
     }
 
     _channel_count = 0;
@@ -292,6 +292,7 @@ void CRoutineRun::script_output(pattern_text_output_t output)
 
 void CRoutineRun::set_pattern_config(uint8_t index)
 {
+    CRoutine::reset_routine_conf(_pattern_conf);
     CRoutines::Routine routine = _routines[index];
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
     routine_ptr->get_routine_config(&_pattern_conf);
@@ -363,19 +364,19 @@ void CRoutineRun::update_channel_count(uint8_t channel_count)
     printf("CRoutineRun::update_channel_count - configuring for %d channels\n", channel_count);
     if (_front_panel_power != NULL)
     {
-        delete _front_panel_power;
+        delete[] _front_panel_power;
         _front_panel_power = NULL;
     }
 
     if (_output_power != NULL)
     {
-        delete _output_power;
+        delete[] _output_power;
         _output_power = NULL;
     }
 
     if (_max_output_power != NULL)
     {
-        delete _max_output_power;
+        delete[] _max_output_power;
         _max_output_power = NULL;
     }
 

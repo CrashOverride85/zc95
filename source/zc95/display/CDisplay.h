@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <string_view>
 
 #include <hagl_hal.h>
 #include <hagl.h>
@@ -43,7 +44,7 @@ class CDisplay
         void set_current_menu(CMenu *menu);
 
         struct display_area get_display_area();
-        void put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false, const uint8_t *font = NULL);
+        void put_text(std::string_view text, int16_t x, int16_t y, hagl_color_t color, bool rotate90 = false, const uint8_t *font = NULL);
         uint8_t get_font_width();
         uint8_t get_font_height();
 
@@ -76,7 +77,6 @@ class CDisplay
         void draw_bar_graphs();
         void draw_bar(uint8_t bar_number, std::string label, uint16_t max_power, uint16_t front_panel_power, uint16_t current_power, hagl_color_t bar_colour);
         uint8_t hagl_put_char_rotate90(void const *_surface, wchar_t code, int16_t x0, int16_t y0, hagl_color_t color, const uint8_t *font);
-        void hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font);
         void draw_logo(const uint8_t logo[9], int16_t x0, int16_t y0, hagl_color_t colour);
         void draw_bt_logo_if_required(int16_t x, int16_t y);
         void draw_battery_icon(int16_t x, int16_t y, battery_state_t state);

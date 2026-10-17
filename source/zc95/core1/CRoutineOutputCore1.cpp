@@ -44,26 +44,26 @@ CRoutineOutputCore1::~CRoutineOutputCore1()
 {
     if (_front_panel_power != NULL)
     {
-        delete _front_panel_power;
+        delete[] _front_panel_power;
         _front_panel_power = NULL;
     }
 
     if (_remote_power != NULL)
     {
+        delete[] _remote_power;
         _remote_power = NULL;
-        delete _remote_power;
     }
 
     if (_output_power != NULL)
     {
+        delete[] _output_power;
         _output_power = NULL;
-        delete _output_power;
     }
 
     if (_max_output_power != NULL)
     {
+        delete[] _max_output_power;
         _max_output_power = NULL;
-        delete _max_output_power;
     }
 
     _channel_count = 0;
@@ -502,16 +502,28 @@ void CRoutineOutputCore1::update_channel_count(uint8_t channel_count)
 {
     printf("CRoutineOutputCore1::update_channel_count - configuring for %d channels\n", channel_count);
     if (_front_panel_power != NULL)
-        delete _front_panel_power;
+    {
+        delete[] _front_panel_power;
+        _front_panel_power = NULL;
+    }
 
     if (_remote_power != NULL)
-        delete _remote_power;
+    {
+        delete[] _remote_power;
+        _remote_power = NULL;
+    }
 
     if (_output_power != NULL)
-        delete _output_power;
+    {
+        delete[] _output_power;
+        _output_power = NULL;
+    }
 
     if (_max_output_power != NULL)
-        delete _max_output_power;
+    {
+        delete[] _max_output_power;
+        _max_output_power = NULL;
+    }
 
     _channel_count = channel_count;
 
