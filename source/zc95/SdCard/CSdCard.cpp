@@ -15,12 +15,16 @@ CSdCard::CSdCard(CAnalogueCapture* analogue_capture)
     }
 
     _sd_card_available = mount(true);
-    if (_sd_card_available)
-        printf("CSdCard::CSdCard: SD card detected\n");
-    else
-        printf("CSdCard::CSdCard: SD card NOT detected\n");
-
     unmount();
+    if (_sd_card_available)
+    {
+        printf("CSdCard::CSdCard: SD card detected\n");
+    }
+    else
+    {
+        printf("CSdCard::CSdCard: SD card NOT detected\n");
+        spi_set_baudrate(SPI_PORT, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
+    }
 }
 
 CSdCard::~CSdCard()
