@@ -1280,8 +1280,8 @@ int CLuaRoutine::lua_acc_serial_write(lua_State *L)
 // bool: State - true=enabled, false=disabled
 int CLuaRoutine::lua_enable_triphase(lua_State *L)
 {
-    bool state = lua_toboolean(L, 2);
-    set_channel_isolation(state);
+    bool state = lua_toboolean(L, 1);
+    set_channel_isolation(!state);
     return 0;
 }
 

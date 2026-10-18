@@ -200,7 +200,7 @@ void COutput::sync_chanel(uint8_t channel_lead, uint8_t channel_linked, uint8_t 
     bool channel_isolation_on = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);
     if (!is_channel_valid(channel_lead) || channel_lead==channel_linked || offset_percent > 100 || channel_isolation_on)
     {
-        printf("Rejecting SyncChanel message\n");
+        // printf("Rejecting SyncChanel message\n");
         return;
     }
 
@@ -211,7 +211,7 @@ void COutput::sync_chanel(uint8_t channel_lead, uint8_t channel_linked, uint8_t 
     {
         if (_channel_triphase[chan].linked_channel == channel_lead)
         {
-            printf("Rejecting SyncChanel message: channel already linked\n");
+            // printf("Rejecting SyncChanel message: channel already linked\n");
             return;
         }
     }
