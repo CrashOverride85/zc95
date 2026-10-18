@@ -399,7 +399,7 @@ void CMessageProcessor::delete_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZ
 void CMessageProcessor::send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc)
 {
     int msg_count = (*doc)["MsgId"];
-    DynamicJsonDocument response_message(2000);
+    DynamicJsonDocument response_message(4096);
 
     response_message["Type"] = "PatternList";
     response_message["MsgId"] = msg_count;
