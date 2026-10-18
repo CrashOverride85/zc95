@@ -53,6 +53,31 @@ function setupdefaults(n)
     n["blocktimer"]["timer"] = 0 -- max is 255 default
     n["blocktimer"]["rate"] = 0
     n["blocktimer"]["nextblock"] = 0
+
+    -- ET gate value bits 2/1: 1 = phase 1 (positive) only, 2 = phase 2 (negative) only, 3 = both
+    n["phases"] = 3
+end
+
+-- The firmware's clocks. A block, gate or block timer picks one with ["clock"] (select bits 0-1):
+-- 1 = $4088 244 Hz (default), 2 = $408b 30.5 Hz (ticks when $4088 & 7 == 7), 3 = $4089 0.953 Hz
+-- (ticks when $4088 wraps). Each keeps the clock value at its last update in ["timer"] and updates
+-- when (clock - timer) & 0xff >= rate, storing clock + 1, so it runs every rate+1 ticks of its clock.
+clock = {0, 0, 0}
+
+function advanceclock()
+    clock[1] = (clock[1] + 1) % 256
+    if clock[1] % 8 == 7 then clock[2] = (clock[2] + 1) % 256 end
+    if clock[1] == 0 then clock[3] = (clock[3] + 1) % 256 end
+end
+
+-- check_selected_routine_timer_tick (flash 0x31c) and the rate check that follows it
+function due(b, rate)
+    local c = b["clock"] or 1
+    if c == 2 and clock[1] % 8 ~= 7 then return false end
+    if c == 3 and clock[1] ~= 0 then return false end
+    if (clock[c] - b["timer"]) % 256 < rate then return false end
+    b["timer"] = (clock[c] + 1) % 256
+    return true
 end
 
 block_stroke = 3
@@ -98,17 +123,14 @@ function setupblock(channels)
              -- intensity minimum is range_depth_high (255) - depth_advanced (215) + range_depth_low (165) = 205
              channels[chan]["intensity"]["min"] = 205
              channels[chan]["intensity"]["rate"] = 16 -- MA knob 0 to 32
-             channels[chan]["intensity"]["actionmin"] = 254 -- xor gate with 110 then same as 255
-             channels[chan]["intensity"]["actionmax"] = 254 -- xor gate with 110 then same as 255
-             channels[chan]["intensity"]["gateoff"] = true
+             channels[chan]["intensity"]["actionmin"] = 254 -- 0xfe: reverse and swap phase 1/2 (gate xor 0x06)
+             channels[chan]["intensity"]["actionmax"] = 254
+             channels[chan]["phases"] = 1 -- modules 3/4 set gate 0x05: phase 1 only
              channels[chan]["width"]["value"] = 255
           end
 
           for chan = 2, 4, 2
           do
-              channels[chan]["intensity"]["actionmin"] = 255
-              channels[chan]["intensity"]["actionmax"] = 255
-              channels[chan]["intensity"]["gateoff"] = false
               channels[chan]["intensity"]["select"] = 1
               channels[chan]["intensity"]["rate"] = 16 -- MA knob 0 to 32
               channels[chan]["intensity"]["min"] = 230
@@ -133,6 +155,7 @@ function setupblock(channels)
             channels[chan]["gate"]["rate"] = 12 -- MA
           end
           channels[1]["blocktimer"]["select"] = 1
+          channels[1]["blocktimer"]["clock"] = 2
           channels[1]["blocktimer"]["rate"] = 31
           channels[1]["blocktimer"]["nextblock"] = block_rhythm16
     elseif (channels["block"] == block_rhythm16) then
@@ -152,11 +175,14 @@ function setupblock(channels)
           for chan = 1, 4, 1
           do
               channels[chan]["gate"]["select"] = 1
-              channels[chan]["gate"]["rate"] = 32*8
+              channels[chan]["gate"]["clock"] = 2
+              channels[chan]["gate"]["rate"] = 32 -- MA knob
               channels[chan]["freq"]["select"] = 1
-              channels[chan]["freq"]["rate"] = 8 -- default *8
+              channels[chan]["freq"]["clock"] = 2
+              channels[chan]["freq"]["rate"] = 1 -- default
               channels[chan]["width"]["select"] = 1
-              channels[chan]["width"]["rate"] = 40 -- advanced param 5 *8
+              channels[chan]["width"]["clock"] = 2
+              channels[chan]["width"]["rate"] = 5 -- advanced param (pace)
               channels[chan]["width"]["value"] = 130 -- advanced param 130
           end
           for chan = 2, 4, 2
@@ -175,7 +201,8 @@ function setupblock(channels)
             channels[chan]["intensity"]["actionmax"] = 255
         end
         channels[1]["blocktimer"]["select"] = 1
-        channels[1]["blocktimer"]["rate"] = math.random(5,24) * 256 / 8
+        channels[1]["blocktimer"]["clock"] = 3
+        channels[1]["blocktimer"]["rate"] = math.random(5,24)
         channels[1]["blocktimer"]["nextblock"] = math.random(block_torment1,block_torment3)
     elseif (channels["block"] == block_torment1) then
         for chan = 1, 4, 1
@@ -207,22 +234,33 @@ function setupblock(channels)
           channels[chan]["freq"]["max"] = 255
           channels[chan]["freq"]["steps"] = 1
         end
+        -- on the box A reaches min first and module 6 runs on both channels, so B follows
+        -- A's chain 5 -> 6 -> 7 in step; B's own chain (8 -> 9 -> 10) only runs in split mode
         channels[1]["freq"]["actionmin"] = block_climb6
-        channels[2]["freq"]["actionmin"] = block_climb9
+        channels[2]["freq"]["actionmin"] = block_climb6
     elseif (channels["block"] == block_climb5) then
-          channels[1]["freq"]["select"] = 1
-          channels[1]["freq"]["value"] = 255
-          channels[1]["freq"]["max"] = 255
-          channels[1]["freq"]["steps"] = 1
-          channels[1]["freq"]["actionmin"] = block_climb6
+        for chan = 1, 2, 1
+        do
+          channels[chan]["freq"]["select"] = 1
+          channels[chan]["freq"]["value"] = 255
+          channels[chan]["freq"]["max"] = 255
+          channels[chan]["freq"]["steps"] = 1
+          channels[chan]["freq"]["actionmin"] = block_climb6
+        end
     elseif (channels["block"] == block_climb6) then
-          channels[1]["freq"]["value"] = 255
-          channels[1]["freq"]["steps"] = 2
-          channels[1]["freq"]["actionmin"] = block_climb7
+        for chan = 1, 2, 1
+        do
+          channels[chan]["freq"]["value"] = 255
+          channels[chan]["freq"]["steps"] = 2
+          channels[chan]["freq"]["actionmin"] = block_climb7
+        end
     elseif (channels["block"] == block_climb7) then
-          channels[1]["freq"]["value"] = 255
-          channels[1]["freq"]["steps"] = 4
-          channels[1]["freq"]["actionmin"] = block_climb5
+        for chan = 1, 2, 1
+        do
+          channels[chan]["freq"]["value"] = 255
+          channels[chan]["freq"]["steps"] = 4
+          channels[chan]["freq"]["actionmin"] = block_climb5
+        end
     elseif (channels["block"] == block_climb8) then
           channels[2]["freq"]["select"] = 1
           channels[2]["freq"]["value"] = 255
@@ -276,21 +314,29 @@ function setupblock(channels)
         channels[1]["width"]["steps"] = 1
         channels[2]["width"]["steps"] = 1
     elseif (channels["block"] == block_random2) then
+        -- The module sets the random range to 1-4, picks the rates, then sets 5-31 for the
+        -- block timer. Its random opcode always reads channel A's range ($408d/$408e), so on
+        -- the channel B pass the picks come from the 5-31 left behind: B gets rates (and a
+        -- frequency step) of 5-31. A's frequency step is not changed.
         for chan = 1, 4, 1
         do
+          local lo, hi = 1, 4
+          if chan % 2 == 0 then
+            lo, hi = 5, 31
+            channels[chan]["freq"]["steps"] = math.random(lo,hi)
+          end
           channels[chan]["intensity"]["select"] = 1
-          channels[chan]["intensity"]["rate"] = math.random(1,4)*8
+          channels[chan]["intensity"]["clock"] = 2
+          channels[chan]["intensity"]["rate"] = math.random(lo,hi)
           channels[chan]["freq"]["select"] = 1
-          channels[chan]["freq"]["rate"] = math.random(1,4)*8
+          channels[chan]["freq"]["clock"] = 2
+          channels[chan]["freq"]["rate"] = math.random(lo,hi)
           channels[chan]["width"]["select"] = 1
-          channels[chan]["width"]["rate"] = math.random(1,4)
-        end
-        for chan = 2, 4, 2
-        do
-          channels[chan]["freq"]["step"] = math.random(1,4)
+          channels[chan]["width"]["rate"] = math.random(lo,hi)
         end
         channels[1]["blocktimer"]["select"] = 1
-        channels[1]["blocktimer"]["rate"] = math.random(5,31) * 256 / 8
+        channels[1]["blocktimer"]["clock"] = 3
+        channels[1]["blocktimer"]["rate"] = math.random(5,31)
         channels[1]["blocktimer"]["nextblock"] = block_random2
      end
 end
@@ -299,9 +345,7 @@ function handleblocktimer(b)
     if b["select"] == 0 then
       return
     end
-    b["timer"] = b["timer"] +1
-    if b["timer"] > (8*b["rate"]) then
-      b["timer"] = 0
+    if due(b, b["rate"]) then
       channels["block"] = b["nextblock"]
       setupblock(channels)
     end
@@ -311,12 +355,15 @@ function handlegatetimer(b)
     if b["select"] == 0 then
       return
     end
-    b["timer"] = b["timer"] +1
-    if b["timer"] > b["rate"] then
-      b["timer"] = 0
+    if due(b, b["rate"]) then
       b["gateoff"] = not b["gateoff"]
       b["changed"] = true
     end
+end
+
+function swapphases(chan)
+    channels[chan]["phases"] = 3 - channels[chan]["phases"] -- xor 3
+    channels[chan]["width"]["changed"] = true
 end
 
 function handleblock(b,name,xchan)
@@ -325,9 +372,7 @@ function handleblock(b,name,xchan)
     if b["select"] == 0 then
        return false
     end
-    b["timer"] = b["timer"] +1
-    if b["timer"] >= b["rate"] then
-         b["timer"] = 0
+    if due(b, b["rate"]) then
          b["value"] = b["value"] + b["steps"]
 --         print(name,xchan,"adding ",b["steps"]," to ",b["value"]," min ",b["min"]," max ",b["max"])
          if (b["steps"]>=0 and b["value"] > b["max"]) then
@@ -337,8 +382,8 @@ function handleblock(b,name,xchan)
                  b["steps"] = -b["steps"]
              elseif b["actionmax"] == 254 then
                  b["steps"] = -b["steps"]
-                 b["gateoff"] = not b["gateoff"]
-             elseif b["actionmin"] == 253 then
+                 swapphases(xchan)
+             elseif b["actionmax"] == 253 then
                  b["value"] = b["min"]
              elseif b["actionmax"] <200 then
                  channels["block"] = b["actionmax"]
@@ -351,7 +396,7 @@ function handleblock(b,name,xchan)
                  b["steps"] = -b["steps"]
              elseif b["actionmin"] == 254 then
                  b["steps"] = -b["steps"]
-                 b["gateoff"] = not b["gateoff"]
+                 swapphases(xchan)
              elseif b["actionmin"] == 253 then
                  b["value"] = b["max"]
              elseif b["actionmin"] <200 then
@@ -379,6 +424,7 @@ end
 function at244hz(nchannels)
     nchannels = nchannels or 4 -- old default
     local chan
+    advanceclock()
     for chan = 1, nchannels, 1
     do
         ettot.handleblocktimer(channels[chan]["blocktimer"])
@@ -394,13 +440,6 @@ function at244hz(nchannels)
         end
 
         ettot.handleblock(channels[chan]["width"],"w",chan)
-        if channels[chan]["width"]["changed"] then
-            zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
-            if (nchannels == 2) then
-                zc.SetPulseWidth(chan, channels[chan]["width"]["value"], channels[chan]["width"]["value"])
-            end
-            channels[chan]["width"]["changed"] = false
-        end
 
         ettot.handleblock(channels[chan]["intensity"],"i",chan)
         if (channels[chan]["intensity"]["changed"] or channels[chan]["gate"]["changed"]) then
@@ -414,6 +453,20 @@ function at244hz(nchannels)
             end
             channels[chan]["intensity"]["changed"] = false
             channels[chan]["gate"]["changed"] = false
+        end
+
+        -- after intensity, so a phase swap from its 0xfe action is applied in the same tick
+        if channels[chan]["width"]["changed"] then
+            local w = channels[chan]["width"]["value"]
+            local p = channels[chan]["phases"]
+            local pos, neg = 0, 0
+            if p == 1 or p == 3 then pos = w end
+            if p >= 2 then neg = w end
+            zc.SetPulseWidth(chan, pos, neg)
+            if (nchannels == 2) then
+                zc.SetPulseWidth(chan+2, pos, neg)
+            end
+            channels[chan]["width"]["changed"] = false
         end
     end
 end

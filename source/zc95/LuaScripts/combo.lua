@@ -34,7 +34,7 @@ end
 function MinMaxChange(menu_id, min_max_val)
     for chan = 1, 4, 1
     do
-        channels[chan]["gate"]["rate"] = min_max_val*8
+        channels[chan]["gate"]["rate"] = min_max_val -- 30.5 Hz clock
     end
 end
 
