@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include "pico/types.h"
 
 // DMA/ADC code copied/adapted from https://forums.raspberrypi.com/viewtopic.php?p=1861895#p1861895
 
