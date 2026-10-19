@@ -108,6 +108,7 @@ class CFrontPanelV02 : public CFrontPanel
         
         uint64_t _last_state_change[MAX_BUTTON_IDX];
         uint8_t _button_states_at_last_check;
+        volatile uint8_t _buttons_pressed_since_check = 0; // set when a button goes down, possibly from the interrupt
         uint8_t _buttons_in_use = 0;
 
         const uint8_t FailAfterAdcErrorCount = 3;

@@ -241,6 +241,7 @@ void CFrontPanelV02::process(bool always_update)
 
         if (read_success && _last_port_exp_read != buffer)
         {
+            _buttons_pressed_since_check |= (_last_port_exp_read & ~buffer);
             rot_encoder_process(buffer, port_exp_pin_t::ROT_A, port_exp_pin_t::ROT_B);
 
             if (abs(_adjust_value < 100))
@@ -390,8 +391,12 @@ void CFrontPanelV02::rot_encoder_process(uint8_t port_exp_read, uint8_t a_pos, u
 bool CFrontPanelV02::has_button_state_changed(enum Button button, bool *new_state)
 {
   bool button_state_changed;
-  bool last_button_state = (_button_states_at_last_check & (1 << (uint8_t)button));
+  uint8_t bit = 1 << (uint8_t)button;
+  bool last_button_state = (_button_states_at_last_check & bit);
   *new_state = button_state(button);
+
+  if (!last_button_state && (_buttons_pressed_since_check & bit))
+    *new_state = true;
 
   button_state_changed = (last_button_state != *new_state);
 
@@ -404,9 +409,17 @@ bool CFrontPanelV02::has_button_state_changed(enum Button button, bool *new_stat
   }
 
   if (*new_state)
-    _button_states_at_last_check |= (1 << (uint8_t)button);
+  {
+    _button_states_at_last_check |= bit;
+
+    uint32_t save = save_and_disable_interrupts();
+    _buttons_pressed_since_check &= ~bit;
+    restore_interrupts(save);
+  }
   else
-    _button_states_at_last_check &= ~(1 << (uint8_t)button);
+  {
+    _button_states_at_last_check &= ~bit;
+  }
 
   return button_state_changed;
 }
