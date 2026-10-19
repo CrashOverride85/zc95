@@ -76,7 +76,8 @@ static int enter_safe_zone_timeout_ms(uint32_t timeout_ms)
     sem_acquire_blocking(&g_core1_suspend_sem);
 
     _routine_output->suspend_core1(); // should release g_core1_suspend_sem once suspended
-    sem_acquire_blocking(&g_core1_suspend_sem);
+    while (!sem_try_acquire(&g_core1_suspend_sem))
+        _routine_output->loop();
 
     _analogue_capture_running = _analogue_capture->is_running();
     if (_analogue_capture_running)
