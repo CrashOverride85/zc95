@@ -56,7 +56,8 @@ class CMenuRemoteAccess : public CMenu
             REGEN_AP_PSK        = 3,
             SERIAL_ACCESS       = 4,
             BLE_GATT            = 5,
-            BLE_CONFIG          = 6
+            BLE_CONFIG          = 6,
+            BLE_SERIAL          = 7
         };
 
         std::vector<option> _options;
