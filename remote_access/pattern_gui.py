@@ -9,6 +9,7 @@ import lib.ZcMessages as zc
 import queue
 from lib.ZcWs import ZcWs
 from lib.ZcSerial import ZcSerial
+from lib.ZcBle import ZcBle
 from lib.MinMaxMenu import MinMaxMenu
 from lib.PowerDisplay import PowerDisplay
 
@@ -245,6 +246,8 @@ parser.add_argument('--debug', action='store_true', help='Show debugging informa
 connection_group = parser.add_mutually_exclusive_group(required=True)
 connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
+connection_group.add_argument('--ble', action='store', nargs='?', const='ZC95', help='BLE name or address of ZC95 in BLE serial access mode (default ZC95)')
+parser.add_argument('--adapter', action='store', help='Bluetooth adapter to use with --ble, e.g. hci1 (Linux)')
 
 parser.add_argument('--index', action='store', required=True, help='Start pattern at specified index')
 
@@ -256,9 +259,11 @@ args = parser.parse_args()
 
 rcv_queue = queue.Queue() # to allow received messages to be sent to the GUI
 
-# Connect either using serial or websocket
+# Connect using serial, BLE or websocket
 if args.serial:
   zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+elif args.ble:
+  zc_connection = ZcBle(args.ble, rcv_queue, args.debug, args.adapter)
 else:
   zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 
