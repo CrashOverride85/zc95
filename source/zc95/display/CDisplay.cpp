@@ -19,6 +19,7 @@
 #include "CDisplay.h"
 #include "icons.h"
 #include "pico/stdlib.h"
+extern const unsigned char font6x9[]; // makes the font below shared, so CHwCheck.cpp uses this copy
 #include <font6x9.h>
 #include <font5x7.h>
 #include <fontx.h>

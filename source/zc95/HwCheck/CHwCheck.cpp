@@ -20,7 +20,7 @@
 #include "hardware/flash.h"
 #include "pico/btstack_flash_bank.h"
 
-#include <font6x9.h>
+extern const unsigned char font6x9[]; // defined in CDisplay.cpp
 #include "CHwCheck.h"
 #include "i2c_scan.h"
 #include "../git_version.h"
