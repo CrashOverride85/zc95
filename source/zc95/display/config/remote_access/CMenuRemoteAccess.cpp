@@ -19,6 +19,7 @@
 #include "CMenuRemoteAccess.h"
 #include "CMenuRemoteAccessSerial.h"
 #include "CMenuRemoteAccessBLE.h"
+#include "CMenuRemoteAccessBleSerial.h"
 #include "CMenuRemoteAccessBleConfig.h"
 #include "CMenuApMode.h"
 #include "../../CDisplayMessage.h"
@@ -126,6 +127,10 @@ void CMenuRemoteAccess::show_selected_setting()
             set_active_menu(new CMenuRemoteAccessBLE(_display, _hal, _saved_settings, _routine_output, _routines, _radio, _hal->power_management()));
             break;
 
+        case option_id::BLE_SERIAL:
+            set_active_menu(new CMenuRemoteAccessBleSerial(_display, _hal, _saved_settings, _routine_output, _routines, _radio, _sd_card));
+            break;
+
         case option_id::BLE_CONFIG:
             set_active_menu(new CMenuRemoteAccessBleConfig(_display, _hal, _saved_settings, _routine_output));
             break;
@@ -177,6 +182,7 @@ void CMenuRemoteAccess::show()
         _options.push_back(CMenuRemoteAccess::option(option_id::CLEAR_SAVED_CREDS,  "Clear WiFi creds."));
         _options.push_back(CMenuRemoteAccess::option(option_id::REGEN_AP_PSK     ,  "New AP password"));
         _options.push_back(CMenuRemoteAccess::option(option_id::BLE_GATT         ,  "BLE remote access"));
+        _options.push_back(CMenuRemoteAccess::option(option_id::BLE_SERIAL       ,  "BLE serial access"));
         _options.push_back(CMenuRemoteAccess::option(option_id::BLE_CONFIG       ,  "BLE config"));
     }
     _options.push_back(CMenuRemoteAccess::option(option_id::SERIAL_ACCESS     ,  "Serial access"));

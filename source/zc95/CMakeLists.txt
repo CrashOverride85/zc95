@@ -39,6 +39,13 @@ add_custom_command(
     ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.h
 )
 
+add_custom_command(
+  OUTPUT RemoteAccess/BleSerialProfile.h
+    DEPENDS RemoteAccess/BleSerialProfile.gatt
+    COMMAND ${BTSTACK_ROOT}/tool/compile_gatt.py
+    ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/BleSerialProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/BleSerialProfile.h
+)
+
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
   CAnalogueCapture.cpp
@@ -145,6 +152,7 @@ add_executable(zc95
   display/config/remote_access/CMenuRemoteAccessSerial.cpp
   display/config/remote_access/CMenuApMode.cpp
   display/config/remote_access/CMenuRemoteAccessBLE.cpp
+  display/config/remote_access/CMenuRemoteAccessBleSerial.cpp
   display/config/remote_access/CMenuRemoteAccessBleConfig.cpp
 
   FrontPanel/CRotEnc.cpp
@@ -190,8 +198,10 @@ add_executable(zc95
   RemoteAccess/CMessageProcessor.cpp
   RemoteAccess/CSerialConnection.cpp
   RemoteAccess/CBtGatt.cpp
+  RemoteAccess/CBleSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
   RemoteAccess/GattProfile.h
+  RemoteAccess/BleSerialProfile.h
 
   SdCard/hwconfig.c
   SdCard/CSdCard.cpp 
