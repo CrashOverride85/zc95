@@ -5,3 +5,5 @@ PRIMARY_SERVICE, GATT_SERVICE
 CHARACTERISTIC, GATT_DATABASE_HASH, READ,
 
 #import <nordic_spp_service.gatt>
+
+#import <battery_service.gatt>

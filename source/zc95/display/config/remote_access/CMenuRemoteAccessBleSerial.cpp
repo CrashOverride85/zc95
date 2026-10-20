@@ -116,6 +116,7 @@ void CMenuRemoteAccessBleSerial::draw()
         _display->put_text("ZC95", _disp_area.x0, _disp_area.y0+y, hagl_color(_display->get_hagl_backed(), 0x70, 0x70, 0x70));
     }
 
+    _ble_serial_connection->set_battery_percentage(_hal->power_management()->get_battery_percentage());
     _ble_serial_connection->loop();
 }
 
@@ -129,5 +130,5 @@ void CMenuRemoteAccessBleSerial::show()
     _exit_menu = false;
 
     _radio->bluetooth(true);
-    _ble_serial_connection->init();
+    _ble_serial_connection->init(_hal->power_management()->get_battery_percentage());
 }

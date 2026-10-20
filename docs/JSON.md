@@ -1,11 +1,11 @@
 # JSON interface
 
-The ZC95 can be controlled remotely using a JSON based interface over either serial or a WiFi/Websocket connection.
+The ZC95 can be controlled remotely using a JSON based interface over either serial (wired or BLE serial) or a WiFi/Websocket connection.
 
 Consider this a work in progress, with the messages subject to change for the time being.
 These messages primarily exist to allow the supplied python utilities (see [Remote Access](./RemoteAccess.md)) to interact with the box, and have been available since firmware version 1.4.
 
-These allow for Lua scripts to be uploaded, deleted, started, and controlled. Unlike a [BLE connection](./BleStreaming.md), it does not allow direct control of the estim output / per pulse control. It can be used to manage the scripts on the box, and start + control a script.
+These allow for Lua scripts to be uploaded, deleted, started, and controlled. Unlike a [BLE streaming connection](./BleStreaming.md), it does not allow direct control of the estim output / per pulse control. It can be used to manage the scripts on the box, and start + control a script.
 
 The messages sent are the same regardless of connection method.
 
@@ -15,7 +15,7 @@ After configuring WiFi and connecting, connect to the box on `ws://<ip>:80/strea
 
 On disconnection, any running pattern will be stopped.
 
-### Serial
+### Serial (wired)
 Connect using 115200-8-N-1. All messages should be surrounded with STX (0x02) / ETX (0x03) characters, e.g. 
 
 ```<STX>{"Type": "GetLuaScripts", "MsgId": 3}<ETX>```
@@ -25,6 +25,9 @@ Messages sent from the ZC95 are also sent surrounded by STX/ETX. Any data receiv
 An EOT (0x04) character can be sent at any point to reset the connection - this has much the same effect as disconnecting if using a web socket connection, and will stop any running pattern and reset power levels.
 
 Consider sending an EOT, then waiting ~50ms, on first connection to make sure the ZC95 is in a known state. The python utilities currently don't do this. They probably should.
+
+### Serial (BLE)
+This uses the Nordic UART service, with the same messages as serial (including STX/ETX etc.), and each write has to fit in one packet (no long writes). Disconnecting is the same as sending EOT.
 
 ## States
 The connection can be in one of three states, with the initial state being `ACTIVE`. The state affects which messages are valid.

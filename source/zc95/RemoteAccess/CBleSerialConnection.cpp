@@ -41,6 +41,9 @@ static const uint8_t _adv_data[] =
 
     // Nordic UART service, 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
     17, BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, 0x9e, 0xca, 0xdc, 0x24, 0x0e, 0xe5, 0xa9, 0xe0, 0x93, 0xf3, 0xa3, 0xb5, 0x01, 0x00, 0x40, 0x6e,
+
+    // Battery service
+    3, BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE & 0xff, ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE >> 8,
 };
 static const uint8_t _adv_data_len = sizeof(_adv_data);
 
@@ -84,7 +87,7 @@ CBleSerialConnection::~CBleSerialConnection()
     _s_CBleSerialConnection = NULL;
 }
 
-void CBleSerialConnection::init()
+void CBleSerialConnection::init(uint8_t bat_level_pc)
 {
     if (_init_ran)
         return;
@@ -94,6 +97,10 @@ void CBleSerialConnection::init()
 
     att_server_init(ble_serial_profile_data, NULL, NULL);
     nordic_spp_service_server_init(&CBleSerialConnection::s_packet_handler);
+
+    // setup battery service
+    battery_service_server_init(bat_level_pc);
+    _battery_percentage = bat_level_pc;
 
     // setup advertisements
     uint16_t adv_int_min = 0x0300;
@@ -285,6 +292,15 @@ void CBleSerialConnection::can_send_now()
 
     if (nordic_spp_service_server_send(_con_handle, (const uint8_t*)_tx_buffer.data(), chunk) == ERROR_CODE_SUCCESS)
         _tx_buffer.erase(0, chunk);
+}
+
+void CBleSerialConnection::set_battery_percentage(uint8_t bat)
+{
+    if (_battery_percentage != bat)
+    {
+        battery_service_server_set_battery_value(bat);
+        _battery_percentage = bat;
+    }
 }
 
 bool CBleSerialConnection::is_connected()

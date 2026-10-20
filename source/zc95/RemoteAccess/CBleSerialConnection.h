@@ -6,6 +6,7 @@
 #include <string>
 
 #include "btstack.h"
+#include "ble/gatt-service/battery_service_server.h"
 
 #include "CMessageProcessor.h"
 #include "../../common/zc95_config.h"
@@ -18,9 +19,10 @@ class CBleSerialConnection
     public:
         CBleSerialConnection(CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card);
         ~CBleSerialConnection();
-        void init();
+        void init(uint8_t bat_level_pc);
         void send(std::string message);
         void loop();
+        void set_battery_percentage(uint8_t bat);
         bool is_connected();
         const char *get_connected_device_address();
 
@@ -52,6 +54,7 @@ class CBleSerialConnection
         state_t _state = state_t::IDLE;
         bool _reset_connection = false;
         bool _init_ran = false;
+        uint8_t _battery_percentage = 0;
 
         uint8_t _recv_buffer[MAX_WS_MESSAGE_SIZE+3]; // +2 for STX/ETX, +1 for NULL
         uint16_t _recv_buffer_position = 0;

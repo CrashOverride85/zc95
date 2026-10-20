@@ -13,14 +13,19 @@ parser.add_argument('--debug', action='store_true', help='Show debugging informa
 connection_group = parser.add_mutually_exclusive_group(required=True)
 connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
+connection_group.add_argument('--ble', action='store', nargs='?', const='ZC95', help='BLE name or address of ZC95 in BLE serial access mode (default ZC95)')
+parser.add_argument('--adapter', action='store', help='Bluetooth adapter to use with --ble, e.g. hci1 (Linux)')
 
 args = parser.parse_args()
 
 rcv_queue = queue.Queue()
 
-# Connect either using serial or websocket
+# Connect using serial, BLE or websocket
 if args.serial:
   zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+elif args.ble:
+  from lib.ZcBle import ZcBle
+  zc_connection = ZcBle(args.ble, rcv_queue, args.debug, args.adapter)
 else:
   zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 

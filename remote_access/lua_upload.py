@@ -25,6 +25,8 @@ parser.add_argument('--no-progress', action='store_true', help='Supress progress
 connection_group = parser.add_mutually_exclusive_group(required=True)
 connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
+connection_group.add_argument('--ble', action='store', nargs='?', const='ZC95', help='BLE name or address of ZC95 in BLE serial access mode (default ZC95)')
+parser.add_argument('--adapter', action='store', help='Bluetooth adapter to use with --ble, e.g. hci1 (Linux)')
 
 parser.add_argument('--index', action='store', required=True, type=int, choices=range(-1, 5), help='Slot/index on ZC95 to upload script to. -1 to put on SD card')
 parser.add_argument('--script', action='store', required=True, help='Lua script to upload')
@@ -66,6 +68,9 @@ rcv_queue = queue.Queue()
 
 if args.serial:
   zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+elif args.ble:
+  from lib.ZcBle import ZcBle
+  zc_connection = ZcBle(args.ble, rcv_queue, args.debug, args.adapter)
 else:
   zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 
