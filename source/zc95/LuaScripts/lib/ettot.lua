@@ -98,7 +98,7 @@ function setupblock(channels)
         channels[chan]["intensity"]["changed"] = true
         channels[chan]["gate"]["changed"] = true
     end
-    print("* NEW BLOCK=",channels["block"])
+--  print("* NEW BLOCK=",channels["block"])
     if (channels["block"] == block_waves) then
           channels[1]["freq"]["max"] = 128
           channels[3]["freq"]["max"] = channels[1]["freq"]["max"]
@@ -304,7 +304,7 @@ function setupblock(channels)
 
         channels[1]["width"]["min"] = (channels[1]["width"]["min"] + 2) %256
         channels[2]["width"]["min"] = (channels[2]["width"]["min"] + 2) %256
-        print("block 25 width2 min is",channels[2]["width"]["min"])
+--      print("block 25 width2 min is",channels[2]["width"]["min"])
     elseif (channels["block"] == block_orgasm3) then
         channels[1]["width"]["select"] = 0
         channels[2]["width"]["actionmin"] = block_orgasm4
