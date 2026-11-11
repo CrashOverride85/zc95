@@ -71,12 +71,12 @@
 
 // Note that just changing these two values would likely break everything
 #define MAX_POWER_LEVEL 1000
-#define MAX_CHANNELS 4
+#define INTERNAL_CHANNEL_COUNT 4
 
 // SPI Defines for display
 #define SPI_PORT spi0
 #define PIN_MISO 16
-#define PIN_CS   17
+#define PIN_DISP_CS   17
 #define PIN_SCK  18
 #define PIN_MOSI 19
 
@@ -106,4 +106,30 @@
 
 #define BOOTLOADER_SIZE_K 48
 #define PROGRAM_OFFSET (BOOTLOADER_SIZE_K * 1024)  // where does the main firmware start in flash
+
+
+
+#define MENU_ID_CHANNEL5  0xF5 // 245
+//              CHANNEL6  0xF6
+//              CHANNEL7  0xF7
+//              CHANNEL8  0xF8
+//              CHANNEL9  0xF9
+#define MENU_ID_NO_PARAMS 0xFE
+#define MENU_ID_RAMP      0xFF
+
+#define MENU_ID_FIRST_RESERVED MENU_ID_CHANNEL5
+
+// Battery
+#define BATTERY_CAPACITY_MAH 5300
+#define BATTERY_CHARGE_TERMINAION_CURRENT_MA 300
+#define BATTERY_MAX_CHARGE_MILLIVOLTS 4150
+
+
+#define LUA_ON_SD_SCRIPT_MAX_FILE_LEN 17 // any longer that this, and the full name won't appear on the display, so you can't tell them apart
+#define LUA_ON_SD_INDEX_OFFSET 100 // When referring to lua scripts saved on SD card for messages like GetLuaScripts, what value should be added to the index
+
+ // Maximum number of scripts that can be put on the SD card. Each script does take up a 
+ // small amount of RAM as the filename is held in a list, so there needs to be a some 
+ // kind of limit, although 35 may be a little low. 
+#define LUA_ON_SD_MAX_SCRIPTS 35
 

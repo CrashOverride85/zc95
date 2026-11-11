@@ -11,11 +11,12 @@
 #include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CWsConnection
 {
     public:
-        CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
+        CWsConnection(struct tcp_pcb *pcb, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card);
         ~CWsConnection();
         void callback(uint8_t *data, u16_t data_len, uint8_t mode);
         void send(std::string message);
@@ -30,6 +31,7 @@ class CWsConnection
         };
 
         CMessageProcessor *_messageProcessor;
+        CSdCard* _sd_card;
         struct tcp_pcb *_pcb;
         state_t _state = state_t::ACTIVE;
 };

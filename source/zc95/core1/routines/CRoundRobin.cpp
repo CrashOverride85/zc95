@@ -47,12 +47,6 @@ void CRoundRobin::config(struct routine_conf *conf)
 {
     conf->name = "RoundRobin";
 
-    // Need four output channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Delay" - how long to wait before switching to next channel
     struct menu_entry menu_speed = new_menu_entry();
     menu_speed.id = menu_ids::DELAY;
@@ -112,7 +106,7 @@ void CRoundRobin::loop(uint64_t time_us)
     if (time_us > _wait_until_us)
     {
         // switch off current channel
-        simple_channel_off(_current_active_channel);
+        channel_off(_current_active_channel);
 
         // select next channel
         _current_active_channel++;
@@ -122,11 +116,11 @@ void CRoundRobin::loop(uint64_t time_us)
         // switch on new channel
         if (_pulse_mode)
         {
-            simple_channel_pulse(_current_active_channel, 100);
+            channel_pulse(_current_active_channel, 100);
         }
         else
         {
-            simple_channel_on(_current_active_channel);
+            channel_on(_current_active_channel);
         }
 
         _wait_until_us = time_us + ((uint64_t)_delay_setting_ms * 1000);

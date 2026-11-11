@@ -117,17 +117,25 @@ class ZcMessages:
     self.Send(msgPatternSoftButton)
     self.GetResponse(self.msgId, "Ack")
     
-  def SendSetPowerMessage(self, chan1, chan2, chan3, chan4):
+  def SendSetPowerMessage(self, channel_power_levels, *legacy_channel_power_levels):
     self.msgId = self.msgId + 1
 
     msgSetPower = {
       "Type": "SetPower",
-      "MsgId": self.msgId,
-      "Chan1": chan1,
-      "Chan2": chan2,
-      "Chan3": chan3,
-      "Chan4": chan4
+      "MsgId": self.msgId
     }
+
+    if legacy_channel_power_levels:
+      channel_power_levels = (channel_power_levels,) + legacy_channel_power_levels
+
+    if isinstance(channel_power_levels, dict):
+      channel_power_items = sorted(channel_power_levels.items())
+    else:
+      channel_power_items = enumerate(channel_power_levels, start=1)
+
+    for channel, power_level in channel_power_items:
+      msgSetPower["Chan" + str(channel)] = power_level
+
     self.Send(msgSetPower)
     self.GetResponse(self.msgId, "Ack")
     

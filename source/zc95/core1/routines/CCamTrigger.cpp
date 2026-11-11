@@ -51,12 +51,6 @@ void CCamTrigger::config(struct routine_conf *conf)
     conf->name = "Camera Trigger";
     conf->button_text[(int)soft_button::BUTTON_A] = "Trigger";
 
-    // Want 4x simple channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Shock Length"
     struct menu_entry menu_pulse_len = new_menu_entry();
     menu_pulse_len.id = menu_ids::PULSE_LENGTH;
@@ -145,7 +139,7 @@ void CCamTrigger::stop()
 {
    set_all_channels_power(0);
     for (int x=0; x < CHANNEL_COUNT; x++)    
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 void CCamTrigger::all_channels(bool on)
@@ -153,9 +147,9 @@ void CCamTrigger::all_channels(bool on)
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {
         if (on)
-            simple_channel_on(x);
+            channel_on(x);
         else
-            simple_channel_off(x);
+            channel_off(x);
     }
 }
 
@@ -163,6 +157,6 @@ void CCamTrigger::all_channels_pulse(uint16_t pulse_len_ms)
 {
     for (int x=0; x < CHANNEL_COUNT; x++)   
     {
-        simple_channel_pulse(x, pulse_len_ms);
+        channel_pulse(x, pulse_len_ms);
     }
 }

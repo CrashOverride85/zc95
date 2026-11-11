@@ -38,11 +38,6 @@ void CAudioVirtual3::config(struct routine_conf *conf)
 {
     conf->name = "Audio virtual 3";
 
-    // Only use 3 channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     conf->audio_processing_mode = audio_mode_t::AUDIO3;
 
     struct menu_entry menu_mono = new_menu_entry();
@@ -50,6 +45,14 @@ void CAudioVirtual3::config(struct routine_conf *conf)
     menu_mono.title = "Audio view";
     menu_mono.menu_type = menu_entry_type::AUDIO_VIEW_VIRTUAL_3;
     conf->menu.push_back(menu_mono);
+
+    conf->channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_NONE, 0}
+    };
 }
 
 void CAudioVirtual3::get_config(struct routine_conf *conf)
@@ -80,23 +83,23 @@ void CAudioVirtual3::trigger(trigger_socket socket, trigger_part part, bool acti
 void CAudioVirtual3::pulse_message(uint8_t channel, uint16_t power_level, uint8_t pos_pulse_us, uint8_t neg_pulse_us)
 {
     // Pretty much all the processing for this pattern is done in CAudio, and passed into here.
-    if (channel > 3)
+    if (channel >= ChannelCount)
         return;
 
     if (_chan_last_power_level[channel] != power_level)
     {
-        full_channel_set_power(channel, power_level);
+        channel_set_power(channel, power_level);
         _chan_last_power_level[channel] = power_level;
     }
 
-    full_channel_pulse(channel, pos_pulse_us, neg_pulse_us);
+    channel_single_pulse(channel, pos_pulse_us, neg_pulse_us);
 }
 
 void CAudioVirtual3::start()
 {
     set_all_channels_power(0);
 
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < ChannelCount; chan++)
         _chan_last_power_level[chan] = 0;
 }
 

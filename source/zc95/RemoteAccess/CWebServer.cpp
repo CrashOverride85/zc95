@@ -35,12 +35,14 @@
 std::map<struct tcp_pcb*, CWsConnection*> CWebServer::_s_ws_connections;
 CRoutineOutput *CWebServer::_s_routine_output;
 std::vector<CRoutines::Routine>* CWebServer::_s_routines;
+CSdCard* CWebServer::_s_sd_card;
 
-CWebServer::CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine>* routines)
+CWebServer::CWebServer(CRoutineOutput *routine_output, std::vector<CRoutines::Routine>* routines, CSdCard* sd_card)
 {
     printf("CWebServer()\n");
     _s_routine_output = routine_output;
     _s_routines = routines;
+    _s_sd_card = sd_card;
 }
 
 CWebServer::~CWebServer()
@@ -130,7 +132,7 @@ void CWebServer::websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     if (!strcmp(uri, "/stream")) 
     {
         printf("request for streaming\n");
-        _s_ws_connections[pcb] = new CWsConnection(pcb, _s_routine_output, *_s_routines);
+        _s_ws_connections[pcb] = new CWsConnection(pcb, _s_routine_output, *_s_routines, _s_sd_card);
     }
 }
 

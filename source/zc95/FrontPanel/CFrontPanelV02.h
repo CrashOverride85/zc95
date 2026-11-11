@@ -95,7 +95,7 @@ class CFrontPanelV02 : public CFrontPanel
 
         CSavedSettings **_saved_settings;
         uint8_t _last_port_exp_read;
-        int16_t _power_level[MAX_CHANNELS];
+        int16_t _power_level[INTERNAL_CHANNEL_COUNT];
         CRotEnc _rot_encoder;
         int16_t _adjust_value;
         volatile bool _interrupt;
@@ -108,6 +108,7 @@ class CFrontPanelV02 : public CFrontPanel
         
         uint64_t _last_state_change[MAX_BUTTON_IDX];
         uint8_t _button_states_at_last_check;
+        volatile uint8_t _buttons_pressed_since_check = 0; // set when a button goes down, possibly from the interrupt
         uint8_t _buttons_in_use = 0;
 
         const uint8_t FailAfterAdcErrorCount = 3;

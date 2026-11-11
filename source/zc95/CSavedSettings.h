@@ -76,7 +76,12 @@ class CSavedSettings
         LedColourFormat  = 231, // Colour format (RBG, BGR, etc) of front panel LED buttons
         BootloaderMode   = EEPROM_BOOTLOADER_SETTING_ADDR, // (232) What the bootloader should do on next startup. Added as #define as it's shared with the bootloader code
         ExtenedRampShape = 233,
-        BatteryStatus    = 234  // What to show inside the battery status icon
+        BatteryStatus    = 234, // What to show inside the battery status icon
+        FuelGaugeQmax1   = 235, // Fuel gauge learned qmax, byte 1
+        FuelGaugeQmax2   = 236, // Fuel gauge learned qmax, byte 2
+        FuelGaugeRaStart = 237, // Fuel gauge learned Ra table start (30 bytes, currently unused)
+        FuelGaugeRaEnd   = 266, // Fuel gauge learned Ra table end
+        FuelGaugeStatus  = 267  // Fuel gauge saved config status (bit field). Records if saved qmax & Ra table are valid
     };
 
     public:
@@ -178,6 +183,12 @@ class CSavedSettings
             EXT_RAMP_SHOW_PROGRESS_ON_STATUS_BAR    = 2
         };
 
+        enum class fuel_gauge_data_valid_bitmask_t
+        {
+            FUEL_GAUGE_DATA_QMAX_VALID = 1,
+            FUEL_GAUGE_DATA_RA_VALID   = 2
+        };
+
         CSavedSettings(CEeprom *eeprom);
         ~CSavedSettings();
         void save();
@@ -245,8 +256,8 @@ class CSavedSettings
         void set_button_brightness(uint8_t button_brightness_byte);
 
         // Collar
-        bool get_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
-        bool set_collar_config(uint8_t collar_id, struct collar_config &collar_conf);
+        bool get_collar_config(uint8_t collar_index, struct collar_config &collar_conf);
+        bool set_collar_config(uint8_t collar_index, struct collar_config &collar_conf);
 
         // Bluetooth enabled
         bool get_bluethooth_enabled();
@@ -310,12 +321,20 @@ class CSavedSettings
         int8_t get_extended_ramp_shape();
         void set_extended_ramp_shape(int8_t shape);
 
+        void fuel_gauge_invalidate_learned_data();
+        bool fuel_gauge_data_is_qmax_valid();
+        bool fuel_gauge_data_is_ra_valid();
+        bool fuel_gauge_data_get_qmax(uint8_t* out_data, uint8_t size);
+        bool fuel_gauge_data_get_ra  (uint8_t* out_data, uint8_t size);
+        void fuel_gauge_data_set_qmax(uint8_t* data, uint8_t size);
+        void fuel_gauge_data_set_ra  (uint8_t* data, uint8_t size);
+
         void eeprom_initialise();
 
     private:
         bool eeprom_initialised();
         
-        void initialise_collar(uint8_t collar_id);
+        void initialise_collar(uint8_t collar_index);
         CEeprom *_eeprom;
         uint8_t _eeprom_contents[EEPROM_SIZE];
 };

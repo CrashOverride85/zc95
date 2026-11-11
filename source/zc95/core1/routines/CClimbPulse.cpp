@@ -53,12 +53,6 @@ void CClimbPulse::config(struct routine_conf *conf)
     conf->name = "Climb with pulse";
     conf->button_text[(int)soft_button::BUTTON_A] = "Reset";
 
-    // Want four output channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Duration" - a min/max entry in seconds 
     struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CLIMB_DURATION;
@@ -144,8 +138,8 @@ void CClimbPulse::set_pulse_step_from_duration_seconds(uint16_t duration_sec)
 
 void CClimbPulse::reset(uint64_t time_us)
 {
-    simple_channel_off(2);
-    simple_channel_off(3);
+    channel_off(2);
+    channel_off(3);
     _pulse_gap_us = _inital_pulse_gap_us;
     _final_pulse_start_us = 0;
     _reset = false;
@@ -171,7 +165,7 @@ void CClimbPulse::loop(uint64_t time_us)
     {
         for (int chan=0; chan < 2; chan++)
         {
-            full_channel_pulse(chan, DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
+            channel_single_pulse(chan, DEFAULT_PULSE_WIDTH, DEFAULT_PULSE_WIDTH);
         }
 
         if (!_final_pulse_start_us)
@@ -182,8 +176,8 @@ void CClimbPulse::loop(uint64_t time_us)
                 _pulse_gap_us = 5000;
 
                 _final_pulse_start_us = time_us;
-                simple_channel_on(2);
-                simple_channel_on(3);
+                channel_on(2);
+                channel_on(3);
             }
         }
 
@@ -193,6 +187,6 @@ void CClimbPulse::loop(uint64_t time_us)
 
 void CClimbPulse::stop()
 {
-    simple_channel_off(2);
-    simple_channel_off(3);
+    channel_off(2);
+    channel_off(3);
 }

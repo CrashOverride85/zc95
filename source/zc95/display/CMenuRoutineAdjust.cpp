@@ -26,7 +26,9 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
                 CRoutineOutput *routine_output, 
                 CAudio *audio, 
                 CBluetooth *bluetooth,
-                CSavedSettings *saved_settings) 
+                CSavedSettings *saved_settings,
+                uint8_t routine_id,
+                CSdCard* sd_card) 
 {
     printf("CMenuRoutineAdjust() \n");
     struct display_area area;
@@ -38,11 +40,24 @@ CMenuRoutineAdjust::CMenuRoutineAdjust(
     _bluetooth = bluetooth;
     _saved_settings = saved_settings;
     _routine_output = routine_output;
+    _routine_id = routine_id;
+    _sd_card = sd_card;
+
+    // If the script is on the SD card, load it into flash now.
+    // routine.param is already set to the (hidden from the menu) index of a 
+    // spare lua slot in flash, reserved for loading files from SD card to.
+    // So put the script into that slot, so everything else works as usual.
+    if (routine.on_sd_card)
+    {
+        _sd_card->copy_file_to_flash(routine.script_name);
+    }
 
     // get routine config
     CRoutine* routine_ptr = routine.routine_maker(routine.param);
-    routine_ptr->get_config(&_active_routine_conf);
+    routine_ptr->get_routine_config(&_active_routine_conf);
     delete routine_ptr;
+
+    _routine_output->activate_routine(routine_id);
 
     _show_ramp_start = _saved_settings->get_extended_ramp_show_menu_option();
 
@@ -196,6 +211,7 @@ void CMenuRoutineAdjust::adjust_rotary_encoder_change(int8_t change)
     switch (menu_item->menu_type)
     {
         case menu_entry_type::MIN_MAX:
+        case menu_entry_type::POWER_LEVEL_SELECT:
             new_current_val = menu_item->minmax.current_value + (change *  menu_item->minmax.increment_step);
 
             if (new_current_val > menu_item->minmax.max)
@@ -275,6 +291,7 @@ void CMenuRoutineAdjust::draw()
     switch (menu_item.menu_type)
     {
         case menu_entry_type::MIN_MAX:
+        case menu_entry_type::POWER_LEVEL_SELECT:
         {
             hagl_color_t bar_colour = hagl_color(_display->get_hagl_backed(), 0x00, 0x00, 0xFF);
                             
@@ -613,6 +630,7 @@ void CMenuRoutineAdjust::menu_changed_callback(menu_change_msg_t msg)
             switch (entry->menu_type)
             {
                 case menu_entry_type::MIN_MAX:
+                case menu_entry_type::POWER_LEVEL_SELECT:
                     if (msg.new_value >= entry->minmax.min && msg.new_value <= entry->minmax.max)
                     {
                         entry->minmax.current_value = msg.new_value;

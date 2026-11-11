@@ -38,6 +38,11 @@ CMenuCollarConfig::CMenuCollarConfig(CDisplay* display, IHal *hal, CSavedSetting
 CMenuCollarConfig::~CMenuCollarConfig()
 {
     printf("~CMenuCollarConfig() \n");
+    if (_collar_list != NULL)
+    {
+        delete _collar_list;
+        _collar_list = NULL;
+    }
 }
 
 void CMenuCollarConfig::button_pressed(Button button)
@@ -105,7 +110,7 @@ void CMenuCollarConfig::show()
     _display->set_option_c("Up");
     _display->set_option_d("Down");
 
-    uint8_t max_collar_id = MAX_CHANNELS-1;
+    uint8_t max_collar_id = INTERNAL_CHANNEL_COUNT-1;
     if (max_collar_id >= EEPROM_CHANNEL_COUNT)
         max_collar_id = 9;
 

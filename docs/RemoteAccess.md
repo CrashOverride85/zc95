@@ -76,6 +76,11 @@ Before this mode can be used, the hardware configuration needs to be set to:
 
 Once selected, and screen is showing "Serial control mode", the Python GUI and scripts to list/upload Lua scripts should work if given the serial port the ZC95 is connected to.
 
+## BLE serial control
+On a Pico W, serial control is also available over Bluetooth LE. Select Config -> Remote Access -> "BLE serial access", and the ZC95 advertises as `ZC95` (no pairing needed).
+
+The python scripts support this with `--ble` parameter (needs `pip3 install bleak`), optionally followed by a name or address
+
 ## Python scripts
 The python scripts can be used to upload and manage up to 5 scripts (stored in slots 0-4) on the ZC95.
 Scripts in slots 1-4 can be up to 24k, slot 0 is larger and the script can be up to 48k.
@@ -88,7 +93,13 @@ There are a few Python scripts available in the `remote_access` folder for inter
 * webgui.py - starts a web server providing a mobile-friendly version of pattern_gui.py, so a pattern can be started and controlled from a phone/tablet browser (or several at once) instead
 
 For all scripts other than webgui.py (see its own section below):
-* Either ``--ip <IP address>`` _or_ ``--serial <serial port>`` must be specified
+* One of:
+    - `--ip <IP address>`
+    - `--serial <serial port>`
+    - `--ble`
+  
+  must be specified
+
 * The optional `--debug` parameter can be used to show messages being sent/received, and sometimes other extra info
 
 ### pattern_list.py

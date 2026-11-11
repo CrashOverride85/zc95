@@ -1,11 +1,11 @@
 # JSON interface
 
-The ZC95 can be controlled remotely using a JSON based interface over either serial or a WiFi/Websocket connection.
+The ZC95 can be controlled remotely using a JSON based interface over either serial (wired or BLE serial) or a WiFi/Websocket connection.
 
 Consider this a work in progress, with the messages subject to change for the time being.
 These messages primarily exist to allow the supplied python utilities (see [Remote Access](./RemoteAccess.md)) to interact with the box, and have been available since firmware version 1.4.
 
-These allow for Lua scripts to be uploaded, deleted, started, and controlled. Unlike a [BLE connection](./BleStreaming.md), it does not allow direct control of the estim output / per pulse control. It can be used to manage the scripts on the box, and start + control a script.
+These allow for Lua scripts to be uploaded, deleted, started, and controlled. Unlike a [BLE streaming connection](./BleStreaming.md), it does not allow direct control of the estim output / per pulse control. It can be used to manage the scripts on the box, and start + control a script.
 
 The messages sent are the same regardless of connection method.
 
@@ -15,7 +15,7 @@ After configuring WiFi and connecting, connect to the box on `ws://<ip>:80/strea
 
 On disconnection, any running pattern will be stopped.
 
-### Serial
+### Serial (wired)
 Connect using 115200-8-N-1. All messages should be surrounded with STX (0x02) / ETX (0x03) characters, e.g. 
 
 ```<STX>{"Type": "GetLuaScripts", "MsgId": 3}<ETX>```
@@ -25,6 +25,9 @@ Messages sent from the ZC95 are also sent surrounded by STX/ETX. Any data receiv
 An EOT (0x04) character can be sent at any point to reset the connection - this has much the same effect as disconnecting if using a web socket connection, and will stop any running pattern and reset power levels.
 
 Consider sending an EOT, then waiting ~50ms, on first connection to make sure the ZC95 is in a known state. The python utilities currently don't do this. They probably should.
+
+### Serial (BLE)
+This uses the Nordic UART service, with the same messages as serial (including STX/ETX etc.), and each write has to fit in one packet (no long writes). Disconnecting is the same as sending EOT.
 
 ## States
 The connection can be in one of three states, with the initial state being `ACTIVE`. The state affects which messages are valid.
@@ -53,6 +56,7 @@ In the active state, these messages are recognised:
 
 * GetLuaScripts
 * DeleteLuaScript
+* DeleteLuaScripts
 * GetPatterns
 * GetPatternDetail
 * GetVersion
@@ -102,6 +106,12 @@ Response:
          "Empty":true,
          "Valid":false,
          "Name":"<empty>"
+      },
+      {
+         "Index": 100,
+         "Empty": false,
+         "Valid": true,
+         "Name": "U:ScriptOnSD"
       }
    ],
    "Result":"OK"
@@ -110,7 +120,7 @@ Response:
 Assume scripts array is unordered, as the order may change in future versions.
 
 Fields:
-- `Index` - script slot. Currently 0-4, may be extended in the future
+- `Index` - script slot. Currently 0-4 are in flash, and are always included in the results even if empty. An index of 100 or above indicates the script is on the SD card; for SD card scripts, only populated "slots" are included
 - `Empty` - true if there is no script in the slot
 - `Valid` - true if there is a script uploaded, and it parses ok
 - `Name` - name of script as displayed on the zc95 scripts menu
@@ -120,9 +130,25 @@ Clears a Lua script slot, removing the script from the menu. It is _not_ necessa
 
 There is no error when deleting an already empty script slot.
 
+When deleting a script that resides on the SD card (i.e. index is >= 100), scripts after it will be moved down by 1 in the index order. e.g. deleting script 102 will cause 103 to be renumbered to 102, 104 to become 103, etc.
+It likely makes the most sense to re-query the box for the Lua scripts list by calling `GetLuaScripts` after deleting each script.
+
 Send:
 ```
 {"Type": "DeleteLuaScript", "MsgId": 5, "Index": 1}
+```
+
+Response:
+```
+{"Type":"Ack","MsgId":5,"Result":"OK"}
+```
+
+#### DeleteLuaScripts
+Similar to `DeleteLuaScript`, except it can be used to delete multiple scripts on one go.
+
+Send:
+```
+{"Type":"DeleteLuaScripts","MsgId":5,"Indexes":[1,100,102]}
 ```
 
 Response:
@@ -184,6 +210,28 @@ Response:
    "Name":"Toggle",
    "Id":11,
    "ButtonA":"",
+   "Channels": [
+      {
+         "Number": 1,
+         "Type": "INTERNAL",
+         "Index": 1
+      },
+      {
+         "Number": 2,
+         "Type": "INTERNAL",
+         "Index": 2
+      },
+      {
+         "Number": 3,
+         "Type": "INTERNAL",
+         "Index": 3
+      },
+      {
+         "Number": 4,
+         "Type": "INTERNAL",
+         "Index": 4
+      }
+   ],
    "MenuItems":[
       {
          "Id":1,
@@ -218,6 +266,19 @@ Response:
 }
 ```
 
+##### Channels
+The `Channels` section will normally appear as it does in the above example, however if channel configuration (either the default via menus or in a Lua script) has been changed, it may be different.
+
+Fields:
+* Number - channel number, as used in SetPower & PowerStatus messages
+* Type - channel type - currently either `INTERNAL` or `COLLAR` (for control purposes, both should be treated the same)
+* Index - for information only: combined with Type, identifies the channel being controlled. E.g. `INTERNAL` & "1" means physical channel 1, `COLLAR` & "2" means "Collar 2" as configured in the config -> collar config menu. 
+
+Note that:
+* theoretically up to 9 channels can be reported; but the 4 internal channels plus a shock collar as the 5th channel is probably more likely.
+* shock collars may appear in one of the 1-4 channel slots
+
+
 #### GetVersion
 Used to query the zc95 for its version.
 
@@ -236,7 +297,7 @@ The `ZC95` field holds the firmware version of the zc95 - this will match the te
 `WsMajor` is likely to be increased for breaking changes to this JSON interface, and the `WsMinor` for additional features. For time being, don't trust them, and consider everything on this page to be work in progress. At some point I'll start incrementing them, and keeping a proper change log for the messages.
 
 #### LuaStart
-Used to start the upload of a Lua script, and switch to the `LUA_LOAD` state on success. Expects an `Index` parameter, which is the script slot (0-4) to upload the following script to.
+Used to start the upload of a Lua script, and switch to the `LUA_LOAD` state on success. Expects an `Index` parameter, which is either a script slot (0-4) to upload the following script to, or -1 if the script should be put on the SD card (if present).
 
 Send:
 ```
@@ -391,6 +452,8 @@ Send:
 {"Type": "SetPower", "MsgId": 5, "Chan1": 0, "Chan2": 0, "Chan3": 0, "Chan4": 0}
 ```
 
+If additional channels have been reported in the PatternDetails message for the running pattern, Chan5, Chan6 etc fields can be included.
+
 Receive:
 ```
 {"Type":"Ack","MsgId":5,"Result":"OK"}
@@ -435,8 +498,9 @@ Receive:
 Sent whenever the front panel dials are changed, or the script changes the requested output power.
 
 Fields:
+* `Channel` - 1-9. Channel power status update relates to.
 * `OutputPower` - 0-1000. Actual output power after front panel power limit, power sent in the `SetPower` message, and level requested by script considered. Corresponds to the yellow bar on the display
-* `MaxOutputPower` - 0-1000. The lower of the power set for the chanel using the `SetPower` message, and the limit set on the front panel
+* `MaxOutputPower` - 0-1000. The lower of the power set for the channel using the `SetPower` message, and the limit set on the front panel
 * `PowerLimit` - 0-1000. Power limit set on the front panel
 
 Receive:

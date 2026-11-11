@@ -47,3 +47,21 @@ int get_lib_length_by_index(uint8_t index)
 {
     return lua_libs[index].end - lua_libs[index].start;
 }
+
+int get_sd_staging_slot()
+{
+    const lua_script_in_flash_t *script = lua_scripts;
+    uint8_t index = 0;
+
+    while (script->start)
+    {
+        if (script->start == (uint32_t)&lua_script_sd_start)
+        {
+            return index;
+        }
+        script++;
+        index++;
+    }
+
+    return -1;
+}

@@ -12,6 +12,9 @@
 .global lua_script5_start
 .global lua_script5_end
 
+.global lua_script_sd_start
+.global lua_script_sd_end
+
 .global lua_lib_script_ettot_start
 .global lua_lib_script_ettot_end
 
@@ -63,6 +66,12 @@ lua_script5_start:
 .global lua_script5_end
 lua_script5_end:
 
+
+lua_script_sd_start:
+.balign 4096
+.fill 49152, 1, 0x00 /* 48k */
+.global lua_script_sd_end
+lua_script_sd_end:
 
 /* Inbuilt lua scripts that can't be changed, so don't need to care about size/alignment etc */
 

@@ -18,6 +18,7 @@ class CAudioVirtual3: public CRoutine
         void stop();
 
     private:
+        static const int ChannelCount = 3;
         bool _mono;
-        uint16_t _chan_last_power_level[MAX_CHANNELS] = {0};
+        uint16_t _chan_last_power_level[ChannelCount] = {0};
 };

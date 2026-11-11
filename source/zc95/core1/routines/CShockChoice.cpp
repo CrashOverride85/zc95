@@ -48,12 +48,6 @@ void CShockChoice::config(struct routine_conf *conf)
     conf->name = "Shock choice";
     conf->button_text[(int)soft_button::BUTTON_A] = "Reset";
 
-    // Lets use all four channels
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-    conf->outputs.push_back(output_type::SIMPLE);
-
     // menu entry 1: "Choice frequency" - how often a choice needs to be made
     struct menu_entry duration = new_menu_entry();
     duration.id = menu_ids::CHOICE_FREQUENCY;
@@ -130,7 +124,7 @@ void CShockChoice::soft_button_pushed (soft_button button, bool pushed)
 
 void CShockChoice::start()
 {
-    simple_channel_set_power(3, POWER_FULL);
+    channel_set_power(3, POWER_FULL);
 }
 
 void CShockChoice::loop(uint64_t time_us)
@@ -142,7 +136,7 @@ void CShockChoice::loop(uint64_t time_us)
 
     if (!_warning_issued && (time_remaining_us() < secs_to_us(warn_interval_sec)))
     {
-        simple_channel_pulse(3, 1200);
+        channel_pulse(3, 1200);
         _warning_issued = true;
     }
 
@@ -169,24 +163,24 @@ void CShockChoice::pulse_chan_and_inc_power(channel chan, uint16_t duration)
 {
     if (chan == channel::CHAN_A)
     {
-        simple_channel_pulse(0, duration);
+        channel_pulse(0, duration);
         _chanA_power += _shock_inc_by;
         if (_chanA_power > 1000)
             _chanA_power = 1000;
 
-        simple_channel_set_power(0, _chanA_power);
+        channel_set_power(0, _chanA_power);
     } 
     
     else if (chan == channel::CHAN_B)
     {
-        simple_channel_pulse(1, duration);
-        simple_channel_pulse(2, duration);
+        channel_pulse(1, duration);
+        channel_pulse(2, duration);
         _chanB_power += _shock_inc_by;
         if (_chanB_power > 1000)
             _chanB_power = 1000;
         
-        simple_channel_set_power(1, _chanB_power);
-        simple_channel_set_power(2, _chanB_power);
+        channel_set_power(1, _chanB_power);
+        channel_set_power(2, _chanB_power);
     }
 }
 
@@ -194,9 +188,9 @@ void CShockChoice::reset()
 {
     _chanA_power = 0;
     _chanB_power = 0;
-    simple_channel_set_power(0, _chanA_power);
-    simple_channel_set_power(1, _chanB_power);
-    simple_channel_set_power(2, _chanB_power);
+    channel_set_power(0, _chanA_power);
+    channel_set_power(1, _chanB_power);
+    channel_set_power(2, _chanB_power);
 
     _timer_started_us = 0;
     _warning_issued = false;
@@ -205,7 +199,7 @@ void CShockChoice::reset()
 void CShockChoice::stop()
 {   
     for (int x = 0; x < 4; x++)
-        simple_channel_off(x);
+        channel_off(x);
 }
 
 int64_t inline CShockChoice::secs_to_us(int seconds)

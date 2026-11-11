@@ -160,6 +160,9 @@ void CAnalogueCapture::stop()
         dma_channel_cleanup(_s_dma_chan2);
         dma_channel_unclaim(_s_dma_chan2);
 
+        irq_remove_handler(DMA_IRQ_0, s_dma_handler1);
+        irq_remove_handler(DMA_IRQ_1, s_dma_handler2);
+
         _running = false;
         printf("CAnalogueCapture::stop() done\n");
     }

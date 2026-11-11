@@ -21,16 +21,20 @@ class COutputChannel
             _power_level_control = power_level_control;
             _channel_id = channel_id;
         };
+
         virtual ~COutputChannel() 
         {
             printf("~COutputChannel(%d)\n", _channel_id);
         };
 
-        enum class channel_type 
-        {
-            SIMPLE,
-            FULL
-        };
+        virtual void channel_pulse(uint16_t min_pulse_ms) = 0;
+        virtual void channel_single_pulse(uint8_t pos_us, uint8_t neg_us) {};
+        virtual void set_freq(uint16_t freq_hz) {};
+        virtual void set_pulse_width(uint8_t pulse_width_pos_us, uint8_t pulse_width_neg_us) {};
+        virtual void on() {};
+        virtual void off() = 0;
+        virtual void link_channel(uint8_t channel, uint8_t offset_percentage) {};
+        virtual bool set_channel_isolation(bool on) { return false; };
         
         // Called by routines
         void channel_set_power(uint16_t power)
@@ -50,12 +54,7 @@ class COutputChannel
         }
 
         virtual void loop(uint64_t time_us) = 0;
-        virtual channel_type get_channel_type() = 0;
-        
-        virtual bool is_internal()
-        {
-            return false;
-        }
+        virtual CChannel_types::channel_type get_channel_type() = 0;
 
     private:
         CPowerLevelControl *_power_level_control = NULL;        
@@ -68,16 +67,11 @@ class COutputChannel
         virtual void set_absolute_power(uint16_t power) = 0;
         uint16_t _routine_power_level_requested = 0;
 
-        uint64_t get_time_us()
-        {
-            return time_us_64();
-        }
-
         uint32_t _standby_led_colour = LedColour::Black;
 
         void set_led_colour(uint32_t colour)
         {
-            if (_channel_id >= 4)
+            if (_channel_id >= INTERNAL_CHANNEL_COUNT)
                 return;
 
             _led_colour = colour;

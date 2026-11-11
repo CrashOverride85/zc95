@@ -39,6 +39,13 @@ add_custom_command(
     ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/GattProfile.h
 )
 
+add_custom_command(
+  OUTPUT RemoteAccess/BleSerialProfile.h
+    DEPENDS RemoteAccess/BleSerialProfile.gatt
+    COMMAND ${BTSTACK_ROOT}/tool/compile_gatt.py
+    ARGS ${CMAKE_SOURCE_DIR}/RemoteAccess/BleSerialProfile.gatt ${CMAKE_SOURCE_DIR}/RemoteAccess/BleSerialProfile.h
+)
+
 # Add executable. Default name is the project name, version 0.1
 add_executable(zc95 
   CAnalogueCapture.cpp
@@ -76,13 +83,14 @@ add_executable(zc95
   core1/CRoutineOutput.cpp
 
   core1/output/CChannelConfig.cpp
-  core1/output/CFullChannelAsSimpleChannel.cpp
-
+  
   core1/output/collar/CCollarComms.cpp
   core1/output/collar/CCollarChannel.cpp
 
-  core1/output/ZC624Output/CZC624ChannelFull.cpp
+  core1/output/ZC624Output/CZC624Channel.cpp
   core1/output/ZC624Output/CZC624Comms.cpp
+
+  core1/output/dummy_output/CDummyOutput.cpp
  
   core1/routines/CAccPort.cpp
 
@@ -120,6 +128,7 @@ add_executable(zc95
   display/config/CMenuSettingOutput.cpp
   display/config/CMenuSettingOutputExtRamp.cpp
   display/config/CMenuSettingBatteryInfo.cpp
+  display/config/CMenuSettingsBatteryReset.cpp
 
   display/config/bluetooth_peripherals/CMenuBluetooth.cpp
   display/config/bluetooth_peripherals/CMenuBluetoothScan.cpp
@@ -143,6 +152,7 @@ add_executable(zc95
   display/config/remote_access/CMenuRemoteAccessSerial.cpp
   display/config/remote_access/CMenuApMode.cpp
   display/config/remote_access/CMenuRemoteAccessBLE.cpp
+  display/config/remote_access/CMenuRemoteAccessBleSerial.cpp
   display/config/remote_access/CMenuRemoteAccessBleConfig.cpp
 
   FrontPanel/CRotEnc.cpp
@@ -188,8 +198,13 @@ add_executable(zc95
   RemoteAccess/CMessageProcessor.cpp
   RemoteAccess/CSerialConnection.cpp
   RemoteAccess/CBtGatt.cpp
+  RemoteAccess/CBleSerialConnection.cpp
   ${PICO_SDK_PATH}/lib/lwip/src/apps/http/fs.c
   RemoteAccess/GattProfile.h
+  RemoteAccess/BleSerialProfile.h
+
+  SdCard/hwconfig.c
+  SdCard/CSdCard.cpp 
   )
 
 # target_compile_options(zc95 PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
@@ -234,6 +249,7 @@ target_link_libraries(zc95
         git_version
         lua_static
         ArduinoJson
+        FatFs_SPI
         )
 
 pico_add_extra_outputs(zc95)
@@ -242,6 +258,7 @@ add_subdirectory(external/hagl)
 add_subdirectory(external/hagl_hal)
 add_subdirectory(external/lua)
 add_subdirectory(external/ArduinoJson)
+add_subdirectory(external/FatFs_SPI build)
 
 target_compile_definitions(zc95 PRIVATE
   NDEBUG
@@ -266,7 +283,7 @@ target_compile_definitions(zc95 PRIVATE
 )
 
 target_compile_definitions(zc95 PRIVATE
-  MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ=48000000
+  MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ=24000000
  #MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ=12000000
   MIPI_DISPLAY_PIN_CS=17
   MIPI_DISPLAY_PIN_DC=20

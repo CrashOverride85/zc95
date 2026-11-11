@@ -59,10 +59,10 @@ class CHwCheck
         void report_zc624_fault(int *y);
         front_panel_version_t determine_front_panel_version();
         void set_expected_devices(front_panel_version_t ver, zc95_version_t hw_ver);
-        void init_v0_2_front_panel();
         int  get_button_press(front_panel_version_t fp_version);
         uint8_t get_button_states_from_port_expander(front_panel_version_t fp_version);
         void fail_status_line();
+        bool is_device_present(uint8_t address);
 
         class device
         {

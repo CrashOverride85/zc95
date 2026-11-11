@@ -7,6 +7,7 @@
 #include "../../../RemoteAccess/CSerialConnection.h"
 #include "../../../core1/CRoutineOutput.h"
 #include "../../../Hal/IHal.h"
+#include "../../../SdCard/CSdCard.h"
 
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
@@ -21,7 +22,9 @@ class CMenuRemoteAccessSerial : public CMenu
             CSavedSettings *saved_settings,
             CRoutineOutput *routine_output,
             std::vector<CRoutines::Routine> &routines,
-            CBluetooth *bluetooth);
+            CBluetooth *bluetooth,
+            CSdCard* sd_card
+        );
         ~CMenuRemoteAccessSerial();
         void button_pressed(Button button);
         void adjust_rotary_encoder_change(int8_t change);
@@ -38,6 +41,7 @@ class CMenuRemoteAccessSerial : public CMenu
         CRoutineOutput *_routine_output;
         CSerialConnection *_serial_connection;
         CBluetooth *_bluetooth;
+        CSdCard* _sd_card;
         bool _bt_enabled = false;
         queue_t _bt_keypress_queue = {0};
 };

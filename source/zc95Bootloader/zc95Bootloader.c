@@ -796,6 +796,12 @@ int main()
 {
     i2c_start();
     mk1_disable_audio_input();
+
+    // We're not going to be talking to the display in the bootloader, so set it's SPI CS line to high
+    gpio_init(PIN_DISP_CS);
+    gpio_set_dir(PIN_DISP_CS, GPIO_OUT);
+    gpio_put(PIN_DISP_CS, true);
+
     sleep_ms(10);
     leds_init();
     sleep_ms(1);

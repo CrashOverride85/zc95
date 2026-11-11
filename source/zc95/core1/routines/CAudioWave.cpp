@@ -41,12 +41,6 @@ void CAudioWave::config(struct routine_conf *conf)
 {
     conf->name = "Audio Wave";
 
-    // Want 4x full channels
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-    conf->outputs.push_back(output_type::FULL);
-
     conf->audio_processing_mode = audio_mode_t::AUDIO3;
 
     struct menu_entry menu_stereo_view = new_menu_entry();
@@ -73,6 +67,13 @@ void CAudioWave::config(struct routine_conf *conf)
     conf->menu.push_back(menu_range);
 
     conf->force_channel_isolation = false;
+    conf->channels = 
+    {
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 0},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 1},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 2},
+        {CChannel_types::channel_type::CHANNEL_INTERNAL, 3}
+    };
 }
 
 void CAudioWave::get_config(struct routine_conf *conf)
@@ -117,13 +118,13 @@ void CAudioWave::pulse_message(uint8_t channel, uint16_t power_level, uint8_t po
     {
         if (channel == 0)
         {
-            full_channel_set_power(0, range_adjusted_power_level);
-            full_channel_set_power(1, range_adjusted_power_level);
+            channel_set_power(0, range_adjusted_power_level);
+            channel_set_power(1, range_adjusted_power_level);
         }
         else if (channel == 1)
         {
-            full_channel_set_power(2, range_adjusted_power_level);
-            full_channel_set_power(3, range_adjusted_power_level);
+            channel_set_power(2, range_adjusted_power_level);
+            channel_set_power(3, range_adjusted_power_level);
         }
         
         _chan_last_power_level[channel] = range_adjusted_power_level;
@@ -131,13 +132,13 @@ void CAudioWave::pulse_message(uint8_t channel, uint16_t power_level, uint8_t po
 
     if (channel == 0)
     {
-        full_channel_pulse(0, pos_pulse_us, neg_pulse_us);
-        full_channel_pulse(1, pos_pulse_us, neg_pulse_us);
+        channel_single_pulse(0, pos_pulse_us, neg_pulse_us);
+        channel_single_pulse(1, pos_pulse_us, neg_pulse_us);
     }
     else if (channel == 1)
     {
-       full_channel_pulse(2, pos_pulse_us, neg_pulse_us);
-       full_channel_pulse(3, pos_pulse_us, neg_pulse_us);
+       channel_single_pulse(2, pos_pulse_us, neg_pulse_us);
+       channel_single_pulse(3, pos_pulse_us, neg_pulse_us);
     }
 }
 
@@ -159,7 +160,7 @@ uint16_t CAudioWave::get_range_adjusted_power_level(uint16_t power_level)
 void CAudioWave::start()
 {
     set_all_channels_power(0);
-    for(uint8_t chan = 0; chan < MAX_CHANNELS; chan++)
+    for(uint8_t chan = 0; chan < INTERNAL_CHANNEL_COUNT; chan++)
         _chan_last_power_level[chan] = 0;
 
     set_channel_isolation(false);

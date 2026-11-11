@@ -161,7 +161,7 @@ uint8_t CZC624Comms::check_zc624()
         printf("ZC624 is not ready (status = %d)\n", status);
 
         uint8_t return_status = 1;
-        for(uint8_t chan=0; chan < MAX_CHANNELS; chan++)
+        for(uint8_t chan=0; chan < INTERNAL_CHANNEL_COUNT; chan++)
         {
             if (channel_has_fault(chan))
                 return_status |= 1 << (chan+1);
@@ -253,6 +253,7 @@ bool CZC624Comms::test_spi_comms(uint8_t test_val)
 // Instruct the zc624 to exit bootloader mode and start main firmware
 bool CZC624Comms::exit_bootloader()
 {
+    printf("Requesting zc624 to exit bootloader and start main firmware\n");
     return write_i2c_register(i2c_reg_t::Bootloader, ZC624_REG_BOOTLOADER_STATE_RUN_MAIN_FIRMWARE);
 }
 

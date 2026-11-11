@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <inttypes.h>
+#include <vector>
 #include "IPowerManagement.h"
 #include "BQ25601.h"
 #include "../ZcTypes.h"
@@ -21,6 +22,8 @@ class CUsbPower
         void loop();
 
         void read_input_current_limit_from_charge_controller();
+        std::vector<std::pair<std::string, std::string>> get_charger_status();
+        uint16_t get_input_current_limit();
 
     private:
         enum class usb_power_t

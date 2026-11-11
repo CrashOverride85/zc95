@@ -9,7 +9,7 @@
 
 CPulseQueue::CPulseQueue(CI2cSlave *i2c_slave)
 {
-    _i2c_slave = _i2c_slave;
+    _i2c_slave = i2c_slave;
     queue_init(&_pulse_queue, sizeof(element_t), 10);
     _next_pulse = 0;
     _channel_isolation_last_value = _i2c_slave->get_value(CI2cSlave::reg::ChannelIsolation);

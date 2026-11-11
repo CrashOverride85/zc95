@@ -12,6 +12,10 @@ extern uint8_t lua_script4_start;
 extern uint8_t lua_script5_start;
 extern uint8_t lua_script5_end;
 
+// Slot used as a staging location whilst uploading to SD card
+extern uint8_t lua_script_sd_start;
+extern uint8_t lua_script_sd_end;
+
 // Inbuilt Lua patterns that will always be present. Also defined in LuaScripts.S
 extern uint8_t lua_script_waves_start;
 extern uint8_t lua_script_waves_end;
@@ -65,6 +69,8 @@ const lua_script_in_flash_t lua_scripts[] =
     {((uint32_t)&lua_script4_start)         , ((uint32_t)&lua_script5_start)        , true },
     {((uint32_t)&lua_script5_start)         , ((uint32_t)&lua_script5_end)          , true },
 
+    {((uint32_t)&lua_script_sd_start)       , ((uint32_t)&lua_script_sd_end)        , true },
+
     {((uint32_t)&lua_script_waves_start)    , ((uint32_t)&lua_script_waves_end)     , false},
     {((uint32_t)&lua_script_orgasm_start)   , ((uint32_t)&lua_script_orgasm_end)    , false},
     {((uint32_t)&lua_script_climb_start)    , ((uint32_t)&lua_script_climb_end)     , false},
@@ -91,5 +97,6 @@ bool lua_script_is_writable(uint8_t index);
 int get_lib_index_by_name(const char *name);
 const char *get_lib_by_index(uint8_t index);
 int get_lib_length_by_index(uint8_t index);
+int get_sd_staging_slot();
 
 #endif

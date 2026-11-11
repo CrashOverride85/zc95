@@ -18,7 +18,7 @@ class CDirectPulse: public CRoutine
         void stop();
 
     private:
-        uint16_t _chan_last_power_level[MAX_CHANNELS] = {0};
-        uint8_t _chan_pos_pulse_width[MAX_CHANNELS];
-        uint8_t _chan_neg_pulse_width[MAX_CHANNELS];
+        uint16_t _chan_last_power_level[INTERNAL_CHANNEL_COUNT] = {0};
+        uint8_t _chan_pos_pulse_width[INTERNAL_CHANNEL_COUNT];
+        uint8_t _chan_neg_pulse_width[INTERNAL_CHANNEL_COUNT];
 };

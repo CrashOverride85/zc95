@@ -73,6 +73,7 @@
 #include "RemoteAccess/CWifi.h"
 #include "RemoteAccess/CSerialConnection.h"
 
+#include "SdCard/CSdCard.h"
 
 #include "ECButtons.h"
 #include "FlashHelper.h"
@@ -109,7 +110,7 @@ void process_front_panel_input(CMenu *current_menu)
 
 void update_power_levels_from_front_panel(CRoutineOutput *routine_output)
 {
-    for (int chan=0; chan < MAX_CHANNELS; chan++)
+    for (int chan=0; chan < INTERNAL_CHANNEL_COUNT; chan++)
     {
         uint16_t fp_power = _hal->front_panel()->get_channel_power_level(chan);
         routine_output->set_front_panel_power(chan, fp_power);   
@@ -172,6 +173,7 @@ int main()
     }
 #endif
 
+    g_SavedSettings = NULL;
     CSavedSettings* settings = NULL;
     CLedControl led = CLedControl(PIN_LED, &settings);
     CRoutineOutput* routine_output  = NULL;
@@ -259,15 +261,16 @@ int main()
     sleep_ms(25);
 
     _hal->set_backlight(true);
+    CSdCard sd_card(&_analogueCapture);
 
     // Get list of available patterns / routines
     std::vector<CRoutines::Routine> routines;
-    CRoutines::get_routines(routines);
+    CRoutines::get_routines(routines, &sd_card);
    
     hw_check.check_part2(); // If a fault is found, this never returns
 
     // Queue used for pulses from audio processing on core0 being sent to core1 for output
-    for (uint8_t channel = 0; channel < MAX_CHANNELS; channel++)
+    for (uint8_t channel = 0; channel < INTERNAL_CHANNEL_COUNT; channel++)
         queue_init(&gPulseQueue[channel], sizeof(pulse_message_t), PULSE_QUEUE_LENGTH);
 
     // Queue used for routines (so far just Lua) running on Core1 to send debug messages (via print())
@@ -290,10 +293,10 @@ int main()
     routine_output = new CRoutineOutputCore1(&display, &led, _hal, _audio);
 
     _audio->set_routine_output(routine_output);
-    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines);
+    wifi = new CWifi(radio, &_analogueCapture, routine_output, routines, &sd_card);
     flash_helper_init(&_analogueCapture, routine_output);
 
-    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal);
+    CMainMenu routine_selection = CMainMenu(&display, routines, settings, routine_output, &hw_check, _audio, &_analogueCapture, wifi, &bluetooth, radio, _hal, &sd_card);
     routine_selection.show();
     CMenu *current_menu = &routine_selection;
     display.set_current_menu(current_menu);

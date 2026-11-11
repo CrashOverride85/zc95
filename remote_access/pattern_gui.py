@@ -9,6 +9,7 @@ import lib.ZcMessages as zc
 import queue
 from lib.ZcWs import ZcWs
 from lib.ZcSerial import ZcSerial
+from lib.ZcBle import ZcBle
 from lib.MinMaxMenu import MinMaxMenu
 from lib.PowerDisplay import PowerDisplay
 
@@ -73,35 +74,50 @@ class ZcPatternGui:
 
   def InitDisplay(self, root):
     self.PowerDisplays = {}
+    self.DisplayChannels = self.GetPatternChannels()
     
     self.DrawPatternFrame(root, row=0, col=0)
-      
-    # 4 channel power graphs + sliders
-    for channel in range(1, 5):
-      self.PowerDisplays[channel] = PowerDisplay(self.root, channel)
-      self.PowerDisplays[channel].draw(row=0, col=channel)
+
+    self.channel_frame = Frame(root, width=400, height=400)
+    self.channel_frame.grid(row=0, column=1, padx=10, pady=5, sticky=N)
+
+    for index, channel in enumerate(self.DisplayChannels):
+      channel_number = channel["Number"]
+      self.PowerDisplays[channel_number] = PowerDisplay(self.channel_frame, channel_number)
+      self.PowerDisplays[channel_number].draw(row=0, col=index)
       
     if self.debug:
       self.debug_text = Text(root, height=10)
-      self.debug_text.grid(row=1, column=0, columnspan=5, sticky=EW)
+      self.debug_text.grid(row=1, column=0, columnspan=2, sticky=EW)
       self.debug_text.tag_configure('errorline', background='yellow', font='TkFixedFont', relief='raised')
       self.debug_text['state'] = 'disabled'
 
+  def GetPatternChannels(self):
+    if "Channels" not in self.pattern_config or len(self.pattern_config["Channels"]) == 0:
+      return [{"Number": channel} for channel in range(1, 5)]
+
+    channels = []
+    for channel in self.pattern_config["Channels"]:
+      if channel.get("Type") != "NONE":
+        channels.append(channel)
+
+    return sorted(channels, key=lambda channel: channel["Number"])
+
   def DrawPatternFrame(self, root, row, col):
     pattern_frame = Frame(root, width=400, height=400)
-    pattern_frame.grid(row=0, column=0, padx=10, pady=5)
-    Label(pattern_frame, text=pattern["Name"], font='Helvetica 18 bold').grid(row=0, column=0, padx=5, pady=5)
+    pattern_frame.grid(row=row, column=col, padx=10, pady=5)
+    Label(pattern_frame, text=self.pattern_config["Name"], font='Helvetica 18 bold').grid(row=0, column=0, padx=5, pady=5)
   
     pattern_options_frame = Frame(pattern_frame, width=400, height=400)
     pattern_options_frame.grid(row=1, column=0, padx=10, pady=5)
 
     # Only show soft button if text has been set for it
-    if len(pattern["ButtonA"]) > 0:
+    if len(self.pattern_config["ButtonA"]) > 0:
       button_frame = Frame(pattern_options_frame, width=200, height=4, highlightbackground="blue", highlightthickness=2)
       button_frame.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
 
       Label (button_frame, text="Soft button").grid(row=0, column=0, padx=5, pady=5, sticky=W)
-      soft_button = Button(button_frame, text=pattern["ButtonA"])
+      soft_button = Button(button_frame, text=self.pattern_config["ButtonA"])
       soft_button.grid(row=0, column=1, padx=5, pady=5)    
       soft_button.bind("<ButtonPress>", self.SoftButtonPressed)
       soft_button.bind("<ButtonRelease>", self.SoftButtonReleased)
@@ -112,7 +128,7 @@ class ZcPatternGui:
     self.min_max_menus = {}
     menu_row = {}
 
-    for menu_item in pattern["MenuItems"]:
+    for menu_item in self.pattern_config["MenuItems"]:
       title = menu_item["Title"]
 
       if "Group" in menu_item:
@@ -168,6 +184,9 @@ class ZcPatternGui:
   def ProcessPowerStatusMessage(self, message):
     for channel in message["Channels"]:
       channel_number = channel["Channel"]
+      if channel_number not in self.PowerDisplays:
+        continue
+
       self.PowerDisplays[channel_number].set_actual_power_level(channel["OutputPower"])
       self.PowerDisplays[channel_number].set_max_power_level(channel["MaxOutputPower"])
       self.PowerDisplays[channel_number].set_power_limit(channel["PowerLimit"])
@@ -191,15 +210,16 @@ class ZcPatternGui:
   # Send at most one message every 250ms
   def TaskUpdatePowerLevel(self):
     update_message_required = False
-    for channel in range(1, 5):
+    for channel in self.PowerDisplays:
       if self.PowerDisplays[channel].HasSetPowerLevelChangedSinceLastCheck():
         update_message_required = True
 
     if update_message_required:
-      self.zc_patterns.SendSetPowerMessage(self.PowerDisplays[1].GetSetPowerLevel(), 
-                                           self.PowerDisplays[2].GetSetPowerLevel(),
-                                           self.PowerDisplays[3].GetSetPowerLevel(),
-                                           self.PowerDisplays[4].GetSetPowerLevel())   
+      power_levels = {}
+      for channel in self.PowerDisplays:
+        power_levels[channel] = self.PowerDisplays[channel].GetSetPowerLevel()
+
+      self.zc_patterns.SendSetPowerMessage(power_levels)   
     
     self.root.after(250, self.TaskUpdatePowerLevel)
 
@@ -226,6 +246,8 @@ parser.add_argument('--debug', action='store_true', help='Show debugging informa
 connection_group = parser.add_mutually_exclusive_group(required=True)
 connection_group.add_argument('--ip', action='store', help='IP address of ZC95')
 connection_group.add_argument('--serial', action='store', help='Serial port to use')
+connection_group.add_argument('--ble', action='store', nargs='?', const='ZC95', help='BLE name or address of ZC95 in BLE serial access mode (default ZC95)')
+parser.add_argument('--adapter', action='store', help='Bluetooth adapter to use with --ble, e.g. hci1 (Linux)')
 
 parser.add_argument('--index', action='store', required=True, help='Start pattern at specified index')
 
@@ -237,9 +259,11 @@ args = parser.parse_args()
 
 rcv_queue = queue.Queue() # to allow received messages to be sent to the GUI
 
-# Connect either using serial or websocket
+# Connect using serial, BLE or websocket
 if args.serial:
   zc_connection = ZcSerial(args.serial, rcv_queue, args.debug)
+elif args.ble:
+  zc_connection = ZcBle(args.ble, rcv_queue, args.debug, args.adapter)
 else:
   zc_connection = ZcWs(args.ip, rcv_queue, args.debug)
 

@@ -8,11 +8,12 @@
 #include "../CAnalogueCapture.h"
 #include "../CRadio.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CWifi
 {
     public:
-        CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines);
+        CWifi(CRadio *radio, CAnalogueCapture *analogueCapture, CRoutineOutput *routine_output, std::vector<CRoutines::Routine> &routines, CSdCard* sd_card);
         void loop();
 
         void start_ap();
@@ -30,6 +31,7 @@ class CWifi
         CRoutineOutput *_routine_output;
         CWebServer *_web_server = NULL;
         std::vector<CRoutines::Routine>& _routines;
+        CSdCard* _sd_card;
 };
 
 #endif

@@ -19,6 +19,7 @@
 #include "CLuaRoutine.h"
 #include "CDirectPulse.h"
 #include "../../LuaScripts/LuaScripts.h"
+#include "../../SdCard/CSdCard.h"
 
 class CRoutines
 {
@@ -30,15 +31,18 @@ class CRoutines
             bool hidden;
             audio_mode_t audio_mode;
             int param;
+            bool on_sd_card;
         };
 
-        static void get_routines(std::vector<Routine> &routines)
+        static void get_routines(std::vector<Routine> &routines, CSdCard* sd_card)
         {
             // Loop through and add all valid lua scripts
             for (uint8_t index = 0; index < lua_script_count(); index++)
             {
                 add_routine_if_lua_script_valid(routines, index);
             }
+
+            add_routines_from_sd_card(routines, sd_card);
             
             add_routine(CToggle::create         , routines);
             add_routine(CRoundRobin::create     , routines);
@@ -61,14 +65,14 @@ class CRoutines
         { 
             struct routine_conf conf;
             CRoutine* routine_ptr = routine(param_index);
-            routine_ptr->get_config(&conf);
+            routine_ptr->get_routine_config(&conf);
             delete routine_ptr;
 
             // Add a warning for routines that are able to disable channel isolation
             if (!conf.force_channel_isolation)
                 conf.name = "(!)" + conf.name;
 
-            routines.push_back({routine, conf.name, conf.hidden_from_menu, conf.audio_processing_mode, 0});
+            routines.push_back({routine, conf.name, conf.hidden_from_menu, conf.audio_processing_mode, 0, false});
         }
 
         static void add_routine_if_lua_script_valid(std::vector<Routine> &routines, uint8_t index)
@@ -83,7 +87,17 @@ class CRoutines
                 if (!conf.force_channel_isolation)
                     conf.name = "(!)" + conf.name;
 
-                routines.push_back({&(CLuaRoutine::create), conf.name, conf.hidden_from_menu, conf.audio_processing_mode, index});
+                routines.push_back({&(CLuaRoutine::create), conf.name, conf.hidden_from_menu, conf.audio_processing_mode, index, false});
+            }
+        }
+
+        static void add_routines_from_sd_card(std::vector<Routine> &routines, CSdCard* sd_card)
+        {
+            std::vector<std::string> script_files = sd_card->get_lua_scripts();
+
+            for (uint16_t index=0; index < script_files.size(); index++)
+            {
+                routines.push_back({&(CLuaRoutine::create), script_files[index], false, audio_mode_t::OFF, get_sd_staging_slot(), true});
             }
         }
 };

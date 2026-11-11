@@ -41,7 +41,7 @@
 
 CAudio3Process::CAudio3Process(uint8_t output_channel, CAnalogueCapture *analogue_capture)
 {
-    if (output_channel >= MAX_CHANNELS)
+    if (output_channel >= INTERNAL_CHANNEL_COUNT)
     {
         printf("CAudio3Process::CAudio3Process(): invalid output channel: %d\n", output_channel);
         output_channel = 0;

@@ -10,6 +10,7 @@
 #include "../../common/zc95_config.h"
 #include "../core1/CRoutineOutput.h"
 #include "../core1/routines/CRoutines.h"
+#include "../SdCard/CSdCard.h"
 
 class CMessageProcessor
 {
@@ -17,7 +18,8 @@ class CMessageProcessor
         CMessageProcessor(
                 CRoutineOutput *routine_output, 
                 std::vector<CRoutines::Routine> &routines, 
-                std::function<void(std::string)> send_function
+                std::function<void(std::string)> send_function,
+                CSdCard* sd_card
         );
         ~CMessageProcessor();
         void message(uint8_t *data, u16_t data_len);
@@ -36,10 +38,12 @@ class CMessageProcessor
         void reload_routines();
         void send_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void delete_lua_script(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
+        void delete_lua_scripts(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_list(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_pattern_detail(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         void send_version_details(StaticJsonDocument<MAX_WS_MESSAGE_SIZE> *doc);
         std::string get_serial();
+        std::string get_channel_type_str(CChannel_types::channel_type type);
 
         std::function<void(std::string)> _send;
 
@@ -52,6 +56,7 @@ class CMessageProcessor
 
         char *_pending_message_buffer  = NULL;
         bool _pending_message = false;
+        CSdCard* _sd_card;
 };
 
 #endif

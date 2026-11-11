@@ -50,7 +50,7 @@ bool sd_card_write(struct sdcard_ctx* ctx, const uint8_t* data, size_t length)
     result = f_write(&ctx->file, data, length, &written);
     if (result != FR_OK)
     {
-        printf("failed to write\n");
+        printf("failed to write: %s (%d)\n", FRESULT_str(result), result);
         return false;
     }
     return true;

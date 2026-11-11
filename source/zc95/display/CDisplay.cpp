@@ -19,6 +19,7 @@
 #include "CDisplay.h"
 #include "icons.h"
 #include "pico/stdlib.h"
+extern const unsigned char font6x9[]; // makes the font below shared, so CHwCheck.cpp uses this copy
 #include <font6x9.h>
 #include <font5x7.h>
 #include <fontx.h>
@@ -93,7 +94,7 @@ uint8_t CDisplay::get_font_height()
 
         // It takes ~18ms for the display to finish refreshing (via DMA from hagl_flush()), so don't
         // start altering the back buffer if it's less than that, even if _update_required is set
-        (time_us_64() - _last_update > (18*1000)) 
+        (time_us_64() - _last_update > (25*1000)) 
        )
     {
         _interruptable_section.start();
@@ -166,9 +167,9 @@ void CDisplay::set_power_level(uint8_t channel, int16_t front_panel_power, int16
     if (maximum_power < 0)
         maximum_power = 0;
 
-    if (channel >= MAX_CHANNELS)
+    if (channel >= INTERNAL_CHANNEL_COUNT)
     {
-        printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
+        // printf("CDisplay::set_power_level - ERROR - invalid channel: %d\n", channel);
         return;
     }
 
@@ -591,12 +592,13 @@ void CDisplay::draw_power_level()
 
     char buffer[6] = {0};
     hagl_bitmap_t bitmap;
+    // Scaled blits copy pixels into the framebuffer, so the glyph scratch buffer can be shared.
+    bitmap.buffer = _rotate90_buffer;
     hagl_color_t tc = hagl_color(_hagl_backend, 0xAA, 0xAA, 0xAA);
 
-    for (uint8_t j=0; j<MAX_CHANNELS; j++) 
+    for (uint8_t j=0; j<INTERNAL_CHANNEL_COUNT; j++) 
     {
         snprintf(buffer, sizeof(buffer), "%3d", _channel_power[j].fp_power/10);
-        bitmap.buffer = (uint8_t*)calloc(HAGL_CHAR_BUFFER_SIZE, sizeof(uint8_t));
 
         for (uint8_t i=0; i<3; i++) 
         {
@@ -606,25 +608,38 @@ void CDisplay::draw_power_level()
             hagl_get_glyph(_hagl_backend, buffer[i], tc, &bitmap, font6x9);
             hagl_blit_xywh(_hagl_backend, i*scaled_glyph_width, j*scaled_glyph_height, scaled_glyph_width, scaled_glyph_height, &bitmap);
         }
-
-        free(bitmap.buffer);
     }
 }
 
-void CDisplay::put_text(std::string text, int16_t x, int16_t y, hagl_color_t color, bool rotate90, const uint8_t *font)
+void CDisplay::put_text(std::string_view text, int16_t x, int16_t y, hagl_color_t color, bool rotate90, const uint8_t *font)
 {
-    const uint8_t *fn = font;
-    if (text == "")
+    if (text.empty())
         text = " ";
 
-    if (font == NULL)
-        fn = font6x9;
+    const uint8_t *fn = font ? font : font6x9;
+    fontx_meta_t meta;
+    if (fontx_meta(&meta, fn) != 0)
+        return;
 
-    std::wstring widestr = std::wstring(text.begin(), text.end());
-    if (rotate90)
-        hagl_put_text_rotate90(_hagl_backend, widestr.c_str(), x, y, color, fn);
-    else
-        hagl_put_text(_hagl_backend, widestr.c_str(), x, y, color, fn);
+    // Preserve HAGL's byte widening and text layout without allocating a wide string.
+    size_t index = 0;
+    do
+    {
+        const wchar_t code = text[index++];
+        if (rotate90)
+        {
+            y -= hagl_put_char_rotate90(_hagl_backend, code, x, y, color, fn);
+        }
+        else if (code == '\r' || code == '\n')
+        {
+            x = 0;
+            y += meta.height;
+        }
+        else
+        {
+            x += hagl_put_char(_hagl_backend, code, x, y, color, fn);
+        }
+    } while (index < text.size() && text[index] != '\0');
 }
 
 void CDisplay::set_update_required()
@@ -666,27 +681,6 @@ uint8_t CDisplay::hagl_put_char_rotate90(void const *_surface, wchar_t code, int
     hagl_blit(surface, x0, y0, &bitmap);
 
     return bitmap.height;
-}
-
-// Mostly copied from the hagl lib's hagl_put_text
-// Show a string rotated 90 degrees
-void CDisplay::hagl_put_text_rotate90(void const *surface, const wchar_t *str, int16_t x0, int16_t y0, hagl_color_t color, const unsigned char *font)
-{
-    wchar_t temp;
-    uint8_t status;
-    fontx_meta_t meta;
-
-    status = fontx_meta(&meta, font);
-    if (0 != status)
-        return;
-
-    do 
-    {
-        temp = *str++;
-        y0 -= hagl_put_char_rotate90(surface, temp, x0, y0, color, font);
-    } while (*str != 0);
-
-    return;
 }
 
 hagl_backend_t* CDisplay::get_hagl_backed()
